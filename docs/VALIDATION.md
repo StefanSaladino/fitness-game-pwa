@@ -1,0 +1,83 @@
+# Validation Record — Phase 4 Package
+
+This file distinguishes **tests actually executed in the packaging environment** from tests that require a developer machine with network access and Docker.
+
+## Passed during package creation
+
+- Dependency-independent domain verification: **62 assertions passed**.
+- Project/schema structural validator: **95 assertions passed**.
+- TypeScript/TSX syntax transpilation for every `src/**/*.ts(x)` file: passed as part of structural validation.
+- JavaScript syntax checks for service worker/internal scripts: passed.
+- Shell syntax check for `scripts/internal-test.sh`: passed.
+- PWA icon dimension checks: 180x180, 192x192, and 512x512 passed.
+- Migration lexical balance check: balanced parentheses, quotes, comments, and `$$` function bodies.
+- pgTAP plan counts: every authored SQL test plan matches its test assertion count.
+- Secret-pattern scan: no actual service-role/database credentials are included in the package.
+
+## Not executable in the packaging environment
+
+### npm dependency-backed pipeline
+
+The environment could not reach the npm registry, so these were not executed here:
+
+```bash
+npm install
+npm run typecheck
+npm test
+npm run test:coverage
+npm run build
+npm run test:e2e
+```
+
+The source was still syntax-checked and the framework-independent domain layer was compiled/executed directly.
+
+### Local Supabase/PostgreSQL pipeline
+
+The packaging environment has no Docker engine, so these could not be executed here:
+
+```bash
+npx supabase init
+npx supabase start
+npx supabase db reset
+npx supabase test db
+npx supabase db lint --level warning
+```
+
+**Phase 4 must not be marked fully verified until those commands pass on a developer machine.** The detailed steps are in `docs/SUPABASE-SETUP.md`.
+
+## First local validation gate
+
+From a fresh unzip/clone:
+
+```bash
+npm install
+npx supabase init
+# Edit supabase/config.toml Auth URLs per docs/SUPABASE-SETUP.md
+npx supabase start
+npx supabase db reset
+npx supabase test db
+npx supabase db lint --level warning
+npm run typecheck
+npm test
+npm run build
+```
+
+If any command fails, fix the underlying migration/code or revise the product specification intentionally; do not simply weaken the test to make CI green.
+
+## v0.2.1 environment-safety validation
+
+The environment/documentation revision was checked after the Phase 4 package was created.
+
+Passed in the packaging environment:
+
+- framework-independent domain verification: 62 assertions
+- project structural validation: 107 assertions
+- `.env.example` contains only browser-safe placeholder assignments
+- no real `.env`, `.env.local`, `.env.production`, or `.env.test.local` file is present in the package
+- `.gitignore` ignores `.env`, `.env.*`, common private-key files, and Supabase local env/temp state
+- `.env.example` is explicitly allowed to be committed
+- Git `check-ignore` verification confirms `.env.local`, `.env.production`, `.env.test.local`, `*.pem`, and `supabase/.env` are ignored
+- PWA service-worker JavaScript syntax check passed
+- package and web-manifest JSON parsing passed
+
+The existing limitation remains: the packaging environment does not provide a working Docker/Supabase local stack or dependency installation path, so the authored pgTAP tests and full Vite/Vitest/Playwright pipeline still require execution on the developer machine.

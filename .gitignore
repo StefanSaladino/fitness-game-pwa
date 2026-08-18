@@ -1,0 +1,36 @@
+# Dependencies / builds
+node_modules/
+dist/
+coverage/
+playwright-report/
+test-results/
+.internal-build/
+
+# Environment files and local secrets
+# Commit only sanitized *.example templates.
+.env
+.env.*
+!.env.example
+!.env.*.example
+
+# Common secret/key material
+*.pem
+*.key
+*.p12
+*.pfx
+*.crt
+*.cer
+*.jks
+
+# Supabase local/generated state (do not commit credentials/temp state)
+supabase/.temp/
+supabase/.branches/
+supabase/.env
+supabase/.env.*
+
+# Logs / OS / editor noise
+*.log
+.DS_Store
+Thumbs.db
+.vscode/*.local.json
+.idea/
