@@ -10,3 +10,7 @@ export * from './components/JoinGroupForm';
 export * from './components/GroupSetupScreen';
 export * from './components/GroupSetupController';
 export * from './components/GroupGate';
+
+export * from './hooks/useGroupAdministration';
+export * from './components/GroupAdministrationScreen';
+export * from './components/GroupAdministrationController';

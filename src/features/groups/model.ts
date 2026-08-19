@@ -14,6 +14,7 @@ export interface GroupMember {
   username: string;
   displayName: string;
   profilePicturePath: string | null;
+  profilePictureUrl: string | null;
   role: GroupRole;
   joinedAt: string;
 }
@@ -26,6 +27,10 @@ export interface GroupInvite {
   maxUses: number;
   useCount: number;
   revokedAt: string | null;
+}
+
+export interface ManagedGroupInvite extends GroupInvite {
+  createdAt: string;
 }
 
 export interface CreateGroupInput {

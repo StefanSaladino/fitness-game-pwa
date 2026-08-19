@@ -4,7 +4,7 @@ A React + TypeScript + Vite progressive web app for an expandable friend-group *
 
 ## Current phase
 
-The project has completed **Phase 5.5D: the first real lifting dashboard**, including weekly lifting progress, lifting-v1 XP breakdown, recent lifts, personal records, and a group leaderboard read model. The next product slice is group administration UI before workout capture begins.
+The project has completed **Phase 5.6: group administration**, including multi-group switching, member/role controls, invite management, ownership transfer, and leave-group behavior. The next slice is Phase 5.7 integration validation before lifting workout capture begins.
 
 Current scoring version: `lifting-v1`.
 
@@ -34,16 +34,18 @@ This repository currently uses a hosted-Supabase Dashboard-first workflow.
 
 Apply migrations in filename order through **Supabase -> SQL Editor**. For an existing environment, run only migration files not already applied.
 
-After Phase 5.5C, the next migration to apply is:
+For an environment already through the Phase 5.5D leaderboard migration, apply the remaining security/admin migrations in order:
 
 ```text
-supabase/migrations/20260819000300_dashboard_read_models.sql
+supabase/migrations/20260819000400_lock_down_dashboard_leaderboard.sql
+supabase/migrations/20260819000500_group_administration_permissions.sql
 ```
 
 Then run:
 
 ```text
 supabase/tests/009_dashboard_read_models.test.sql
+supabase/tests/010_group_administration_permissions.test.sql
 ```
 
 The optional local Supabase CLI workflow remains documented in `docs/SUPABASE-SETUP.md`.
@@ -104,9 +106,10 @@ src/
   domain/               Pure lifting/scoring/progression rules
   features/auth/        Auth UI/controller/service boundary
   features/onboarding/  Profile onboarding UI/controller/service boundary
-  features/groups/      Multi-group models/validation/controllers/service boundary
+  features/groups/      Multi-group setup/admin models, hooks, services, and CSS-Module UI
   features/dashboard/   Lifting dashboard read model/controller/presentation boundary
   features/profile-picture/ Optional PFP storage/controller/presentation boundary
+  features/product/     Product-level Home/Groups navigation composition
   lib/                  Infrastructure clients
   pwa/                  Service worker
   styles/               Global tokens/reset/base + legacy compatibility styles

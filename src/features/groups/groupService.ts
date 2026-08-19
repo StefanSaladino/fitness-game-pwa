@@ -5,6 +5,7 @@ import type {
   CreateInviteOptions,
   GroupInvite,
   GroupMember,
+  ManagedGroupInvite,
   GroupRole,
   GroupSummary,
 } from './model';
@@ -43,6 +44,7 @@ type InviteRow = {
   max_uses: number;
   use_count: number;
   revoked_at: string | null;
+  created_at: string;
 };
 
 export interface GroupService {
@@ -51,6 +53,13 @@ export interface GroupService {
   getMembers(groupId: string): Promise<GroupMember[]>;
   createInvite(userId: string, groupId: string, options?: CreateInviteOptions): Promise<GroupInvite>;
   joinByInvite(invite: string): Promise<string>;
+  listInvites(groupId: string): Promise<ManagedGroupInvite[]>;
+  renameGroup(groupId: string, name: string): Promise<void>;
+  revokeInvite(inviteId: string): Promise<void>;
+  setMemberRole(groupId: string, targetUserId: string, role: Exclude<GroupRole, 'OWNER'>): Promise<void>;
+  removeMember(groupId: string, targetUserId: string): Promise<void>;
+  transferOwnership(groupId: string, targetUserId: string): Promise<void>;
+  leaveGroup(groupId: string): Promise<void>;
 }
 
 function mapInvite(row: InviteRow): GroupInvite {
@@ -167,6 +176,9 @@ export function createGroupService(client: SupabaseClient = getSupabaseClient())
             username: profile.username,
             displayName: profile.display_name,
             profilePicturePath: profile.profile_picture_path,
+            profilePictureUrl: profile.profile_picture_path
+              ? client.storage.from('profile-pictures').getPublicUrl(profile.profile_picture_path).data.publicUrl
+              : null,
             role: membership.role,
             joinedAt: membership.joined_at,
           };
@@ -187,7 +199,7 @@ export function createGroupService(client: SupabaseClient = getSupabaseClient())
       const result = await client
         .from('group_invites')
         .insert(values)
-        .select('id, group_id, token, expires_at, max_uses, use_count, revoked_at')
+        .select('id, group_id, token, expires_at, max_uses, use_count, revoked_at, created_at')
         .single();
 
       if (result.error) throw result.error;
@@ -201,6 +213,60 @@ export function createGroupService(client: SupabaseClient = getSupabaseClient())
       if (result.error) throw result.error;
       if (typeof result.data !== 'string') throw new Error('Group join did not return a group id.');
       return result.data;
+    },
+
+    async listInvites(groupId) {
+      const result = await client
+        .from('group_invites')
+        .select('id, group_id, token, expires_at, max_uses, use_count, revoked_at, created_at')
+        .eq('group_id', groupId)
+        .order('created_at', { ascending: false });
+      if (result.error) throw result.error;
+      return ((result.data ?? []) as InviteRow[]).map((row) => ({
+        ...mapInvite(row),
+        createdAt: row.created_at,
+      }));
+    },
+
+    async renameGroup(groupId, name) {
+      const normalized = assertValidCreateGroupInput({ name });
+      const result = await client.from('groups').update({ name: normalized }).eq('id', groupId);
+      if (result.error) throw result.error;
+    },
+
+    async revokeInvite(inviteId) {
+      const result = await client.from('group_invites').update({ revoked_at: new Date().toISOString() }).eq('id', inviteId);
+      if (result.error) throw result.error;
+    },
+
+    async setMemberRole(groupId, targetUserId, role) {
+      const result = await client.rpc('set_group_member_role', {
+        p_group_id: groupId,
+        p_target_user_id: targetUserId,
+        p_role: role,
+      });
+      if (result.error) throw result.error;
+    },
+
+    async removeMember(groupId, targetUserId) {
+      const result = await client.rpc('remove_group_member', {
+        p_group_id: groupId,
+        p_target_user_id: targetUserId,
+      });
+      if (result.error) throw result.error;
+    },
+
+    async transferOwnership(groupId, targetUserId) {
+      const result = await client.rpc('transfer_group_ownership', {
+        p_group_id: groupId,
+        p_target_user_id: targetUserId,
+      });
+      if (result.error) throw result.error;
+    },
+
+    async leaveGroup(groupId) {
+      const result = await client.rpc('leave_group', { p_group_id: groupId });
+      if (result.error) throw result.error;
     },
   };
 }

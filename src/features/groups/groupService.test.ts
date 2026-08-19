@@ -6,7 +6,7 @@ const TOKEN = '6ccccccc-cccc-4ccc-8ccc-cccccccccccc';
 
 function query(result: { data: unknown; error: unknown }) {
   const builder: Record<string, unknown> = {};
-  for (const method of ['select', 'eq', 'in', 'insert']) {
+  for (const method of ['select', 'eq', 'in', 'insert', 'update', 'order']) {
     builder[method] = vi.fn(() => builder);
   }
   builder.single = vi.fn(async () => result);
@@ -17,6 +17,8 @@ function query(result: { data: unknown; error: unknown }) {
     eq: ReturnType<typeof vi.fn>;
     in: ReturnType<typeof vi.fn>;
     insert: ReturnType<typeof vi.fn>;
+    update: ReturnType<typeof vi.fn>;
+    order: ReturnType<typeof vi.fn>;
     single: ReturnType<typeof vi.fn>;
   };
 }
@@ -31,7 +33,12 @@ function clientFor(tableQueries: Record<string, ReturnType<typeof query>[]>, rpc
     return value;
   });
   const rpc = vi.fn(async () => rpcResult);
-  return { client: { from, rpc } as unknown as SupabaseClient, from, rpc };
+  const storage = {
+    from: vi.fn(() => ({
+      getPublicUrl: vi.fn((path: string) => ({ data: { publicUrl: `https://cdn.example/${path}` } })),
+    })),
+  };
+  return { client: { from, rpc, storage } as unknown as SupabaseClient, from, rpc };
 }
 
 describe('group service', () => {
@@ -132,4 +139,57 @@ describe('group service', () => {
     await expect(service.joinByInvite(`https://app.example.com/join/${TOKEN}`)).resolves.toBe('group-1');
     expect(fake.rpc).toHaveBeenCalledWith('join_group_by_invite', { p_token: TOKEN });
   });
+
+  it('lists invite administration state and normalizes group renames', async () => {
+    const invites = query({
+      data: [{
+        id: 'invite-1', group_id: 'group-1', token: TOKEN,
+        expires_at: '2099-08-26T20:00:00Z', max_uses: 25, use_count: 3,
+        revoked_at: null, created_at: '2026-08-19T20:00:00Z',
+      }],
+      error: null,
+    });
+    const rename = query({ data: null, error: null });
+    const fake = clientFor({ group_invites: [invites], groups: [rename] });
+    const service = createGroupService(fake.client);
+
+    await expect(service.listInvites('group-1')).resolves.toEqual([
+      expect.objectContaining({ token: TOKEN, useCount: 3, createdAt: '2026-08-19T20:00:00Z' }),
+    ]);
+    await expect(service.renameGroup('group-1', '  Heavy   Crew  ')).resolves.toBeUndefined();
+    expect(rename.update).toHaveBeenCalledWith({ name: 'Heavy Crew' });
+    expect(rename.eq).toHaveBeenCalledWith('id', 'group-1');
+  });
+
+  it('keeps member-role, removal, transfer, and leave mutations behind RPCs', async () => {
+    const fake = clientFor({}, { data: null, error: null });
+    const service = createGroupService(fake.client);
+
+    await service.setMemberRole('group-1', 'member-1', 'ADMIN');
+    await service.removeMember('group-1', 'member-2');
+    await service.transferOwnership('group-1', 'member-1');
+    await service.leaveGroup('group-1');
+
+    expect(fake.rpc).toHaveBeenNthCalledWith(1, 'set_group_member_role', {
+      p_group_id: 'group-1', p_target_user_id: 'member-1', p_role: 'ADMIN',
+    });
+    expect(fake.rpc).toHaveBeenNthCalledWith(2, 'remove_group_member', {
+      p_group_id: 'group-1', p_target_user_id: 'member-2',
+    });
+    expect(fake.rpc).toHaveBeenNthCalledWith(3, 'transfer_group_ownership', {
+      p_group_id: 'group-1', p_target_user_id: 'member-1',
+    });
+    expect(fake.rpc).toHaveBeenNthCalledWith(4, 'leave_group', { p_group_id: 'group-1' });
+  });
+
+  it('revokes invite access through the RLS-protected invite row', async () => {
+    const revoke = query({ data: null, error: null });
+    const fake = clientFor({ group_invites: [revoke] });
+    const service = createGroupService(fake.client);
+
+    await expect(service.revokeInvite('invite-1')).resolves.toBeUndefined();
+    expect(revoke.update).toHaveBeenCalledWith(expect.objectContaining({ revoked_at: expect.any(String) }));
+    expect(revoke.eq).toHaveBeenCalledWith('id', 'invite-1');
+  });
+
 });

@@ -47,7 +47,7 @@ const snapshot: DashboardSnapshot = {
 
 describe('DashboardScreen', () => {
   it('renders lifting-first progress, PRs, group rank, and secondary cardio without template filler', () => {
-    render(<DashboardScreen group={group} onSignOut={() => undefined} profile={profile} snapshot={snapshot} />);
+    render(<DashboardScreen group={group} onNavigate={() => undefined} onSignOut={() => undefined} profile={profile} snapshot={snapshot} />);
 
     expect(screen.getByRole('heading', { name: 'Your lifting week' })).toBeInTheDocument();
     expect(screen.getByLabelText('2 of 4 lifting days complete')).toBeInTheDocument();

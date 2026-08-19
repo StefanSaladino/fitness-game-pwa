@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { AppShell } from '../../../components/layout';
+import { AppShell, type AppSection } from '../../../components/layout';
 import { Button } from '../../../components/ui';
 import type { GroupSummary } from '../../groups';
 import type { OnboardingProfile } from '../../onboarding';
@@ -11,12 +11,14 @@ interface DashboardScreenProps {
   profile: OnboardingProfile;
   group: GroupSummary;
   snapshot: DashboardSnapshot;
+  onNavigate: (section: AppSection) => void;
   onSignOut: () => void;
 }
 
 interface DashboardErrorProps {
   profile: OnboardingProfile;
   message: string;
+  onNavigate: (section: AppSection) => void;
   onRetry: () => void;
   onSignOut: () => void;
 }
@@ -55,9 +57,11 @@ function weekDates(weekStart: string): Array<{ date: string; label: string }> {
   });
 }
 
-function DashboardShell({ profile, children, onSignOut }: { profile: OnboardingProfile; children: ReactNode; onSignOut: () => void }) {
+function DashboardShell({ profile, children, onNavigate, onSignOut }: { profile: OnboardingProfile; children: ReactNode; onNavigate: (section: AppSection) => void; onSignOut: () => void }) {
   return (
     <AppShell
+      activeItem="home"
+      onNavigate={onNavigate}
       onSignOut={onSignOut}
       userLabel={profile.displayName}
       userMeta={`@${profile.username} · ${profile.weeklyWorkoutTarget} lift days`}
@@ -67,17 +71,17 @@ function DashboardShell({ profile, children, onSignOut }: { profile: OnboardingP
   );
 }
 
-export function DashboardLoading({ profile, onSignOut }: Pick<DashboardScreenProps, 'profile' | 'onSignOut'>) {
+export function DashboardLoading({ profile, onNavigate, onSignOut }: Pick<DashboardScreenProps, 'profile' | 'onNavigate' | 'onSignOut'>) {
   return (
-    <DashboardShell profile={profile} onSignOut={onSignOut}>
+    <DashboardShell profile={profile} onNavigate={onNavigate} onSignOut={onSignOut}>
       <div className={styles.state} role="status">Loading your lifting dashboard…</div>
     </DashboardShell>
   );
 }
 
-export function DashboardError({ profile, message, onRetry, onSignOut }: DashboardErrorProps) {
+export function DashboardError({ profile, message, onNavigate, onRetry, onSignOut }: DashboardErrorProps) {
   return (
-    <DashboardShell profile={profile} onSignOut={onSignOut}>
+    <DashboardShell profile={profile} onNavigate={onNavigate} onSignOut={onSignOut}>
       <section className={styles.state}>
         <p className={styles.kicker}>DASHBOARD</p>
         <h1>Training data unavailable</h1>
@@ -88,13 +92,13 @@ export function DashboardError({ profile, message, onRetry, onSignOut }: Dashboa
   );
 }
 
-export function DashboardScreen({ profile, group, snapshot, onSignOut }: DashboardScreenProps) {
+export function DashboardScreen({ profile, group, snapshot, onNavigate, onSignOut }: DashboardScreenProps) {
   const completed = new Set(snapshot.completedLiftingDates);
   const currentRank = snapshot.leaderboard.find((entry) => entry.isCurrentUser);
   const targetPercent = Math.min(100, Math.round((snapshot.completedLiftingDays / snapshot.weeklyTarget) * 100));
 
   return (
-    <DashboardShell profile={profile} onSignOut={onSignOut}>
+    <DashboardShell profile={profile} onNavigate={onNavigate} onSignOut={onSignOut}>
       <div className={styles.dashboard}>
         <header className={styles.header}>
           <div>

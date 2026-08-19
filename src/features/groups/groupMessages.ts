@@ -14,6 +14,9 @@ export function toUserFacingGroupError(error: unknown): string {
   if (message.includes('invite has expired')) return 'That invite has expired.';
   if (message.includes('invite has been revoked')) return 'That invite is no longer active.';
   if (message.includes('use limit')) return 'That invite has reached its use limit.';
+  if (message.includes('transfer ownership before leaving')) return 'Transfer ownership to another active member before leaving this group.';
+  if (message.includes('only the owner')) return 'Only the group owner can perform that action.';
+  if (message.includes('admin can only remove members')) return 'Admins can remove members, but not other admins or the owner.';
   if (message.includes('not a group member') || value?.code === '42501') {
     return 'You do not have permission to perform that group action.';
   }

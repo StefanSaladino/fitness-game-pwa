@@ -1,0 +1,165 @@
+.page {
+  width: min(1040px, 100%);
+  margin: 0 auto;
+  padding: 40px 32px 96px;
+}
+
+.header {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(220px, 320px);
+  gap: 32px;
+  align-items: end;
+  padding-bottom: 28px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.kicker,
+.sectionLabel {
+  margin: 0 0 7px;
+  color: var(--color-text-muted);
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+}
+
+.header h1,
+.sectionHeader h2,
+.settings h2 {
+  margin: 0;
+  color: var(--color-text);
+  letter-spacing: -0.03em;
+}
+
+.header h1 { font-size: clamp(2rem, 5vw, 3.35rem); }
+.header p:last-child { max-width: 620px; margin: 10px 0 0; color: var(--color-text-soft); line-height: 1.55; }
+
+.section {
+  padding: 34px 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.sectionHeader {
+  display: flex;
+  justify-content: space-between;
+  gap: 24px;
+  align-items: end;
+  margin-bottom: 17px;
+}
+
+.sectionHeader h2,
+.settings h2 { font-size: 1.3rem; }
+.sectionHeader p { margin: 0; color: var(--color-text-muted); font-size: 0.9rem; }
+
+.notice,
+.error,
+.empty {
+  margin: 14px 0 0;
+  color: var(--color-text-soft);
+  line-height: 1.5;
+}
+
+.error { color: var(--color-danger); }
+
+.memberList,
+.inviteList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.memberRow,
+.inviteRow {
+  display: grid;
+  align-items: center;
+  gap: 14px;
+  min-height: 68px;
+  border-top: 1px solid var(--color-border);
+}
+
+.memberRow { grid-template-columns: auto minmax(0, 1fr) auto auto; }
+.inviteRow { grid-template-columns: minmax(0, 1fr) auto; }
+.memberRow:last-child,
+.inviteRow:last-child { border-bottom: 1px solid var(--color-border); }
+
+.identity,
+.inviteMeta { min-width: 0; }
+.identity strong,
+.inviteMeta strong { display: block; color: var(--color-text); }
+.identity span,
+.inviteMeta span { display: block; margin-top: 3px; color: var(--color-text-muted); font-size: 0.86rem; }
+
+.role {
+  color: var(--color-text-soft);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+.actionButton,
+.dangerButton,
+.codeButton {
+  border: 0;
+  background: transparent;
+  color: var(--color-text-soft);
+  padding: 8px 9px;
+  font: inherit;
+  font-size: 0.82rem;
+  cursor: pointer;
+}
+.actionButton:hover,
+.codeButton:hover { color: var(--color-green); }
+.dangerButton { color: #ff8b8b; }
+.actionButton:disabled,
+.dangerButton:disabled,
+.codeButton:disabled { opacity: 0.45; cursor: default; }
+
+.inviteCode {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 5px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  color: var(--color-text);
+  word-break: break-all;
+}
+
+.inviteStatus { color: var(--color-text-muted); font-size: 0.82rem; }
+.revoked { text-decoration: line-through; opacity: 0.6; }
+
+.renameForm {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: end;
+  max-width: 620px;
+}
+
+.settings { padding: 34px 0 0; }
+.settingsText { max-width: 620px; margin: 9px 0 18px; color: var(--color-text-soft); line-height: 1.5; }
+.leaveRow { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+.leaveHint { color: var(--color-text-muted); font-size: 0.88rem; }
+
+.state {
+  width: min(760px, calc(100% - 48px));
+  margin: 88px auto;
+  color: var(--color-text-soft);
+}
+
+@media (max-width: 760px) {
+  .page { padding: 28px 18px 112px; }
+  .header { grid-template-columns: 1fr; gap: 18px; align-items: start; }
+  .memberRow { grid-template-columns: auto minmax(0, 1fr) auto; padding: 10px 0; }
+  .actions { grid-column: 2 / -1; justify-content: flex-start; }
+  .inviteRow { grid-template-columns: 1fr; padding: 12px 0; }
+  .inviteRow .actions { grid-column: auto; }
+  .renameForm { grid-template-columns: 1fr; }
+  .sectionHeader { align-items: start; flex-direction: column; gap: 8px; }
+}

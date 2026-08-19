@@ -8,7 +8,7 @@ import styles from './GroupGate.module.css';
 
 interface GroupGateProps {
   userId: string;
-  children(groups: GroupSummary[]): ReactNode;
+  children(groups: GroupSummary[], refreshGroups: () => Promise<GroupSummary[] | null>): ReactNode;
   service?: GroupService;
 }
 
@@ -47,5 +47,5 @@ export function GroupGate({ userId, children, service }: GroupGateProps) {
     );
   }
 
-  return <>{children(groupState.groups)}</>;
+  return <>{children(groupState.groups, groupState.retry)}</>;
 }

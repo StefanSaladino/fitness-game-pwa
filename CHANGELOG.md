@@ -1,14 +1,11 @@
-## 0.3.3 — Phase 5.5C profile pictures
-
-- Added optional upload/replace/remove profile pictures.
-- Added `profiles.profile_picture_path` and a public-read `profile-pictures` Storage bucket.
-- Restricted Storage mutation to each authenticated user's own UUID folder.
-- Added JPEG/PNG/WebP and 2 MiB bucket limits.
-- Added reusable PFP + initials fallback components with CSS Modules.
-- Added PFP path to group-member identity for future leaderboard/activity rendering.
-- No avatar/customization system was introduced.
-
 # Changelog
+
+## 0.3.5 — Phase 5.6 group administration
+
+- Added multi-group administration UI and product-level Home/Groups navigation.
+- Added member, invite, role, removal, leave, rename, and ownership-transfer controls.
+- Added explicit authenticated-only EXECUTE permissions for group mutation RPCs.
+- Added group-administration tests and colocated CSS Modules.
 
 ## 0.3.4 — Phase 5.5D real lifting dashboard
 
@@ -19,6 +16,16 @@
 - Rendered real profile pictures/fallbacks in the dashboard and leaderboard.
 - Added a restrained responsive dashboard using colocated CSS Modules only.
 - Kept cardio secondary and deliberately avoided inventing a level formula or fake chart data.
+
+## 0.3.3 — Phase 5.5C profile pictures
+
+- Added optional upload/replace/remove profile pictures.
+- Added `profiles.profile_picture_path` and a public-read `profile-pictures` Storage bucket.
+- Restricted Storage mutation to each authenticated user's own UUID folder.
+- Added JPEG/PNG/WebP and 2 MiB bucket limits.
+- Added reusable PFP + initials fallback components with CSS Modules.
+- Added PFP path to group-member identity for future leaderboard/activity rendering.
+- No avatar/customization system was introduced.
 
 ## 0.3.2 — Phase 5.5B group setup UI
 

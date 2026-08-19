@@ -24,6 +24,13 @@ function service(): GroupService {
       expiresAt: '2026-08-26T20:00:00Z', maxUses: 25, useCount: 0, revokedAt: null,
     })),
     joinByInvite: vi.fn(async () => group.id),
+    listInvites: vi.fn(async () => []),
+    renameGroup: vi.fn(async () => undefined),
+    revokeInvite: vi.fn(async () => undefined),
+    setMemberRole: vi.fn(async () => undefined),
+    removeMember: vi.fn(async () => undefined),
+    transferOwnership: vi.fn(async () => undefined),
+    leaveGroup: vi.fn(async () => undefined),
   };
 }
 

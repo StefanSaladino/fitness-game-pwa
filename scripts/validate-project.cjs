@@ -13,7 +13,7 @@ function read(rel) { return fs.readFileSync(path.join(root, rel), 'utf8'); }
 const required = [
   'README.md','CHANGELOG.md','docs/ROADMAP.md','docs/DOMAIN-RULES.md','docs/TESTING.md','docs/ARCHITECTURE.md','docs/DATABASE.md','docs/SUPABASE-SETUP.md','docs/ENVIRONMENT.md','docs/VALIDATION.md','docs/REFERENCES.md','docs/UI-DEVELOPMENT-GATE.md','docs/UI-ARCHITECTURE.md','docs/CSS-ARCHITECTURE.md','docs/PHASE5-ONBOARDING-FOUNDATION.md','docs/PHASE5.3A-AUTH-ONBOARDING-UI.md','docs/PHASE5.5A-GROUP-FOUNDATION.md','docs/PHASE5.5B-GROUP-SETUP-UI.md','docs/PHASE5.5C-PROFILE-PICTURES.md','.gitignore','.env.example',
   'supabase/migrations/20260818000100_initial_data_foundation.sql','supabase/migrations/20260818000200_phase5_onboarding_foundation.sql','supabase/migrations/20260819000100_lifting_first_scoring_foundation.sql','supabase/migrations/20260819000200_profile_pictures.sql','supabase/migrations/20260819000300_dashboard_read_models.sql','supabase/seed.sql',
-  'supabase/tests/001_schema.test.sql','supabase/tests/002_rls.test.sql','supabase/tests/003_groups.test.sql','supabase/tests/004_qualification.test.sql','supabase/tests/005_profile_onboarding.test.sql','supabase/tests/006_phase5_onboarding_username.test.sql','supabase/tests/007_lifting_scoring_foundation.test.sql','supabase/tests/008_profile_pictures.test.sql','supabase/tests/009_dashboard_read_models.test.sql',
+  'supabase/tests/001_schema.test.sql','supabase/tests/002_rls.test.sql','supabase/tests/003_groups.test.sql','supabase/tests/004_qualification.test.sql','supabase/tests/005_profile_onboarding.test.sql','supabase/tests/006_phase5_onboarding_username.test.sql','supabase/tests/007_lifting_scoring_foundation.test.sql','supabase/tests/008_profile_pictures.test.sql','supabase/tests/009_dashboard_read_models.test.sql','supabase/tests/010_group_administration_permissions.test.sql',
   'src/domain/scoring/exerciseXp.ts','src/domain/scoring/cardioBonus.ts','src/domain/scoring/dailyXp.ts','src/styles/tokens.css','src/styles/reset.css','src/styles/base.css',
   'src/features/auth/authService.ts','src/features/auth/AuthProvider.tsx','src/features/auth/AuthScreen.tsx','src/features/auth/ResetPasswordScreen.tsx','src/features/auth/authValidation.ts','src/features/auth/authMessages.ts','src/features/auth/hooks/useAuthActions.ts','src/features/auth/components/AuthLayout.tsx','src/features/auth/components/SignInForm.tsx','src/features/auth/components/SignUpForm.tsx','src/features/auth/components/ForgotPasswordForm.tsx','src/features/auth/components/VerifyEmailPanel.tsx',
   'src/features/onboarding/model.ts','src/features/onboarding/validation.ts','src/features/onboarding/state.ts','src/features/onboarding/onboardingService.ts','src/features/onboarding/timezones.ts','src/features/onboarding/onboardingMessages.ts','src/features/onboarding/hooks/useOnboarding.ts','src/features/onboarding/components/OnboardingForm.tsx','src/features/onboarding/components/OnboardingScreen.tsx','src/features/onboarding/components/WeeklyTargetPicker.tsx',
@@ -74,7 +74,7 @@ ok(!/grant\s+(insert|update|delete)[^;]*public\.performance_benchmarks\s+to\s+au
 ok(migration.includes('group_members_one_active_owner'), 'single-active-owner uniqueness exists');
 ok(migration.includes("new.active_duration_seconds > 21600"), 'six-hour review rule is represented');
 
-for (const rel of ['supabase/tests/001_schema.test.sql','supabase/tests/002_rls.test.sql','supabase/tests/003_groups.test.sql','supabase/tests/004_qualification.test.sql','supabase/tests/005_profile_onboarding.test.sql','supabase/tests/006_phase5_onboarding_username.test.sql','supabase/tests/007_lifting_scoring_foundation.test.sql','supabase/tests/008_profile_pictures.test.sql','supabase/tests/009_dashboard_read_models.test.sql']) {
+for (const rel of ['supabase/tests/001_schema.test.sql','supabase/tests/002_rls.test.sql','supabase/tests/003_groups.test.sql','supabase/tests/004_qualification.test.sql','supabase/tests/005_profile_onboarding.test.sql','supabase/tests/006_phase5_onboarding_username.test.sql','supabase/tests/007_lifting_scoring_foundation.test.sql','supabase/tests/008_profile_pictures.test.sql','supabase/tests/009_dashboard_read_models.test.sql','supabase/tests/010_group_administration_permissions.test.sql']) {
   const sql = read(rel);
   const plan = Number((sql.match(/select\s+plan\((\d+)\)/i) || [])[1]);
   const count = (sql.match(/select\s+(?:has_table|has_column|has_function|col_is_pk|results_eq|throws_ok|lives_ok|is)\s*\(/gi) || []).length;
@@ -238,5 +238,34 @@ ok(/Cardio bonus/.test(dashboardScreen), 'dashboard exposes cardio only as a bon
 ok(!/level 14|unlock your potential|design principles|feature summary/i.test(dashboardScreen), 'dashboard avoids demo-only template filler');
 ok(/createDashboardService/.test(dashboardHook), 'dashboard hook owns the dashboard service dependency');
 ok(/First real lifting dashboard — DONE/.test(read('docs/ROADMAP.md')), 'roadmap records Phase 5.5D completion');
+
+
+
+const leaderboardPermissionHotfix = read('supabase/migrations/20260819000400_lock_down_dashboard_leaderboard.sql');
+ok(/from anon/.test(leaderboardPermissionHotfix), 'dashboard leaderboard hotfix explicitly revokes anon execution');
+ok(/to authenticated/.test(leaderboardPermissionHotfix), 'dashboard leaderboard hotfix grants authenticated execution');
+
+const groupAdminPermissionMigration = read('supabase/migrations/20260819000500_group_administration_permissions.sql');
+for (const fn of ['join_group_by_invite','remove_group_member','set_group_member_role','transfer_group_ownership','leave_group']) {
+  ok(groupAdminPermissionMigration.includes(`public.${fn}`), `Phase 5.6 permission migration covers ${fn}`);
+}
+ok((groupAdminPermissionMigration.match(/from anon/g) || []).length === 5, 'Phase 5.6 explicitly revokes anon execution from every group mutation RPC');
+ok((groupAdminPermissionMigration.match(/to authenticated/g) || []).length === 5, 'Phase 5.6 grants every group mutation RPC only to authenticated clients');
+
+const groupAdministrationScreen = read('src/features/groups/components/GroupAdministrationScreen.tsx');
+const groupAdministrationCss = read('src/features/groups/components/GroupAdministrationScreen.module.css');
+const groupAdministrationHook = read('src/features/groups/hooks/useGroupAdministration.ts');
+const productController = read('src/features/product/ProductController.tsx');
+ok(!/supabase/i.test(groupAdministrationScreen), 'group administration presentation has no Supabase dependency');
+ok(/ProfilePicture/.test(groupAdministrationScreen), 'group administration reuses real profile pictures');
+ok(/Make admin/.test(groupAdministrationScreen) && /Transfer ownership/.test(groupAdministrationScreen), 'owner role controls are represented in group administration');
+ok(/Leave group/.test(groupAdministrationScreen), 'non-owner leave flow is represented in group administration');
+ok(/listInvites/.test(groupAdministrationHook) && /group\.role === 'OWNER' \|\| group\.role === 'ADMIN'/.test(groupAdministrationHook), 'invite administration is only loaded for owner/admin roles');
+ok(/setMemberRole/.test(groupAdministrationHook) && /transferOwnership/.test(groupAdministrationHook), 'group administration hook delegates role/ownership mutations to the service');
+ok(/activeSection/.test(productController) && /selectedGroupId/.test(productController), 'ProductController owns section and selected-group navigation state');
+ok(/DashboardController/.test(productController) && /GroupAdministrationController/.test(productController), 'ProductController composes dashboard and group administration views');
+ok(groupAdministrationCss.length > 1500, 'group administration styling is substantial and colocated in a CSS Module');
+ok(!/memberRow|inviteRow|renameForm|groupAdministration/.test(read('src/styles/global.css')), 'Phase 5.6 selectors are not added to global CSS');
+ok(/Group administration UI — DONE/.test(read('docs/ROADMAP.md')), 'roadmap marks Phase 5.6 group administration complete');
 
 console.log(`Project structural validation passed: ${assertions} assertions.`);

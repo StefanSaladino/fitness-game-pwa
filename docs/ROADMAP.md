@@ -199,15 +199,20 @@ See `docs/PHASE5.5C-PROFILE-PICTURES.md`.
 
 See `docs/PHASE5.5D-LIFTING-DASHBOARD.md`.
 
-### 5.6 Group administration UI — NEXT
+### 5.6 Group administration UI — DONE
 
-- invite management
-- owner/admin controls
-- remove member
-- role changes
-- leave/ownership-transfer UX
+- product-level Home / Groups navigation boundary;
+- multi-group switcher without introducing a single-group assumption;
+- active member list with real PFPs and role labels;
+- owner/admin invite creation, usage visibility, copy, and revocation;
+- owner-only promote/demote and ownership-transfer controls;
+- owner/admin member-removal controls matching database permissions;
+- non-owner leave-group flow; owners must transfer ownership first;
+- group renaming through existing RLS-protected group updates;
+- explicit authenticated-only EXECUTE grants for membership-mutating RPCs;
+- all new group administration styling remains colocated in CSS Modules.
 
-### 5.7 Phase 5 integration validation
+### 5.7 Phase 5 integration validation — NEXT
 
 - signup -> onboarding -> group create
 - signup -> invite -> group join

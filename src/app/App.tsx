@@ -2,9 +2,9 @@ import { Button } from '../components/ui';
 import { AuthProvider, useAuth } from '../features/auth/AuthProvider';
 import { AuthScreen } from '../features/auth/AuthScreen';
 import { ResetPasswordScreen } from '../features/auth/ResetPasswordScreen';
-import { DashboardController } from '../features/dashboard';
 import { GroupGate } from '../features/groups';
 import { OnboardingScreen, useOnboarding } from '../features/onboarding';
+import { ProductController } from '../features/product';
 import { isSupabaseConfigured } from '../lib/supabase';
 
 function ProfileGate({ userId }: { userId: string }) {
@@ -40,7 +40,7 @@ function ProfileGate({ userId }: { userId: string }) {
 
   return (
     <GroupGate userId={userId}>
-      {(groups) => <DashboardController groups={groups} profile={onboarding.profile!} />}
+      {(groups, refreshGroups) => <ProductController groups={groups} onGroupsChanged={refreshGroups} profile={onboarding.profile!} />}
     </GroupGate>
   );
 }

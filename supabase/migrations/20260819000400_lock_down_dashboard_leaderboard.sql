@@ -1,15 +1,6 @@
--- Phase 5.5D security hotfix
--- The leaderboard is authenticated-only.
--- PostgreSQL functions can otherwise inherit EXECUTE through PUBLIC.
+-- Workout Game PWA — Phase 5.5D security hotfix
+-- PostgreSQL functions may retain EXECUTE through role grants; explicitly restrict the leaderboard.
 
-revoke execute
-  on function public.get_group_lifting_leaderboard(uuid, date)
-  from public;
-
-revoke execute
-  on function public.get_group_lifting_leaderboard(uuid, date)
-  from anon;
-
-grant execute
-  on function public.get_group_lifting_leaderboard(uuid, date)
-  to authenticated;
+revoke execute on function public.get_group_lifting_leaderboard(uuid, date) from public;
+revoke execute on function public.get_group_lifting_leaderboard(uuid, date) from anon;
+grant execute on function public.get_group_lifting_leaderboard(uuid, date) to authenticated;
