@@ -12,13 +12,14 @@ function read(rel) { return fs.readFileSync(path.join(root, rel), 'utf8'); }
 
 const required = [
   'README.md','CHANGELOG.md','docs/ROADMAP.md','docs/DOMAIN-RULES.md','docs/TESTING.md','docs/ARCHITECTURE.md','docs/DATABASE.md','docs/SUPABASE-SETUP.md','docs/ENVIRONMENT.md','docs/VALIDATION.md','docs/REFERENCES.md','docs/UI-DEVELOPMENT-GATE.md','docs/UI-ARCHITECTURE.md','docs/CSS-ARCHITECTURE.md','docs/PHASE5-ONBOARDING-FOUNDATION.md','docs/PHASE5.3A-AUTH-ONBOARDING-UI.md','docs/PHASE5.5A-GROUP-FOUNDATION.md','docs/PHASE5.5B-GROUP-SETUP-UI.md','docs/PHASE5.5C-PROFILE-PICTURES.md','.gitignore','.env.example',
-  'supabase/migrations/20260818000100_initial_data_foundation.sql','supabase/migrations/20260818000200_phase5_onboarding_foundation.sql','supabase/migrations/20260819000100_lifting_first_scoring_foundation.sql','supabase/migrations/20260819000200_profile_pictures.sql','supabase/seed.sql',
-  'supabase/tests/001_schema.test.sql','supabase/tests/002_rls.test.sql','supabase/tests/003_groups.test.sql','supabase/tests/004_qualification.test.sql','supabase/tests/005_profile_onboarding.test.sql','supabase/tests/006_phase5_onboarding_username.test.sql','supabase/tests/007_lifting_scoring_foundation.test.sql','supabase/tests/008_profile_pictures.test.sql',
+  'supabase/migrations/20260818000100_initial_data_foundation.sql','supabase/migrations/20260818000200_phase5_onboarding_foundation.sql','supabase/migrations/20260819000100_lifting_first_scoring_foundation.sql','supabase/migrations/20260819000200_profile_pictures.sql','supabase/migrations/20260819000300_dashboard_read_models.sql','supabase/seed.sql',
+  'supabase/tests/001_schema.test.sql','supabase/tests/002_rls.test.sql','supabase/tests/003_groups.test.sql','supabase/tests/004_qualification.test.sql','supabase/tests/005_profile_onboarding.test.sql','supabase/tests/006_phase5_onboarding_username.test.sql','supabase/tests/007_lifting_scoring_foundation.test.sql','supabase/tests/008_profile_pictures.test.sql','supabase/tests/009_dashboard_read_models.test.sql',
   'src/domain/scoring/exerciseXp.ts','src/domain/scoring/cardioBonus.ts','src/domain/scoring/dailyXp.ts','src/styles/tokens.css','src/styles/reset.css','src/styles/base.css',
   'src/features/auth/authService.ts','src/features/auth/AuthProvider.tsx','src/features/auth/AuthScreen.tsx','src/features/auth/ResetPasswordScreen.tsx','src/features/auth/authValidation.ts','src/features/auth/authMessages.ts','src/features/auth/hooks/useAuthActions.ts','src/features/auth/components/AuthLayout.tsx','src/features/auth/components/SignInForm.tsx','src/features/auth/components/SignUpForm.tsx','src/features/auth/components/ForgotPasswordForm.tsx','src/features/auth/components/VerifyEmailPanel.tsx',
   'src/features/onboarding/model.ts','src/features/onboarding/validation.ts','src/features/onboarding/state.ts','src/features/onboarding/onboardingService.ts','src/features/onboarding/timezones.ts','src/features/onboarding/onboardingMessages.ts','src/features/onboarding/hooks/useOnboarding.ts','src/features/onboarding/components/OnboardingForm.tsx','src/features/onboarding/components/OnboardingScreen.tsx','src/features/onboarding/components/WeeklyTargetPicker.tsx',
   'src/features/groups/model.ts','src/features/groups/validation.ts','src/features/groups/groupMessages.ts','src/features/groups/groupService.ts','src/features/groups/hooks/useGroups.ts','src/features/groups/hooks/useCreateGroup.ts','src/features/groups/hooks/useJoinGroup.ts','src/features/groups/components/CreateGroupForm.tsx','src/features/groups/components/JoinGroupForm.tsx','src/features/groups/components/GroupSetupScreen.tsx','src/features/groups/components/GroupSetupController.tsx','src/features/groups/components/GroupGate.tsx','src/features/groups/components/GroupSetup.module.css','src/features/groups/components/GroupGate.module.css',
   'src/features/profile-picture/model.ts','src/features/profile-picture/validation.ts','src/features/profile-picture/profilePictureMessages.ts','src/features/profile-picture/profilePictureService.ts','src/features/profile-picture/hooks/useProfilePicture.ts','src/features/profile-picture/components/ProfilePicture.tsx','src/features/profile-picture/components/ProfilePictureManager.tsx','src/features/profile-picture/components/ProfilePicture.module.css','src/features/profile-picture/components/ProfilePictureManager.module.css',
+  'src/features/dashboard/model.ts','src/features/dashboard/dashboardMath.ts','src/features/dashboard/dashboardMessages.ts','src/features/dashboard/dashboardService.ts','src/features/dashboard/hooks/useDashboard.ts','src/features/dashboard/components/DashboardController.tsx','src/features/dashboard/components/DashboardScreen.tsx','src/features/dashboard/components/DashboardScreen.module.css','docs/PHASE5.5D-LIFTING-DASHBOARD.md',
   'src/components/ui/Button.tsx','src/components/ui/Card.tsx','src/components/ui/Icon.tsx','src/components/ui/ProgressBar.tsx','src/components/ui/TextField.tsx','src/components/ui/SelectField.tsx',
   'src/components/layout/AppShell.tsx','src/components/layout/DesktopSidebar.tsx','src/components/layout/MobileNav.tsx','src/components/layout/PageHeader.tsx','src/components/layout/navigation.ts'
 ];
@@ -73,7 +74,7 @@ ok(!/grant\s+(insert|update|delete)[^;]*public\.performance_benchmarks\s+to\s+au
 ok(migration.includes('group_members_one_active_owner'), 'single-active-owner uniqueness exists');
 ok(migration.includes("new.active_duration_seconds > 21600"), 'six-hour review rule is represented');
 
-for (const rel of ['supabase/tests/001_schema.test.sql','supabase/tests/002_rls.test.sql','supabase/tests/003_groups.test.sql','supabase/tests/004_qualification.test.sql','supabase/tests/005_profile_onboarding.test.sql','supabase/tests/006_phase5_onboarding_username.test.sql','supabase/tests/007_lifting_scoring_foundation.test.sql','supabase/tests/008_profile_pictures.test.sql']) {
+for (const rel of ['supabase/tests/001_schema.test.sql','supabase/tests/002_rls.test.sql','supabase/tests/003_groups.test.sql','supabase/tests/004_qualification.test.sql','supabase/tests/005_profile_onboarding.test.sql','supabase/tests/006_phase5_onboarding_username.test.sql','supabase/tests/007_lifting_scoring_foundation.test.sql','supabase/tests/008_profile_pictures.test.sql','supabase/tests/009_dashboard_read_models.test.sql']) {
   const sql = read(rel);
   const plan = Number((sql.match(/select\s+plan\((\d+)\)/i) || [])[1]);
   const count = (sql.match(/select\s+(?:has_table|has_column|has_function|col_is_pk|results_eq|throws_ok|lives_ok|is)\s*\(/gi) || []).length;
@@ -194,7 +195,7 @@ ok(/groups\.length === 0/.test(groupGate), 'GroupGate only requires setup for ze
 ok(/GroupGate/.test(appSource), 'App gates onboarded users through persisted group membership');
 ok(!/group-setup|groupSetup|modeSwitch|principles/.test(globalCssPhase55b), 'Phase 5.5B group selectors are not added to global.css');
 ok(groupSetupCss.length > 500 && groupGateCss.length > 100, 'Phase 5.5B feature styling is colocated in CSS Modules');
-ok(/First real lifting dashboard — NEXT/.test(read('docs/ROADMAP.md')), 'roadmap advances to the lifting dashboard after profile pictures');
+ok(/First real lifting dashboard — DONE/.test(read('docs/ROADMAP.md')), 'roadmap marks the real lifting dashboard complete');
 
 
 const profilePictureService = read('src/features/profile-picture/profilePictureService.ts');
@@ -213,5 +214,29 @@ ok(!/profilePicture|profile-picture|profile_picture/.test(read('src/styles/globa
 ok(/profilePicturePath/.test(read('src/features/groups/model.ts')), 'group member identity carries profile-picture path');
 ok(/Profile pictures — DONE/.test(read('docs/ROADMAP.md')), 'roadmap marks profile pictures complete');
 ok(/not.*avatar|no avatar/i.test(read('docs/PHASE5.5C-PROFILE-PICTURES.md')), 'profile-picture phase explicitly excludes avatars');
+
+
+
+const dashboardMigration = read('supabase/migrations/20260819000300_dashboard_read_models.sql');
+const dashboardService = read('src/features/dashboard/dashboardService.ts');
+const dashboardScreen = read('src/features/dashboard/components/DashboardScreen.tsx');
+const dashboardCss = read('src/features/dashboard/components/DashboardScreen.module.css');
+const dashboardHook = read('src/features/dashboard/hooks/useDashboard.ts');
+ok(/get_group_lifting_leaderboard/.test(dashboardMigration), 'dashboard migration adds group leaderboard RPC');
+ok(/is_active_group_member\(p_group_id\)/.test(dashboardMigration), 'leaderboard RPC requires active group membership');
+ok(/scoring_version = 'lifting-v1'/.test(dashboardMigration), 'leaderboard aggregates only lifting-v1 scoring events');
+ok(/revoke all on function public\.get_group_lifting_leaderboard/.test(dashboardMigration), 'leaderboard RPC revokes public execution');
+ok(/qualifies_lifting/.test(dashboardService), 'dashboard weekly progress reads explicit lifting qualification');
+ok(/exercise_progress/.test(dashboardService), 'dashboard reads exercise progress snapshots for PRs');
+ok(/get_group_lifting_leaderboard/.test(dashboardService), 'dashboard service uses the guarded leaderboard RPC');
+ok(/useDashboard/.test(read('src/features/dashboard/components/DashboardController.tsx')), 'dashboard controller delegates async reads to useDashboard');
+ok(!/supabase/i.test(dashboardScreen), 'dashboard presentation has no Supabase dependency');
+ok(!/getSupabaseClient|createDashboardService/.test(dashboardScreen), 'dashboard presentation does not own service creation');
+ok(/DashboardScreen\.module\.css/.test(read('src/features/dashboard/components/DashboardScreen.tsx')) && dashboardCss.length > 1000, 'dashboard styling is colocated in a CSS Module');
+ok(!/dashboardScreen|weekSummary|xpBreakdown|leaderboardRows/.test(read('src/styles/global.css')), 'Phase 5.5D selectors are not added to global CSS');
+ok(/Cardio bonus/.test(dashboardScreen), 'dashboard exposes cardio only as a bonus category');
+ok(!/level 14|unlock your potential|design principles|feature summary/i.test(dashboardScreen), 'dashboard avoids demo-only template filler');
+ok(/createDashboardService/.test(dashboardHook), 'dashboard hook owns the dashboard service dependency');
+ok(/First real lifting dashboard — DONE/.test(read('docs/ROADMAP.md')), 'roadmap records Phase 5.5D completion');
 
 console.log(`Project structural validation passed: ${assertions} assertions.`);

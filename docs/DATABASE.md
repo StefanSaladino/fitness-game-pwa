@@ -76,3 +76,8 @@ Authoritative scoring writes will be performed through controlled server/databas
 ## Profile pictures — Phase 5.5C
 
 `profiles.profile_picture_path` stores the current object reference. Image bytes live in the `profile-pictures` Supabase Storage bucket. Paths are constrained to the owning profile UUID folder. The bucket is public-read for social rendering, while Storage mutation is authenticated and folder-scoped by RLS.
+
+
+## Dashboard read model
+
+Phase 5.5D adds `get_group_lifting_leaderboard(group_id, week_start)`. The function is `SECURITY DEFINER`, requires the caller to be an active member of the requested group, and returns only active group members with their lifting-v1 XP total for the supplied Monday-Sunday scoring week. It exists because raw `scoring_events` remain self-readable only under RLS; the dashboard must not weaken that policy just to render a group leaderboard.

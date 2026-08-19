@@ -4,7 +4,7 @@ A React + TypeScript + Vite progressive web app for an expandable friend-group *
 
 ## Current phase
 
-The project has completed the lifting-first refactor and **Phase 5.5B group setup UI**. The next product slice is profile pictures, followed by the first real lifting-oriented dashboard.
+The project has completed **Phase 5.5D: the first real lifting dashboard**, including weekly lifting progress, lifting-v1 XP breakdown, recent lifts, personal records, and a group leaderboard read model. The next product slice is group administration UI before workout capture begins.
 
 Current scoring version: `lifting-v1`.
 
@@ -34,16 +34,16 @@ This repository currently uses a hosted-Supabase Dashboard-first workflow.
 
 Apply migrations in filename order through **Supabase -> SQL Editor**. For an existing environment, run only migration files not already applied.
 
-After Phase 5.4, the next migration to apply is:
+After Phase 5.5C, the next migration to apply is:
 
 ```text
-supabase/migrations/20260819000100_lifting_first_scoring_foundation.sql
+supabase/migrations/20260819000300_dashboard_read_models.sql
 ```
 
 Then run:
 
 ```text
-supabase/tests/007_lifting_scoring_foundation.test.sql
+supabase/tests/009_dashboard_read_models.test.sql
 ```
 
 The optional local Supabase CLI workflow remains documented in `docs/SUPABASE-SETUP.md`.
@@ -105,6 +105,8 @@ src/
   features/auth/        Auth UI/controller/service boundary
   features/onboarding/  Profile onboarding UI/controller/service boundary
   features/groups/      Multi-group models/validation/controllers/service boundary
+  features/dashboard/   Lifting dashboard read model/controller/presentation boundary
+  features/profile-picture/ Optional PFP storage/controller/presentation boundary
   lib/                  Infrastructure clients
   pwa/                  Service worker
   styles/               Global tokens/reset/base + legacy compatibility styles

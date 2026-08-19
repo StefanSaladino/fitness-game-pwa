@@ -10,6 +10,16 @@
 
 # Changelog
 
+## 0.3.4 — Phase 5.5D real lifting dashboard
+
+- Replaced the foundation preview with a persisted lifting-first dashboard.
+- Added weekly lifting-day progress from qualifying strength sessions.
+- Added lifting-v1 weekly XP breakdown, recent lift summaries, and personal-record reads.
+- Added a membership-gated group leaderboard RPC over authoritative scoring events.
+- Rendered real profile pictures/fallbacks in the dashboard and leaderboard.
+- Added a restrained responsive dashboard using colocated CSS Modules only.
+- Kept cardio secondary and deliberately avoided inventing a level formula or fake chart data.
+
 ## 0.3.2 — Phase 5.5B group setup UI
 
 - Added create-group and join-by-invite production forms.

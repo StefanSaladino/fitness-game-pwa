@@ -185,15 +185,21 @@ Profile pictures only; this is not an avatar/customization system.
 
 See `docs/PHASE5.5C-PROFILE-PICTURES.md`.
 
-#### 5.5D First real lifting dashboard — NEXT
+#### 5.5D First real lifting dashboard — DONE
 
-- initial leaderboard summary sourced from authoritative scoring totals when available;
-- lifting-day weekly target/status;
-- exercise-progression/PR-oriented dashboard placeholders;
-- prominent Start Lift action;
-- cardio shown as secondary activity, not equal primary navigation emphasis.
+- persisted weekly lifting-day status from completed `qualifies_lifting` sessions;
+- lifting-v1 weekly XP and category breakdown from `scoring_events`;
+- recent completed strength sessions with duration, exercise count, and attached XP when scoring events exist;
+- personal-record surfaces from `exercise_progress` plus canonical exercise names;
+- weekly group leaderboard through a membership-gated read-only RPC;
+- real PFP rendering for the current user and group members;
+- restrained responsive presentation with flat sections and colocated CSS Modules;
+- cardio remains visibly secondary inside the XP breakdown;
+- no invented level formula or decorative analytics chart was introduced.
 
-### 5.6 Group administration UI
+See `docs/PHASE5.5D-LIFTING-DASHBOARD.md`.
+
+### 5.6 Group administration UI — NEXT
 
 - invite management
 - owner/admin controls
