@@ -79,3 +79,13 @@ npx supabase gen types typescript --local > src/types/database.generated.ts
 ```
 
 Regenerate after schema changes.
+## Phase 5 onboarding transaction
+
+Migration `20260818000200_phase5_onboarding_foundation.sql` replaces the Phase 4 three-argument `complete_onboarding` function with:
+
+```text
+complete_onboarding(username, display_name, timezone, weekly_target)
+```
+
+The function normalizes the username to lowercase, validates the canonical username format/uniqueness, validates display name/timezone/target, updates the profile, marks onboarding complete, and snapshots the current weekly goal in one database transaction. The client must not reproduce this as several independent profile updates.
+

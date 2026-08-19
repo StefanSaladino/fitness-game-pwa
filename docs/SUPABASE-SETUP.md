@@ -290,3 +290,15 @@ Check:
 ### Auth email is missing locally
 
 Open Mailpit at the URL shown by `npx supabase status` (normally port 54324).
+## Applying Phase 5 migrations in the hosted Dashboard
+
+For the current Dashboard-first workflow, apply migrations in filename order. After the Phase 4 foundation is already present, run the full contents of:
+
+```text
+supabase/migrations/20260818000200_phase5_onboarding_foundation.sql
+```
+
+in **SQL Editor -> New query**. Then run the updated `005_profile_onboarding.test.sql` and the new `006_phase5_onboarding_username.test.sql`. Do not manually edit the `profiles` table or recreate the RPC in the Dashboard; the migration file remains the source of truth.
+
+If the repository later switches to Supabase CLI deployment, reconcile the hosted project's migration history before using `db push`.
+

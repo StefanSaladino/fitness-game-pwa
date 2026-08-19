@@ -11,10 +11,11 @@ function ok(condition, message) {
 function read(rel) { return fs.readFileSync(path.join(root, rel), 'utf8'); }
 
 const required = [
-  'README.md','CHANGELOG.md','docs/ROADMAP.md','docs/DOMAIN-RULES.md','docs/TESTING.md','docs/ARCHITECTURE.md','docs/DATABASE.md','docs/SUPABASE-SETUP.md','docs/ENVIRONMENT.md','docs/VALIDATION.md','docs/REFERENCES.md','.gitignore','.env.example',
-  'supabase/migrations/20260818000100_initial_data_foundation.sql','supabase/seed.sql',
-  'supabase/tests/001_schema.test.sql','supabase/tests/002_rls.test.sql','supabase/tests/003_groups.test.sql','supabase/tests/004_qualification.test.sql','supabase/tests/005_profile_onboarding.test.sql',
-  'src/features/auth/authService.ts','src/features/auth/AuthProvider.tsx','src/features/auth/AuthScreen.tsx','src/features/auth/ResetPasswordScreen.tsx'
+  'README.md','CHANGELOG.md','docs/ROADMAP.md','docs/DOMAIN-RULES.md','docs/TESTING.md','docs/ARCHITECTURE.md','docs/DATABASE.md','docs/SUPABASE-SETUP.md','docs/ENVIRONMENT.md','docs/VALIDATION.md','docs/REFERENCES.md','docs/UI-DEVELOPMENT-GATE.md','docs/PHASE5-ONBOARDING-FOUNDATION.md','.gitignore','.env.example',
+  'supabase/migrations/20260818000100_initial_data_foundation.sql','supabase/migrations/20260818000200_phase5_onboarding_foundation.sql','supabase/seed.sql',
+  'supabase/tests/001_schema.test.sql','supabase/tests/002_rls.test.sql','supabase/tests/003_groups.test.sql','supabase/tests/004_qualification.test.sql','supabase/tests/005_profile_onboarding.test.sql','supabase/tests/006_phase5_onboarding_username.test.sql',
+  'src/features/auth/authService.ts','src/features/auth/AuthProvider.tsx','src/features/auth/AuthScreen.tsx','src/features/auth/ResetPasswordScreen.tsx',
+  'src/features/onboarding/model.ts','src/features/onboarding/validation.ts','src/features/onboarding/state.ts','src/features/onboarding/onboardingService.ts'
 ];
 for (const rel of required) ok(fs.existsSync(path.join(root, rel)), `${rel} exists`);
 
@@ -23,6 +24,11 @@ JSON.parse(read('public/manifest.webmanifest'));
 ok(true, 'JSON files parse');
 
 const migration = read('supabase/migrations/20260818000100_initial_data_foundation.sql');
+const phase5Migration = read('supabase/migrations/20260818000200_phase5_onboarding_foundation.sql');
+ok((phase5Migration.match(/\$\$/g) || []).length % 2 === 0, 'Phase 5 migration dollar-quote delimiters are balanced');
+ok(phase5Migration.includes('p_username text'), 'Phase 5 onboarding RPC accepts username');
+ok(phase5Migration.includes("v_username !~ '^[a-z0-9_]{3,32}$'"), 'Phase 5 onboarding validates canonical username');
+ok(phase5Migration.includes('Username already taken'), 'Phase 5 onboarding handles username uniqueness explicitly');
 ok((migration.match(/\$\$/g) || []).length % 2 === 0, 'migration dollar-quote delimiters are balanced');
 for (const table of ['profiles','groups','group_members','group_invites','exercise_catalog','workout_sessions','workout_exercises','workout_sets','xp_events','performance_observations','performance_benchmarks','weekly_goals']) {
   ok(migration.includes(`create table public.${table}`), `migration creates ${table}`);
@@ -37,7 +43,7 @@ ok(!/grant\s+(insert|update|delete)[^;]*public\.performance_benchmarks\s+to\s+au
 ok(migration.includes('group_members_one_active_owner'), 'single-active-owner uniqueness exists');
 ok(migration.includes("new.active_duration_seconds > 21600"), 'six-hour review rule is represented');
 
-for (const rel of ['supabase/tests/001_schema.test.sql','supabase/tests/002_rls.test.sql','supabase/tests/003_groups.test.sql','supabase/tests/004_qualification.test.sql','supabase/tests/005_profile_onboarding.test.sql']) {
+for (const rel of ['supabase/tests/001_schema.test.sql','supabase/tests/002_rls.test.sql','supabase/tests/003_groups.test.sql','supabase/tests/004_qualification.test.sql','supabase/tests/005_profile_onboarding.test.sql','supabase/tests/006_phase5_onboarding_username.test.sql']) {
   const sql = read(rel);
   const plan = Number((sql.match(/select\s+plan\((\d+)\)/i) || [])[1]);
   const count = (sql.match(/select\s+(?:has_table|has_function|col_is_pk|results_eq|throws_ok|lives_ok|is)\s*\(/gi) || []).length;

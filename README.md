@@ -4,6 +4,8 @@ A React + TypeScript + Vite progressive web app for a private, expandable friend
 
 ## Current phase
 
+Phase 5 is in progress. The current work is intentionally non-visual onboarding architecture. Before the production onboarding/dashboard UI is implemented, follow `docs/UI-DEVELOPMENT-GATE.md`: generate and review a phone-first concept image, define responsive/component boundaries, then build the approved layout.
+
 **Phase 4 / foundation v0.2:** Supabase schema, Row Level Security, expandable groups, workout persistence, XP/benchmark ledger infrastructure, authentication, and password recovery.
 
 The app is intentionally not yet a polished workout tracker. The current goal is to make the rules, data model, permissions, and onboarding reproducible before feature UI grows around them.
@@ -26,8 +28,8 @@ Install:
 
 1. Node.js 20+ (Node 22 is recommended for this repository)
 2. npm
-3. Docker Desktop (required by the local Supabase CLI stack)
-4. Git
+3. Git
+4. Docker Desktop only if/when you choose to run the optional local Supabase CLI stack
 
 ## First-time local setup
 
@@ -37,9 +39,11 @@ Install:
 npm install
 ```
 
-### 2. Initialize Supabase CLI metadata
+### 2. Choose your Supabase workflow
 
-This repository already contains migrations/tests. The command creates `supabase/config.toml` if it does not exist.
+The current project is using a **hosted Supabase Dashboard-first workflow**. You do not need Docker or a local Supabase stack for that path. Apply SQL files through the hosted SQL Editor as documented in `docs/SUPABASE-SETUP.md`.
+
+If you later choose the optional local CLI workflow, initialize its metadata with:
 
 ```bash
 npx supabase init
@@ -57,11 +61,11 @@ additional_redirect_urls = ["http://localhost:5173", "http://localhost:5173/rese
 
 If you change this while Supabase is already running, restart the local stack.
 
-### 3. Start Docker Desktop
+### 3. Optional local CLI only: start Docker Desktop
 
-Wait until Docker reports that the engine is running.
+Skip this for the current hosted Dashboard workflow. If using the local CLI, wait until Docker reports that the engine is running.
 
-### 4. Start local Supabase
+### 4. Optional local CLI only: start local Supabase
 
 ```bash
 npx supabase start
@@ -75,7 +79,12 @@ Useful command:
 npx supabase status
 ```
 
-### 5. Apply all migrations from a clean database
+### 5. Apply migrations
+
+For the hosted Dashboard workflow, run each migration file in filename order in **SQL Editor -> New query**, followed by `supabase/seed.sql` on a fresh project. For an already-configured Phase 4 project, apply only new migration files that have not been run yet.
+
+For the optional local CLI workflow, apply all migrations from a clean database:
+
 
 ```bash
 npx supabase db reset
@@ -114,6 +123,10 @@ VITE_APP_URL=http://localhost:5173
 Never place a Supabase secret/service-role key, database password, or `sb_secret_...` value in a `VITE_` variable. See `docs/ENVIRONMENT.md`.
 
 ### 7. Run database tests
+
+For the hosted Dashboard workflow, paste each `supabase/tests/*.test.sql` file into SQL Editor and run it individually.
+
+For the optional local CLI workflow:
 
 ```bash
 npx supabase test db

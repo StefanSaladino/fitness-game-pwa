@@ -91,3 +91,31 @@ The database creates a `profiles` row automatically from an `auth.users` insert.
 ## Offline direction
 
 A later phase will use local persistence/IndexedDB and idempotent sync. Do not assume network availability during an active workout.
+## Feature/UI separation of concerns
+
+Major UI work follows `docs/UI-DEVELOPMENT-GATE.md`. The target frontend dependency direction is:
+
+```text
+screen/page composition
+        |
+feature components <-- focused hooks/controllers
+        |                       |
+shared primitives        feature service/repository
+                                |
+                             Supabase
+
+pure feature/domain validation --------------------^
+(no React, no Supabase)
+```
+
+Rules:
+
+- page components own route-level composition, not database access;
+- feature components receive data/actions rather than constructing Supabase queries;
+- services/repositories own Supabase table/RPC knowledge;
+- hooks/controllers coordinate loading, mutation, and error state when UI implementation begins;
+- validation and state-transition helpers remain pure and independently testable;
+- a component is extracted because it has a coherent responsibility or real reuse case, not just because a file became long.
+
+Phase 5.1 establishes this pattern in `src/features/onboarding/` before the visual onboarding screen is built.
+

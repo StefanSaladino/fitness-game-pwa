@@ -1,0 +1,19 @@
+Fitness Game PWA — Phase 5.1 patch
+
+Purpose:
+- lock the required visual-design gate into the roadmap;
+- establish separation-of-concerns rules before production UI work;
+- add atomic username-aware onboarding persistence;
+- add non-visual onboarding model/validation/state/service layers;
+- add TypeScript and pgTAP coverage.
+
+This patch intentionally does NOT implement the final onboarding UI.
+The next gate after validation is concept-image review before layout implementation.
+
+Reference validation performed in the generation environment:
+- internal domain verifier: 62 assertions passed
+- structural/project validator: 129 assertions passed
+- TypeScript/TSX syntax parse included in structural validation
+- pgTAP plan-count checks included in structural validation
+
+Full dependency-backed npm typecheck/Vitest/build were not rerun in the generation container because npm dependencies were unavailable there. Run the commands in docs/PHASE5-ONBOARDING-FOUNDATION.md on the developer machine after applying the patch.

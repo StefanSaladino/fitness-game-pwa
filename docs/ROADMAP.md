@@ -2,6 +2,33 @@
 
 Status legend: **DONE**, **IN PROGRESS**, **NEXT**, **LATER**.
 
+## Product-wide UI implementation gate — REQUIRED
+
+Before implementing any substantial user-facing screen or redesign, stop at a visual-design checkpoint.
+
+Required sequence:
+
+1. define the screen's purpose, states, data, and actions without styling it;
+2. generate a phone-first concept image to envision the layout;
+3. review the concept with the product owner and revise it until the direction is approved;
+4. document responsive behavior for phone, desktop, and watch-sized contracts where relevant;
+5. map component boundaries and data ownership before coding the approved layout;
+6. only then implement the production UI;
+7. validate accessibility, responsive behavior, loading/error/empty states, and browser behavior before the phase is complete.
+
+Separation-of-concerns rules for UI work:
+
+- screen/page components compose features and own route-level layout only;
+- feature components render feature-specific UI and receive data/actions through props or focused hooks;
+- hooks/controllers orchestrate state and asynchronous feature behavior;
+- services/repositories are the only feature layer that talks directly to Supabase;
+- pure validation/domain rules stay framework-independent and are tested without React or Supabase;
+- shared UI primitives are created only when reuse is real, not speculatively;
+- visual components must not contain SQL/RPC knowledge or direct Supabase queries;
+- large all-in-one components should be split by responsibility before they become difficult to test.
+
+See `docs/UI-DEVELOPMENT-GATE.md` for the implementation checklist.
+
 ## Phase 0 — Product rules — DONE
 
 Objective: define a fair scoring model before implementation.
@@ -55,7 +82,7 @@ Delivered:
 - PWA assets/service worker
 - GitHub Actions frontend validation shell
 
-## Phase 4 — Supabase data/auth foundation — IN PROGRESS
+## Phase 4 — Supabase data/auth foundation — DONE
 
 ### 4.1 Documentation — DONE
 
@@ -92,7 +119,7 @@ Delivered:
 - ownership transfer
 - leaving
 
-### 4.4 RLS/security boundary — DONE (requires local Supabase execution)
+### 4.4 RLS/security boundary — DONE
 
 - own-workout privacy
 - group membership privacy
@@ -100,7 +127,7 @@ Delivered:
 - derived XP/benchmark tables read-only to client
 - controlled group mutation RPCs
 
-### 4.5 Authentication foundation — DONE (requires local integration validation)
+### 4.5 Authentication foundation — DONE
 
 - signup
 - login
@@ -111,7 +138,7 @@ Delivered:
 - reset password
 - `PASSWORD_RECOVERY` handling
 
-### 4.6 Database pgTAP tests — DONE (authored; requires local Supabase execution)
+### 4.6 Database pgTAP tests — DONE
 
 - schema tests
 - RLS tests
@@ -119,43 +146,75 @@ Delivered:
 - qualification-trigger boundary tests
 - one-time onboarding / pending-target tests
 
-### 4.7 Phase exit gate — NEXT
+### 4.7 Phase exit gate — DONE
 
-On a developer machine with Docker:
+Validated through the hosted Supabase Dashboard and local frontend tooling:
 
-```bash
-npm install
-npx supabase init
-npx supabase start
-npx supabase db reset
-npx supabase test db
-npx supabase db lint --level warning
-npm run typecheck
-npm test
-npm run build
-```
+- initial migration applied
+- seed applied
+- pgTAP suites executed
+- TypeScript validation
+- Vitest domain/component validation
+- production build
+- structural validation
+- Playwright desktop + mobile browser shell validation
 
-Do not mark Phase 4 fully complete until every command is green.
+The project currently uses a hosted-Supabase/dashboard-first development workflow. If CLI migrations are adopted later, reconcile remote migration history before using `db push`.
 
-## Phase 5 — Onboarding + group experience — NEXT
+## Phase 5 — Onboarding + group experience — IN PROGRESS
 
 Objective: make a new friend able to join without developer involvement.
 
-Subphases:
+### 5.1 Non-visual onboarding foundation — IN PROGRESS
 
-1. onboarding profile setup
-2. timezone confirmation
-3. weekly workout target selection
-4. create group
-5. invite link/code UI
-6. join group by invite
-7. group member list
-8. owner/admin controls
-9. leave/ownership-transfer UX
-10. responsive phone/desktop/watch-contract validation
+Build the contracts that the eventual UI will consume before designing screens:
 
-Required tests:
+- atomic onboarding RPC for username + display name + timezone + weekly target
+- onboarding input normalization and validation
+- profile-loading service
+- onboarding-completion service
+- future weekly-target scheduling service
+- deterministic onboarding-state helpers
+- unit tests for client-side validation/state logic
+- pgTAP coverage for username normalization, uniqueness, and atomic completion
 
+**No final onboarding layout is implemented in this subphase.**
+
+### 5.2 Onboarding visual-design checkpoint — NEXT / REQUIRED GATE
+
+Before coding the real onboarding interface:
+
+1. generate a phone-first concept image for sign-in/onboarding/group setup;
+2. review and approve hierarchy, navigation, density, gamification tone, and visual direction;
+3. define desktop adaptation and watch-sized component contracts;
+4. write the component map and screen-state map;
+5. only then implement the approved layout.
+
+### 5.3 Authentication + onboarding UI — AFTER VISUAL APPROVAL
+
+- sign-in/create-account/recovery presentation
+- username selection
+- display name
+- timezone confirmation
+- weekly workout target selection
+- email-verification states
+- loading/error/success states
+- keyboard and accessibility behavior
+
+### 5.4 Group setup UI
+
+- create group
+- invite link/code UI
+- join group by invite
+- group member list
+- owner/admin controls
+- leave/ownership-transfer UX
+
+### 5.5 Responsive + integration validation
+
+- phone-first layout
+- desktop dashboard adaptation
+- watch-sized component contracts where applicable
 - signup -> onboarding -> group create
 - signup -> invite -> group join
 - fifth/tenth member joins normally
@@ -169,9 +228,13 @@ Exit criteria: a new user can sign up and join from an invite with no database/m
 
 Objective: reliably record workouts before gamification UI is expanded.
 
+The product-wide UI implementation gate applies before the workout-builder interface is coded.
+
 Subphases:
 
 - activity selection
+- exercise-catalog search and filtering
+- recent/favorite exercise access
 - active timer with pause/resume
 - strength exercise/set logging
 - timed activities
@@ -180,6 +243,15 @@ Subphases:
 - offline active-session persistence
 - sync/idempotency
 - editing/deleting within rules
+
+Exercise search requirements:
+
+- instant case-insensitive canonical-name search
+- alias support (for example `RDL` -> Romanian Deadlift and `OHP` -> Overhead Press)
+- fuzzy/typo-tolerant matching where it does not create ambiguous identity
+- equipment/movement filters once catalog metadata is added
+- canonical exercise IDs remain the persistent workout/benchmark identity
+- search/display aliases must never create duplicate benchmark identities
 
 Exit criteria: no workout is lost on refresh, app backgrounding, or ordinary connection loss.
 
@@ -228,6 +300,8 @@ Exit criteria: no user can be compared against another user, and a new activity 
 
 ## Phase 10 — Group competition/social
 
+The product-wide UI implementation gate applies before leaderboard/activity-feed implementation.
+
 - weekly leaderboard
 - level/XP totals
 - curated activity feed (not raw private workout rows)
@@ -244,6 +318,8 @@ Exit criteria: no user can be compared against another user, and a new activity 
 - iOS/Android behavior validation
 
 ## Phase 12 — Specialized activity analytics
+
+The product-wide UI implementation gate applies before analytics dashboards are implemented.
 
 - richer strength history
 - running pace/distance charts

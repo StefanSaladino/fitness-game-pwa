@@ -21,7 +21,7 @@ select col_is_pk('public', 'workout_sessions', 'id', 'workout_sessions.id is pri
 select col_is_pk('public', 'xp_events', 'id', 'xp_events.id is primary key');
 select col_is_pk('public', 'performance_observations', 'id', 'performance observations id is primary key');
 
-select has_function('public', 'complete_onboarding', array['text','text','smallint'], 'onboarding RPC exists');
+select has_function('public', 'complete_onboarding', array['text','text','text','smallint'], 'onboarding RPC exists');
 select has_function('public', 'schedule_weekly_target', array['smallint'], 'weekly target scheduling RPC exists');
 select has_function('public', 'join_group_by_invite', array['uuid'], 'join invite RPC exists');
 select has_function('public', 'remove_group_member', array['uuid','uuid'], 'remove member RPC exists');

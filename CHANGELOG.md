@@ -1,5 +1,15 @@
 # Changelog
 
+## Phase 5.1 — onboarding foundation (unreleased)
+
+- Added required visual-design gate before substantial UI implementation.
+- Added atomic username-aware onboarding migration.
+- Added onboarding validation, state, and Supabase service layers.
+- Added TypeScript and pgTAP coverage for onboarding identity rules.
+- Preserved Vitest/Playwright separation and deterministic auth-shell testing.
+- Expanded the canonical exercise seed catalogue.
+
+
 ## v0.2.0 — Phase 4 foundation
 
 Added:
