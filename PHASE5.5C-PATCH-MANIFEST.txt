@@ -1,0 +1,37 @@
+Phase 5.5C — Profile Pictures (v0.3.3)
+
+New:
+- docs/PHASE5.5C-PROFILE-PICTURES.md
+- supabase/migrations/20260819000200_profile_pictures.sql
+- supabase/tests/008_profile_pictures.test.sql
+- src/features/profile-picture/model.ts
+- src/features/profile-picture/validation.ts
+- src/features/profile-picture/validation.test.ts
+- src/features/profile-picture/profilePictureMessages.ts
+- src/features/profile-picture/profilePictureService.ts
+- src/features/profile-picture/profilePictureService.test.ts
+- src/features/profile-picture/hooks/useProfilePicture.ts
+- src/features/profile-picture/hooks/useProfilePicture.test.tsx
+- src/features/profile-picture/components/ProfilePicture.tsx
+- src/features/profile-picture/components/ProfilePicture.test.tsx
+- src/features/profile-picture/components/ProfilePicture.module.css
+- src/features/profile-picture/components/ProfilePictureManager.tsx
+- src/features/profile-picture/components/ProfilePictureManager.test.tsx
+- src/features/profile-picture/components/ProfilePictureManager.module.css
+- src/features/profile-picture/index.ts
+
+Updated:
+- package.json
+- CHANGELOG.md
+- docs/ROADMAP.md
+- docs/DATABASE.md
+- docs/ARCHITECTURE.md
+- docs/VALIDATION.md
+- docs/SUPABASE-SETUP.md
+- scripts/validate-project.cjs
+- src/app/App.tsx
+- src/features/groups/model.ts
+- src/features/groups/groupService.ts
+- src/features/groups/groupService.test.ts
+
+No .env.local or privileged secrets are included.

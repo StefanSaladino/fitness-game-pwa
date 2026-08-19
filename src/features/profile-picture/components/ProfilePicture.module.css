@@ -1,0 +1,29 @@
+.picture {
+  display: inline-grid;
+  flex: 0 0 auto;
+  place-items: center;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--color-border-strong) 75%, transparent);
+  border-radius: 999px;
+  background: var(--color-surface-strong);
+  color: var(--color-text);
+  object-fit: cover;
+  aspect-ratio: 1;
+}
+
+.picture:not(.fallback) {
+  object-position: center;
+}
+
+.fallback {
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  background:
+    radial-gradient(circle at 30% 20%, color-mix(in srgb, var(--color-green) 24%, transparent), transparent 55%),
+    var(--color-surface-strong);
+}
+
+.sm { width: 2rem; font-size: 0.72rem; }
+.md { width: 2.75rem; font-size: 0.85rem; }
+.lg { width: 4rem; font-size: 1.1rem; }
+.xl { width: clamp(5.5rem, 18vw, 7rem); font-size: 1.55rem; }

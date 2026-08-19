@@ -320,3 +320,7 @@ supabase/tests/007_lifting_scoring_foundation.test.sql
 This migration is additive. It introduces the new `lifting-v1` scoring/progression tables and explicit lifting/cardio qualification flags while retaining the v0.2 XP/performance tables as legacy migration history.
 
 Do not manually delete the v0.2 tables. New scoring code must target `scoring_events`, `exercise_progress_observations`, and `exercise_progress` instead.
+
+## Phase 5.5C profile-picture migration
+
+Apply `supabase/migrations/20260819000200_profile_pictures.sql` after the lifting-first migration. Then run `supabase/tests/008_profile_pictures.test.sql`. The migration creates/configures the `profile-pictures` Storage bucket and its own-folder mutation policies; no manual bucket creation is required when the migration succeeds.

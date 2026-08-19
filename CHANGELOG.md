@@ -1,3 +1,13 @@
+## 0.3.3 — Phase 5.5C profile pictures
+
+- Added optional upload/replace/remove profile pictures.
+- Added `profiles.profile_picture_path` and a public-read `profile-pictures` Storage bucket.
+- Restricted Storage mutation to each authenticated user's own UUID folder.
+- Added JPEG/PNG/WebP and 2 MiB bucket limits.
+- Added reusable PFP + initials fallback components with CSS Modules.
+- Added PFP path to group-member identity for future leaderboard/activity rendering.
+- No avatar/customization system was introduced.
+
 # Changelog
 
 ## 0.3.2 — Phase 5.5B group setup UI

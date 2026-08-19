@@ -7,6 +7,7 @@ import { ResetPasswordScreen } from '../features/auth/ResetPasswordScreen';
 import { signOut } from '../features/auth/authService';
 import { GroupGate, type GroupSummary } from '../features/groups';
 import { OnboardingScreen, useOnboarding, type OnboardingProfile } from '../features/onboarding';
+import { ProfilePictureManager } from '../features/profile-picture';
 import { isSupabaseConfigured } from '../lib/supabase';
 
 const week = [
@@ -33,7 +34,7 @@ function FoundationDashboard({ profile, groups }: { profile: OnboardingProfile; 
             Start lift
           </Button>
         )}
-        description="Authentication, lifting-first onboarding, and group setup are live. Profile pictures and the first real lifting dashboard are the next vertical slices."
+        description="Authentication, lifting-first onboarding, group setup, and profile pictures are live. The first real lifting dashboard is the next vertical slice."
         eyebrow="LIFTING-V1 · FOUNDATION"
         title={`Welcome, ${profile.displayName}`}
       />
@@ -79,6 +80,10 @@ function FoundationDashboard({ profile, groups }: { profile: OnboardingProfile; 
         </Card>
 
         <Card className="dashboard-card" eyebrow="PROFILE" title={`@${profile.username}`}>
+          <ProfilePictureManager
+            displayName={profile.displayName}
+            userId={profile.id}
+          />
           <div className="empty-state">
             <span className="empty-state__icon"><Icon name="calendar" size={22} /></span>
             <div>

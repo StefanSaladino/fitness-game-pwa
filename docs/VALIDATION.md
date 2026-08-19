@@ -135,12 +135,6 @@ npm run test:structure
 npm run test:e2e
 ```
 
-## v0.3.1 internal-test portability correction
+## Phase 5.5C profile pictures
 
-`npm run test:internal` is cross-platform and runs through Node:
-
-```text
-node scripts/internal-test.cjs
-```
-
-The verifier compiles the lifting-v1 domain into an operating-system temporary directory with the project's TypeScript compiler, executes the 62 framework-independent assertions, and removes the temporary output in a `finally` block. It does not require Bash, WSL, Git Bash, or a POSIX shell.
+After applying `20260819000200_profile_pictures.sql`, run `supabase/tests/008_profile_pictures.test.sql` in the hosted SQL Editor. It validates the profile path column, public-read bucket configuration, file-size/MIME restrictions, own-folder Storage policies, and profile-path ownership constraint.

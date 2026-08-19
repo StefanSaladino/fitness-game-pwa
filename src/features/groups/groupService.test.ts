@@ -94,8 +94,8 @@ describe('group service', () => {
     });
     const profiles = query({
       data: [
-        { id: 'member', username: 'alex', display_name: 'Alex' },
-        { id: 'owner', username: 'stefan', display_name: 'Stefan' },
+        { id: 'member', username: 'alex', display_name: 'Alex', profile_picture_path: null },
+        { id: 'owner', username: 'stefan', display_name: 'Stefan', profile_picture_path: 'owner/photo.webp' },
       ],
       error: null,
     });
@@ -103,7 +103,7 @@ describe('group service', () => {
     const service = createGroupService(fake.client);
 
     await expect(service.getMembers('group-1')).resolves.toEqual([
-      expect.objectContaining({ userId: 'owner', role: 'OWNER', displayName: 'Stefan' }),
+      expect.objectContaining({ userId: 'owner', role: 'OWNER', displayName: 'Stefan', profilePicturePath: 'owner/photo.webp' }),
       expect.objectContaining({ userId: 'member', role: 'MEMBER', displayName: 'Alex' }),
     ]);
   });

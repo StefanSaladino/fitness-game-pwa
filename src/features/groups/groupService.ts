@@ -32,6 +32,7 @@ type ProfileRow = {
   id: string;
   username: string;
   display_name: string;
+  profile_picture_path: string | null;
 };
 
 type InviteRow = {
@@ -150,7 +151,7 @@ export function createGroupService(client: SupabaseClient = getSupabaseClient())
 
       const profileResult = await client
         .from('profiles')
-        .select('id, username, display_name')
+        .select('id, username, display_name, profile_picture_path')
         .in('id', memberships.map((membership) => membership.user_id));
 
       if (profileResult.error) throw profileResult.error;
@@ -165,6 +166,7 @@ export function createGroupService(client: SupabaseClient = getSupabaseClient())
             userId: membership.user_id,
             username: profile.username,
             displayName: profile.display_name,
+            profilePicturePath: profile.profile_picture_path,
             role: membership.role,
             joinedAt: membership.joined_at,
           };

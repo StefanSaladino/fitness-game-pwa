@@ -13,6 +13,7 @@ export interface GroupMember {
   userId: string;
   username: string;
   displayName: string;
+  profilePicturePath: string | null;
   role: GroupRole;
   joinedAt: string;
 }

@@ -71,3 +71,8 @@ These remain in the database for migration safety but are no longer the target f
 Raw workout rows remain user-owned. The v0.3 scoring/progression tables are read-only to authenticated clients and filtered to `auth.uid()`.
 
 Authoritative scoring writes will be performed through controlled server/database logic in the scoring persistence phase.
+
+
+## Profile pictures — Phase 5.5C
+
+`profiles.profile_picture_path` stores the current object reference. Image bytes live in the `profile-pictures` Supabase Storage bucket. Paths are constrained to the owning profile UUID folder. The bucket is public-read for social rendering, while Storage mutation is authenticated and folder-scoped by RLS.

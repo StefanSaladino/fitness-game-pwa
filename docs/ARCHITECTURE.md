@@ -99,3 +99,8 @@ Supabase
 ```
 
 `GroupGate` owns only the zero-vs-one-or-more membership transition. It does not collapse the data model to a single group. New group feature styles use CSS Modules colocated under `src/features/groups/components/`.
+
+
+## Profile-picture boundary
+
+`ProfilePicture` and `ProfilePictureManager` own presentation, `useProfilePicture` owns async UI state, and `profilePictureService` is the only Supabase boundary. New PFP styles are CSS Modules and do not add selectors to `global.css`.

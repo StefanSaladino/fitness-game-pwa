@@ -169,19 +169,23 @@ The lifting-first mobile/desktop/watch concept direction has been explored. Impl
 - multiple-group membership remains supported;
 - all new feature styling is colocated CSS Modules; no group CSS added to `global.css`.
 
-#### 5.5C Profile pictures — NEXT
+#### 5.5C Profile pictures — DONE
 
 Profile pictures only; this is not an avatar/customization system.
 
 - upload, replace, and remove a profile picture;
-- default placeholder when none exists;
-- crop/position before save where practical;
-- Supabase Storage with ownership/file-type/file-size rules;
-- store an image path/reference on the profile, not image bytes in PostgreSQL;
-- reusable profile-picture presentation for profile, groups, leaderboards, activity, and PR cards;
+- initials placeholder when none exists or image loading fails;
+- centered square-crop presentation; manual crop positioning can be added later if needed;
+- public-read Supabase Storage bucket with authenticated own-folder mutation rules;
+- JPEG/PNG/WebP only and a 2 MiB stored-object cap;
+- store `profile_picture_path` on the profile, not image bytes in PostgreSQL;
+- group-member identity now carries the PFP path for upcoming leaderboards/activity;
+- reusable `ProfilePicture` presentation with colocated CSS Modules;
 - profile pictures remain cosmetic and never affect XP, rankings, or permissions.
 
-#### 5.5D First real lifting dashboard
+See `docs/PHASE5.5C-PROFILE-PICTURES.md`.
+
+#### 5.5D First real lifting dashboard — NEXT
 
 - initial leaderboard summary sourced from authoritative scoring totals when available;
 - lifting-day weekly target/status;
