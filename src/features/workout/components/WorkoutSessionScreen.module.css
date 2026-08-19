@@ -1,0 +1,124 @@
+.start,
+.active {
+  width: min(860px, 100%);
+  margin: 0 auto;
+  padding: 42px 18px 110px;
+}
+
+.start {
+  min-height: 68vh;
+  display: grid;
+  align-content: center;
+  justify-items: start;
+  gap: 16px;
+}
+
+.start h1,
+.activeHeader h1,
+.exerciseStage h2 {
+  margin: 0;
+  color: var(--color-text);
+  letter-spacing: -0.04em;
+}
+
+.start h1 { font-size: clamp(2.7rem, 10vw, 5.8rem); }
+.start > p:not(.kicker):not(.error) { max-width: 570px; margin: 0 0 8px; color: var(--color-text-muted); line-height: 1.6; }
+
+.kicker {
+  margin: 0;
+  color: var(--color-green);
+  font-size: 0.7rem;
+  font-weight: 760;
+  letter-spacing: 0.12em;
+}
+
+.activeHeader {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 24px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.activeHeader > div { display: grid; gap: 7px; }
+.activeHeader h1 { font-size: clamp(1.6rem, 5vw, 2.5rem); }
+
+.timer {
+  color: var(--color-text);
+  font-size: clamp(2.4rem, 9vw, 5.2rem);
+  font-weight: 560;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.06em;
+  line-height: 0.9;
+}
+
+.sessionMeta {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  border-bottom: 1px solid var(--color-border);
+}
+
+.sessionMeta > div {
+  display: grid;
+  gap: 6px;
+  padding: 18px 0;
+}
+
+.sessionMeta > div + div { padding-left: 18px; border-left: 1px solid var(--color-border); }
+.sessionMeta span { color: var(--color-text-muted); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; }
+.sessionMeta strong { color: var(--color-text-soft); font-size: 0.9rem; }
+
+.exerciseStage {
+  min-height: 250px;
+  display: grid;
+  align-content: center;
+  justify-items: start;
+  gap: 8px;
+  padding: 34px 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.exerciseStage h2 { font-size: 1.5rem; }
+.exerciseStage > p:last-child { max-width: 520px; margin: 0; color: var(--color-text-muted); line-height: 1.55; }
+
+.primaryActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding-top: 22px;
+}
+
+.cancelButton {
+  display: block;
+  margin: 20px 0 0 auto;
+  padding: 7px 0;
+  border: 0;
+  background: transparent;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.78rem;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.cancelButton:hover:not(:disabled) { color: var(--color-text); }
+.cancelButton:disabled { cursor: not-allowed; opacity: 0.55; }
+
+.error {
+  margin: 18px 0 0;
+  color: var(--color-danger, #ff8b8b);
+  font-size: 0.85rem;
+}
+
+@media (max-width: 620px) {
+  .start,
+  .active { padding-inline: 16px; }
+  .activeHeader { display: grid; align-items: start; }
+  .timer { grid-row: 1; }
+  .sessionMeta { grid-template-columns: 1fr; }
+  .sessionMeta > div + div { padding-left: 0; border-left: 0; border-top: 1px solid var(--color-border); }
+  .primaryActions { display: grid; grid-template-columns: 1fr; }
+  .primaryActions :global(.ui-button) { width: 100%; }
+}

@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.4.0 — Phase 6.1A active lifting session foundation
+
+- Added idempotent Start Lift and active-session recovery.
+- Added persisted pause/resume timer state and server-computed finish/cancel duration.
+- Added a one-active-in-app-lift database invariant.
+- Revoked direct authenticated workout-session mutation in favor of guarded lifecycle RPCs.
+- Added the Workouts product surface and dashboard Start Lift entry point.
+- Added service, hook, timer, component, structural, and pgTAP coverage.
+
 ## 0.3.6 — Phase 5.7 integration validation
 
 - Added cross-feature integration coverage for onboarding -> group setup -> dashboard and group administration.

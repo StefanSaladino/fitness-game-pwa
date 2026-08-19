@@ -44,6 +44,12 @@
 
 .subhead { margin: 8px 0 0; max-width: 590px; }
 
+.headerRight {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
 .identity {
   display: flex;
   align-items: center;
@@ -253,6 +259,7 @@
 
 @media (max-width: 560px) {
   .header { align-items: flex-start; }
+  .headerRight { align-items: flex-end; flex-direction: column-reverse; }
   .identity > div { display: none; }
   .xpBreakdown { grid-template-columns: 1fr; }
   .xpBreakdown > div:nth-child(odd),

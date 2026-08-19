@@ -1,5 +1,5 @@
-import { render, screen } from '@testing-library/react';
-import { describe, expect, it } from 'vitest';
+import { fireEvent, render, screen } from '@testing-library/react';
+import { describe, expect, it, vi } from 'vitest';
 import type { GroupSummary } from '../../groups';
 import type { OnboardingProfile } from '../../onboarding';
 import type { DashboardSnapshot } from '../model';
@@ -47,7 +47,8 @@ const snapshot: DashboardSnapshot = {
 
 describe('DashboardScreen', () => {
   it('renders lifting-first progress, PRs, group rank, and secondary cardio without template filler', () => {
-    render(<DashboardScreen group={group} onNavigate={() => undefined} onSignOut={() => undefined} profile={profile} snapshot={snapshot} />);
+    const onNavigate = vi.fn();
+    render(<DashboardScreen group={group} onNavigate={onNavigate} onSignOut={() => undefined} profile={profile} snapshot={snapshot} />);
 
     expect(screen.getByRole('heading', { name: 'Your lifting week' })).toBeInTheDocument();
     expect(screen.getByLabelText('2 of 4 lifting days complete')).toBeInTheDocument();
@@ -57,5 +58,7 @@ describe('DashboardScreen', () => {
     expect(screen.getByText('Stefan (You)')).toBeInTheDocument();
     expect(screen.getByText('Cardio bonus')).toBeInTheDocument();
     expect(screen.queryByText(/unlock your potential/i)).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Start Lift' }));
+    expect(onNavigate).toHaveBeenCalledWith('workouts');
   });
 });

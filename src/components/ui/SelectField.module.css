@@ -1,0 +1,10 @@
+.select {
+  /* Keep the browser-owned native menu aligned with the app's dark theme. */
+  color-scheme: dark;
+}
+
+.select option,
+.select optgroup {
+  color: var(--color-text);
+  background-color: var(--color-surface);
+}

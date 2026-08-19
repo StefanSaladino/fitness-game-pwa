@@ -4,6 +4,7 @@ import { signOut } from '../auth/authService';
 import { DashboardController, type DashboardService } from '../dashboard';
 import { GroupAdministrationController, type GroupService, type GroupSummary } from '../groups';
 import type { OnboardingProfile } from '../onboarding';
+import { WorkoutController, type WorkoutService } from '../workout';
 
 interface ProductControllerProps {
   profile: OnboardingProfile;
@@ -11,9 +12,10 @@ interface ProductControllerProps {
   onGroupsChanged: () => Promise<unknown> | unknown;
   groupService?: GroupService;
   dashboardService?: DashboardService;
+  workoutService?: WorkoutService;
 }
 
-export function ProductController({ profile, groups, onGroupsChanged, groupService, dashboardService }: ProductControllerProps) {
+export function ProductController({ profile, groups, onGroupsChanged, groupService, dashboardService, workoutService }: ProductControllerProps) {
   const [activeSection, setActiveSection] = useState<AppSection>('home');
   const [selectedGroupId, setSelectedGroupId] = useState(groups[0]?.id ?? '');
 
@@ -27,11 +29,22 @@ export function ProductController({ profile, groups, onGroupsChanged, groupServi
   );
 
   const onNavigate = (section: AppSection) => {
-    if (section === 'home' || section === 'groups') setActiveSection(section);
+    if (section === 'home' || section === 'groups' || section === 'workouts') setActiveSection(section);
   };
   const onSignOut = () => { void signOut(); };
 
   if (!selectedGroup) return null;
+
+  if (activeSection === 'workouts') {
+    return (
+      <WorkoutController
+        onNavigate={onNavigate}
+        onSignOut={onSignOut}
+        profile={profile}
+        service={workoutService}
+      />
+    );
+  }
 
   if (activeSection === 'groups') {
     return (

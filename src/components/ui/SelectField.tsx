@@ -1,4 +1,5 @@
 import { useId, type SelectHTMLAttributes } from 'react';
+import styles from './SelectField.module.css';
 
 interface SelectFieldProps extends SelectHTMLAttributes<HTMLSelectElement> {
   label: string;
@@ -17,7 +18,13 @@ export function SelectField({ label, hint, error, className = '', id, children, 
     <div className={['ui-field', className].filter(Boolean).join(' ')}>
       <label className="ui-field__label" htmlFor={selectId}>{label}</label>
       <span className={`ui-field__control${error ? ' ui-field__control--error' : ''}`}>
-        <select aria-describedby={describedBy} aria-invalid={Boolean(error)} id={selectId} {...props}>
+        <select
+          aria-describedby={describedBy}
+          aria-invalid={Boolean(error)}
+          className={styles.select}
+          id={selectId}
+          {...props}
+        >
           {children}
         </select>
       </span>

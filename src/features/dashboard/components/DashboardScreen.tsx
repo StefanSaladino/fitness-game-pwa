@@ -106,11 +106,14 @@ export function DashboardScreen({ profile, group, snapshot, onNavigate, onSignOu
             <h1>Your lifting week</h1>
             <p className={styles.subhead}>Progress from completed lifts and authoritative lifting-v1 scoring.</p>
           </div>
-          <div className={styles.identity}>
-            <ProfilePicture displayName={profile.displayName} size="lg" src={snapshot.currentUserProfilePictureUrl} />
-            <div>
-              <strong>{profile.displayName}</strong>
-              <span>@{profile.username}</span>
+          <div className={styles.headerRight}>
+            <Button onClick={() => onNavigate('workouts')}>Start Lift</Button>
+            <div className={styles.identity}>
+              <ProfilePicture displayName={profile.displayName} size="lg" src={snapshot.currentUserProfilePictureUrl} />
+              <div>
+                <strong>{profile.displayName}</strong>
+                <span>@{profile.username}</span>
+              </div>
             </div>
           </div>
         </header>

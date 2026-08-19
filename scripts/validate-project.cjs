@@ -74,7 +74,7 @@ ok(!/grant\s+(insert|update|delete)[^;]*public\.performance_benchmarks\s+to\s+au
 ok(migration.includes('group_members_one_active_owner'), 'single-active-owner uniqueness exists');
 ok(migration.includes("new.active_duration_seconds > 21600"), 'six-hour review rule is represented');
 
-for (const rel of ['supabase/tests/001_schema.test.sql','supabase/tests/002_rls.test.sql','supabase/tests/003_groups.test.sql','supabase/tests/004_qualification.test.sql','supabase/tests/005_profile_onboarding.test.sql','supabase/tests/006_phase5_onboarding_username.test.sql','supabase/tests/007_lifting_scoring_foundation.test.sql','supabase/tests/008_profile_pictures.test.sql','supabase/tests/009_dashboard_read_models.test.sql','supabase/tests/010_group_administration_permissions.test.sql']) {
+for (const rel of ['supabase/tests/001_schema.test.sql','supabase/tests/002_rls.test.sql','supabase/tests/003_groups.test.sql','supabase/tests/004_qualification.test.sql','supabase/tests/005_profile_onboarding.test.sql','supabase/tests/006_phase5_onboarding_username.test.sql','supabase/tests/007_lifting_scoring_foundation.test.sql','supabase/tests/008_profile_pictures.test.sql','supabase/tests/009_dashboard_read_models.test.sql','supabase/tests/010_group_administration_permissions.test.sql','supabase/tests/011_workout_session_lifecycle.test.sql']) {
   const sql = read(rel);
   const plan = Number((sql.match(/select\s+plan\((\d+)\)/i) || [])[1]);
   const count = (sql.match(/select\s+(?:has_table|has_column|has_function|col_is_pk|results_eq|throws_ok|lives_ok|is)\s*\(/gi) || []).length;
@@ -289,5 +289,30 @@ const groupHooksPhase57 = read('src/features/groups/hooks/groupHooks.test.tsx');
 ok(/tests\/integration\/\*\*\/\*\.test/.test(integrationVitestConfig), 'integration Vitest config explicitly discovers tests/integration');
 ok(/vitest run --config vitest\.integration\.config\.ts/.test(packageJsonPhase57), 'test:integration uses the dedicated integration Vitest config');
 ok(/role: 'MEMBER' as const/.test(groupHooksPhase57), 'group hook regression mock preserves the GroupRole literal type');
+
+
+
+const workoutLifecycleMigration = read('supabase/migrations/20260819000600_workout_session_lifecycle.sql');
+const workoutService = read('src/features/workout/workoutService.ts');
+const workoutHook = read('src/features/workout/hooks/useActiveWorkout.ts');
+const workoutScreen = read('src/features/workout/components/WorkoutSessionScreen.tsx');
+const workoutCss = read('src/features/workout/components/WorkoutSessionScreen.module.css');
+const productControllerPhase61 = read('src/features/product/ProductController.tsx');
+ok(/workout_sessions_one_active_in_app_lift/.test(workoutLifecycleMigration), 'Phase 6.1 enforces one active in-app lifting session per user');
+ok(/start_or_resume_lifting_workout/.test(workoutLifecycleMigration), 'Phase 6.1 adds idempotent start/resume RPC');
+ok(/pause_lifting_workout/.test(workoutLifecycleMigration) && /resume_lifting_workout/.test(workoutLifecycleMigration), 'Phase 6.1 persists pause/resume through RPCs');
+ok(/revoke insert, update, delete on public\.workout_sessions from authenticated/.test(workoutLifecycleMigration), 'Phase 6.1 blocks direct authenticated session mutation');
+ok((workoutLifecycleMigration.match(/from public, anon, authenticated/g) || []).length === 5, 'Phase 6.1 lifecycle RPCs revoke default/public execution');
+ok((workoutLifecycleMigration.match(/grant execute on function public\.[^(]+\([^)]*\) to authenticated/g) || []).length === 5, 'Phase 6.1 lifecycle RPCs grant authenticated execution');
+ok(/loadActiveWorkout/.test(workoutService) && /status', 'IN_PROGRESS'/.test(workoutService), 'workout service recovers only active sessions');
+ok(/start_or_resume_lifting_workout/.test(workoutService) && /finish_lifting_workout/.test(workoutService), 'workout service delegates lifecycle writes to authoritative RPCs');
+ok(/useActiveWorkout/.test(read('src/features/workout/components/WorkoutController.tsx')), 'workout controller delegates async lifecycle state to useActiveWorkout');
+ok(!/supabase/i.test(workoutScreen), 'workout presentation has no Supabase dependency');
+ok(/pausedAt/.test(workoutScreen) && /Resume timer/.test(workoutScreen), 'workout presentation represents persisted pause/resume state');
+ok(/WorkoutSessionScreen\.module\.css/.test(read('src/features/workout/components/WorkoutSessionScreen.tsx')) && workoutCss.length > 1200, 'workout styling is colocated in a CSS Module');
+ok(!/WorkoutSessionScreen|activeHeader|exerciseStage|sessionMeta/.test(read('src/styles/global.css')), 'Phase 6.1 selectors are not added to global CSS');
+ok(/activeSection === 'workouts'/.test(productControllerPhase61) && /WorkoutController/.test(productControllerPhase61), 'ProductController composes the Workouts surface');
+ok(/Start Lift/.test(read('src/features/dashboard/components/DashboardScreen.tsx')), 'dashboard exposes the Start Lift entry point');
+ok(/Session lifecycle foundation — DONE/.test(read('docs/ROADMAP.md')), 'roadmap records Phase 6.1A completion');
 
 console.log(`Project structural validation passed: ${assertions} assertions.`);

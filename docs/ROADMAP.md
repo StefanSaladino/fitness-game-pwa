@@ -229,13 +229,22 @@ Objective: make logging a real lifting session fast, resilient, and progression-
 
 Apply the UI design gate before coding the workout builder.
 
-### 6.1 Active lifting session
+### 6.1 Active lifting session — IN PROGRESS
 
-- Start Lift
-- timer with pause/resume
-- add/reorder/remove exercises
-- finish/cancel
+#### 6.1A Session lifecycle foundation — DONE
+
+- Start Lift with idempotent create-or-resume semantics
+- persisted timer with pause/resume
+- finish/cancel through authenticated-only lifecycle RPCs
 - active-session recovery after refresh/backgrounding
+- single-active-in-app-lift database invariant
+- client direct workout-session mutation removed
+
+#### 6.1B Exercise composition — NEXT
+
+- add exercises to the active session
+- reorder/remove exercises
+- connect the workout shell to canonical exercise selection
 
 ### 6.2 Exercise search
 
