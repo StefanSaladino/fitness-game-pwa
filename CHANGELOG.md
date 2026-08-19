@@ -1,5 +1,28 @@
 # Changelog
 
+## v0.3.0 — lifting-first foundation
+
+- Reframed the product from general fitness consistency to a lifting-progression game.
+- Locked `lifting-v1`: 50 lifting-workout XP, up to 30 exercise XP, up to 30 progression XP, up to 15 cardio bonus XP, and a 125 daily cap.
+- Made first valid exercise performance baseline-only and removed the v0.2 account-age gate, two-observation calibration, cooldown, and weekly-improvement XP.
+- Changed weekly-target semantics to lifting days; cardio does not satisfy the weekly lifting target.
+- Added canonical-exercise completion scoring and weighted/bodyweight progression rules.
+- Added `scoring_events`, `exercise_progress_observations`, and `exercise_progress` persistence foundations plus explicit lifting/cardio qualification flags.
+- Kept v0.2 XP/performance tables as migration-safe legacy structures only.
+- Added CSS separation-of-concerns rules and split global tokens/reset/base from the legacy stylesheet entrypoint.
+- Updated onboarding copy to describe lifting-day targets and the new scoring model.
+
+## Phase 5.3A — production authentication + onboarding UI (unreleased)
+
+- Added responsive production sign-in, account creation, email-verification, forgot-password, and reset-password presentation.
+- Added `useAuthActions` so auth forms do not call Supabase services directly.
+- Added generic user-facing Auth error mapping instead of exposing raw provider/database messages.
+- Added a persisted profile gate after session restoration.
+- Added production onboarding for username, display name, timezone, and 1–7 day weekly target.
+- Added `useOnboarding` to load and refresh authoritative profile state around the atomic onboarding RPC.
+- Added responsive phone/desktop onboarding layout and weekly-target picker.
+- Added validation, component, hook, and browser-shell regression coverage.
+
 ## Phase 5.2 — shared UI foundation (unreleased)
 
 - Approved phone, desktop, and future smartwatch visual directions.

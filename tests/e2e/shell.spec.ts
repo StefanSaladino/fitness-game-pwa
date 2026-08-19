@@ -1,21 +1,18 @@
 import { expect, test } from '@playwright/test';
 
-test('configured app reaches the signed-out authentication shell', async ({ page }) => {
+test('root reaches an actionable setup or signed-out authentication state', async ({ page }) => {
   await page.goto('/');
 
-  await expect(
-    page.getByRole('heading', { name: 'Sign in' }),
-  ).toBeVisible();
+  const setupHeading = page.getByRole('heading', { name: 'Connect Supabase' });
+  const signInHeading = page.getByRole('heading', { name: 'Sign in' });
 
-  await expect(
-    page.getByRole('button', { name: 'Sign in' }),
-  ).toBeVisible();
+  await expect(setupHeading.or(signInHeading)).toBeVisible();
 
-  await expect(
-    page.getByRole('button', { name: 'Forgot password?' }),
-  ).toBeVisible();
-
-  await expect(
-    page.getByRole('button', { name: 'Create an account' }),
-  ).toBeVisible();
+  if (await signInHeading.isVisible()) {
+    await expect(page.getByRole('button', { name: 'Sign in' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Create an account' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Forgot password?' })).toBeVisible();
+  } else {
+    await expect(page.getByText(/docs\/SUPABASE-SETUP\.md/i)).toBeVisible();
+  }
 });

@@ -1,10 +1,11 @@
-import { BASE_WORKOUT_XP, MAX_DAILY_PERFORMANCE_XP } from '../domain';
+import { LIFTING_WORKOUT_XP, MAX_DAILY_CARDIO_BONUS_XP, MAX_DAILY_EXERCISE_XP, MAX_DAILY_PROGRESSION_XP, MAX_DAILY_XP } from '../domain';
 import { AppShell, PageHeader } from '../components/layout';
 import { Button, Card, Icon, ProgressBar } from '../components/ui';
 import { AuthProvider, useAuth } from '../features/auth/AuthProvider';
 import { AuthScreen } from '../features/auth/AuthScreen';
 import { ResetPasswordScreen } from '../features/auth/ResetPasswordScreen';
 import { signOut } from '../features/auth/authService';
+import { OnboardingScreen, useOnboarding, type OnboardingProfile } from '../features/onboarding';
 import { isSupabaseConfigured } from '../lib/supabase';
 
 const week = [
@@ -17,26 +18,27 @@ const week = [
   { day: 'Sun', complete: false },
 ];
 
-function FoundationDashboard() {
-  const { session } = useAuth();
-  const email = session?.user.email ?? 'Signed-in athlete';
-
+function FoundationDashboard({ profile }: { profile: OnboardingProfile }) {
   return (
-    <AppShell onSignOut={() => void signOut()} userLabel={email} userMeta="Foundation account">
+    <AppShell
+      onSignOut={() => void signOut()}
+      userLabel={profile.displayName}
+      userMeta={`@${profile.username} · ${profile.weeklyWorkoutTarget}/week`}
+    >
       <PageHeader
         action={(
           <Button trailingIcon={<Icon name="arrow-right" size={18} />}>
-            Start workout
+            Start lift
           </Button>
         )}
-        description="The responsive shell and shared components are ready. Live dashboard data and product screens arrive in the next implementation slices."
-        eyebrow="PHASE 5 · UI FOUNDATION"
-        title="Today"
+        description="Authentication and lifting-first onboarding are live. Group setup and the first real lifting dashboard are the next vertical slice."
+        eyebrow="LIFTING-V1 · FOUNDATION"
+        title={`Welcome, ${profile.displayName}`}
       />
 
       <section className="dashboard-grid" aria-label="Foundation dashboard preview">
-        <Card className="dashboard-card dashboard-card--weekly" eyebrow="THIS WEEK" title="3 / 5 workouts">
-          <div className="week-strip" aria-label="Weekly workout progress">
+        <Card className="dashboard-card dashboard-card--weekly" eyebrow="THIS WEEK" title={`${profile.weeklyWorkoutTarget} lifting-day target`}>
+          <div className="week-strip" aria-label="Weekly workout progress preview">
             {week.map(({ day, complete }) => (
               <div className="week-day" key={day}>
                 <span className={`week-day__marker${complete ? ' week-day__marker--complete' : ''}`}>
@@ -50,45 +52,45 @@ function FoundationDashboard() {
 
         <Card className="dashboard-card dashboard-card--xp" eyebrow="LEVEL PROGRESS" title="XP foundation">
           <div className="xp-summary">
-            <strong>{BASE_WORKOUT_XP} XP</strong>
-            <span>base / qualifying day</span>
+            <strong>{LIFTING_WORKOUT_XP} XP</strong>
+            <span>qualifying lifting workout</span>
           </div>
-          <ProgressBar label="Foundation XP preview" max={125} value={BASE_WORKOUT_XP} />
-          <p className="support-copy">Up to +{MAX_DAILY_PERFORMANCE_XP} XP can come from eligible personal improvement.</p>
+          <ProgressBar label="Foundation XP preview" max={MAX_DAILY_XP} value={LIFTING_WORKOUT_XP} />
+          <p className="support-copy">Daily caps: +{MAX_DAILY_EXERCISE_XP} exercise XP, +{MAX_DAILY_PROGRESSION_XP} progression XP, and +{MAX_DAILY_CARDIO_BONUS_XP} cardio bonus XP.</p>
         </Card>
 
         <Card className="dashboard-card dashboard-card--start" eyebrow="TODAY" title="Ready to train?">
-          <p className="support-copy">Workout capture is intentionally not wired into this UI shell yet.</p>
+          <p className="support-copy">Lifting capture remains intentionally unwired until the group/dashboard vertical slice is complete.</p>
           <Button fullWidth trailingIcon={<Icon name="arrow-right" size={18} />}>
-            Start workout
+            Start lift
           </Button>
         </Card>
 
-        <Card className="dashboard-card" eyebrow="GROUP" title="Friends & leaderboard">
+        <Card className="dashboard-card" eyebrow="NEXT" title="Create or join your group">
           <div className="empty-state">
             <span className="empty-state__icon"><Icon name="groups" size={22} /></span>
             <div>
-              <strong>Group experience comes next</strong>
-              <p>Creation, invites, roles, and leaderboard presentation will use the same component system.</p>
+              <strong>Phase 5.3B</strong>
+              <p>Group creation, invite joining, roles, and the first lifting-first dashboard come next.</p>
             </div>
           </div>
         </Card>
 
-        <Card className="dashboard-card" eyebrow="ACTIVITY" title="Recent activity">
+        <Card className="dashboard-card" eyebrow="PROFILE" title={`@${profile.username}`}>
           <div className="empty-state">
             <span className="empty-state__icon"><Icon name="calendar" size={22} /></span>
             <div>
-              <strong>No activity rendered yet</strong>
-              <p>The shell is presentation-only; the eventual feed will consume feature-level data.</p>
+              <strong>{profile.timezone}</strong>
+              <p>Your scoring dates and Monday–Sunday weekly boundaries use this timezone.</p>
             </div>
           </div>
         </Card>
 
         <Card className="dashboard-card" eyebrow="ARCHITECTURE" title="Separation of concerns">
           <ul className="architecture-list">
-            <li>Shared components own presentation and accessibility.</li>
-            <li>Feature hooks/controllers will own async UI state.</li>
-            <li>Feature services remain the Supabase boundary.</li>
+            <li>Forms own presentation and accessible client feedback.</li>
+            <li>Hooks/controllers own async UI state and transitions.</li>
+            <li>Feature services remain the only Supabase boundary.</li>
           </ul>
         </Card>
       </section>
@@ -96,11 +98,45 @@ function FoundationDashboard() {
   );
 }
 
+function ProfileGate({ userId }: { userId: string }) {
+  const onboarding = useOnboarding(userId);
+
+  if (onboarding.status === 'loading') {
+    return <main className="auth-shell"><p>Loading your profile…</p></main>;
+  }
+
+  if (onboarding.status === 'error' || !onboarding.profile) {
+    return (
+      <main className="auth-shell">
+        <section className="auth-card">
+          <p className="eyebrow">PROFILE</p>
+          <h1>We couldn’t load your profile</h1>
+          <p className="lead auth-lead">{onboarding.error || 'Try loading your profile again.'}</p>
+          <Button fullWidth onClick={() => void onboarding.retry()}>Try again</Button>
+        </section>
+      </main>
+    );
+  }
+
+  if (!onboarding.profile.onboardingCompletedAt) {
+    return (
+      <OnboardingScreen
+        busy={onboarding.submitting}
+        error={onboarding.error}
+        onSubmit={onboarding.complete}
+        profile={onboarding.profile}
+      />
+    );
+  }
+
+  return <FoundationDashboard profile={onboarding.profile} />;
+}
+
 function AuthenticatedApp() {
   const { session, loading } = useAuth();
   if (loading) return <main className="auth-shell"><p>Loading session…</p></main>;
   if (!session) return <AuthScreen />;
-  return <FoundationDashboard />;
+  return <ProfileGate userId={session.user.id} />;
 }
 
 function ConfigurationHelp() {

@@ -302,3 +302,21 @@ in **SQL Editor -> New query**. Then run the updated `005_profile_onboarding.tes
 
 If the repository later switches to Supabase CLI deployment, reconcile the hosted project's migration history before using `db push`.
 
+
+## Phase 5.4 / v0.3 lifting-first migration
+
+For an existing project that already has the Phase 4 and Phase 5.1 migrations applied, run this next in the hosted SQL Editor:
+
+```text
+supabase/migrations/20260819000100_lifting_first_scoring_foundation.sql
+```
+
+Then run:
+
+```text
+supabase/tests/007_lifting_scoring_foundation.test.sql
+```
+
+This migration is additive. It introduces the new `lifting-v1` scoring/progression tables and explicit lifting/cardio qualification flags while retaining the v0.2 XP/performance tables as legacy migration history.
+
+Do not manually delete the v0.2 tables. New scoring code must target `scoring_events`, `exercise_progress_observations`, and `exercise_progress` instead.

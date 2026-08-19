@@ -1,130 +1,44 @@
-# Testing Guide
+# Testing Strategy
 
-## Philosophy
+Tests must protect product invariants, not just line coverage.
 
-High coverage is not the goal by itself. We test the rule at the layer that is actually responsible for enforcing it.
+## Pure domain / Vitest
 
-Examples:
+`src/domain/__tests__` is the executable lifting-v1 oracle.
 
-- Qualification math -> pure Vitest domain tests.
-- `xp_events` cannot be forged -> Postgres grants/RLS pgTAP test.
-- Password reset really changes credentials -> E2E/integration test against Supabase Auth.
-- A button renders -> React Testing Library.
+Critical invariants include:
 
-Never change a failing test merely to match new implementation output. First decide whether the product rule changed.
+- lifting workout XP is 0 or 50/day;
+- raw strength does not alter workout-completion XP;
+- exercise XP requires two completed working sets;
+- duplicate canonical exercises score once/day;
+- exercise XP caps at 30/day;
+- first valid progression observation is baseline-only;
+- progression tiers are 5/10/15 and cap at 30/day;
+- cardio uses its category minimum and best 5/10/15 bonus only;
+- cardio caps at 15/day and does not become lifting qualification;
+- total daily XP caps at 125;
+- weekly consistency counts lifting days only;
+- weekly-improvement XP is zero/removed.
 
-## Local validation order
+## Component tests
 
-```bash
-npm install
-npm run typecheck
-npm test
-npm run build
-npx supabase start
-npx supabase db reset
-npx supabase test db
-npx supabase db lint --level warning
-```
+React Testing Library covers user-visible behavior, accessibility semantics, validation, and controller/presentation boundaries. Group foundation tests also verify multi-group loading, controller state, invite failure mapping, and service delegation without UI-owned Supabase access.
 
-## Pure domain tests
+## Database / pgTAP
 
-Location: `src/domain/__tests__`.
+Database tests cover schema, RLS, group permissions, onboarding, qualification flags, and new lifting-v1 persistence boundaries.
 
-These cover:
-
-- threshold boundaries
-- base XP cap
-- account eligibility
-- benchmark calibration
-- anti-sandbagging baseline
-- performance tiers
-- weekly consistency
-- fairness invariants
-
-Use exact boundary tests (for example 14:59 vs 15:00), not only generic happy paths.
-
-## Database tests
-
-Location: `supabase/tests`.
-
-Run:
-
-```bash
-npx supabase test db
-```
-
-Current suites:
-
-- `001_schema.test.sql`: required schema/functions
-- `002_rls.test.sql`: cross-user privacy and non-writable authoritative tables
-- `003_groups.test.sql`: invite/idempotency/roles/ownership
-- `004_qualification.test.sql`: database qualification boundaries
-- `005_profile_onboarding.test.sql`: one-time onboarding and pending weekly-target behavior
-
-Database tests run in transactions and are rolled back by the Supabase CLI test harness.
-
-## Database lint
-
-```bash
-npx supabase db lint --level warning
-```
-
-Treat new warnings as review items. Raise to `--level error` when the project is stable enough to enforce that in CI.
-
-## React/component tests
-
-Use Testing Library through visible semantics. Prefer:
+After applying Phase 5.4 migration, run:
 
 ```text
-getByRole
-getByLabelText
-getByText
+supabase/tests/007_lifting_scoring_foundation.test.sql
 ```
 
-over internal class names/state implementation details.
+## E2E / Playwright
 
-## E2E
-
-```bash
-npx playwright install
-npm run test:e2e
-```
-
-Planned critical flows:
-
-1. signup + email confirmation
-2. login/logout/session restoration
-3. password recovery
-4. onboarding
-5. group create/join
-6. workout completion
-7. offline retry/idempotency
-
-## Time tests
-
-Freeze/control time. Never rely on the machine's current date for scoring assertions. Explicitly cover:
-
-- midnight crossings
-- `America/Toronto`
-- DST boundaries
-- timezone changes
-- Monday/Sunday week boundaries
+Browser tests cover real user journeys. As workout capture lands, Playwright should test start/log/finish flows while authoritative scoring correctness remains primarily a domain/database concern.
 
 ## Concurrency
 
-Concurrency invariants must be tested against real PostgreSQL, not mocks:
-
-- two simultaneous qualifying workouts cannot produce 200 base XP;
-- duplicate sync cannot create a second benchmark observation;
-- same workout finishing from two devices is idempotent.
-
-## Test review checklist
-
-Before accepting a new test, ask:
-
-1. What product rule does this assert?
-2. Is this the correct enforcement layer?
-3. Could an incorrect implementation still pass this assertion?
-4. Are the boundary values covered?
-5. Are failure/security cases covered?
-6. Does the test accidentally depend on execution order/current time/random external data?
+Authoritative XP concurrency/idempotency must be tested against real PostgreSQL when Phase 7 scoring reconciliation is implemented. Mocks are not sufficient for duplicate-event protection.

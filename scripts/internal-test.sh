@@ -1,14 +1,14 @@
 #!/usr/bin/env bash
 set -euo pipefail
-ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-OUT="$ROOT/.internal-build"
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+OUT="${TMPDIR:-/tmp}/fitness-game-domain-$RANDOM"
 rm -rf "$OUT"
 mkdir -p "$OUT"
-
-# Compile the framework-independent domain layer with the globally available TypeScript compiler.
-tsc   --target ES2022   --module commonjs   --moduleResolution node   --strict   --esModuleInterop   --skipLibCheck   --outDir "$OUT"   "$ROOT/src/domain/config.ts"   "$ROOT/src/domain/types.ts"   "$ROOT/src/domain/workouts/qualification.ts"   "$ROOT/src/domain/scoring/baseXp.ts"   "$ROOT/src/domain/progression/benchmarks.ts"   "$ROOT/src/domain/progression/performance.ts"   "$ROOT/src/domain/consistency/weekly.ts"
-
-printf '{"type":"commonjs"}
-' > "$OUT/package.json"
-node "$ROOT/scripts/internal-test.cjs" "$OUT"
+cd "$ROOT"
+tsc --target ES2022 --module commonjs --moduleResolution node --outDir "$OUT" \
+  src/domain/config.ts src/domain/types.ts src/domain/workouts/qualification.ts \
+  src/domain/scoring/baseXp.ts src/domain/scoring/exerciseXp.ts src/domain/scoring/cardioBonus.ts src/domain/scoring/dailyXp.ts \
+  src/domain/progression/benchmarks.ts src/domain/progression/performance.ts src/domain/consistency/weekly.ts
+printf '{"type":"commonjs"}\n' > "$OUT/package.json"
+node scripts/internal-test.cjs "$OUT"
 rm -rf "$OUT"

@@ -1,118 +1,66 @@
-# Workout Game PWA
+# Lifting Game PWA
 
-A React + TypeScript + Vite progressive web app for a private, expandable friend-group fitness game. The scoring model rewards **consistency first** and uses a small personal-improvement bonus only after account and per-benchmark calibration.
+A React + TypeScript + Vite progressive web app for an expandable friend-group **lifting progression game**. The v0.3 product model rewards completing real lifting sessions, meaningful exercise work, and personal progression; cardio remains a small accessory bonus.
 
 ## Current phase
 
-Phase 5 is in progress. The visual-design gate has been completed for phone, desktop, and the future smartwatch companion. The repository now includes the approved shared design-system primitives and responsive authenticated app shell. Authentication/onboarding screen implementation is the next slice; workout capture remains intentionally later.
+The project has completed the authentication/onboarding vertical slice and the **Phase 5.4 lifting-first domain refactor**. The next product slice is group setup plus the first real lifting-oriented dashboard.
 
-**Phase 4 / foundation v0.2:** Supabase schema, Row Level Security, expandable groups, workout persistence, XP/benchmark ledger infrastructure, authentication, and password recovery.
+Current scoring version: `lifting-v1`.
 
-The app is intentionally not yet a polished workout tracker. The current goal is to make the rules, data model, permissions, and onboarding reproducible before feature UI grows around them.
+Daily scoring layers:
+
+- qualifying lifting workout: 50 XP/day max;
+- exercise completion: 5 XP per canonical exercise with at least 2 working sets, max 30/day;
+- personal exercise progression: 5/10/15 XP per improved exercise, max 30/day;
+- cardio accessory bonus: best 5/10/15 duration tier, max 15/day;
+- maximum daily total: 125 XP.
+
+See `docs/DOMAIN-RULES.md` before changing scoring behavior.
 
 ## Stack
 
 - React 19 + TypeScript
 - Vite 8
 - PWA manifest + service worker
-- Supabase Auth
-- Supabase/PostgreSQL
-- Row Level Security (RLS)
+- Supabase Auth/PostgreSQL/RLS
 - Vitest + React Testing Library
-- Supabase CLI + pgTAP database tests
+- pgTAP database tests
 - Playwright E2E
 
-## Prerequisites
+## Hosted Supabase workflow
 
-Install:
+This repository currently uses a hosted-Supabase Dashboard-first workflow.
 
-1. Node.js 20+ (Node 22 is recommended for this repository)
-2. npm
-3. Git
-4. Docker Desktop only if/when you choose to run the optional local Supabase CLI stack
+Apply migrations in filename order through **Supabase -> SQL Editor**. For an existing environment, run only migration files not already applied.
 
-## First-time local setup
+After Phase 5.4, the next migration to apply is:
 
-### 1. Install JavaScript dependencies
+```text
+supabase/migrations/20260819000100_lifting_first_scoring_foundation.sql
+```
+
+Then run:
+
+```text
+supabase/tests/007_lifting_scoring_foundation.test.sql
+```
+
+The optional local Supabase CLI workflow remains documented in `docs/SUPABASE-SETUP.md`.
+
+## Local app setup
 
 ```bash
 npm install
 ```
 
-### 2. Choose your Supabase workflow
-
-The current project is using a **hosted Supabase Dashboard-first workflow**. You do not need Docker or a local Supabase stack for that path. Apply SQL files through the hosted SQL Editor as documented in `docs/SUPABASE-SETUP.md`.
-
-If you later choose the optional local CLI workflow, initialize its metadata with:
-
-```bash
-npx supabase init
-```
-
-Do **not** delete the existing `supabase/migrations`, `supabase/tests`, or `supabase/seed.sql` files.
-
-Open the generated `supabase/config.toml` and set the local Auth URLs to Vite:
-
-```toml
-[auth]
-site_url = "http://localhost:5173"
-additional_redirect_urls = ["http://localhost:5173", "http://localhost:5173/reset-password"]
-```
-
-If you change this while Supabase is already running, restart the local stack.
-
-### 3. Optional local CLI only: start Docker Desktop
-
-Skip this for the current hosted Dashboard workflow. If using the local CLI, wait until Docker reports that the engine is running.
-
-### 4. Optional local CLI only: start local Supabase
-
-```bash
-npx supabase start
-```
-
-The first run downloads local service images. When it finishes, Supabase prints local URLs and keys.
-
-Useful command:
-
-```bash
-npx supabase status
-```
-
-### 5. Apply migrations
-
-For the hosted Dashboard workflow, run each migration file in filename order in **SQL Editor -> New query**, followed by `supabase/seed.sql` on a fresh project. For an already-configured Phase 4 project, apply only new migration files that have not been run yet.
-
-For the optional local CLI workflow, apply all migrations from a clean database:
-
-
-```bash
-npx supabase db reset
-```
-
-This recreates the local database, applies every migration in order, then runs `supabase/seed.sql`.
-
-### 6. Configure the Vite app
-
-The exact environment-variable rules are documented in `docs/ENVIRONMENT.md`. For local development, copy the sanitized template:
-
-```bash
-cp .env.example .env.local
-```
-
-On Windows PowerShell:
+Create the private local environment file:
 
 ```powershell
 Copy-Item .env.example .env.local
 ```
 
-Run:
-
-```bash
-npx supabase status
-```
-
-For a hosted Supabase project, copy the **Project URL** and **Publishable key** from the Supabase Connect/API Keys panel into `.env.local`:
+Populate only browser-safe values:
 
 ```env
 VITE_SUPABASE_URL=https://YOUR_PROJECT_REF.supabase.co
@@ -120,76 +68,31 @@ VITE_SUPABASE_PUBLISHABLE_KEY=sb_publishable_YOUR_REAL_KEY
 VITE_APP_URL=http://localhost:5173
 ```
 
-Never place a Supabase secret/service-role key, database password, or `sb_secret_...` value in a `VITE_` variable. See `docs/ENVIRONMENT.md`.
+Never put service-role/secret keys, database passwords, or `sb_secret_...` values in `VITE_` variables.
 
-### 7. Run database tests
-
-For the hosted Dashboard workflow, paste each `supabase/tests/*.test.sql` file into SQL Editor and run it individually.
-
-For the optional local CLI workflow:
-
-```bash
-npx supabase test db
-```
-
-### 8. Lint database functions/schema
-
-```bash
-npx supabase db lint --level warning
-```
-
-### 9. Run the frontend
+Run:
 
 ```bash
 npm run dev
 ```
 
-Open the Vite URL, normally `http://localhost:5173`.
-
-## Local email testing / password reset
-
-The local Supabase stack captures Auth emails in Mailpit. After `supabase start`, open:
-
-```text
-http://localhost:54324
-```
-
-1. Create an account in the app.
-2. Open Mailpit and follow the confirmation email if local email confirmation is enabled.
-3. On the sign-in screen choose **Forgot password?**.
-4. Submit the account email.
-5. Open the reset email in Mailpit.
-6. Follow the link to `/reset-password`.
-7. Set a new password.
-8. Confirm the old password no longer signs in and the new password does.
-
-For a hosted Supabase project, add the production `/reset-password` URL to **Authentication -> URL Configuration -> Redirect URLs**.
-
-## Validation commands
-
-Run these before opening a PR:
+## Validation
 
 ```bash
 npm run typecheck
 npm test
 npm run build
-npx supabase db reset
-npx supabase test db
-npx supabase db lint --level warning
-```
-
-Optional browser E2E:
-
-```bash
-npx playwright install
+npm run test:structure
 npm run test:e2e
 ```
 
-Dependency-independent domain verification:
+Dependency-independent domain oracle:
 
 ```bash
 npm run test:internal
 ```
+
+For hosted Supabase, run the pgTAP SQL files individually in SQL Editor after applying migrations.
 
 ## Project map
 
@@ -197,45 +100,40 @@ npm run test:internal
 src/
   app/                  Route-level application composition
   components/ui/        Shared accessible UI primitives
-  components/layout/    Responsive app shell/navigation
-  domain/               Pure workout/scoring/progression rules
-  features/auth/        Supabase authentication/recovery foundation
-  lib/                  Supabase client bootstrap
-  pwa/                  Service-worker registration
-  styles/               Shared responsive styles
+  components/layout/    Responsive shell/navigation
+  domain/               Pure lifting/scoring/progression rules
+  features/auth/        Auth UI/controller/service boundary
+  features/onboarding/  Profile onboarding UI/controller/service boundary
+  lib/                  Infrastructure clients
+  pwa/                  Service worker
+  styles/               Global tokens/reset/base + legacy compatibility styles
 
 docs/
-  ROADMAP.md             Detailed implementation roadmap/status
-  DOMAIN-RULES.md        Product/scoring source of truth
-  TESTING.md             Testing philosophy and commands
-  ARCHITECTURE.md        Layering/security decisions
-  DATABASE.md            Schema and RLS overview
-  SUPABASE-SETUP.md      Local + hosted Supabase walkthrough
-  VALIDATION.md          What was actually tested in this package
-  ENVIRONMENT.md         Env variables, secret handling, and deployment setup
-  UI-DEVELOPMENT-GATE.md Mandatory visual-design workflow
-  UI-ARCHITECTURE.md     Approved responsive/component boundaries
+  ROADMAP.md             Detailed roadmap/status
+  DOMAIN-RULES.md        lifting-v1 scoring source of truth
+  CSS-ARCHITECTURE.md    CSS separation-of-concerns rules
+  UI-ARCHITECTURE.md     Responsive/component boundaries
+  TESTING.md             Test philosophy
+  DATABASE.md            Persistence/RLS model
 supabase/
   migrations/            Versioned database changes
-  tests/                 pgTAP database/RLS tests
-  seed.sql               Reproducible local seed data
+  tests/                 pgTAP tests
+  seed.sql               Exercise/catalog seed
 ```
 
 ## Development rules
 
-1. Do not calculate authoritative XP in React.
-2. Do not make `xp_events` or benchmark state client-writable.
-3. Domain-rule changes require matching test-oracle updates.
-4. Tests must assert intended behavior, not implementation details.
-5. RLS/database permission rules must be tested at the database layer.
-6. Never hard-code a four-person group limit.
-7. Do not use another user's performance in personal-improvement calculations.
-8. Never commit `.env.local`, service-role keys, database passwords, or production secrets.
+1. Authoritative scoring is never calculated only in React.
+2. `scoring_events` and exercise-progress snapshots are not client-writable.
+3. Domain-rule changes require matching tests and documentation.
+4. Another user's performance never affects personal progression scoring.
+5. Cardio does not satisfy the weekly lifting target.
+6. Raw training volume is tracked for analytics but does not directly award XP.
+7. Canonical exercise IDs—not labels/aliases—are progression identity.
+8. No hard-coded four-person group limit.
+9. Never commit `.env.local` or privileged credentials.
+10. New CSS follows `docs/CSS-ARCHITECTURE.md`; feature/component styles do not grow the legacy global stylesheet.
 
 ## Read next
 
-Start with `docs/ROADMAP.md`, then `docs/DOMAIN-RULES.md`, `docs/ARCHITECTURE.md`, `docs/SUPABASE-SETUP.md`, `docs/ENVIRONMENT.md`, `docs/TESTING.md`, `docs/VALIDATION.md`, and `docs/REFERENCES.md`.
-
-## Deployment routing note
-
-The password-reset page uses the client route `/reset-password`. Static hosting must rewrite that path to `index.html` so the React PWA can process the Supabase recovery session. Add the host-specific SPA fallback during deployment.
+Start with `docs/ROADMAP.md`, `docs/DOMAIN-RULES.md`, `docs/CSS-ARCHITECTURE.md`, `docs/ARCHITECTURE.md`, `docs/DATABASE.md`, and `docs/TESTING.md`.

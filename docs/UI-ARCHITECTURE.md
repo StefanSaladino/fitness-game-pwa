@@ -10,6 +10,8 @@ The product owner reviewed concept layouts for:
 - desktop
 - smartwatch companion
 
+The active product model is now lifting-first (`lifting-v1`). The approved visual language remains valid, but dashboard/workout content must emphasize lifting progression and treat cardio as secondary.
+
 The shared visual language is:
 
 - dark charcoal / navy foundation
@@ -125,8 +127,37 @@ Supabase
 
 Pure validation and scoring logic stays outside that async feature stack.
 
+CSS follows a parallel boundary: global tokens/reset/base only, with new component and feature styles colocated as described in `docs/CSS-ARCHITECTURE.md`. The existing Phase 5 `global.css` selectors are legacy compatibility styles and should be migrated incrementally when touched.
+
 ## Current implementation boundary
 
 Phase 5.2 implements the shared design system and responsive authenticated shell only. The dashboard content shown inside it is a foundation preview, not the completed dashboard feature.
 
 The next implementation slice may restyle and componentize authentication/onboarding using these primitives, but must not move Supabase calls into visual components.
+
+## Phase 5.3A implementation mapping
+
+The approved visual direction is now represented by production authentication and profile-onboarding components.
+
+Authentication is layered as:
+
+```text
+AuthScreen (mode/composition)
+  -> SignInForm / SignUpForm / ForgotPasswordForm / VerifyEmailPanel
+  -> useAuthActions
+  -> authService
+  -> Supabase Auth
+```
+
+Profile onboarding is layered as:
+
+```text
+App profile gate
+  -> OnboardingScreen
+  -> OnboardingForm / WeeklyTargetPicker
+  -> useOnboarding
+  -> onboardingService
+  -> complete_onboarding RPC / profiles query
+```
+
+Presentation components remain unaware of SQL, RLS policies, RPC signatures, and Supabase client initialization. Phone and desktop use the same form components and data flow; only layout changes at responsive breakpoints.

@@ -10,9 +10,10 @@ export type WorkoutCategory =
   | 'MOBILITY'
   | 'OTHER';
 
+export type CardioBonusCategory = Exclude<WorkoutCategory, 'STRENGTH' | 'MOBILITY' | 'OTHER'>;
 export type WorkoutStatus = 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED';
 export type WorkoutSource = 'MANUAL' | 'IN_APP' | 'EXTERNAL';
-export type BenchmarkState = 'UNSEEN' | 'CALIBRATING' | 'ESTABLISHED';
+export type ExerciseBaselineState = 'UNSEEN' | 'ESTABLISHED';
 
 export interface StrengthSetInput {
   setType: 'WARMUP' | 'WORKING';
@@ -27,4 +28,16 @@ export interface WorkoutQualificationInput {
   source: WorkoutSource;
   activeDurationSeconds: number;
   strengthSets?: readonly StrengthSetInput[];
+}
+
+export interface ExerciseCompletionInput {
+  exerciseId: string;
+  completedWorkingSetCount: number;
+}
+
+export interface DailyXpBreakdown {
+  liftingWorkoutXp: number;
+  exerciseXp: number;
+  progressionXp: number;
+  cardioBonusXp: number;
 }

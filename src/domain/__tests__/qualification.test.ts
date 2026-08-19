@@ -1,17 +1,53 @@
 import { describe, expect, it } from 'vitest';
-import { qualifiesWorkout } from '../workouts/qualification';
-import type { WorkoutCategory, WorkoutQualificationInput } from '../types';
+import { qualifiesCardioBonusActivity, qualifiesLiftingWorkout, qualifiesWorkout } from '../workouts/qualification';
+import type { WorkoutQualificationInput } from '../types';
 
 const base = (overrides: Partial<WorkoutQualificationInput>): WorkoutQualificationInput => ({
-  category: 'RUNNING',
+  category: 'STRENGTH',
   status: 'COMPLETED',
   source: 'IN_APP',
   activeDurationSeconds: 15 * 60,
   ...overrides,
 });
 
-describe('workout qualification boundaries', () => {
-  const cases: Array<[WorkoutCategory, number]> = [
+const working = (count: number) => Array.from({ length: count }, () => ({
+  setType: 'WORKING' as const,
+  completed: true,
+  reps: 8,
+}));
+
+describe('lifting qualification', () => {
+  it('qualifies at 15 minutes and four completed working sets', () => {
+    expect(qualifiesLiftingWorkout(base({ strengthSets: working(4) }))).toBe(true);
+  });
+
+  it('fails below either lifting boundary', () => {
+    expect(qualifiesLiftingWorkout(base({ activeDurationSeconds: 899, strengthSets: working(4) }))).toBe(false);
+    expect(qualifiesLiftingWorkout(base({ strengthSets: working(3) }))).toBe(false);
+  });
+
+  it('does not count warmups, zero-rep sets, or incomplete sets', () => {
+    expect(qualifiesLiftingWorkout(base({
+      strengthSets: [
+        ...working(3),
+        { setType: 'WARMUP', completed: true, reps: 8 },
+        { setType: 'WORKING', completed: true, reps: 0 },
+        { setType: 'WORKING', completed: false, reps: 8 },
+      ],
+    }))).toBe(false);
+  });
+
+  it('does not require external weight for bodyweight working sets', () => {
+    expect(qualifiesLiftingWorkout(base({ strengthSets: working(4) }))).toBe(true);
+  });
+
+  it('never treats cardio as a lifting workout', () => {
+    expect(qualifiesLiftingWorkout(base({ category: 'RUNNING', activeDurationSeconds: 90 * 60 }))).toBe(false);
+  });
+});
+
+describe('cardio bonus qualification', () => {
+  it.each([
     ['RUNNING', 15 * 60],
     ['WALKING_HIKING', 30 * 60],
     ['CYCLING', 20 * 60],
@@ -19,51 +55,24 @@ describe('workout qualification boundaries', () => {
     ['SPORT', 20 * 60],
     ['CARDIO', 20 * 60],
     ['HIIT', 12 * 60],
-    ['MOBILITY', 20 * 60],
-    ['OTHER', 20 * 60],
-  ];
-
-  it.each(cases)('%s fails one second below and qualifies exactly at threshold', (category: WorkoutCategory, threshold: number) => {
-    expect(qualifiesWorkout(base({ category, activeDurationSeconds: threshold - 1 }))).toBe(false);
-    expect(qualifiesWorkout(base({ category, activeDurationSeconds: threshold }))).toBe(true);
+  ] as const)('%s uses its minimum duration', (category, threshold) => {
+    expect(qualifiesCardioBonusActivity(base({ category, activeDurationSeconds: threshold - 1, strengthSets: undefined }))).toBe(false);
+    expect(qualifiesCardioBonusActivity(base({ category, activeDurationSeconds: threshold, strengthSets: undefined }))).toBe(true);
   });
 
-  it('requires a completed workout', () => {
-    expect(qualifiesWorkout(base({ status: 'IN_PROGRESS' }))).toBe(false);
-    expect(qualifiesWorkout(base({ status: 'CANCELLED' }))).toBe(false);
+  it('does not award cardio eligibility to mobility or other', () => {
+    expect(qualifiesCardioBonusActivity(base({ category: 'MOBILITY', activeDurationSeconds: 60 * 60 }))).toBe(false);
+    expect(qualifiesCardioBonusActivity(base({ category: 'OTHER', activeDurationSeconds: 60 * 60 }))).toBe(false);
   });
 
-  it.each(['MANUAL', 'IN_APP', 'EXTERNAL'] as const)('does not change qualification based on source: %s', (source: 'MANUAL' | 'IN_APP' | 'EXTERNAL') => {
-    expect(qualifiesWorkout(base({ source }))).toBe(true);
-  });
-});
-
-describe('strength qualification', () => {
-  const working = (count: number) => Array.from({ length: count }, () => ({ setType: 'WORKING' as const, completed: true, reps: 8 }));
-
-  it('qualifies at 15 minutes and four completed working sets', () => {
-    expect(qualifiesWorkout(base({ category: 'STRENGTH', strengthSets: working(4) }))).toBe(true);
+  it('requires a completed non-review activity', () => {
+    expect(qualifiesCardioBonusActivity(base({ category: 'RUNNING', status: 'IN_PROGRESS', activeDurationSeconds: 60 * 60 }))).toBe(false);
+    expect(qualifiesCardioBonusActivity(base({ category: 'RUNNING', activeDurationSeconds: 6 * 60 * 60 + 1 }))).toBe(false);
   });
 
-  it('fails at 14:59 with four working sets', () => {
-    expect(qualifiesWorkout(base({ category: 'STRENGTH', activeDurationSeconds: 899, strengthSets: working(4) }))).toBe(false);
-  });
-
-  it('fails at 15 minutes with only three working sets', () => {
-    expect(qualifiesWorkout(base({ category: 'STRENGTH', strengthSets: working(3) }))).toBe(false);
-  });
-
-  it('does not count warmups, zero-rep sets, or incomplete sets', () => {
-    const strengthSets = [
-      ...working(3),
-      { setType: 'WARMUP' as const, completed: true, reps: 8 },
-      { setType: 'WORKING' as const, completed: true, reps: 0 },
-      { setType: 'WORKING' as const, completed: false, reps: 8 },
-    ];
-    expect(qualifiesWorkout(base({ category: 'STRENGTH', strengthSets }))).toBe(false);
-  });
-
-  it('does not require weight for valid bodyweight working sets', () => {
-    expect(qualifiesWorkout(base({ category: 'STRENGTH', strengthSets: working(4) }))).toBe(true);
+  it('generic qualification is now scoring eligibility, not generic exercise participation', () => {
+    expect(qualifiesWorkout(base({ strengthSets: working(4) }))).toBe(true);
+    expect(qualifiesWorkout(base({ category: 'RUNNING', activeDurationSeconds: 15 * 60 }))).toBe(true);
+    expect(qualifiesWorkout(base({ category: 'MOBILITY', activeDurationSeconds: 30 * 60 }))).toBe(false);
   });
 });

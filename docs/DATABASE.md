@@ -1,91 +1,73 @@
-# Database Guide
+# Database Model
 
-## Core tables
+## Core identity/social tables
 
-### `profiles`
-Application profile tied 1:1 to `auth.users`. Stores username, display name, timezone, weekly target, and onboarding timestamp.
+- `profiles`: Auth-linked profile, timezone, onboarding state, and weekly target. From v0.3, the weekly target means **lifting days per Monday-Sunday week**.
+- `groups`, `group_members`, `group_invites`: expandable friend-group model with OWNER/ADMIN/MEMBER roles.
 
-### `groups`
-Expandable private groups. `created_by` records the creator; current ownership is represented by active `group_members.role = OWNER`.
+## Workout capture
 
-### `group_members`
-Many-to-many group membership with `OWNER`, `ADMIN`, `MEMBER` and `ACTIVE`/`REMOVED` status. A partial unique index guarantees at most one active owner per group.
+- `exercise_catalog`: canonical exercise identity and measurement type.
+- `workout_sessions`: session category/status/timing plus derived scoring-date flags.
+- `workout_exercises`: ordered canonical exercises inside a workout.
+- `workout_sets`: warmup/working set data.
 
-### `group_invites`
-Token, expiry, use limit, use count, and revocation. `join_group_by_invite()` is idempotent for an already-active member.
+Phase 5.4 adds explicit session flags:
 
-### `exercise_catalog`
-Canonical exercise identities. Progression should reference canonical IDs rather than display-name strings.
+- `qualifies_lifting`
+- `qualifies_cardio_bonus`
 
-### `workout_sessions`
-Private workout headers. `scoring_date`, `qualifies`, and `needs_review` are derived by a database trigger so client-supplied values are not trusted.
+The old `qualifies` column remains temporarily as a transitional aggregate flag.
 
-### `workout_exercises` / `workout_sets`
-Normalized strength data. Users can change these directly only while the workout is `IN_PROGRESS` in the foundation policy.
+## lifting-v1 scoring persistence
 
-### `xp_events`
-Authoritative ledger. Browser role has SELECT only for own rows. No INSERT/UPDATE/DELETE grant.
+### `scoring_events`
 
-Partial unique indexes reserve one daily event per type (`DAILY_WORKOUT`, `PERFORMANCE_BONUS`, `WEEKLY_IMPROVEMENT`) per user/scoring date.
+New authoritative XP ledger target with:
 
-### `performance_observations`
-Derived raw comparable performance observations. Browser is read-only.
+- user
+- scoring date
+- optional workout
+- optional canonical exercise
+- event type
+- XP amount
+- `scoring_version`
+- metadata
 
-### `performance_benchmarks`
-Derived benchmark state (`UNSEEN`, `CALIBRATING`, `ESTABLISHED`). Browser is read-only.
+Event types:
 
-### `weekly_goals`
-Historical Monday-start target snapshots. Browser is read-only in this phase so previous weeks cannot be rewritten casually.
+- `LIFTING_WORKOUT`
+- `EXERCISE_COMPLETE`
+- `EXERCISE_PROGRESS`
+- `CARDIO_BONUS`
 
-## RLS summary
+Unique indexes prevent more than one lifting-workout/cardio event per user/date and more than one exercise-completion/progression event per canonical exercise/date.
 
-- profiles: self update; read self + people sharing an active group
-- groups: active members read; owner/admin update
-- group_members: active group members read; mutation through RPC
-- group_invites: owner/admin manage
-- workouts: owner only
-- XP/benchmark/weekly derived data: own read only
+### `exercise_progress_observations`
 
-## Important functions
+Stores valid exercise-specific performance observations for:
 
-- `handle_new_auth_user()`
-- `is_active_group_member()`
-- `current_group_role()`
-- `group_role_for_user()`
-- `users_share_active_group()`
-- `complete_onboarding()`
-- `schedule_weekly_target()`
-- `join_group_by_invite()`
-- `remove_group_member()`
-- `set_group_member_role()`
-- `transfer_group_ownership()`
-- `leave_group()`
-- `prepare_workout_session()`
+- `E1RM`
+- `BODYWEIGHT_REPS`
 
-## Rebuild from zero
+### `exercise_progress`
 
-```bash
-npx supabase db reset
-```
+Stores the current personal best per user + canonical exercise + metric type, including source workout and achieved time.
 
-Never manually patch a shared/production database and forget the migration. Schema changes belong in `supabase/migrations`.
+## Legacy v0.2 scoring tables
 
-## Generate TypeScript database types
+These remain in the database for migration safety but are no longer the target for new scoring logic:
 
-After the local stack is running and migrations are applied:
+- `xp_events`
+- `performance_observations`
+- `performance_benchmarks`
 
-```bash
-npx supabase gen types typescript --local > src/types/database.generated.ts
-```
+## Weekly goals
 
-Regenerate after schema changes.
-## Phase 5 onboarding transaction
+`weekly_goals` remains a historical target snapshot table. Its `target` now means lifting days. Cardio does not increment weekly lifting consistency.
 
-Migration `20260818000200_phase5_onboarding_foundation.sql` replaces the Phase 4 three-argument `complete_onboarding` function with:
+## RLS
 
-```text
-complete_onboarding(username, display_name, timezone, weekly_target)
-```
+Raw workout rows remain user-owned. The v0.3 scoring/progression tables are read-only to authenticated clients and filtered to `auth.uid()`.
 
-The function normalizes the username to lowercase, validates the canonical username format/uniqueness, validates display name/timezone/target, updates the profile, marks onboarding complete, and snapshots the current weekly goal in one database transaction. The client must not reproduce this as several independent profile updates.
-
+Authoritative scoring writes will be performed through controlled server/database logic in the scoring persistence phase.

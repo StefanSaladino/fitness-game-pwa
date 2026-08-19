@@ -1,0 +1,16 @@
+Phase 5.4.1 — Cross-platform internal-test hotfix
+
+Replace:
+- package.json
+- scripts/internal-test.cjs
+- scripts/validate-project.cjs
+- docs/VALIDATION.md
+
+Delete after applying (no longer used):
+- scripts/internal-test.sh
+
+Behavior:
+- npm run test:internal now runs with Node on Windows/macOS/Linux/CI.
+- Domain compilation uses local node_modules/typescript/lib/tsc.js when available.
+- Temporary compiled output is created under os.tmpdir() and always cleaned up.
+- Existing 62 lifting-v1 internal assertions are unchanged.

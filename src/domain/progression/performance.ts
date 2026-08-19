@@ -1,24 +1,22 @@
-import {
-  ACCOUNT_PERFORMANCE_UNLOCK_HOURS,
-  MAX_DAILY_PERFORMANCE_XP,
-  REQUIRED_BENCHMARK_CALIBRATION_OBSERVATIONS,
-} from '../config';
+import { MAX_DAILY_PROGRESSION_XP, MAX_PROGRESS_XP_PER_EXERCISE } from '../config';
 
-const HOUR_MS = 60 * 60 * 1000;
 const EPSILON = 1e-12;
 
-export function isAccountPerformanceEligible(onboardingCompletedAt: Date, observationAt: Date): boolean {
-  const elapsedMs = observationAt.getTime() - onboardingCompletedAt.getTime();
-  return Number.isFinite(elapsedMs) && elapsedMs >= ACCOUNT_PERFORMANCE_UNLOCK_HOURS * HOUR_MS;
-}
-
 /** Improvement expressed as a ratio: 0.01 = 1%, 0.05 = 5%. */
-export function performanceBonusForImprovementRatio(improvementRatio: number): number {
+export function progressionBonusForImprovementRatio(improvementRatio: number): number {
   if (!Number.isFinite(improvementRatio) || improvementRatio + EPSILON < 0.01) return 0;
   if (improvementRatio + EPSILON < 0.025) return 5;
   if (improvementRatio + EPSILON < 0.05) return 10;
-  if (improvementRatio + EPSILON < 0.10) return 15;
-  return MAX_DAILY_PERFORMANCE_XP;
+  return MAX_PROGRESS_XP_PER_EXERCISE;
+}
+
+export function bodyweightProgressionBonus(previousBestReps: number, currentReps: number): number {
+  if (![previousBestReps, currentReps].every(Number.isFinite)) return 0;
+  const delta = Math.floor(currentReps) - Math.floor(previousBestReps);
+  if (delta <= 0) return 0;
+  if (delta === 1) return 5;
+  if (delta === 2) return 10;
+  return MAX_PROGRESS_XP_PER_EXERCISE;
 }
 
 export function relativeImprovementHigherIsBetter(previousBest: number, current: number): number {
@@ -26,31 +24,50 @@ export function relativeImprovementHigherIsBetter(previousBest: number, current:
   return (current - previousBest) / previousBest;
 }
 
-export function relativeImprovementLowerIsBetter(previousBest: number, current: number): number {
-  if (!Number.isFinite(previousBest) || !Number.isFinite(current) || previousBest <= 0 || current <= 0 || current >= previousBest) return 0;
-  return (previousBest - current) / previousBest;
-}
-
-export interface PerformanceEligibilityInput {
-  accountEligible: boolean;
-  qualifyingWorkout: boolean;
-  validPriorObservationCount: number;
-  cooldownEligible: boolean;
+export interface ProgressionEligibilityInput {
+  hasPriorBaseline: boolean;
+  qualifyingLiftingWorkout: boolean;
   improvementRatio: number;
 }
 
-export function calculatePerformanceBonus(input: PerformanceEligibilityInput): number {
-  if (!input.accountEligible || !input.qualifyingWorkout || !input.cooldownEligible) return 0;
-  if (input.validPriorObservationCount < REQUIRED_BENCHMARK_CALIBRATION_OBSERVATIONS) return 0;
-  return performanceBonusForImprovementRatio(input.improvementRatio);
+export function calculateExerciseProgressionBonus(input: ProgressionEligibilityInput): number {
+  if (!input.hasPriorBaseline || !input.qualifyingLiftingWorkout) return 0;
+  return progressionBonusForImprovementRatio(input.improvementRatio);
 }
 
-export function calculateDailyPerformanceXp(bonuses: readonly number[]): number {
-  const valid = bonuses.filter((bonus) => Number.isFinite(bonus) && bonus > 0);
-  return Math.min(MAX_DAILY_PERFORMANCE_XP, valid.length ? Math.max(...valid) : 0);
+export function calculateDailyProgressionXp(bonuses: readonly number[]): number {
+  const total = bonuses.reduce((sum, bonus) => {
+    if (!Number.isFinite(bonus) || bonus <= 0) return sum;
+    return sum + Math.min(MAX_PROGRESS_XP_PER_EXERCISE, bonus);
+  }, 0);
+  return Math.min(MAX_DAILY_PROGRESSION_XP, total);
 }
 
 export function estimatedOneRepMaxEpley(weightKg: number, reps: number): number | null {
   if (!Number.isFinite(weightKg) || !Number.isFinite(reps) || weightKg <= 0 || reps < 1 || reps > 12) return null;
   return weightKg * (1 + reps / 30);
 }
+
+/** @deprecated v0.3 removes the 168-hour account gate. */
+export function isAccountPerformanceEligible(): boolean {
+  return true;
+}
+
+/** @deprecated v0.3 uses progressionBonusForImprovementRatio. */
+export const performanceBonusForImprovementRatio = progressionBonusForImprovementRatio;
+
+/** @deprecated v0.3 uses calculateExerciseProgressionBonus. */
+export function calculatePerformanceBonus(input: {
+  qualifyingWorkout: boolean;
+  validPriorObservationCount: number;
+  improvementRatio: number;
+}): number {
+  return calculateExerciseProgressionBonus({
+    hasPriorBaseline: input.validPriorObservationCount >= 1,
+    qualifyingLiftingWorkout: input.qualifyingWorkout,
+    improvementRatio: input.improvementRatio,
+  });
+}
+
+/** @deprecated v0.3 progression bonuses sum by distinct exercise, capped at 30/day. */
+export const calculateDailyPerformanceXp = calculateDailyProgressionXp;

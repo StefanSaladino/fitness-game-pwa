@@ -1,80 +1,80 @@
 import { useState, type FormEvent } from 'react';
-import { updatePassword } from './authService';
+import { Button, TextField } from '../../components/ui';
+import { AuthLayout } from './components/AuthLayout';
 import { useAuth } from './AuthProvider';
+import { MIN_PASSWORD_LENGTH } from './authValidation';
+import { useAuthActions } from './hooks/useAuthActions';
 
 export function ResetPasswordScreen() {
   const { session, loading, passwordRecovery } = useAuth();
+  const actions = useAuthActions();
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [error, setError] = useState('');
+  const [localError, setLocalError] = useState('');
   const [complete, setComplete] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
 
   async function submit(event: FormEvent) {
     event.preventDefault();
-    setError('');
-    if (password.length < 8) {
-      setError('Password must be at least 8 characters.');
+    setLocalError('');
+
+    if (password.length < MIN_PASSWORD_LENGTH) {
+      setLocalError(`Password must be at least ${MIN_PASSWORD_LENGTH} characters.`);
       return;
     }
     if (password !== confirmPassword) {
-      setError('Passwords do not match.');
+      setLocalError('Passwords do not match.');
       return;
     }
 
-    setSubmitting(true);
-    const { error: updateError } = await updatePassword(password);
-    setSubmitting(false);
-    if (updateError) {
-      setError(updateError.message);
-      return;
-    }
-    setComplete(true);
+    if (await actions.updatePassword(password)) setComplete(true);
   }
 
-  if (loading) return <main className="auth-shell"><p>Checking recovery session…</p></main>;
+  if (loading) {
+    return <main className="auth-shell"><p>Checking recovery session…</p></main>;
+  }
+
   if (complete) {
     return (
-      <main className="auth-shell">
-        <section className="auth-card">
-          <h1>Password updated</h1>
-          <p className="lead auth-lead">Your new password is active.</p>
-          <a className="primary-button link-button" href="/">Continue</a>
-        </section>
-      </main>
+      <AuthLayout description="Your new password is active." eyebrow="PASSWORD UPDATED" title="You’re all set">
+        <a className="ui-button ui-button--primary ui-button--full link-button" href="/">Continue to sign in</a>
+      </AuthLayout>
     );
   }
 
   if (!session && !passwordRecovery) {
     return (
-      <main className="auth-shell">
-        <section className="auth-card">
-          <h1>Recovery link unavailable</h1>
-          <p className="lead auth-lead">This reset link may be invalid or expired. Request a new password-reset email from the sign-in screen.</p>
-          <a className="primary-button link-button" href="/">Return to sign in</a>
-        </section>
-      </main>
+      <AuthLayout
+        description="This recovery session is missing or expired. Request a fresh password-reset email from the sign-in screen."
+        eyebrow="RECOVERY LINK"
+        title="Link unavailable"
+      >
+        <a className="ui-button ui-button--secondary ui-button--full link-button" href="/">Return to sign in</a>
+      </AuthLayout>
     );
   }
 
   return (
-    <main className="auth-shell">
-      <section className="auth-card" aria-labelledby="reset-title">
-        <p className="eyebrow">ACCOUNT RECOVERY</p>
-        <h1 id="reset-title">Choose a new password</h1>
-        <form className="auth-form" onSubmit={submit}>
-          <label>
-            New password
-            <input required minLength={8} type="password" value={password} onChange={(event) => setPassword(event.target.value)} autoComplete="new-password" />
-          </label>
-          <label>
-            Confirm password
-            <input required minLength={8} type="password" value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} autoComplete="new-password" />
-          </label>
-          {error && <p className="form-error" role="alert">{error}</p>}
-          <button className="primary-button" disabled={submitting} type="submit">{submitting ? 'Updating…' : 'Update password'}</button>
-        </form>
-      </section>
-    </main>
+    <AuthLayout description="Choose a new password for this account." eyebrow="ACCOUNT RECOVERY" title="Choose a new password">
+      <form className="auth-form auth-form--production" onSubmit={submit} noValidate>
+        <TextField
+          autoComplete="new-password"
+          hint={`At least ${MIN_PASSWORD_LENGTH} characters`}
+          label="New password"
+          onChange={(event) => setPassword(event.target.value)}
+          type="password"
+          value={password}
+        />
+        <TextField
+          autoComplete="new-password"
+          label="Confirm password"
+          onChange={(event) => setConfirmPassword(event.target.value)}
+          type="password"
+          value={confirmPassword}
+        />
+        {localError ? <p className="form-error" role="alert">{localError}</p> : null}
+        {actions.error ? <p className="form-error" role="alert">{actions.error}</p> : null}
+        <Button disabled={actions.busy} fullWidth type="submit">{actions.busy ? 'Updating…' : 'Update password'}</Button>
+      </form>
+    </AuthLayout>
   );
 }

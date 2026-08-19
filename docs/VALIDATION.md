@@ -109,3 +109,38 @@ npm run test:e2e
 ```
 
 The new component tests are intended to run inside the normal Vitest suite on the developer machine. Do not treat syntax/structural validation as a substitute for that run.
+
+## Phase 5.3A validation additions
+
+The authentication/onboarding UI slice adds checks for:
+
+- Auth input normalization and validation
+- sign-in form delegation only after local validation
+- password confirmation before sign-up delegation
+- generated placeholder username suppression
+- canonical onboarding submission
+- persisted profile reload after successful onboarding
+- duplicate username error mapping
+- presentation components remaining free of Supabase/service imports
+- password-reset account-enumeration-safe messaging
+- responsive Auth/onboarding CSS contracts
+
+Run the authoritative dependency-backed checks on the development machine with:
+
+```bash
+npm run typecheck
+npm test
+npm run build
+npm run test:structure
+npm run test:e2e
+```
+
+## v0.3.1 internal-test portability correction
+
+`npm run test:internal` is cross-platform and runs through Node:
+
+```text
+node scripts/internal-test.cjs
+```
+
+The verifier compiles the lifting-v1 domain into an operating-system temporary directory with the project's TypeScript compiler, executes the 62 framework-independent assertions, and removes the temporary output in a `finally` block. It does not require Bash, WSL, Git Bash, or a POSIX shell.
