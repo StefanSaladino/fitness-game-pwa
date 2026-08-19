@@ -165,7 +165,7 @@ The project currently uses a hosted-Supabase/dashboard-first development workflo
 
 Objective: make a new friend able to join without developer involvement.
 
-### 5.1 Non-visual onboarding foundation — IN PROGRESS
+### 5.1 Non-visual onboarding foundation — DONE
 
 Build the contracts that the eventual UI will consume before designing screens:
 
@@ -180,17 +180,21 @@ Build the contracts that the eventual UI will consume before designing screens:
 
 **No final onboarding layout is implemented in this subphase.**
 
-### 5.2 Onboarding visual-design checkpoint — NEXT / REQUIRED GATE
+### 5.2 Visual-design checkpoint + shared UI foundation — DONE
 
-Before coding the real onboarding interface:
+Completed:
 
-1. generate a phone-first concept image for sign-in/onboarding/group setup;
-2. review and approve hierarchy, navigation, density, gamification tone, and visual direction;
-3. define desktop adaptation and watch-sized component contracts;
-4. write the component map and screen-state map;
-5. only then implement the approved layout.
+1. generated and approved phone, desktop, and smartwatch concept directions;
+2. locked the dark sports-tech visual language and responsive hierarchy;
+3. explicitly rejected generated Nutrition/Calories UI because those features are outside scope;
+4. documented phone/tablet/desktop behavior and the separate future native-watch boundary;
+5. added shared UI primitives (`Button`, `Card`, `ProgressBar`, `TextField`, `SelectField`, `Icon`);
+6. added responsive `AppShell`, `DesktopSidebar`, `MobileNav`, and `PageHeader`;
+7. added component-level accessibility/interaction tests.
 
-### 5.3 Authentication + onboarding UI — AFTER VISUAL APPROVAL
+See `docs/UI-ARCHITECTURE.md`.
+
+### 5.3 Authentication + onboarding UI — NEXT
 
 - sign-in/create-account/recovery presentation
 - username selection

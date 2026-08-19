@@ -4,7 +4,7 @@ A React + TypeScript + Vite progressive web app for a private, expandable friend
 
 ## Current phase
 
-Phase 5 is in progress. The current work is intentionally non-visual onboarding architecture. Before the production onboarding/dashboard UI is implemented, follow `docs/UI-DEVELOPMENT-GATE.md`: generate and review a phone-first concept image, define responsive/component boundaries, then build the approved layout.
+Phase 5 is in progress. The visual-design gate has been completed for phone, desktop, and the future smartwatch companion. The repository now includes the approved shared design-system primitives and responsive authenticated app shell. Authentication/onboarding screen implementation is the next slice; workout capture remains intentionally later.
 
 **Phase 4 / foundation v0.2:** Supabase schema, Row Level Security, expandable groups, workout persistence, XP/benchmark ledger infrastructure, authentication, and password recovery.
 
@@ -195,7 +195,9 @@ npm run test:internal
 
 ```text
 src/
-  app/                  App shell
+  app/                  Route-level application composition
+  components/ui/        Shared accessible UI primitives
+  components/layout/    Responsive app shell/navigation
   domain/               Pure workout/scoring/progression rules
   features/auth/        Supabase authentication/recovery foundation
   lib/                  Supabase client bootstrap
@@ -211,6 +213,8 @@ docs/
   SUPABASE-SETUP.md      Local + hosted Supabase walkthrough
   VALIDATION.md          What was actually tested in this package
   ENVIRONMENT.md         Env variables, secret handling, and deployment setup
+  UI-DEVELOPMENT-GATE.md Mandatory visual-design workflow
+  UI-ARCHITECTURE.md     Approved responsive/component boundaries
 supabase/
   migrations/            Versioned database changes
   tests/                 pgTAP database/RLS tests

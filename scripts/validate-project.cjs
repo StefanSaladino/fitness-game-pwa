@@ -11,11 +11,13 @@ function ok(condition, message) {
 function read(rel) { return fs.readFileSync(path.join(root, rel), 'utf8'); }
 
 const required = [
-  'README.md','CHANGELOG.md','docs/ROADMAP.md','docs/DOMAIN-RULES.md','docs/TESTING.md','docs/ARCHITECTURE.md','docs/DATABASE.md','docs/SUPABASE-SETUP.md','docs/ENVIRONMENT.md','docs/VALIDATION.md','docs/REFERENCES.md','docs/UI-DEVELOPMENT-GATE.md','docs/PHASE5-ONBOARDING-FOUNDATION.md','.gitignore','.env.example',
+  'README.md','CHANGELOG.md','docs/ROADMAP.md','docs/DOMAIN-RULES.md','docs/TESTING.md','docs/ARCHITECTURE.md','docs/DATABASE.md','docs/SUPABASE-SETUP.md','docs/ENVIRONMENT.md','docs/VALIDATION.md','docs/REFERENCES.md','docs/UI-DEVELOPMENT-GATE.md','docs/UI-ARCHITECTURE.md','docs/PHASE5-ONBOARDING-FOUNDATION.md','.gitignore','.env.example',
   'supabase/migrations/20260818000100_initial_data_foundation.sql','supabase/migrations/20260818000200_phase5_onboarding_foundation.sql','supabase/seed.sql',
   'supabase/tests/001_schema.test.sql','supabase/tests/002_rls.test.sql','supabase/tests/003_groups.test.sql','supabase/tests/004_qualification.test.sql','supabase/tests/005_profile_onboarding.test.sql','supabase/tests/006_phase5_onboarding_username.test.sql',
   'src/features/auth/authService.ts','src/features/auth/AuthProvider.tsx','src/features/auth/AuthScreen.tsx','src/features/auth/ResetPasswordScreen.tsx',
-  'src/features/onboarding/model.ts','src/features/onboarding/validation.ts','src/features/onboarding/state.ts','src/features/onboarding/onboardingService.ts'
+  'src/features/onboarding/model.ts','src/features/onboarding/validation.ts','src/features/onboarding/state.ts','src/features/onboarding/onboardingService.ts',
+  'src/components/ui/Button.tsx','src/components/ui/Card.tsx','src/components/ui/Icon.tsx','src/components/ui/ProgressBar.tsx','src/components/ui/TextField.tsx','src/components/ui/SelectField.tsx',
+  'src/components/layout/AppShell.tsx','src/components/layout/DesktopSidebar.tsx','src/components/layout/MobileNav.tsx','src/components/layout/PageHeader.tsx','src/components/layout/navigation.ts'
 ];
 for (const rel of required) ok(fs.existsSync(path.join(root, rel)), `${rel} exists`);
 
@@ -66,6 +68,23 @@ for (const file of sourceFiles) {
   const errors = (result.diagnostics || []).filter(d => d.category === ts.DiagnosticCategory.Error);
   ok(errors.length === 0, `TypeScript syntax parses: ${path.relative(root,file)}`);
 }
+
+
+const componentFiles = sourceFiles.filter(file => file.includes(`${path.sep}components${path.sep}`));
+for (const file of componentFiles) {
+  const source = fs.readFileSync(file, 'utf8');
+  ok(!/from ['"][^'"]*supabase/i.test(source), `${path.relative(root,file)} does not import Supabase`);
+  ok(!/BASE_WORKOUT_XP|MAX_DAILY_PERFORMANCE_XP|calculateDaily|performanceBonus/i.test(source), `${path.relative(root,file)} does not own domain scoring`);
+}
+const navigation = read('src/components/layout/navigation.ts');
+ok(!/nutrition/i.test(navigation), 'primary navigation excludes Nutrition');
+ok(!/calories?/i.test(navigation), 'primary navigation excludes calorie tracking');
+const uiArchitecture = read('docs/UI-ARCHITECTURE.md');
+ok(/future native companion/i.test(uiArchitecture), 'watch UI is documented as a separate future native companion');
+const globalCss = read('src/styles/global.css');
+ok(globalCss.includes('@media (min-width: 1024px)'), 'desktop responsive breakpoint exists');
+ok(globalCss.includes('.mobile-nav'), 'mobile bottom navigation styling exists');
+ok(globalCss.includes('.desktop-sidebar'), 'desktop sidebar styling exists');
 
 const env = read('.env.example');
 const envAssignments = env.split(/\r?\n/).filter(line => line.trim() && !line.trim().startsWith('#')).join('\n');

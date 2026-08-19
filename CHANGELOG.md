@@ -1,5 +1,15 @@
 # Changelog
 
+## Phase 5.2 — shared UI foundation (unreleased)
+
+- Approved phone, desktop, and future smartwatch visual directions.
+- Added design tokens and responsive phone/tablet/desktop contracts.
+- Added reusable Button, Card, ProgressBar, TextField, SelectField, and Icon primitives.
+- Added AppShell, DesktopSidebar, MobileNav, PageHeader, and one shared navigation model.
+- Added component-level accessibility/interaction tests.
+- Kept Nutrition and calorie tracking out of implementation despite generated concept imagery.
+- Documented that smartwatch support remains a separate future native companion.
+
 ## Phase 5.1 — onboarding foundation (unreleased)
 
 - Added required visual-design gate before substantial UI implementation.

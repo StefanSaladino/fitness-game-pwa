@@ -81,3 +81,31 @@ Passed in the packaging environment:
 - package and web-manifest JSON parsing passed
 
 The existing limitation remains: the packaging environment does not provide a working Docker/Supabase local stack or dependency installation path, so the authored pgTAP tests and full Vite/Vitest/Playwright pipeline still require execution on the developer machine.
+
+## Phase 5.2 shared-UI foundation validation
+
+The Phase 5.2 packaging pass keeps the same distinction between dependency-independent checks and the developer-machine frontend pipeline.
+
+Passed in the packaging environment:
+
+- framework-independent domain verification: **62 assertions**
+- project/schema/UI structural validation: **198 assertions**
+- TypeScript/TSX syntax transpilation for every `src/**/*.ts(x)` file
+- shared `src/components/**` files verified to contain no Supabase imports
+- shared component layer verified not to own scoring calculations/constants
+- primary navigation verified to exclude Nutrition and calorie tracking
+- phone/tablet/desktop responsive shell contracts detected
+- future smartwatch experience documented as a separate native companion
+- existing Phase 5 onboarding migration and pgTAP plan-count checks retained
+
+The packaging environment again could not complete `npm install`, so the dependency-backed commands below remain the authoritative developer-machine gate for this slice:
+
+```bash
+npm run typecheck
+npm test
+npm run build
+npm run test:structure
+npm run test:e2e
+```
+
+The new component tests are intended to run inside the normal Vitest suite on the developer machine. Do not treat syntax/structural validation as a substitute for that run.
