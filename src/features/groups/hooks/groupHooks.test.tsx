@@ -39,7 +39,7 @@ function service(overrides: Partial<GroupService> = {}): GroupService {
 
 describe('group hooks', () => {
   it('loads every group for the signed-in user without assuming one group', async () => {
-    const api = service({ listGroups: vi.fn(async () => [group, { ...group, id: 'group-2', name: 'Second Crew', role: 'MEMBER' }]) });
+    const api = service({ listGroups: vi.fn(async () => [group, { ...group, id: 'group-2', name: 'Second Crew', role: 'MEMBER' as const }]) });
     const { result } = renderHook(() => useGroups('user-1', api));
 
     await waitFor(() => expect(result.current.status).toBe('ready'));

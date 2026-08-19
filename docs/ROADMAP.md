@@ -212,13 +212,16 @@ See `docs/PHASE5.5D-LIFTING-DASHBOARD.md`.
 - explicit authenticated-only EXECUTE grants for membership-mutating RPCs;
 - all new group administration styling remains colocated in CSS Modules.
 
-### 5.7 Phase 5 integration validation — NEXT
+### 5.7 Phase 5 integration validation — DONE
 
-- signup -> onboarding -> group create
-- signup -> invite -> group join
-- scalable member counts
-- role/ownership permission boundaries
-- onboarding labels clearly describe lifting-day targets
+- onboarding -> persisted group setup transition
+- zero-group -> create -> membership refresh -> lifting dashboard
+- zero-group -> full invite URL -> join -> membership refresh -> lifting dashboard
+- owner invite and member-promotion controls across real controllers/hooks
+- member presentation excludes admin invite controls and preserves leave-group access
+- service-level scalable member-count coverage remains green
+- pgTAP/RLS/RPC permission suites remain the authority for database authorization
+- onboarding labels continue to describe lifting-day targets
 
 ## Phase 6 — Lifting workout capture engine
 

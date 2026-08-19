@@ -268,4 +268,26 @@ ok(groupAdministrationCss.length > 1500, 'group administration styling is substa
 ok(!/memberRow|inviteRow|renameForm|groupAdministration/.test(read('src/styles/global.css')), 'Phase 5.6 selectors are not added to global CSS');
 ok(/Group administration UI — DONE/.test(read('docs/ROADMAP.md')), 'roadmap marks Phase 5.6 group administration complete');
 
+
+
+const phase57Integration = read('tests/integration/group-product-journey.test.tsx');
+const dashboardControllerPhase57 = read('src/features/dashboard/components/DashboardController.tsx');
+const productControllerPhase57 = read('src/features/product/ProductController.tsx');
+ok(/dashboardService\?: DashboardService/.test(productControllerPhase57), 'ProductController exposes optional dashboard-service injection for integration validation');
+ok(/groupService\?: GroupService/.test(productControllerPhase57), 'ProductController exposes optional group-service injection for integration validation');
+ok(/service\?: DashboardService/.test(dashboardControllerPhase57), 'DashboardController exposes optional dashboard-service injection');
+ok(/useDashboard\([\s\S]*service\)/.test(dashboardControllerPhase57), 'DashboardController forwards the injected service to useDashboard');
+ok(/OnboardingToGroupHarness/.test(phase57Integration), 'Phase 5.7 covers onboarding into group gating');
+ok(/Create group/.test(phase57Integration) && /Your lifting week/.test(phase57Integration), 'Phase 5.7 covers create-group into dashboard');
+ok(/https:\/\/app\.example\.com\/join/.test(phase57Integration), 'Phase 5.7 covers joining from a full invite URL');
+ok(/New invite/.test(phase57Integration) && /Make admin/.test(phase57Integration), 'Phase 5.7 covers owner administration across the integrated journey');
+ok(/queryByRole\('button', \{ name: 'New invite' \}\)/.test(phase57Integration) && /Leave group/.test(phase57Integration), 'Phase 5.7 covers member permission presentation');
+ok(/Phase 5 integration validation — DONE/.test(read('docs/ROADMAP.md')), 'roadmap marks Phase 5.7 integration validation complete');
+const integrationVitestConfig = read('vitest.integration.config.ts');
+const packageJsonPhase57 = read('package.json');
+const groupHooksPhase57 = read('src/features/groups/hooks/groupHooks.test.tsx');
+ok(/tests\/integration\/\*\*\/\*\.test/.test(integrationVitestConfig), 'integration Vitest config explicitly discovers tests/integration');
+ok(/vitest run --config vitest\.integration\.config\.ts/.test(packageJsonPhase57), 'test:integration uses the dedicated integration Vitest config');
+ok(/role: 'MEMBER' as const/.test(groupHooksPhase57), 'group hook regression mock preserves the GroupRole literal type');
+
 console.log(`Project structural validation passed: ${assertions} assertions.`);

@@ -1,6 +1,7 @@
 import type { AppSection } from '../../../components/layout';
 import type { GroupSummary } from '../../groups';
 import type { OnboardingProfile } from '../../onboarding';
+import type { DashboardService } from '../dashboardService';
 import { useDashboard } from '../hooks/useDashboard';
 import { DashboardError, DashboardLoading, DashboardScreen } from './DashboardScreen';
 
@@ -9,15 +10,16 @@ interface DashboardControllerProps {
   group: GroupSummary;
   onNavigate: (section: AppSection) => void;
   onSignOut: () => void;
+  service?: DashboardService;
 }
 
-export function DashboardController({ profile, group, onNavigate, onSignOut }: DashboardControllerProps) {
+export function DashboardController({ profile, group, onNavigate, onSignOut, service }: DashboardControllerProps) {
   const dashboard = useDashboard({
     userId: profile.id,
     timezone: profile.timezone,
     weeklyTarget: profile.weeklyWorkoutTarget,
     groupId: group.id,
-  });
+  }, service);
 
 
   if (dashboard.status === 'loading' || !dashboard.snapshot) {

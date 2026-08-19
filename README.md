@@ -4,7 +4,7 @@ A React + TypeScript + Vite progressive web app for an expandable friend-group *
 
 ## Current phase
 
-The project has completed **Phase 5.6: group administration**, including multi-group switching, member/role controls, invite management, ownership transfer, and leave-group behavior. The next slice is Phase 5.7 integration validation before lifting workout capture begins.
+The project has completed **Phase 5.7: integration validation** across onboarding, group setup, dashboard entry, and group-permission presentation. The next product phase is Phase 6: lifting workout capture.
 
 Current scoring version: `lifting-v1`.
 

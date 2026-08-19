@@ -1,7 +1,7 @@
 {
   "name": "fitness-game-pwa",
   "private": true,
-  "version": "0.3.5",
+  "version": "0.3.6",
   "type": "module",
   "engines": {
     "node": ">=20"
@@ -13,6 +13,7 @@
     "typecheck": "tsc -b --pretty false",
     "test": "vitest run",
     "test:watch": "vitest",
+    "test:integration": "vitest run --config vitest.integration.config.ts",
     "test:coverage": "vitest run --coverage",
     "test:e2e": "playwright test",
     "test:internal": "node scripts/internal-test.cjs",

@@ -1,17 +1,19 @@
 import { useEffect, useMemo, useState } from 'react';
 import type { AppSection } from '../../components/layout';
 import { signOut } from '../auth/authService';
-import { DashboardController } from '../dashboard';
-import { GroupAdministrationController, type GroupSummary } from '../groups';
+import { DashboardController, type DashboardService } from '../dashboard';
+import { GroupAdministrationController, type GroupService, type GroupSummary } from '../groups';
 import type { OnboardingProfile } from '../onboarding';
 
 interface ProductControllerProps {
   profile: OnboardingProfile;
   groups: GroupSummary[];
   onGroupsChanged: () => Promise<unknown> | unknown;
+  groupService?: GroupService;
+  dashboardService?: DashboardService;
 }
 
-export function ProductController({ profile, groups, onGroupsChanged }: ProductControllerProps) {
+export function ProductController({ profile, groups, onGroupsChanged, groupService, dashboardService }: ProductControllerProps) {
   const [activeSection, setActiveSection] = useState<AppSection>('home');
   const [selectedGroupId, setSelectedGroupId] = useState(groups[0]?.id ?? '');
 
@@ -42,6 +44,7 @@ export function ProductController({ profile, groups, onGroupsChanged }: ProductC
         profile={profile}
         selectedGroupId={selectedGroup.id}
         userId={profile.id}
+        service={groupService}
       />
     );
   }
@@ -52,6 +55,7 @@ export function ProductController({ profile, groups, onGroupsChanged }: ProductC
       onNavigate={onNavigate}
       onSignOut={onSignOut}
       profile={profile}
+      service={dashboardService}
     />
   );
 }

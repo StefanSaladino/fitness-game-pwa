@@ -1,21 +1,19 @@
 # Changelog
 
+## 0.3.6 — Phase 5.7 integration validation
+
+- Added cross-feature integration coverage for onboarding -> group setup -> dashboard and group administration.
+- Added create-group and full-invite-URL join journeys with persisted membership refreshes.
+- Added owner/member permission-presentation checks across real controllers and hooks.
+- Added optional service injection to ProductController and DashboardController without changing production Supabase defaults.
+- Added a dedicated `test:integration` command.
+
 ## 0.3.5 — Phase 5.6 group administration
 
 - Added multi-group administration UI and product-level Home/Groups navigation.
 - Added member, invite, role, removal, leave, rename, and ownership-transfer controls.
 - Added explicit authenticated-only EXECUTE permissions for group mutation RPCs.
 - Added group-administration tests and colocated CSS Modules.
-
-## 0.3.4 — Phase 5.5D real lifting dashboard
-
-- Replaced the foundation preview with a persisted lifting-first dashboard.
-- Added weekly lifting-day progress from qualifying strength sessions.
-- Added lifting-v1 weekly XP breakdown, recent lift summaries, and personal-record reads.
-- Added a membership-gated group leaderboard RPC over authoritative scoring events.
-- Rendered real profile pictures/fallbacks in the dashboard and leaderboard.
-- Added a restrained responsive dashboard using colocated CSS Modules only.
-- Kept cardio secondary and deliberately avoided inventing a level formula or fake chart data.
 
 ## 0.3.3 — Phase 5.5C profile pictures
 
@@ -26,6 +24,18 @@
 - Added reusable PFP + initials fallback components with CSS Modules.
 - Added PFP path to group-member identity for future leaderboard/activity rendering.
 - No avatar/customization system was introduced.
+
+# Changelog
+
+## 0.3.4 — Phase 5.5D real lifting dashboard
+
+- Replaced the foundation preview with a persisted lifting-first dashboard.
+- Added weekly lifting-day progress from qualifying strength sessions.
+- Added lifting-v1 weekly XP breakdown, recent lift summaries, and personal-record reads.
+- Added a membership-gated group leaderboard RPC over authoritative scoring events.
+- Rendered real profile pictures/fallbacks in the dashboard and leaderboard.
+- Added a restrained responsive dashboard using colocated CSS Modules only.
+- Kept cardio secondary and deliberately avoided inventing a level formula or fake chart data.
 
 ## 0.3.2 — Phase 5.5B group setup UI
 
