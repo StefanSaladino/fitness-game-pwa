@@ -11,13 +11,13 @@ function ok(condition, message) {
 function read(rel) { return fs.readFileSync(path.join(root, rel), 'utf8'); }
 
 const required = [
-  'README.md','CHANGELOG.md','docs/ROADMAP.md','docs/DOMAIN-RULES.md','docs/TESTING.md','docs/ARCHITECTURE.md','docs/DATABASE.md','docs/SUPABASE-SETUP.md','docs/ENVIRONMENT.md','docs/VALIDATION.md','docs/REFERENCES.md','docs/UI-DEVELOPMENT-GATE.md','docs/UI-ARCHITECTURE.md','docs/CSS-ARCHITECTURE.md','docs/PHASE5-ONBOARDING-FOUNDATION.md','docs/PHASE5.3A-AUTH-ONBOARDING-UI.md','docs/PHASE5.5A-GROUP-FOUNDATION.md','.gitignore','.env.example',
+  'README.md','CHANGELOG.md','docs/ROADMAP.md','docs/DOMAIN-RULES.md','docs/TESTING.md','docs/ARCHITECTURE.md','docs/DATABASE.md','docs/SUPABASE-SETUP.md','docs/ENVIRONMENT.md','docs/VALIDATION.md','docs/REFERENCES.md','docs/UI-DEVELOPMENT-GATE.md','docs/UI-ARCHITECTURE.md','docs/CSS-ARCHITECTURE.md','docs/PHASE5-ONBOARDING-FOUNDATION.md','docs/PHASE5.3A-AUTH-ONBOARDING-UI.md','docs/PHASE5.5A-GROUP-FOUNDATION.md','docs/PHASE5.5B-GROUP-SETUP-UI.md','.gitignore','.env.example',
   'supabase/migrations/20260818000100_initial_data_foundation.sql','supabase/migrations/20260818000200_phase5_onboarding_foundation.sql','supabase/migrations/20260819000100_lifting_first_scoring_foundation.sql','supabase/seed.sql',
   'supabase/tests/001_schema.test.sql','supabase/tests/002_rls.test.sql','supabase/tests/003_groups.test.sql','supabase/tests/004_qualification.test.sql','supabase/tests/005_profile_onboarding.test.sql','supabase/tests/006_phase5_onboarding_username.test.sql','supabase/tests/007_lifting_scoring_foundation.test.sql',
   'src/domain/scoring/exerciseXp.ts','src/domain/scoring/cardioBonus.ts','src/domain/scoring/dailyXp.ts','src/styles/tokens.css','src/styles/reset.css','src/styles/base.css',
   'src/features/auth/authService.ts','src/features/auth/AuthProvider.tsx','src/features/auth/AuthScreen.tsx','src/features/auth/ResetPasswordScreen.tsx','src/features/auth/authValidation.ts','src/features/auth/authMessages.ts','src/features/auth/hooks/useAuthActions.ts','src/features/auth/components/AuthLayout.tsx','src/features/auth/components/SignInForm.tsx','src/features/auth/components/SignUpForm.tsx','src/features/auth/components/ForgotPasswordForm.tsx','src/features/auth/components/VerifyEmailPanel.tsx',
   'src/features/onboarding/model.ts','src/features/onboarding/validation.ts','src/features/onboarding/state.ts','src/features/onboarding/onboardingService.ts','src/features/onboarding/timezones.ts','src/features/onboarding/onboardingMessages.ts','src/features/onboarding/hooks/useOnboarding.ts','src/features/onboarding/components/OnboardingForm.tsx','src/features/onboarding/components/OnboardingScreen.tsx','src/features/onboarding/components/WeeklyTargetPicker.tsx',
-  'src/features/groups/model.ts','src/features/groups/validation.ts','src/features/groups/groupMessages.ts','src/features/groups/groupService.ts','src/features/groups/hooks/useGroups.ts','src/features/groups/hooks/useCreateGroup.ts','src/features/groups/hooks/useJoinGroup.ts',
+  'src/features/groups/model.ts','src/features/groups/validation.ts','src/features/groups/groupMessages.ts','src/features/groups/groupService.ts','src/features/groups/hooks/useGroups.ts','src/features/groups/hooks/useCreateGroup.ts','src/features/groups/hooks/useJoinGroup.ts','src/features/groups/components/CreateGroupForm.tsx','src/features/groups/components/JoinGroupForm.tsx','src/features/groups/components/GroupSetupScreen.tsx','src/features/groups/components/GroupSetupController.tsx','src/features/groups/components/GroupGate.tsx','src/features/groups/components/GroupSetup.module.css','src/features/groups/components/GroupGate.module.css',
   'src/components/ui/Button.tsx','src/components/ui/Card.tsx','src/components/ui/Icon.tsx','src/components/ui/ProgressBar.tsx','src/components/ui/TextField.tsx','src/components/ui/SelectField.tsx',
   'src/components/layout/AppShell.tsx','src/components/layout/DesktopSidebar.tsx','src/components/layout/MobileNav.tsx','src/components/layout/PageHeader.tsx','src/components/layout/navigation.ts'
 ];
@@ -160,5 +160,31 @@ const gitignore = read('.gitignore');
 for (const pattern of ['.env', '.env.*', '!.env.example', '*.pem', '*.key', 'supabase/.env']) {
   ok(gitignore.includes(pattern), `.gitignore protects ${pattern}`);
 }
+
+
+
+const groupSetupScreen = read('src/features/groups/components/GroupSetupScreen.tsx');
+const createGroupForm = read('src/features/groups/components/CreateGroupForm.tsx');
+const joinGroupForm = read('src/features/groups/components/JoinGroupForm.tsx');
+const groupSetupController = read('src/features/groups/components/GroupSetupController.tsx');
+const groupGate = read('src/features/groups/components/GroupGate.tsx');
+const groupSetupCss = read('src/features/groups/components/GroupSetup.module.css');
+const groupGateCss = read('src/features/groups/components/GroupGate.module.css');
+const globalCssPhase55b = read('src/styles/global.css');
+const appSource = read('src/app/App.tsx');
+ok(!/supabase/i.test(groupSetupScreen), 'GroupSetupScreen has no Supabase dependency');
+ok(!/supabase/i.test(createGroupForm), 'CreateGroupForm has no Supabase dependency');
+ok(!/supabase/i.test(joinGroupForm), 'JoinGroupForm has no Supabase dependency');
+ok(!/getSupabaseClient|createGroupService/.test(groupSetupController), 'GroupSetupController delegates through hooks');
+ok(!/getSupabaseClient|createGroupService/.test(groupGate), 'GroupGate delegates group loading through useGroups');
+ok(/validateCreateGroupInput/.test(createGroupForm), 'CreateGroupForm performs local pure validation');
+ok(/validateInviteToken/.test(joinGroupForm), 'JoinGroupForm performs local invite normalization and validation');
+ok(/useCreateGroup/.test(groupSetupController) && /useJoinGroup/.test(groupSetupController), 'GroupSetupController uses focused create/join hooks');
+ok(/useGroups/.test(groupGate), 'GroupGate uses the multi-group loader hook');
+ok(/groups\.length === 0/.test(groupGate), 'GroupGate only requires setup for zero groups');
+ok(/GroupGate/.test(appSource), 'App gates onboarded users through persisted group membership');
+ok(!/group-setup|groupSetup|modeSwitch|principles/.test(globalCssPhase55b), 'Phase 5.5B group selectors are not added to global.css');
+ok(groupSetupCss.length > 500 && groupGateCss.length > 100, 'Phase 5.5B feature styling is colocated in CSS Modules');
+ok(/Profile pictures — NEXT/.test(read('docs/ROADMAP.md')), 'roadmap advances to profile pictures after group setup UI');
 
 console.log(`Project structural validation passed: ${assertions} assertions.`);

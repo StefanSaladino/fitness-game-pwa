@@ -159,15 +159,17 @@ The lifting-first mobile/desktop/watch concept direction has been explored. Impl
 - user-facing group error mapping;
 - no feature UI or feature CSS added in this subphase.
 
-#### 5.5B Create / Join Group UI — NEXT
+#### 5.5B Create / Join Group UI — DONE
 
-- create group screen;
-- join by invite screen;
-- group selection/setup state;
-- loading/error/success states;
-- colocated CSS Modules only.
+- create-group form with local validation and normalized group names;
+- join-by-invite form accepting raw invite UUIDs or invite URLs;
+- authenticated group gate: zero memberships -> setup, one-or-more -> app;
+- create/join controller refreshes persisted membership before advancing;
+- loading/error states and retry behavior;
+- multiple-group membership remains supported;
+- all new feature styling is colocated CSS Modules; no group CSS added to `global.css`.
 
-#### 5.5C Profile pictures — PLANNED
+#### 5.5C Profile pictures — NEXT
 
 Profile pictures only; this is not an avatar/customization system.
 

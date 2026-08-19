@@ -23,7 +23,7 @@ Critical invariants include:
 
 ## Component tests
 
-React Testing Library covers user-visible behavior, accessibility semantics, validation, and controller/presentation boundaries. Group foundation tests also verify multi-group loading, controller state, invite failure mapping, and service delegation without UI-owned Supabase access.
+React Testing Library covers user-visible behavior, accessibility semantics, validation, and controller/presentation boundaries. Group tests verify multi-group loading, controller state, invite failure mapping, form-level normalization/validation, zero-membership setup gating, successful create/join membership refresh, and service delegation without UI-owned Supabase access.
 
 ## Database / pgTAP
 

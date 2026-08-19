@@ -50,14 +50,24 @@ export function normalizeInviteToken(value: string): string {
   return trimmed.toLowerCase();
 }
 
-export function assertValidInviteToken(value: string): string {
+export function validateInviteToken(value: string): {
+  token: string;
+  issues: GroupValidationIssue[];
+} {
   const token = normalizeInviteToken(value);
+  const issues: GroupValidationIssue[] = [];
+
   if (!UUID_PATTERN.test(token)) {
-    throw new GroupValidationError([
-      { field: 'inviteToken', message: 'Enter a valid group invite code or link.' },
-    ]);
+    issues.push({ field: 'inviteToken', message: 'Enter a valid group invite code or link.' });
   }
-  return token;
+
+  return { token, issues };
+}
+
+export function assertValidInviteToken(value: string): string {
+  const result = validateInviteToken(value);
+  if (result.issues.length > 0) throw new GroupValidationError(result.issues);
+  return result.token;
 }
 
 export function validateInviteOptions(options: CreateInviteOptions): GroupValidationIssue[] {

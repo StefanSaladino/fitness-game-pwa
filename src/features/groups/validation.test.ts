@@ -5,6 +5,7 @@ import {
   assertValidInviteToken,
   normalizeGroupName,
   normalizeInviteToken,
+  validateInviteToken,
 } from './validation';
 
 const TOKEN = '6ccccccc-cccc-4ccc-8ccc-cccccccccccc';
@@ -29,6 +30,12 @@ describe('group validation', () => {
     expect(normalizeInviteToken(`https://app.example.com/join/${TOKEN}`)).toBe(TOKEN);
   });
 
+
+  it('returns presentation-friendly invite validation without throwing', () => {
+    expect(validateInviteToken(`https://app.example.com/join/${TOKEN}`)).toEqual({ token: TOKEN, issues: [] });
+    expect(validateInviteToken('not-an-invite').issues[0]?.field).toBe('inviteToken');
+  });
+
   it('rejects malformed invite values', () => {
     expect(() => assertValidInviteToken('not-an-invite')).toThrow('Group input is invalid.');
   });
@@ -46,3 +53,4 @@ describe('group validation', () => {
     expect(() => assertValidInviteOptions({ expiresAt: '2000-01-01T00:00:00.000Z' })).toThrow('Group input is invalid.');
   });
 });
+

@@ -4,7 +4,7 @@ A React + TypeScript + Vite progressive web app for an expandable friend-group *
 
 ## Current phase
 
-The project has completed the authentication/onboarding vertical slice and the **Phase 5.4 lifting-first domain refactor**. The next product slice is group setup plus the first real lifting-oriented dashboard.
+The project has completed the lifting-first refactor and **Phase 5.5B group setup UI**. The next product slice is profile pictures, followed by the first real lifting-oriented dashboard.
 
 Current scoring version: `lifting-v1`.
 
@@ -104,6 +104,7 @@ src/
   domain/               Pure lifting/scoring/progression rules
   features/auth/        Auth UI/controller/service boundary
   features/onboarding/  Profile onboarding UI/controller/service boundary
+  features/groups/      Multi-group models/validation/controllers/service boundary
   lib/                  Infrastructure clients
   pwa/                  Service worker
   styles/               Global tokens/reset/base + legacy compatibility styles

@@ -1,5 +1,25 @@
 # Changelog
 
+## 0.3.2 — Phase 5.5B group setup UI
+
+- Added create-group and join-by-invite production forms.
+- Added authenticated group gating after onboarding.
+- Added controller-driven create/join transitions backed by the Phase 5.5A service layer.
+- Added CSS Modules for all new group UI styling.
+- Preserved multi-group architecture and database/RLS ownership boundaries.
+- Added component/controller/gate regression tests.
+
+
+## v0.3.1 — group application foundation
+
+- Added typed multi-group summaries, memberships, invites, and group-role contracts.
+- Added pure group-name/invite validation and invite-link normalization.
+- Added the Supabase-only group service for list/create/member/invite/join operations.
+- Added `useGroups`, `useCreateGroup`, and `useJoinGroup` controller hooks.
+- Preserved database-controlled owner creation and RPC-only invite joining.
+- Added group service/validation/controller tests without adding group UI or CSS.
+- Added profile pictures (not avatars) to the Phase 5.5 roadmap.
+
 ## v0.3.0 — lifting-first foundation
 
 - Reframed the product from general fitness consistency to a lifting-progression game.

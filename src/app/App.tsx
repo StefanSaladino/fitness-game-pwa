@@ -5,6 +5,7 @@ import { AuthProvider, useAuth } from '../features/auth/AuthProvider';
 import { AuthScreen } from '../features/auth/AuthScreen';
 import { ResetPasswordScreen } from '../features/auth/ResetPasswordScreen';
 import { signOut } from '../features/auth/authService';
+import { GroupGate, type GroupSummary } from '../features/groups';
 import { OnboardingScreen, useOnboarding, type OnboardingProfile } from '../features/onboarding';
 import { isSupabaseConfigured } from '../lib/supabase';
 
@@ -18,7 +19,8 @@ const week = [
   { day: 'Sun', complete: false },
 ];
 
-function FoundationDashboard({ profile }: { profile: OnboardingProfile }) {
+function FoundationDashboard({ profile, groups }: { profile: OnboardingProfile; groups: GroupSummary[] }) {
+  const primaryGroup = groups[0];
   return (
     <AppShell
       onSignOut={() => void signOut()}
@@ -31,7 +33,7 @@ function FoundationDashboard({ profile }: { profile: OnboardingProfile }) {
             Start lift
           </Button>
         )}
-        description="Authentication and lifting-first onboarding are live. Group setup and the first real lifting dashboard are the next vertical slice."
+        description="Authentication, lifting-first onboarding, and group setup are live. Profile pictures and the first real lifting dashboard are the next vertical slices."
         eyebrow="LIFTING-V1 · FOUNDATION"
         title={`Welcome, ${profile.displayName}`}
       />
@@ -66,12 +68,12 @@ function FoundationDashboard({ profile }: { profile: OnboardingProfile }) {
           </Button>
         </Card>
 
-        <Card className="dashboard-card" eyebrow="NEXT" title="Create or join your group">
+        <Card className="dashboard-card" eyebrow="GROUPS" title={primaryGroup?.name ?? 'Training crew'}>
           <div className="empty-state">
             <span className="empty-state__icon"><Icon name="groups" size={22} /></span>
             <div>
-              <strong>Phase 5.3B</strong>
-              <p>Group creation, invite joining, roles, and the first lifting-first dashboard come next.</p>
+              <strong>{groups.length === 1 ? `${primaryGroup?.memberCount ?? 0} members · ${primaryGroup?.role ?? 'MEMBER'}` : `${groups.length} active groups`}</strong>
+              <p>Your group memberships are live. Leaderboard scoring remains downstream from authoritative lifting-v1 scoring persistence.</p>
             </div>
           </div>
         </Card>
@@ -129,7 +131,11 @@ function ProfileGate({ userId }: { userId: string }) {
     );
   }
 
-  return <FoundationDashboard profile={onboarding.profile} />;
+  return (
+    <GroupGate userId={userId}>
+      {(groups) => <FoundationDashboard groups={groups} profile={onboarding.profile!} />}
+    </GroupGate>
+  );
 }
 
 function AuthenticatedApp() {

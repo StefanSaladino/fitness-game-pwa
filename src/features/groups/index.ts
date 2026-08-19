@@ -5,3 +5,8 @@ export * from './validation';
 export * from './hooks/useGroups';
 export * from './hooks/useCreateGroup';
 export * from './hooks/useJoinGroup';
+export * from './components/CreateGroupForm';
+export * from './components/JoinGroupForm';
+export * from './components/GroupSetupScreen';
+export * from './components/GroupSetupController';
+export * from './components/GroupGate';

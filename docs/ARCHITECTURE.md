@@ -78,3 +78,24 @@ Group creation uses the existing `groups` insert policy and database trigger tha
 - group permissions are role-controlled server-side;
 - no client-supplied `qualifies`/XP value is trusted as authoritative;
 - future concurrency/idempotency scoring work must reconcile duplicate, retry, edit, and delete cases.
+
+
+## Group setup UI boundary
+
+Phase 5.5B keeps group setup split into presentation and controller layers:
+
+```text
+CreateGroupForm / JoinGroupForm
+        ↓
+GroupSetupScreen
+        ↓
+GroupSetupController
+        ↓
+useCreateGroup / useJoinGroup
+        ↓
+groupService
+        ↓
+Supabase
+```
+
+`GroupGate` owns only the zero-vs-one-or-more membership transition. It does not collapse the data model to a single group. New group feature styles use CSS Modules colocated under `src/features/groups/components/`.

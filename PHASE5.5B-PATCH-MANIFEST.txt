@@ -1,0 +1,32 @@
+Fitness Game PWA — Phase 5.5B Group Setup UI
+Version: 0.3.2
+
+Scope
+- Create-group production form
+- Join-by-invite production form
+- Group setup screen + controller
+- Persisted group membership gate after onboarding
+- CSS Modules for all new group feature styles
+- Component/controller/gate tests
+- Roadmap/docs/structural validation updates
+
+No database migration is required.
+No .env.local or secrets are included.
+No profile-picture implementation is included yet.
+No real lifting dashboard/leaderboard implementation is included yet.
+
+Expected local validation after applying over the clean committed v0.3.1 tree:
+  npm run typecheck
+  npm test                 # expected 128 tests across 30 files
+  npm run build
+  npm run test:structure   # expected 387 assertions
+  npm run test:e2e         # expected 2 browser-shell tests
+  npm run test:internal    # expected 62 lifting-v1 assertions
+
+Important architecture notes
+- New group components do not import Supabase.
+- Forms use pure validation only.
+- GroupSetupController delegates to useCreateGroup/useJoinGroup.
+- GroupGate delegates to useGroups.
+- Setup is required only for zero active groups; one-or-more memberships pass through as GroupSummary[].
+- New group styling lives only in *.module.css files.
