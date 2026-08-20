@@ -54,7 +54,9 @@ export function useWorkoutExercises(workoutId: string | null, injectedService?: 
     try {
       if (mutationExecutor) {
         const outcome = await mutationExecutor.execute(request);
-        if (outcome.state === 'failed') throw new Error(outcome.error ?? 'Workout change was rejected.');
+        if (outcome.state === 'failed' || outcome.state === 'conflict') {
+          throw new Error(outcome.error ?? (outcome.state === 'conflict' ? 'WORKOUT_CONFLICT: This workout changed elsewhere.' : 'Workout change was rejected.'));
+        }
         if (outcome.state === 'applied') await load();
         return true;
       }
@@ -76,17 +78,23 @@ export function useWorkoutExercises(workoutId: string | null, injectedService?: 
     });
   }, [runMutation, workoutId]);
 
-  const removeExercise = useCallback(async (workoutExerciseId: string) => runMutation(
+  const removeExercise = useCallback(async (workoutExerciseId: string) => {
+    const expectedRevision = exercises.find((exercise) => exercise.id === workoutExerciseId)?.revision ?? null;
+    return runMutation(
     'remove',
-    { kind: 'REMOVE_EXERCISE', payload: { workoutExerciseId } },
+    { kind: 'REMOVE_EXERCISE', payload: { workoutExerciseId, expectedRevision } },
     async () => { await serviceRef.current!.removeExercise(workoutExerciseId); },
-  ), [runMutation]);
+    );
+  }, [exercises, runMutation]);
 
-  const moveExercise = useCallback(async (workoutExerciseId: string, newOrderIndex: number) => runMutation(
+  const moveExercise = useCallback(async (workoutExerciseId: string, newOrderIndex: number) => {
+    const expectedRevision = exercises.find((exercise) => exercise.id === workoutExerciseId)?.revision ?? null;
+    return runMutation(
     'move',
-    { kind: 'MOVE_EXERCISE', payload: { workoutExerciseId, newOrderIndex } },
+    { kind: 'MOVE_EXERCISE', payload: { workoutExerciseId, newOrderIndex, expectedRevision } },
     async () => { await serviceRef.current!.moveExercise(workoutExerciseId, newOrderIndex); },
-  ), [runMutation]);
+    );
+  }, [exercises, runMutation]);
 
   return { status, exercises, busyAction, error, retry: load, addExercise, removeExercise, moveExercise };
 }

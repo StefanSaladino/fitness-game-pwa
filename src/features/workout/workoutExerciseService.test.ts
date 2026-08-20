@@ -13,7 +13,7 @@ function query(data: unknown) {
 describe('workoutExerciseService', () => {
   it('loads ordered workout exercise rows and resolves canonical catalog identity', async () => {
     const workoutRows = query([
-      { id: 'we-1', workout_id: 'workout-1', exercise_id: 'exercise-1', order_index: 0 },
+      { id: 'we-1', workout_id: 'workout-1', exercise_id: 'exercise-1', order_index: 0, revision: 7 },
     ]);
     const catalogRows = query([
       { id: 'exercise-1', canonical_name: 'Barbell Bench Press', measurement_type: 'WEIGHT_REPS' },
@@ -24,7 +24,7 @@ describe('workoutExerciseService', () => {
     const result = await createWorkoutExerciseService(client).loadWorkoutExercises('workout-1');
 
     expect(result).toEqual([
-      expect.objectContaining({ id: 'we-1', canonicalName: 'Barbell Bench Press', orderIndex: 0 }),
+      expect.objectContaining({ id: 'we-1', canonicalName: 'Barbell Bench Press', orderIndex: 0, revision: 7 }),
     ]);
     expect(workoutRows.order).toHaveBeenCalledWith('order_index', { ascending: true });
     expect(catalogRows.in).toHaveBeenCalledWith('id', ['exercise-1']);

@@ -14,12 +14,12 @@ const workout: ActiveWorkoutSession = {
   lastResumedAt: '2026-08-20T01:01:30.000Z',
 };
 const exercises: WorkoutExercise[] = [
-  { id: 'we-2', workoutId: 'workout-1', exerciseId: 'e-2', orderIndex: 1, canonicalName: 'Pull Up', measurementType: 'BODYWEIGHT_REPS' },
-  { id: 'we-1', workoutId: 'workout-1', exerciseId: 'e-1', orderIndex: 0, canonicalName: 'Bench Press', measurementType: 'WEIGHT_REPS' },
+  { id: 'we-2', workoutId: 'workout-1', exerciseId: 'e-2', orderIndex: 1, revision: 0, canonicalName: 'Pull Up', measurementType: 'BODYWEIGHT_REPS' },
+  { id: 'we-1', workoutId: 'workout-1', exerciseId: 'e-1', orderIndex: 0, revision: 0, canonicalName: 'Bench Press', measurementType: 'WEIGHT_REPS' },
 ];
 const sets: WorkoutSet[] = [
-  { id: 'set-2', workoutExerciseId: 'we-1', setNumber: 2, setType: 'WORKING', weightKg: 100, reps: 5, bodyweightMode: null, completed: false, completedAt: null },
-  { id: 'set-1', workoutExerciseId: 'we-1', setNumber: 1, setType: 'WARMUP', weightKg: 60, reps: 10, bodyweightMode: null, completed: true, completedAt: '2026-08-20T01:02:00.000Z' },
+  { id: 'set-2', workoutExerciseId: 'we-1', setNumber: 2, setType: 'WORKING', weightKg: 100, reps: 5, bodyweightMode: null, completed: false, completedAt: null, revision: 0 },
+  { id: 'set-1', workoutExerciseId: 'we-1', setNumber: 1, setType: 'WARMUP', weightKg: 60, reps: 10, bodyweightMode: null, completed: true, completedAt: '2026-08-20T01:02:00.000Z', revision: 0 },
 ];
 
 describe('workout recovery snapshot model', () => {
@@ -48,6 +48,18 @@ describe('workout recovery snapshot model', () => {
 
     const otherWorkout = createWorkoutRecoverySnapshot('user-1', { ...workout, id: 'workout-2' }, [], [], first, 3000);
     expect(otherWorkout.ui).toEqual({ weightUnit: 'KG', setDrafts: {} });
+  });
+
+
+  it('normalizes pre-6.4C recovery snapshots to revision zero instead of losing the local workout', () => {
+    const snapshot = createWorkoutRecoverySnapshot('user-1', workout, exercises, sets, null, 1234) as unknown as Record<string, unknown>;
+    const legacyExercises = (snapshot.exercises as Array<Record<string, unknown>>).map(({ revision: _revision, ...exercise }) => exercise);
+    const legacySets = (snapshot.sets as Array<Record<string, unknown>>).map(({ revision: _revision, ...set }) => set);
+    const parsed = parseWorkoutRecoverySnapshot({ ...snapshot, exercises: legacyExercises, sets: legacySets }, 'user-1');
+
+    expect(parsed).not.toBeNull();
+    expect(parsed?.exercises.every((exercise) => exercise.revision === 0)).toBe(true);
+    expect(parsed?.sets.every((set) => set.revision === 0)).toBe(true);
   });
 
   it('rejects corrupted or cross-user recovery payloads', () => {

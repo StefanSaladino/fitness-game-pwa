@@ -534,7 +534,7 @@ ok(!/React|Supabase|localStorage/.test(mutationModel), 'pure mutation model has 
 ok(/fitness-game:workout-mutations:v1:/.test(mutationStorage), 'mutation queue storage is versioned and per-user namespaced');
 ok(/parseWorkoutMutationQueue/.test(mutationStorage) && /removeItem/.test(mutationStorage), 'invalid mutation queues are discarded instead of replayed');
 ok(/while \(queue\.length > 0\)/.test(mutationReplay) && /queue\.shift\(\)/.test(mutationReplay), 'mutation replay preserves FIFO ordering');
-ok(/status: kind === 'terminal' \? 'failed' : 'pending'/.test(mutationReplay), 'terminal failures block while transport failures remain retryable');
+ok(/kind === 'conflict'/.test(mutationReplay) && /WorkoutMutationQueueItemStatus = 'pending' \| 'failed' \| 'conflict'/.test(mutationModel), 'replay preserves explicit conflicts separately from terminal and retryable failures');
 ok(/apply_lifting_workout_mutation/.test(mutationService) && /p_idempotency_key/.test(mutationService), 'client mutation service uses the explicit idempotent RPC boundary');
 ok(/storageRef\.current!\.save\(userId, next\)/.test(mutationHook) && /await replay\(\)/.test(mutationHook), 'queue persists a mutation before attempting replay');
 ok(/addEventListener\('online'/.test(mutationHook), 'queued workout writes automatically retry after reconnect');
@@ -557,9 +557,45 @@ ok(/apply_lifting_workout_mutation/.test(mutationMigration) && /grant execute on
 ok(/add_lifting_workout_set/.test(mutationMigration) && /copy_lifting_workout_set/.test(mutationMigration) && /save_lifting_workout_set/.test(mutationMigration), 'idempotent gateway delegates set writes to guarded authoritative functions');
 ok(Number.isInteger(phase64bPlan) && phase64bPlan === 26 && phase64bPlan === phase64bCount, 'Phase 6.4B pgTAP plan matches 26 assertions');
 ok(/6\.4B Idempotent workout mutation queue — DONE/.test(read('docs/ROADMAP.md')), 'roadmap records Phase 6.4B completion');
-ok(/6\.4C Conflict and destructive-edit safety — NEXT/.test(read('docs/ROADMAP.md')), 'roadmap advances to Phase 6.4C conflict safety');
+ok(/6\.4C Conflict and destructive-edit safety — DONE/.test(read('docs/ROADMAP.md')), 'roadmap records Phase 6.4C conflict safety completion');
 ok(/no scoring reconciliation/i.test(mutationDoc) && /no optimistic local exercise\/set creation/i.test(mutationDoc), 'Phase 6.4B documents scoring and conflict-safety non-goals');
-ok(/"version": "0\.5\.2"/.test(read('package.json')) && /"version": "0\.5\.2"/.test(read('package-lock.json')) && /v0\.5\.2/.test(read('CHANGELOG.md')), 'project metadata records the v0.5.2 checkpoint');
+ok(/Phase 6\.4B/.test(mutationDoc), 'Phase 6.4B keeps its historical checkpoint documentation');
+
+
+// Phase 6.4C — conflict and destructive-edit safety
+for (const rel of [
+  'supabase/migrations/20260820000200_workout_conflict_safety.sql',
+  'supabase/tests/020_workout_conflict_safety.test.sql',
+  'docs/PHASE6.4C-CONFLICT-SAFETY.md',
+]) ok(fs.existsSync(path.join(root, rel)), `${rel} exists`);
+const conflictMigration = read('supabase/migrations/20260820000200_workout_conflict_safety.sql');
+const conflictTest = read('supabase/tests/020_workout_conflict_safety.test.sql');
+const conflictDoc = read('docs/PHASE6.4C-CONFLICT-SAFETY.md');
+const conflictExerciseService = read('src/features/workout/workoutExerciseService.ts');
+const conflictSetService = read('src/features/workout/workoutSetService.ts');
+const conflictScreen = read('src/features/workout/components/WorkoutSessionScreen.tsx');
+const conflictActiveHook = read('src/features/workout/hooks/useActiveWorkout.ts');
+const phase64cPlan = Number((conflictTest.match(/select\s+plan\((\d+)\)/i) || [])[1]);
+const phase64cCount = (conflictTest.match(/select\s+(?:has_table|has_column|has_function|col_is_pk|results_eq|throws_ok|lives_ok|is|cmp_ok|ok)\s*\(/gi) || []).length;
+ok(/revision: number/.test(read('src/features/workout/model.ts')), 'workout exercise/set view models expose revision tokens');
+ok(/revision/.test(conflictExerciseService) && /revision/.test(conflictSetService), 'authoritative exercise and set reads include server revisions');
+ok(/expectedRevision/.test(mutationModel) && /WorkoutMutationErrorKind = 'retryable' \| 'conflict' \| 'terminal'/.test(mutationModel), 'queued destructive writes carry optimistic-concurrency revisions and explicit conflict state');
+ok(/WORKOUT_CONFLICT:/.test(mutationModel) && /WorkoutMutationQueueItemStatus = 'pending' \| 'failed' \| 'conflict'/.test(mutationModel), 'client model recognizes server conflict responses');
+ok(/discardConflictingWorkout/.test(mutationHook), 'queue requires an explicit discard action for a conflicting workout');
+ok(/Workout changed elsewhere/.test(conflictScreen) && /Use server version/.test(conflictScreen), 'workout presentation surfaces actionable conflict recovery');
+ok(/clearDrafts/.test(recoveryHook) && /clearDrafts/.test(recoveryController), 'choosing the server version clears stale local set drafts');
+ok(/setSetRevision/.test(recoveryHook) && /recovery\.setSetRevision/.test(recoveryController), 'queued offline set revisions persist across recovery restarts');
+ok(/revisionCursor/.test(workoutSetHook), 'set hook advances revision expectations synchronously across rapid queued saves');
+ok(/await load\(\)/.test(conflictActiveHook) && /finish/.test(conflictActiveHook) && /cancel/.test(conflictActiveHook), 'finish/cancel failures re-check authoritative active-workout state');
+ok(/add column if not exists revision bigint not null default 0/.test(conflictMigration), 'database adds revision counters to workout capture rows');
+ok(/bump_workout_row_revision/.test(conflictMigration), 'database increments row revisions on updates');
+ok(/for update/.test(conflictMigration) && /v_current_revision <> v_expected_revision/.test(conflictMigration), 'conflict gateway locks rows before comparing expected revisions');
+ok(/Workout is no longer active on the server/.test(conflictMigration), 'completed and cancelled workouts reject queued capture mutations as conflicts');
+ok(/receipt/.test(conflictDoc) && /Legacy v0\.5\.2/.test(conflictDoc), 'conflict policy preserves exact idempotent replay and handles legacy queued writes safely');
+ok(Number.isInteger(phase64cPlan) && phase64cPlan === 31 && phase64cPlan === phase64cCount, 'Phase 6.4C pgTAP plan matches 31 assertions');
+ok(/6\.4C Conflict and destructive-edit safety — DONE/.test(read('docs/ROADMAP.md')), 'roadmap records Phase 6.4C completion');
+ok(/6\.4D Reliability integration gate — NEXT/.test(read('docs/ROADMAP.md')), 'roadmap advances to Phase 6.4D reliability integration');
+ok(/"version": "0\.5\.3"/.test(read('package.json')) && /"version": "0\.5\.3"/.test(read('package-lock.json')), 'project metadata records the v0.5.3 checkpoint');
 
 
 // Phase 5.6.1 — targeted user invitations

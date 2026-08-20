@@ -4,7 +4,7 @@ import { replayWorkoutMutations } from './workoutMutationReplay';
 import type { WorkoutMutationService } from './workoutMutationService';
 
 const first = createWorkoutMutationQueueItem('user-1', 'workout-1', { kind: 'ADD_SET', payload: { workoutExerciseId: 'we-1', setType: 'WORKING' } }, '11111111-1111-4111-8111-111111111111', 100);
-const second = createWorkoutMutationQueueItem('user-1', 'workout-1', { kind: 'COPY_SET', payload: { workoutSetId: 'set-1' } }, '22222222-2222-4222-8222-222222222222', 200);
+const second = createWorkoutMutationQueueItem('user-1', 'workout-1', { kind: 'COPY_SET', payload: { workoutSetId: 'set-1', expectedRevision: 0 } }, '22222222-2222-4222-8222-222222222222', 200);
 
 describe('workout mutation replay', () => {
   it('replays in order and drains successful mutations', async () => {
@@ -34,4 +34,14 @@ describe('workout mutation replay', () => {
     expect(result.items[0]).toEqual(expect.objectContaining({ status: 'failed', lastError: 'Weight is out of range' }));
     expect(result.items[1]?.idempotencyKey).toBe(second.idempotencyKey);
   });
+
+  it('marks stale server data as an explicit conflict and preserves later ordered writes', async () => {
+    const apply = vi.fn(async (_item: WorkoutMutationQueueItem) => { throw { code: 'P0001', message: 'WORKOUT_CONFLICT: Set changed on the server.' }; });
+    const result = await replayWorkoutMutations([first, second], { apply } as WorkoutMutationService, () => 500);
+
+    expect(apply).toHaveBeenCalledTimes(1);
+    expect(result.items[0]).toEqual(expect.objectContaining({ status: 'conflict', lastError: 'WORKOUT_CONFLICT: Set changed on the server.' }));
+    expect(result.items[1]?.idempotencyKey).toBe(second.idempotencyKey);
+  });
+
 });

@@ -377,7 +377,7 @@ Primary boundary: safely retry workout-capture mutations created while offline o
 
 Exit criteria: replaying the same queued mutation more than once cannot duplicate persisted workout data.
 
-#### 6.4C Conflict and destructive-edit safety — NEXT
+#### 6.4C Conflict and destructive-edit safety — DONE
 
 Primary boundary: reconcile local and remote workout state without silently overwriting newer data.
 
@@ -389,7 +389,7 @@ Primary boundary: reconcile local and remote workout state without silently over
 
 Exit criteria: reconnect/retry cannot silently lose newer workout data or revive intentionally removed data.
 
-#### 6.4D Reliability integration gate — LATER
+#### 6.4D Reliability integration gate — NEXT
 
 Primary boundary: prove the complete capture flow survives ordinary connectivity failures.
 

@@ -2,10 +2,10 @@ export const WORKOUT_MUTATION_QUEUE_VERSION = 1 as const;
 
 export type WorkoutMutationRequest =
   | { kind: 'ADD_EXERCISE'; payload: { exerciseId: string } }
-  | { kind: 'REMOVE_EXERCISE'; payload: { workoutExerciseId: string } }
-  | { kind: 'MOVE_EXERCISE'; payload: { workoutExerciseId: string; newOrderIndex: number } }
+  | { kind: 'REMOVE_EXERCISE'; payload: { workoutExerciseId: string; expectedRevision: number | null } }
+  | { kind: 'MOVE_EXERCISE'; payload: { workoutExerciseId: string; newOrderIndex: number; expectedRevision: number | null } }
   | { kind: 'ADD_SET'; payload: { workoutExerciseId: string; setType: 'WARMUP' | 'WORKING' } }
-  | { kind: 'COPY_SET'; payload: { workoutSetId: string } }
+  | { kind: 'COPY_SET'; payload: { workoutSetId: string; expectedRevision: number | null } }
   | {
       kind: 'SAVE_SET';
       payload: {
@@ -15,12 +15,13 @@ export type WorkoutMutationRequest =
         reps: number | null;
         bodyweightMode: 'BODYWEIGHT' | 'ADDED_WEIGHT' | 'ASSISTED' | null;
         completed: boolean;
+        expectedRevision: number | null;
       };
     }
-  | { kind: 'REMOVE_SET'; payload: { workoutSetId: string } };
+  | { kind: 'REMOVE_SET'; payload: { workoutSetId: string; expectedRevision: number | null } };
 
 export type WorkoutMutationKind = WorkoutMutationRequest['kind'];
-export type WorkoutMutationQueueItemStatus = 'pending' | 'failed';
+export type WorkoutMutationQueueItemStatus = 'pending' | 'failed' | 'conflict';
 
 export interface WorkoutMutationQueueItem {
   version: typeof WORKOUT_MUTATION_QUEUE_VERSION;
@@ -36,8 +37,8 @@ export interface WorkoutMutationQueueItem {
   lastError: string | null;
 }
 
-export type WorkoutMutationErrorKind = 'retryable' | 'terminal';
-export type WorkoutMutationExecutionState = 'applied' | 'queued' | 'failed';
+export type WorkoutMutationErrorKind = 'retryable' | 'conflict' | 'terminal';
+export type WorkoutMutationExecutionState = 'applied' | 'queued' | 'conflict' | 'failed';
 
 export interface WorkoutMutationExecutionResult {
   state: WorkoutMutationExecutionState;
@@ -65,6 +66,10 @@ function isNullableInteger(value: unknown): value is number | null {
   return value === null || (typeof value === 'number' && Number.isInteger(value));
 }
 
+function isExpectedRevision(value: unknown): value is number | null {
+  return value === null || (typeof value === 'number' && Number.isInteger(value) && value >= 0);
+}
+
 export function isWorkoutMutationRequest(value: unknown): value is WorkoutMutationRequest {
   if (!isRecord(value) || !isRecord(value.payload) || typeof value.kind !== 'string') return false;
   const payload = value.payload;
@@ -72,28 +77,47 @@ export function isWorkoutMutationRequest(value: unknown): value is WorkoutMutati
     case 'ADD_EXERCISE':
       return isNonEmptyString(payload.exerciseId);
     case 'REMOVE_EXERCISE':
-      return isNonEmptyString(payload.workoutExerciseId);
+      return isNonEmptyString(payload.workoutExerciseId)
+        && isExpectedRevision(payload.expectedRevision);
     case 'MOVE_EXERCISE':
       return isNonEmptyString(payload.workoutExerciseId)
         && typeof payload.newOrderIndex === 'number'
         && Number.isInteger(payload.newOrderIndex)
-        && payload.newOrderIndex >= 0;
+        && payload.newOrderIndex >= 0
+        && isExpectedRevision(payload.expectedRevision);
     case 'ADD_SET':
       return isNonEmptyString(payload.workoutExerciseId)
         && (payload.setType === 'WARMUP' || payload.setType === 'WORKING');
     case 'COPY_SET':
     case 'REMOVE_SET':
-      return isNonEmptyString(payload.workoutSetId);
+      return isNonEmptyString(payload.workoutSetId)
+        && isExpectedRevision(payload.expectedRevision);
     case 'SAVE_SET':
       return isNonEmptyString(payload.workoutSetId)
         && (payload.setType === 'WARMUP' || payload.setType === 'WORKING')
         && isNullableFiniteNumber(payload.weightKg)
         && isNullableInteger(payload.reps)
         && (payload.bodyweightMode === null || payload.bodyweightMode === 'BODYWEIGHT' || payload.bodyweightMode === 'ADDED_WEIGHT' || payload.bodyweightMode === 'ASSISTED')
-        && typeof payload.completed === 'boolean';
+        && typeof payload.completed === 'boolean'
+        && isExpectedRevision(payload.expectedRevision);
     default:
       return false;
   }
+}
+
+function normalizeLegacyPayload(kind: unknown, payload: Record<string, unknown>): Record<string, unknown> {
+  if (
+    kind === 'REMOVE_EXERCISE'
+    || kind === 'MOVE_EXERCISE'
+    || kind === 'COPY_SET'
+    || kind === 'SAVE_SET'
+    || kind === 'REMOVE_SET'
+  ) {
+    return Object.prototype.hasOwnProperty.call(payload, 'expectedRevision')
+      ? payload
+      : { ...payload, expectedRevision: null };
+  }
+  return payload;
 }
 
 export function createWorkoutMutationQueueItem(
@@ -121,9 +145,11 @@ export function createWorkoutMutationQueueItem(
 export function parseWorkoutMutationQueue(value: unknown, expectedUserId: string): WorkoutMutationQueueItem[] | null {
   if (!Array.isArray(value)) return null;
   const parsed: WorkoutMutationQueueItem[] = [];
-  for (const item of value) {
-    if (!isRecord(item)
-      || item.version !== WORKOUT_MUTATION_QUEUE_VERSION
+  for (const rawItem of value) {
+    if (!isRecord(rawItem) || !isRecord(rawItem.payload)) return null;
+    const payload = normalizeLegacyPayload(rawItem.kind, rawItem.payload);
+    const item: Record<string, unknown> = { ...rawItem, payload };
+    if (item.version !== WORKOUT_MUTATION_QUEUE_VERSION
       || item.userId !== expectedUserId
       || !isNonEmptyString(item.idempotencyKey)
       || !isNonEmptyString(item.workoutId)
@@ -133,7 +159,7 @@ export function parseWorkoutMutationQueue(value: unknown, expectedUserId: string
       || !Number.isInteger(item.attemptCount)
       || item.attemptCount < 0
       || (item.lastAttemptAtMs !== null && (typeof item.lastAttemptAtMs !== 'number' || !Number.isFinite(item.lastAttemptAtMs)))
-      || (item.status !== 'pending' && item.status !== 'failed')
+      || (item.status !== 'pending' && item.status !== 'failed' && item.status !== 'conflict')
       || (item.lastError !== null && typeof item.lastError !== 'string')
       || !isWorkoutMutationRequest({ kind: item.kind, payload: item.payload })) {
       return null;
@@ -149,6 +175,7 @@ export function classifyWorkoutMutationError(error: unknown): WorkoutMutationErr
   const code = String(candidate.code ?? '').toUpperCase();
   const status = typeof candidate.status === 'number' ? candidate.status : Number(candidate.status ?? NaN);
 
+  if (/WORKOUT_CONFLICT:/i.test(message)) return 'conflict';
   if (status === 408 || status === 425 || status === 429 || status >= 500) return 'retryable';
   if (/^(08|53)/.test(code) || ['40001', '40P01', '57P01', '57P02', '57P03'].includes(code)) return 'retryable';
   if (/network|failed to fetch|fetch failed|connection|timeout|timed out|econn|socket|offline/i.test(message)) return 'retryable';

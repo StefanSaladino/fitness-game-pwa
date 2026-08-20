@@ -72,21 +72,25 @@ export function useActiveWorkout(userId: string, injectedService?: WorkoutServic
 
   const finish = useCallback(async () => {
     if (!activeWorkout) return null;
-    return runSessionAction('finish', async () => {
+    const result = await runSessionAction('finish', async () => {
       await serviceRef.current!.finishWorkout(activeWorkout.id);
       setActiveWorkout(null);
       return activeWorkout.id;
     });
-  }, [activeWorkout, runSessionAction]);
+    if (result === null) await load();
+    return result;
+  }, [activeWorkout, load, runSessionAction]);
 
   const cancel = useCallback(async () => {
     if (!activeWorkout) return null;
-    return runSessionAction('cancel', async () => {
+    const result = await runSessionAction('cancel', async () => {
       await serviceRef.current!.cancelWorkout(activeWorkout.id);
       setActiveWorkout(null);
       return activeWorkout.id;
     });
-  }, [activeWorkout, runSessionAction]);
+    if (result === null) await load();
+    return result;
+  }, [activeWorkout, load, runSessionAction]);
 
   return { status, activeWorkout, busyAction, error, retry: load, start, pause, resume, finish, cancel };
 }

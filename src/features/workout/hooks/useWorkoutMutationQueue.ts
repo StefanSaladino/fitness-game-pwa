@@ -10,11 +10,17 @@ import { replayWorkoutMutations } from '../mutations/workoutMutationReplay';
 import { createWorkoutMutationService, type WorkoutMutationService } from '../mutations/workoutMutationService';
 import { createWorkoutMutationStorage, type WorkoutMutationStorage } from '../mutations/workoutMutationStorage';
 
-export type WorkoutMutationQueueStatus = 'idle' | 'replaying' | 'blocked';
+export type WorkoutMutationQueueStatus = 'idle' | 'replaying' | 'blocked' | 'conflict';
 
 function browserIsOnline(): boolean {
   if (typeof navigator === 'undefined') return true;
   return navigator.onLine !== false;
+}
+
+function queueStatus(items: readonly WorkoutMutationQueueItem[]): WorkoutMutationQueueStatus {
+  if (items.some((item) => item.status === 'conflict')) return 'conflict';
+  if (items.some((item) => item.status === 'failed')) return 'blocked';
+  return 'idle';
 }
 
 export function useWorkoutMutationQueue(
@@ -34,21 +40,21 @@ export function useWorkoutMutationQueue(
   const itemsRef = useRef<WorkoutMutationQueueItem[]>(initialItems.current);
   const operationChain = useRef<Promise<void>>(Promise.resolve());
   const [items, setItems] = useState<WorkoutMutationQueueItem[]>(initialItems.current);
-  const [status, setStatus] = useState<WorkoutMutationQueueStatus>(() => initialItems.current!.some((item) => item.status === 'failed') ? 'blocked' : 'idle');
+  const [status, setStatus] = useState<WorkoutMutationQueueStatus>(() => queueStatus(initialItems.current!));
   const [appliedRevision, setAppliedRevision] = useState(0);
 
   const replaceItems = useCallback((next: WorkoutMutationQueueItem[]) => {
     itemsRef.current = next;
     storageRef.current!.save(userId, next);
     setItems(next);
-    setStatus(next.some((item) => item.status === 'failed') ? 'blocked' : 'idle');
+    setStatus(queueStatus(next));
   }, [userId]);
 
   useEffect(() => {
     const loaded = storageRef.current!.load(userId);
     itemsRef.current = loaded;
     setItems(loaded);
-    setStatus(loaded.some((item) => item.status === 'failed') ? 'blocked' : 'idle');
+    setStatus(queueStatus(loaded));
   }, [userId]);
 
   const serialize = useCallback(async <T,>(task: () => Promise<T>): Promise<T> => {
@@ -75,14 +81,16 @@ export function useWorkoutMutationQueue(
   }, []);
 
   const replay = useCallback(async () => serialize(async () => {
-    if (!browserIsOnline() || itemsRef.current.length === 0 || itemsRef.current[0]?.status === 'failed') return;
+    if (!browserIsOnline() || itemsRef.current.length === 0) return;
+    const headStatus = itemsRef.current[0]?.status;
+    if (headStatus === 'failed' || headStatus === 'conflict') return;
     setStatus('replaying');
     const result = await replayWorkoutMutations(itemsRef.current, serviceRef.current!);
     itemsRef.current = result.items;
     storageRef.current!.save(userId, result.items);
     setItems(result.items);
     if (result.appliedCount > 0) setAppliedRevision((value) => value + 1);
-    setStatus(result.items.some((item) => item.status === 'failed') ? 'blocked' : 'idle');
+    setStatus(queueStatus(result.items));
   }), [serialize, userId]);
 
   useEffect(() => {
@@ -107,13 +115,21 @@ export function useWorkoutMutationQueue(
     storageRef.current!.save(userId, next);
     setItems(next);
 
-    if (!browserIsOnline() || next.some((queued) => queued.status === 'failed')) {
+    if (!browserIsOnline() || next.some((queued) => queued.status === 'failed' || queued.status === 'conflict')) {
+      setStatus(queueStatus(next));
       return { state: 'queued', idempotencyKey: item.idempotencyKey };
     }
 
     await replay();
     const remaining = itemsRef.current.find((queued) => queued.idempotencyKey === item.idempotencyKey);
     if (!remaining) return { state: 'applied', idempotencyKey: item.idempotencyKey };
+    if (remaining.status === 'conflict') {
+      return {
+        state: 'conflict',
+        idempotencyKey: item.idempotencyKey,
+        error: remaining.lastError ?? 'WORKOUT_CONFLICT: This workout changed elsewhere.',
+      };
+    }
     if (remaining.status === 'failed') {
       const error = remaining.lastError ?? 'Workout change was rejected.';
       const withoutImmediateFailure = itemsRef.current.filter((queued) => queued.idempotencyKey !== item.idempotencyKey);
@@ -136,7 +152,22 @@ export function useWorkoutMutationQueue(
     await replay();
   }, [replaceItems, replay]);
 
+  const discardWorkout = useCallback(async (targetWorkoutId: string) => serialize(async () => {
+    if (!itemsRef.current.some((item) => item.workoutId === targetWorkoutId)) return null;
+    const next = itemsRef.current.filter((item) => item.workoutId !== targetWorkoutId);
+    replaceItems(next);
+    setAppliedRevision((value) => value + 1);
+    return targetWorkoutId;
+  }), [replaceItems, serialize]);
+
+  const discardConflictingWorkout = useCallback(async () => {
+    const conflict = itemsRef.current.find((item) => item.status === 'conflict');
+    if (!conflict) return null;
+    return discardWorkout(conflict.workoutId);
+  }, [discardWorkout]);
+
   const executor = useMemo<WorkoutMutationExecutor>(() => ({ execute }), [execute]);
+  const firstConflict = items.find((item) => item.status === 'conflict') ?? null;
   const firstFailed = items.find((item) => item.status === 'failed') ?? null;
 
   return {
@@ -144,10 +175,14 @@ export function useWorkoutMutationQueue(
     items,
     pendingCount: items.length,
     failedCount: items.filter((item) => item.status === 'failed').length,
+    conflictCount: items.filter((item) => item.status === 'conflict').length,
     status,
-    error: firstFailed?.lastError ?? '',
+    error: firstConflict?.lastError ?? firstFailed?.lastError ?? '',
+    conflictWorkoutId: firstConflict?.workoutId ?? null,
     appliedRevision,
     replay,
     retryBlocked,
+    discardWorkout,
+    discardConflictingWorkout,
   };
 }

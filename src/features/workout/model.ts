@@ -22,6 +22,7 @@ export interface WorkoutExercise {
   workoutId: string;
   exerciseId: string;
   orderIndex: number;
+  revision: number;
   canonicalName: string;
   measurementType: ExerciseMeasurementType;
 }
@@ -64,6 +65,7 @@ export interface WorkoutSet {
   bodyweightMode: BodyweightLoadMode | null;
   completed: boolean;
   completedAt: string | null;
+  revision: number;
 }
 
 export interface WorkoutSetInput {

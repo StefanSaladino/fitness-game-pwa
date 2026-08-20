@@ -14,7 +14,7 @@ describe('workout mutation storage', () => {
   it('persists an ordered queue per user and removes the key when drained', () => {
     const memory = new MemoryStorage();
     const storage = createWorkoutMutationStorage(memory);
-    const later = createWorkoutMutationQueueItem('user-1', 'workout-1', { kind: 'COPY_SET', payload: { workoutSetId: 'set-1' } }, '22222222-2222-4222-8222-222222222222', 200);
+    const later = createWorkoutMutationQueueItem('user-1', 'workout-1', { kind: 'COPY_SET', payload: { workoutSetId: 'set-1', expectedRevision: 0 } }, '22222222-2222-4222-8222-222222222222', 200);
     const earlier = createWorkoutMutationQueueItem('user-1', 'workout-1', { kind: 'ADD_SET', payload: { workoutExerciseId: 'we-1', setType: 'WORKING' } }, '11111111-1111-4111-8111-111111111111', 100);
 
     storage.save('user-1', [later, earlier]);

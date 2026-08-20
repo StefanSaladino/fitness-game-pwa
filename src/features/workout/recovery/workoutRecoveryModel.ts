@@ -25,6 +25,7 @@ export interface WorkoutRecoveryExerciseSnapshot {
   workoutId: string;
   exerciseId: string;
   orderIndex: number;
+  revision: number;
   canonicalName: string;
   measurementType: WorkoutExercise['measurementType'];
 }
@@ -39,6 +40,7 @@ export interface WorkoutRecoverySetSnapshot {
   bodyweightMode: BodyweightLoadMode | null;
   completed: boolean;
   completedAt: string | null;
+  revision: number;
 }
 
 export interface WorkoutRecoverySetDraft {
@@ -84,6 +86,7 @@ function snapshotExercise(exercise: WorkoutExercise): WorkoutRecoveryExerciseSna
     workoutId: exercise.workoutId,
     exerciseId: exercise.exerciseId,
     orderIndex: exercise.orderIndex,
+    revision: exercise.revision,
     canonicalName: exercise.canonicalName,
     measurementType: exercise.measurementType,
   };
@@ -100,6 +103,7 @@ function snapshotSet(set: WorkoutSet): WorkoutRecoverySetSnapshot {
     bodyweightMode: set.bodyweightMode,
     completed: set.completed,
     completedAt: set.completedAt,
+    revision: set.revision,
   };
 }
 
@@ -205,6 +209,7 @@ export function parseWorkoutRecoverySnapshot(value: unknown, expectedUserId: str
     && isString(exercise.exerciseId)
     && typeof exercise.orderIndex === 'number'
     && Number.isInteger(exercise.orderIndex)
+    && (exercise.revision === undefined || (typeof exercise.revision === 'number' && Number.isInteger(exercise.revision) && exercise.revision >= 0))
     && isString(exercise.canonicalName)
     && ['WEIGHT_REPS', 'BODYWEIGHT_REPS', 'DURATION', 'OTHER'].includes(String(exercise.measurementType)));
   if (!exercisesValid) return null;
@@ -221,8 +226,23 @@ export function parseWorkoutRecoverySnapshot(value: unknown, expectedUserId: str
     && (set.reps === null || (typeof set.reps === 'number' && Number.isInteger(set.reps)))
     && (set.bodyweightMode === null || ['BODYWEIGHT', 'ADDED_WEIGHT', 'ASSISTED'].includes(String(set.bodyweightMode)))
     && typeof set.completed === 'boolean'
-    && isNullableString(set.completedAt));
+    && isNullableString(set.completedAt)
+    && (set.revision === undefined || (typeof set.revision === 'number' && Number.isInteger(set.revision) && set.revision >= 0)));
   if (!setsValid) return null;
 
-  return value as unknown as ActiveWorkoutRecoverySnapshot;
+  return {
+    ...(value as unknown as ActiveWorkoutRecoverySnapshot),
+    exercises: exercises.map((exercise) => ({
+      ...(exercise as unknown as WorkoutRecoveryExerciseSnapshot),
+      revision: typeof (exercise as Record<string, unknown>).revision === 'number'
+        ? (exercise as Record<string, unknown>).revision as number
+        : 0,
+    })),
+    sets: value.sets.map((set) => ({
+      ...(set as unknown as WorkoutRecoverySetSnapshot),
+      revision: typeof (set as Record<string, unknown>).revision === 'number'
+        ? (set as Record<string, unknown>).revision as number
+        : 0,
+    })),
+  };
 }

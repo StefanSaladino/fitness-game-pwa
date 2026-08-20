@@ -7,6 +7,7 @@ type WorkoutExerciseRow = {
   workout_id: string;
   exercise_id: string;
   order_index: number;
+  revision: number;
 };
 
 type ExerciseCatalogRow = {
@@ -27,7 +28,7 @@ export function createWorkoutExerciseService(client: SupabaseClient = getSupabas
     async loadWorkoutExercises(workoutId) {
       const exerciseRows = await client
         .from('workout_exercises')
-        .select('id, workout_id, exercise_id, order_index')
+        .select('id, workout_id, exercise_id, order_index, revision')
         .eq('workout_id', workoutId)
         .order('order_index', { ascending: true });
 
@@ -53,6 +54,7 @@ export function createWorkoutExerciseService(client: SupabaseClient = getSupabas
           workoutId: row.workout_id,
           exerciseId: row.exercise_id,
           orderIndex: row.order_index,
+          revision: row.revision,
           canonicalName: exercise.canonical_name,
           measurementType: exercise.measurement_type,
         };

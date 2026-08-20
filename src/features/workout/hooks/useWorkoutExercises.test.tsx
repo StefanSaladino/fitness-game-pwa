@@ -7,6 +7,7 @@ import { useWorkoutExercises } from './useWorkoutExercises';
 
 const bench: WorkoutExercise = {
   id: 'we-1', workoutId: 'workout-1', exerciseId: 'exercise-1', orderIndex: 0,
+  revision: 0,
   canonicalName: 'Barbell Bench Press', measurementType: 'WEIGHT_REPS',
 };
 
@@ -50,6 +51,29 @@ describe('useWorkoutExercises', () => {
     expect(executor.execute).toHaveBeenCalledWith({ kind: 'ADD_EXERCISE', payload: { exerciseId: 'exercise-2' } });
     expect(api.addExercise).not.toHaveBeenCalled();
     expect(api.loadWorkoutExercises).toHaveBeenCalledTimes(2);
+  });
+
+
+  it('carries the loaded exercise revision into queued destructive composition writes', async () => {
+    const revised = { ...bench, revision: 7 };
+    const api = service({ loadWorkoutExercises: vi.fn(async () => [revised]) });
+    const executor: WorkoutMutationExecutor = {
+      execute: vi.fn(async () => ({ state: 'applied' as const, idempotencyKey: '33333333-3333-4333-8333-333333333333' })),
+    };
+    const { result } = renderHook(() => useWorkoutExercises('workout-1', api, executor));
+    await waitFor(() => expect(result.current.status).toBe('ready'));
+
+    await act(async () => { await result.current.moveExercise('we-1', 0); });
+    await act(async () => { await result.current.removeExercise('we-1'); });
+
+    expect(executor.execute).toHaveBeenNthCalledWith(1, {
+      kind: 'MOVE_EXERCISE',
+      payload: { workoutExerciseId: 'we-1', newOrderIndex: 0, expectedRevision: 7 },
+    });
+    expect(executor.execute).toHaveBeenNthCalledWith(2, {
+      kind: 'REMOVE_EXERCISE',
+      payload: { workoutExerciseId: 'we-1', expectedRevision: 7 },
+    });
   });
 
   it('reloads authoritative order after a move', async () => {

@@ -73,6 +73,27 @@ export function useWorkoutRecovery(userId: string, injectedStorage?: WorkoutReco
     });
   }, [write]);
 
+
+  const clearDrafts = useCallback(() => {
+    write((current) => current ? {
+      ...current,
+      savedAtMs: Date.now(),
+      ui: { ...current.ui, setDrafts: {} },
+    } : current);
+  }, [write]);
+
+  const setSetRevision = useCallback((setId: string, revision: number) => {
+    if (!Number.isInteger(revision) || revision < 0) return;
+    write((current) => {
+      if (!current || !current.sets.some((set) => set.id === setId)) return current;
+      return {
+        ...current,
+        savedAtMs: Date.now(),
+        sets: current.sets.map((set) => set.id === setId ? { ...set, revision } : set),
+      };
+    });
+  }, [write]);
+
   const setWeightUnit = useCallback((weightUnit: WeightDisplayUnit) => {
     write((current) => current ? {
       ...current,
@@ -90,6 +111,8 @@ export function useWorkoutRecovery(userId: string, injectedStorage?: WorkoutReco
     captureCanonical,
     setDraft,
     clearDraft,
+    clearDrafts,
+    setSetRevision,
     setWeightUnit,
     clear,
   };

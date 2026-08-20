@@ -20,7 +20,7 @@ import {
   restoreWorkoutSets,
   type WorkoutRecoveryState,
 } from '../recovery/workoutRecoveryModel';
-import { ActiveWorkoutScreen, WorkoutStartScreen } from './WorkoutSessionScreen';
+import { ActiveWorkoutScreen, WorkoutStartScreen, WorkoutSyncConflictScreen } from './WorkoutSessionScreen';
 import styles from './WorkoutSessionScreen.module.css';
 
 interface WorkoutControllerProps {
@@ -49,16 +49,22 @@ export function WorkoutController({ profile, onNavigate, onSignOut, service, exe
   const exercises = useRecoveredExercises ? recoveredExercises : composition.exercises;
 
   const picker = useExercisePickerCatalog(Boolean(activeWorkout), pickerService);
-  const sets = useWorkoutSets(exercises.map((exercise) => exercise.id), setService, mutationQueue.executor);
   const recoveredSets = recoveryMatchesWorkout && recovery.snapshot
     ? restoreWorkoutSets(recovery.snapshot).filter((set) => exercises.some((exercise) => exercise.id === set.workoutExerciseId))
     : [];
+  const sets = useWorkoutSets(
+    exercises.map((exercise) => exercise.id),
+    setService,
+    mutationQueue.executor,
+    recoveredSets,
+    recovery.setSetRevision,
+  );
   const useRecoveredSets = recoveryMatchesWorkout && sets.status !== 'ready';
   const workoutSets = useRecoveredSets ? recoveredSets : sets.sets;
 
   useEffect(() => {
-    if (workout.status === 'ready' && workout.activeWorkout === null) recovery.clear();
-  }, [recovery.clear, workout.activeWorkout, workout.status]);
+    if (workout.status === 'ready' && workout.activeWorkout === null && mutationQueue.pendingCount === 0) recovery.clear();
+  }, [mutationQueue.pendingCount, recovery.clear, workout.activeWorkout, workout.status]);
 
   useEffect(() => {
     if (!workout.activeWorkout || composition.status !== 'ready' || sets.status !== 'ready') return;
@@ -113,6 +119,22 @@ export function WorkoutController({ profile, onNavigate, onSignOut, service, exe
   }
 
   if (!activeWorkout) {
+    if (recoveredWorkout && mutationQueue.pendingCount > 0) {
+      return (
+        <WorkoutSyncConflictScreen
+          message="The server no longer has this workout as active, so the saved local changes cannot be replayed safely. Using the server version discards those queued local changes."
+          onNavigate={onNavigate}
+          onSignOut={onSignOut}
+          onUseServerVersion={async () => {
+            await mutationQueue.discardWorkout(recoveredWorkout.id);
+            recovery.clear();
+            onNavigate('home');
+          }}
+          profile={profile}
+          resolving={mutationQueue.status === 'replaying'}
+        />
+      );
+    }
     return <WorkoutStartScreen busyAction={workout.busyAction} error={workout.error} onNavigate={onNavigate} onSignOut={onSignOut} onStart={workout.start} profile={profile} />;
   }
 
@@ -131,10 +153,16 @@ export function WorkoutController({ profile, onNavigate, onSignOut, service, exe
       exercises={exercises}
       error={useRecoveredWorkout ? '' : workout.error}
       initialWeightUnit={initialWeightUnit}
-      mutationQueueError={mutationQueue.status === 'blocked' ? toUserFacingWorkoutError(new Error(mutationQueue.error)) : ''}
+      mutationQueueError={mutationQueue.status === 'blocked' || mutationQueue.status === 'conflict' ? toUserFacingWorkoutError(new Error(mutationQueue.error)) : ''}
       mutationQueuePendingCount={mutationQueue.pendingCount}
       mutationQueueStatus={mutationQueue.status}
       onRetryMutationQueue={mutationQueue.retryBlocked}
+      onDiscardMutationConflict={async () => {
+        const discardedWorkoutId = await mutationQueue.discardConflictingWorkout();
+        if (!discardedWorkoutId) return;
+        recovery.clearDrafts();
+        await Promise.all([workout.retry(), composition.retry(), sets.retry()]);
+      }}
       onCancel={async () => {
         const id = await workout.cancel();
         if (id) {

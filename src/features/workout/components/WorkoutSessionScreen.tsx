@@ -58,12 +58,13 @@ interface ActiveProps extends SharedProps {
   onSetDraftPersisted?: (workoutSetId: string) => void;
   onWeightUnitChange?: (unit: WeightDisplayUnit) => void;
   mutationQueuePendingCount?: number;
-  mutationQueueStatus?: 'idle' | 'replaying' | 'blocked';
+  mutationQueueStatus?: 'idle' | 'replaying' | 'blocked' | 'conflict';
   mutationQueueError?: string;
   onRetryMutationQueue?: () => Promise<void>;
+  onDiscardMutationConflict?: () => Promise<void>;
 }
 
-function WorkoutShell({ profile, onNavigate, onSignOut, children }: SharedProps & { children: ReactNode }) {
+function WorkoutShell({ profile, onNavigate, onSignOut, children }: Pick<SharedProps, 'profile' | 'onNavigate' | 'onSignOut'> & { children: ReactNode }) {
   return (
     <AppShell activeItem="workouts" onNavigate={onNavigate} onSignOut={onSignOut} userLabel={profile.displayName} userMeta={`@${profile.username}`}>
       {children}
@@ -111,6 +112,33 @@ function measurementLabel(exercise: WorkoutExercise): string {
     case 'DURATION': return 'Duration';
     default: return 'Tracked exercise';
   }
+}
+
+
+interface SyncConflictProps {
+  profile: OnboardingProfile;
+  onNavigate: (section: AppSection) => void;
+  onSignOut: () => void;
+  message: string;
+  resolving: boolean;
+  onUseServerVersion?: () => Promise<void>;
+}
+
+export function WorkoutSyncConflictScreen(props: SyncConflictProps) {
+  return (
+    <WorkoutShell {...props}>
+      <main className={styles.start}>
+        <p className={styles.kicker}>WORKOUT RECOVERY</p>
+        <h1>Workout changed elsewhere</h1>
+        <p>{props.message}</p>
+        {props.onUseServerVersion && (
+          <Button disabled={props.resolving} onClick={() => void props.onUseServerVersion?.()}>
+            {props.resolving ? 'Checking server…' : 'Use server version'}
+          </Button>
+        )}
+      </main>
+    </WorkoutShell>
+  );
 }
 
 export function WorkoutStartScreen(props: StartProps) {
@@ -162,8 +190,9 @@ export function ActiveWorkoutScreen(props: ActiveProps) {
   const mutationQueuePendingCount = props.mutationQueuePendingCount ?? 0;
   const mutationQueueStatus = props.mutationQueueStatus ?? 'idle';
   const queueBlocked = mutationQueueStatus === 'blocked';
-  const serverMutationsEnabled = recoveryState === 'synced' && !queueBlocked && mutationQueuePendingCount === 0;
-  const setEditsEnabled = recoveryState !== 'recovering' && !queueBlocked;
+  const queueConflict = mutationQueueStatus === 'conflict';
+  const serverMutationsEnabled = recoveryState === 'synced' && !queueBlocked && !queueConflict && mutationQueuePendingCount === 0;
+  const setEditsEnabled = recoveryState !== 'recovering' && !queueBlocked && !queueConflict;
   const lifecycleMutationsEnabled = serverMutationsEnabled;
 
   useEffect(() => {
@@ -221,23 +250,30 @@ export function ActiveWorkoutScreen(props: ActiveProps) {
         {mutationQueuePendingCount > 0 && (
           <section className={styles.queueNotice} aria-live="polite" role="status">
             <strong>
-              {queueBlocked
-                ? 'Workout sync needs attention'
-                : mutationQueueStatus === 'replaying'
-                  ? 'Syncing workout changes'
-                  : `${mutationQueuePendingCount} workout change${mutationQueuePendingCount === 1 ? '' : 's'} queued`}
+              {queueConflict
+                ? 'Workout changed elsewhere'
+                : queueBlocked
+                  ? 'Workout sync needs attention'
+                  : mutationQueueStatus === 'replaying'
+                    ? 'Syncing workout changes'
+                    : `${mutationQueuePendingCount} workout change${mutationQueuePendingCount === 1 ? '' : 's'} queued`}
             </strong>
             <span>
-              {queueBlocked
-                ? 'A queued change was rejected, so later changes are paused instead of being applied out of order.'
-                : recoveryState === 'offline'
-                  ? 'Queued changes are saved on this device and will replay in order after reconnecting.'
-                  : 'The app will retry these changes in order without duplicating persisted workout data.'}
+              {queueConflict
+                ? 'A queued change was based on older server data. Nothing newer will be overwritten until you choose the server version.'
+                : queueBlocked
+                  ? 'A queued change was rejected, so later changes are paused instead of being applied out of order.'
+                  : recoveryState === 'offline'
+                    ? 'Queued changes are saved on this device and will replay in order after reconnecting.'
+                    : 'The app will retry these changes in order without duplicating persisted workout data.'}
             </span>
-            {mutationQueueStatus !== 'replaying' && recoveryState !== 'offline' && props.onRetryMutationQueue && (
+            {queueConflict && props.onDiscardMutationConflict && (
+              <button onClick={() => void props.onDiscardMutationConflict?.()} type="button">Use server version</button>
+            )}
+            {!queueConflict && mutationQueueStatus !== 'replaying' && recoveryState !== 'offline' && props.onRetryMutationQueue && (
               <button onClick={() => void props.onRetryMutationQueue?.()} type="button">Retry sync</button>
             )}
-            {queueBlocked && props.mutationQueueError && <span className={styles.queueError}>{props.mutationQueueError}</span>}
+            {(queueBlocked || queueConflict) && props.mutationQueueError && <span className={styles.queueError}>{props.mutationQueueError}</span>}
           </section>
         )}
 

@@ -1,21 +1,19 @@
-# Fitness Game PWA — v0.5.2
+# Fitness Game PWA — v0.5.3
 
-Current checkpoint: **Phase 6.4B — Idempotent workout mutation queue**.
+Current checkpoint: **Phase 6.4C — Conflict and destructive-edit safety**.
 
-The app is a lifting-first React/TypeScript PWA backed by Supabase. The implemented product path now covers authentication/onboarding, groups, the lifting dashboard, active workout timing, exercise selection, independent set logging, local active-workout recovery, and idempotent ordered replay of workout-capture mutations.
+The lifting workout flow now has local recovery, an idempotent ordered mutation queue, and optimistic-concurrency protection for stale set/exercise edits. Conflicts never overwrite newer server data automatically; the user can explicitly discard the unsafe local queue and reload the authoritative server version. Completed/cancelled workouts remain immutable.
 
-## Current reliability state
+## Reliability state
 
 - Phase 6.4A local active-workout recovery — DONE
 - Phase 6.4B idempotent workout mutation queue — DONE
-- Phase 6.4C conflict and destructive-edit safety — NEXT
-- Phase 6.4D reliability integration gate — LATER
+- Phase 6.4C conflict and destructive-edit safety — DONE
+- Phase 6.4D reliability integration gate — NEXT
 
-See `docs/ROADMAP.md` for the complete plan and `docs/PHASE6.4B-IDEMPOTENT-WORKOUT-MUTATIONS.md` for the current slice.
+## Supabase for v0.5.3
 
-## Supabase for v0.5.2
-
-Apply `supabase/migrations/20260820000100_idempotent_workout_mutations.sql`, then run the database test suite including `019_idempotent_workout_mutations.test.sql`.
+Apply `supabase/migrations/20260820000200_workout_conflict_safety.sql`. Then run `supabase/tests/019_idempotent_workout_mutations.test.sql` and `supabase/tests/020_workout_conflict_safety.test.sql`.
 
 ## Local validation
 

@@ -31,13 +31,13 @@ describe('workout mutation model', () => {
     const item = createWorkoutMutationQueueItem(
       'user-1',
       'workout-1',
-      { kind: 'MOVE_EXERCISE', payload: { workoutExerciseId: 'we-1', newOrderIndex: 1 } },
+      { kind: 'MOVE_EXERCISE', payload: { workoutExerciseId: 'we-1', newOrderIndex: 1, expectedRevision: 0 } },
       '11111111-1111-4111-8111-111111111111',
       123,
     );
 
     expect(parseWorkoutMutationQueue([item], 'other-user')).toBeNull();
-    expect(parseWorkoutMutationQueue([{ ...item, payload: { workoutExerciseId: 'we-1', newOrderIndex: -1 } }], 'user-1')).toBeNull();
+    expect(parseWorkoutMutationQueue([{ ...item, payload: { workoutExerciseId: 'we-1', newOrderIndex: -1, expectedRevision: 0 } }], 'user-1')).toBeNull();
   });
 
   it('separates retryable transport failures from terminal validation and authorization failures', () => {
@@ -45,6 +45,26 @@ describe('workout mutation model', () => {
     expect(classifyWorkoutMutationError({ code: '08006', message: 'connection failure' })).toBe('retryable');
     expect(classifyWorkoutMutationError({ status: 503, message: 'gateway unavailable' })).toBe('retryable');
     expect(classifyWorkoutMutationError({ code: '22023', message: 'Weight is out of range' })).toBe('terminal');
+    expect(classifyWorkoutMutationError({ code: 'P0001', message: 'WORKOUT_CONFLICT: Set changed on the server.' })).toBe('conflict');
     expect(classifyWorkoutMutationError({ code: '42501', message: 'Authentication required' })).toBe('terminal');
   });
+
+  it('keeps legacy queued destructive writes but marks their missing revision explicitly', () => {
+    const legacy = {
+      version: 1,
+      idempotencyKey: '11111111-1111-4111-8111-111111111111',
+      userId: 'user-1',
+      workoutId: 'workout-1',
+      kind: 'SAVE_SET',
+      payload: { workoutSetId: 'set-1', setType: 'WORKING', weightKg: 100, reps: 5, bodyweightMode: null, completed: true },
+      createdAtMs: 123,
+      attemptCount: 0,
+      lastAttemptAtMs: null,
+      status: 'pending',
+      lastError: null,
+    };
+
+    expect(parseWorkoutMutationQueue([legacy], 'user-1')?.[0]?.payload).toEqual(expect.objectContaining({ expectedRevision: null }));
+  });
+
 });

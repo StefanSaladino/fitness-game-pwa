@@ -66,4 +66,23 @@ describe('useActiveWorkout', () => {
     expect(result.current.activeWorkout).toBeNull();
     expect(api.finishWorkout).toHaveBeenCalledWith('workout-1');
   });
+
+  it('rechecks the server after a finish race so completed-elsewhere workouts do not stay editable', async () => {
+    const loadActiveWorkout = vi.fn()
+      .mockResolvedValueOnce(active)
+      .mockResolvedValueOnce(null);
+    const api = service({
+      loadActiveWorkout,
+      finishWorkout: vi.fn(async () => { throw new Error('Active lifting workout not found'); }),
+    });
+    const { result } = renderHook(() => useActiveWorkout('user-1', api));
+    await waitFor(() => expect(result.current.activeWorkout).not.toBeNull());
+
+    await act(async () => { await result.current.finish(); });
+
+    expect(loadActiveWorkout).toHaveBeenCalledTimes(2);
+    expect(result.current.status).toBe('ready');
+    expect(result.current.activeWorkout).toBeNull();
+  });
+
 });

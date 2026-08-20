@@ -12,6 +12,7 @@ type WorkoutSetRow = {
   bodyweight_mode: WorkoutSet['bodyweightMode'];
   completed: boolean;
   completed_at: string | null;
+  revision: number;
 };
 
 export interface WorkoutSetService {
@@ -33,6 +34,7 @@ function mapRow(row: WorkoutSetRow): WorkoutSet {
     bodyweightMode: row.bodyweight_mode,
     completed: row.completed,
     completedAt: row.completed_at,
+    revision: row.revision,
   };
 }
 
@@ -42,7 +44,7 @@ export function createWorkoutSetService(client: SupabaseClient = getSupabaseClie
       if (workoutExerciseIds.length === 0) return [];
       const result = await client
         .from('workout_sets')
-        .select('id, workout_exercise_id, set_number, set_type, weight_kg, reps, bodyweight_mode, completed, completed_at')
+        .select('id, workout_exercise_id, set_number, set_type, weight_kg, reps, bodyweight_mode, completed, completed_at, revision')
         .in('workout_exercise_id', [...workoutExerciseIds])
         .order('set_number', { ascending: true });
       if (result.error) throw result.error;

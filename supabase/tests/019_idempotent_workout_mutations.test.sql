@@ -58,11 +58,11 @@ select is((select count(*)::integer from public.workout_exercises where workout_
 
 select public.apply_lifting_workout_mutation(
   'a4333333-3333-4333-8333-333333333333', (select workout_id from phase64b_ids), 'MOVE_EXERCISE',
-  jsonb_build_object('workoutExerciseId', (select exercise_two_id from phase64b_ids), 'newOrderIndex', 0)
+  jsonb_build_object('workoutExerciseId', (select exercise_two_id from phase64b_ids), 'newOrderIndex', 0, 'expectedRevision', 0)
 );
 select public.apply_lifting_workout_mutation(
   'a4333333-3333-4333-8333-333333333333', (select workout_id from phase64b_ids), 'MOVE_EXERCISE',
-  jsonb_build_object('workoutExerciseId', (select exercise_two_id from phase64b_ids), 'newOrderIndex', 0)
+  jsonb_build_object('workoutExerciseId', (select exercise_two_id from phase64b_ids), 'newOrderIndex', 0, 'expectedRevision', 0)
 );
 select results_eq(
   $$select string_agg(order_index::text, ',' order by order_index) from public.workout_exercises where workout_id=(select workout_id from phase64b_ids)$$,
@@ -88,11 +88,11 @@ select is((select count(*)::integer from public.workout_sets where workout_exerc
 
 select public.apply_lifting_workout_mutation(
   'b4222222-2222-4222-8222-222222222222', (select workout_id from phase64b_ids), 'SAVE_SET',
-  jsonb_build_object('workoutSetId', (select set_one_id from phase64b_ids), 'setType', 'WORKING', 'weightKg', 100, 'reps', 5, 'bodyweightMode', null, 'completed', true)
+  jsonb_build_object('workoutSetId', (select set_one_id from phase64b_ids), 'setType', 'WORKING', 'weightKg', 100, 'reps', 5, 'bodyweightMode', null, 'completed', true, 'expectedRevision', 0)
 );
 select public.apply_lifting_workout_mutation(
   'b4222222-2222-4222-8222-222222222222', (select workout_id from phase64b_ids), 'SAVE_SET',
-  jsonb_build_object('workoutSetId', (select set_one_id from phase64b_ids), 'setType', 'WORKING', 'weightKg', 100, 'reps', 5, 'bodyweightMode', null, 'completed', true)
+  jsonb_build_object('workoutSetId', (select set_one_id from phase64b_ids), 'setType', 'WORKING', 'weightKg', 100, 'reps', 5, 'bodyweightMode', null, 'completed', true, 'expectedRevision', 0)
 );
 select results_eq(
   $$select weight_kg::text || 'x' || reps::text || ':' || completed::text from public.workout_sets where id=(select set_one_id from phase64b_ids)$$,
@@ -103,12 +103,12 @@ select results_eq(
 update phase64b_ids
 set copied_set_id = (public.apply_lifting_workout_mutation(
   'b4333333-3333-4333-8333-333333333333', workout_id, 'COPY_SET',
-  jsonb_build_object('workoutSetId', set_one_id)
+  jsonb_build_object('workoutSetId', set_one_id, 'expectedRevision', 1)
 ) ->> 'resultId')::uuid;
 select is(
   (public.apply_lifting_workout_mutation(
     'b4333333-3333-4333-8333-333333333333', (select workout_id from phase64b_ids), 'COPY_SET',
-    jsonb_build_object('workoutSetId', (select set_one_id from phase64b_ids))
+    jsonb_build_object('workoutSetId', (select set_one_id from phase64b_ids), 'expectedRevision', 1)
   ) ->> 'resultId')::uuid,
   (select copied_set_id from phase64b_ids),
   'replaying copy set returns the original copied-set id'
@@ -117,11 +117,11 @@ select is((select count(*)::integer from public.workout_sets where workout_exerc
 
 select public.apply_lifting_workout_mutation(
   'b4444444-4444-4444-8444-444444444444', (select workout_id from phase64b_ids), 'REMOVE_SET',
-  jsonb_build_object('workoutSetId', (select copied_set_id from phase64b_ids))
+  jsonb_build_object('workoutSetId', (select copied_set_id from phase64b_ids), 'expectedRevision', 0)
 );
 select public.apply_lifting_workout_mutation(
   'b4444444-4444-4444-8444-444444444444', (select workout_id from phase64b_ids), 'REMOVE_SET',
-  jsonb_build_object('workoutSetId', (select copied_set_id from phase64b_ids))
+  jsonb_build_object('workoutSetId', (select copied_set_id from phase64b_ids), 'expectedRevision', 0)
 );
 select is((select count(*)::integer from public.workout_sets where workout_exercise_id=(select exercise_one_id from phase64b_ids)), 1, 'replaying a remove does not fail or delete another set');
 
@@ -137,7 +137,7 @@ select throws_ok(
 select throws_ok(
   $$select public.apply_lifting_workout_mutation(
     'b4555555-5555-4555-8555-555555555555', (select workout_id from phase64b_ids), 'SAVE_SET',
-    jsonb_build_object('workoutSetId', (select set_one_id from phase64b_ids), 'setType', 'WORKING', 'weightKg', -5, 'reps', 5, 'bodyweightMode', null, 'completed', false)
+    jsonb_build_object('workoutSetId', (select set_one_id from phase64b_ids), 'setType', 'WORKING', 'weightKg', -5, 'reps', 5, 'bodyweightMode', null, 'completed', false, 'expectedRevision', (select revision from public.workout_sets where id=(select set_one_id from phase64b_ids)))
   )$$,
   '22023', 'Weight is out of range',
   'validation failures remain terminal instead of becoming successful receipts'

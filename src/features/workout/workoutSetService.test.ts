@@ -12,14 +12,14 @@ function query(data: unknown) {
 describe('workoutSetService', () => {
   it('loads independent ordered set rows with canonical kilogram values', async () => {
     const rows = query([
-      { id: 's-2', workout_exercise_id: 'we-1', set_number: 2, set_type: 'WORKING', weight_kg: '84.5', reps: 6, bodyweight_mode: null, completed: true, completed_at: '2026-08-20T01:00:00Z' },
-      { id: 's-1', workout_exercise_id: 'we-1', set_number: 1, set_type: 'WARMUP', weight_kg: 60, reps: 10, bodyweight_mode: null, completed: true, completed_at: '2026-08-20T00:59:00Z' },
+      { id: 's-2', workout_exercise_id: 'we-1', set_number: 2, set_type: 'WORKING', weight_kg: '84.5', reps: 6, bodyweight_mode: null, completed: true, completed_at: '2026-08-20T01:00:00Z', revision: 4 },
+      { id: 's-1', workout_exercise_id: 'we-1', set_number: 1, set_type: 'WARMUP', weight_kg: 60, reps: 10, bodyweight_mode: null, completed: true, completed_at: '2026-08-20T00:59:00Z', revision: 2 },
     ]);
     const service = createWorkoutSetService({ from: vi.fn(() => rows), rpc: vi.fn() } as never);
 
     const result = await service.loadWorkoutSets(['we-1']);
 
-    expect(result.map((set) => [set.setNumber, set.weightKg, set.reps])).toEqual([[1, 60, 10], [2, 84.5, 6]]);
+    expect(result.map((set) => [set.setNumber, set.weightKg, set.reps, set.revision])).toEqual([[1, 60, 10, 2], [2, 84.5, 6, 4]]);
     expect(rows.in).toHaveBeenCalledWith('workout_exercise_id', ['we-1']);
   });
 

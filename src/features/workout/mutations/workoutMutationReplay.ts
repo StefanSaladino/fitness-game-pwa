@@ -18,7 +18,7 @@ export async function replayWorkoutMutations(
 
   while (queue.length > 0) {
     const current = queue[0];
-    if (current.status === 'failed') break;
+    if (current.status === 'failed' || current.status === 'conflict') break;
     attemptedCount += 1;
     const attemptedAt = nowMs();
     try {
@@ -32,7 +32,7 @@ export async function replayWorkoutMutations(
         ...current,
         attemptCount: current.attemptCount + 1,
         lastAttemptAtMs: attemptedAt,
-        status: kind === 'terminal' ? 'failed' : 'pending',
+        status: kind === 'terminal' ? 'failed' : kind === 'conflict' ? 'conflict' : 'pending',
         lastError: message,
       };
       break;

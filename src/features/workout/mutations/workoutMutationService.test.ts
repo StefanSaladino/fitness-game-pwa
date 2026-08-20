@@ -9,7 +9,7 @@ describe('workout mutation service', () => {
     const item = createWorkoutMutationQueueItem(
       'user-1',
       'workout-1',
-      { kind: 'SAVE_SET', payload: { workoutSetId: 'set-1', setType: 'WORKING', weightKg: 100, reps: 5, bodyweightMode: null, completed: true } },
+      { kind: 'SAVE_SET', payload: { workoutSetId: 'set-1', setType: 'WORKING', weightKg: 100, reps: 5, bodyweightMode: null, completed: true, expectedRevision: 0 } },
       '11111111-1111-4111-8111-111111111111',
       100,
     );

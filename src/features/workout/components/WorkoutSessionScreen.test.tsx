@@ -3,7 +3,7 @@ import type { ComponentProps } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import type { OnboardingProfile } from '../../onboarding';
 import type { ActiveWorkoutSession, WorkoutExercise } from '../model';
-import { ActiveWorkoutScreen, WorkoutStartScreen } from './WorkoutSessionScreen';
+import { ActiveWorkoutScreen, WorkoutStartScreen, WorkoutSyncConflictScreen } from './WorkoutSessionScreen';
 
 const profile: OnboardingProfile = {
   id: 'user-1', username: 'stefan', displayName: 'Stefan', timezone: 'America/Toronto', weeklyWorkoutTarget: 4,
@@ -17,8 +17,8 @@ const active: ActiveWorkoutSession = {
 };
 
 const exercises: WorkoutExercise[] = [
-  { id: 'we-1', workoutId: 'workout-1', exerciseId: 'exercise-1', orderIndex: 0, canonicalName: 'Barbell Bench Press', measurementType: 'WEIGHT_REPS' },
-  { id: 'we-2', workoutId: 'workout-1', exerciseId: 'exercise-2', orderIndex: 1, canonicalName: 'Pull Up', measurementType: 'BODYWEIGHT_REPS' },
+  { id: 'we-1', workoutId: 'workout-1', exerciseId: 'exercise-1', orderIndex: 0, revision: 0, canonicalName: 'Barbell Bench Press', measurementType: 'WEIGHT_REPS' },
+  { id: 'we-2', workoutId: 'workout-1', exerciseId: 'exercise-2', orderIndex: 1, revision: 0, canonicalName: 'Pull Up', measurementType: 'BODYWEIGHT_REPS' },
 ];
 
 const compositionProps = {
@@ -189,8 +189,8 @@ describe('workout session presentation', () => {
     render(activeScreen({
       exercises: [exercises[0]],
       workoutSets: [
-        { id: 'set-1', workoutExerciseId: 'we-1', setNumber: 1, setType: 'WARMUP', weightKg: 60, reps: 10, bodyweightMode: null, completed: false, completedAt: null },
-        { id: 'set-2', workoutExerciseId: 'we-1', setNumber: 2, setType: 'WORKING', weightKg: 100, reps: 5, bodyweightMode: null, completed: false, completedAt: null },
+        { id: 'set-1', workoutExerciseId: 'we-1', setNumber: 1, setType: 'WARMUP', weightKg: 60, reps: 10, bodyweightMode: null, completed: false, completedAt: null, revision: 0 },
+        { id: 'set-2', workoutExerciseId: 'we-1', setNumber: 2, setType: 'WORKING', weightKg: 100, reps: 5, bodyweightMode: null, completed: false, completedAt: null, revision: 0 },
       ],
     }));
 
@@ -217,6 +217,42 @@ describe('workout session presentation', () => {
     expect(onRetryMutationQueue).toHaveBeenCalledTimes(1);
   });
 
+
+  it('blocks workout edits on a revision conflict and offers the explicit server-version recovery action', () => {
+    const onDiscardMutationConflict = vi.fn(async () => undefined);
+    render(activeScreen({
+      mutationQueuePendingCount: 1,
+      mutationQueueStatus: 'conflict',
+      mutationQueueError: 'This workout changed elsewhere. Use the server version before continuing.',
+      onDiscardMutationConflict,
+    }));
+
+    expect(screen.getByRole('status')).toHaveTextContent('Workout changed elsewhere');
+    expect(screen.getByRole('button', { name: 'Add exercise' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Finish workout' })).toBeDisabled();
+    expect(screen.queryByRole('button', { name: 'Retry sync' })).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Use server version' }));
+    expect(onDiscardMutationConflict).toHaveBeenCalledTimes(1);
+  });
+
+  it('renders a dedicated recovery screen when the server no longer has the recovered workout active', () => {
+    const onUseServerVersion = vi.fn(async () => undefined);
+    render(
+      <WorkoutSyncConflictScreen
+        message="The server workout is complete."
+        onNavigate={() => undefined}
+        onSignOut={() => undefined}
+        onUseServerVersion={onUseServerVersion}
+        profile={profile}
+        resolving={false}
+      />,
+    );
+
+    expect(screen.getByRole('heading', { name: 'Workout changed elsewhere' })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Use server version' }));
+    expect(onUseServerVersion).toHaveBeenCalledTimes(1);
+  });
+
   it('keeps the recovered workout visible while clearly gating server-only actions offline', () => {
     render(activeScreen({
       recoveryState: 'offline',
@@ -226,7 +262,7 @@ describe('workout session presentation', () => {
       },
       exercises: [exercises[0]],
       workoutSets: [
-        { id: 'set-1', workoutExerciseId: 'we-1', setNumber: 1, setType: 'WORKING', weightKg: 100, reps: 5, bodyweightMode: null, completed: false, completedAt: null },
+        { id: 'set-1', workoutExerciseId: 'we-1', setNumber: 1, setType: 'WORKING', weightKg: 100, reps: 5, bodyweightMode: null, completed: false, completedAt: null, revision: 0 },
       ],
     }));
 

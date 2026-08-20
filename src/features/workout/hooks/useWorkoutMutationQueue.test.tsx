@@ -11,7 +11,7 @@ afterEach(() => {
 
 const request = {
   kind: 'SAVE_SET' as const,
-  payload: { workoutSetId: 'set-1', setType: 'WORKING' as const, weightKg: 100, reps: 5, bodyweightMode: null, completed: true },
+  payload: { workoutSetId: 'set-1', setType: 'WORKING' as const, weightKg: 100, reps: 5, bodyweightMode: null, completed: true, expectedRevision: 0 },
 };
 
 describe('useWorkoutMutationQueue', () => {
@@ -86,5 +86,27 @@ describe('useWorkoutMutationQueue', () => {
 
     await waitFor(() => expect(result.current.pendingCount).toBe(0));
     expect(apply).toHaveBeenCalledWith(expect.objectContaining({ idempotencyKey: queued!.idempotencyKey }));
+  });
+
+  it('keeps stale writes as explicit conflicts until the user chooses the server version', async () => {
+    const apply = vi.fn(async () => { throw { code: 'P0001', message: 'WORKOUT_CONFLICT: Set changed on the server.' }; });
+    const storage = createWorkoutMutationStorage(window.localStorage);
+    const { result } = renderHook(() => useWorkoutMutationQueue('user-1', 'workout-1', { apply } as WorkoutMutationService, storage));
+
+    await act(async () => {
+      const outcome = await result.current.executor.execute(request);
+      expect(outcome.state).toBe('conflict');
+      expect(outcome.error).toContain('WORKOUT_CONFLICT');
+    });
+
+    expect(result.current.status).toBe('conflict');
+    expect(result.current.pendingCount).toBe(1);
+    expect(storage.load('user-1')[0]?.status).toBe('conflict');
+
+    await act(async () => { await result.current.discardConflictingWorkout(); });
+
+    expect(result.current.pendingCount).toBe(0);
+    expect(result.current.status).toBe('idle');
+    expect(storage.load('user-1')).toEqual([]);
   });
 });

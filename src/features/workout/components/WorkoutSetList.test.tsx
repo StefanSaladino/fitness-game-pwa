@@ -6,17 +6,19 @@ import { WorkoutSetList } from './WorkoutSetList';
 
 const weightedExercise: WorkoutExercise = {
   id: 'we-1', workoutId: 'workout-1', exerciseId: 'exercise-1', orderIndex: 0,
+  revision: 0,
   canonicalName: 'Barbell Bench Press', measurementType: 'WEIGHT_REPS',
 };
 
 const bodyweightExercise: WorkoutExercise = {
   id: 'we-2', workoutId: 'workout-1', exerciseId: 'exercise-2', orderIndex: 1,
+  revision: 0,
   canonicalName: 'Pull Up', measurementType: 'BODYWEIGHT_REPS',
 };
 
 const sets: WorkoutSet[] = [
-  { id: 'set-1', workoutExerciseId: 'we-1', setNumber: 1, setType: 'WARMUP', weightKg: 60, reps: 10, bodyweightMode: null, completed: false, completedAt: null },
-  { id: 'set-2', workoutExerciseId: 'we-1', setNumber: 2, setType: 'WORKING', weightKg: 100, reps: 5, bodyweightMode: null, completed: false, completedAt: null },
+  { id: 'set-1', workoutExerciseId: 'we-1', setNumber: 1, setType: 'WARMUP', weightKg: 60, reps: 10, bodyweightMode: null, completed: false, completedAt: null, revision: 0 },
+  { id: 'set-2', workoutExerciseId: 'we-1', setNumber: 2, setType: 'WORKING', weightKg: 100, reps: 5, bodyweightMode: null, completed: false, completedAt: null, revision: 0 },
 ];
 
 function props(overrides: Partial<ComponentProps<typeof WorkoutSetList>> = {}): ComponentProps<typeof WorkoutSetList> {
@@ -80,7 +82,7 @@ describe('WorkoutSetList', () => {
     const onSaveSet = vi.fn(async (_id: string, _input: WorkoutSetInput) => true);
     const bodyweightSet: WorkoutSet = {
       id: 'set-bw', workoutExerciseId: 'we-2', setNumber: 1, setType: 'WORKING',
-      weightKg: null, reps: 8, bodyweightMode: 'BODYWEIGHT', completed: false, completedAt: null,
+      weightKg: null, reps: 8, bodyweightMode: 'BODYWEIGHT', completed: false, completedAt: null, revision: 0,
     };
     render(<WorkoutSetList {...props({ exercise: bodyweightExercise, sets: [bodyweightSet], onSaveSet })} />);
 

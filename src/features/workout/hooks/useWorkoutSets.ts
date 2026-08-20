@@ -11,12 +11,19 @@ export interface WorkoutSetBusyState {
   targetId: string;
 }
 
-export function useWorkoutSets(workoutExerciseIds: readonly string[], injectedService?: WorkoutSetService, mutationExecutor?: WorkoutMutationExecutor) {
+export function useWorkoutSets(
+  workoutExerciseIds: readonly string[],
+  injectedService?: WorkoutSetService,
+  mutationExecutor?: WorkoutMutationExecutor,
+  recoverySets: readonly WorkoutSet[] = [],
+  onQueuedSetRevision?: (workoutSetId: string, revision: number) => void,
+) {
   const serviceRef = useRef<WorkoutSetService | null>(null);
   if (!serviceRef.current) serviceRef.current = injectedService ?? createWorkoutSetService();
 
   const exerciseKey = workoutExerciseIds.join('|');
   const requestSequence = useRef(0);
+  const revisionCursor = useRef<Map<string, number>>(new Map());
   const [status, setStatus] = useState<WorkoutSetStatus>(exerciseKey ? 'loading' : 'ready');
   const [sets, setSets] = useState<WorkoutSet[]>([]);
   const [busy, setBusy] = useState<WorkoutSetBusyState | null>(null);
@@ -37,6 +44,7 @@ export function useWorkoutSets(workoutExerciseIds: readonly string[], injectedSe
     try {
       const loaded = await serviceRef.current!.loadWorkoutSets(ids);
       if (requestId !== requestSequence.current) return [] as WorkoutSet[];
+      revisionCursor.current = new Map(loaded.map((set) => [set.id, set.revision]));
       setSets(loaded);
       setStatus('ready');
       return loaded;
@@ -62,7 +70,9 @@ export function useWorkoutSets(workoutExerciseIds: readonly string[], injectedSe
     try {
       if (mutationExecutor) {
         const outcome = await mutationExecutor.execute(request);
-        if (outcome.state === 'failed') throw new Error(outcome.error ?? 'Workout change was rejected.');
+        if (outcome.state === 'failed' || outcome.state === 'conflict') {
+          throw new Error(outcome.error ?? (outcome.state === 'conflict' ? 'WORKOUT_CONFLICT: This workout changed elsewhere.' : 'Workout change was rejected.'));
+        }
         if (outcome.state === 'applied') {
           await load(true);
           return true;
@@ -87,34 +97,61 @@ export function useWorkoutSets(workoutExerciseIds: readonly string[], injectedSe
     async () => { await serviceRef.current!.addSet(workoutExerciseId, setType); },
   ), [runMutation]);
 
-  const copySet = useCallback(async (workoutSetId: string) => runMutation(
-    'copy', workoutSetId,
-    { kind: 'COPY_SET', payload: { workoutSetId } },
-    async () => { await serviceRef.current!.copySet(workoutSetId); },
-  ), [runMutation]);
+  const revisionSourceFor = useCallback((workoutSetId: string) => {
+    const source = sets.find((set) => set.id === workoutSetId)
+      ?? recoverySets.find((set) => set.id === workoutSetId)
+      ?? null;
+    if (!source) return null;
+    const cursor = revisionCursor.current.get(workoutSetId);
+    return cursor === undefined ? source : { ...source, revision: cursor };
+  }, [recoverySets, sets]);
 
-  const saveSet = useCallback(async (workoutSetId: string, input: WorkoutSetInput) => runMutation(
+  const copySet = useCallback(async (workoutSetId: string) => {
+    const expectedRevision = revisionSourceFor(workoutSetId)?.revision ?? null;
+    return runMutation(
+    'copy', workoutSetId,
+    { kind: 'COPY_SET', payload: { workoutSetId, expectedRevision } },
+    async () => { await serviceRef.current!.copySet(workoutSetId); },
+    );
+  }, [revisionSourceFor, runMutation]);
+
+  const saveSet = useCallback(async (workoutSetId: string, input: WorkoutSetInput) => {
+    const revisionSource = revisionSourceFor(workoutSetId);
+    const expectedRevision = revisionSource?.revision ?? null;
+    return runMutation(
     'save', workoutSetId,
-    { kind: 'SAVE_SET', payload: { workoutSetId, ...input, setType: input.setType === 'WARMUP' ? 'WARMUP' : 'WORKING' } },
+    { kind: 'SAVE_SET', payload: { workoutSetId, ...input, setType: input.setType === 'WARMUP' ? 'WARMUP' : 'WORKING', expectedRevision } },
     async () => { await serviceRef.current!.saveSet(workoutSetId, input); },
     () => {
-      setSets((current) => current.map((set) => set.id === workoutSetId ? {
-        ...set,
+      if (!revisionSource || expectedRevision === null) return;
+      const nextRevision = expectedRevision + 1;
+      revisionCursor.current.set(workoutSetId, nextRevision);
+      const optimistic = {
+        ...revisionSource,
         setType: input.setType,
         weightKg: input.weightKg,
         reps: input.reps,
         bodyweightMode: input.bodyweightMode,
         completed: input.completed,
-        completedAt: input.completed ? (set.completedAt ?? new Date().toISOString()) : null,
-      } : set));
+        completedAt: input.completed ? (revisionSource.completedAt ?? new Date().toISOString()) : null,
+        revision: nextRevision,
+      };
+      setSets((current) => current.some((set) => set.id === workoutSetId)
+        ? current.map((set) => set.id === workoutSetId ? optimistic : set)
+        : [...current, optimistic]);
+      onQueuedSetRevision?.(workoutSetId, nextRevision);
     },
-  ), [runMutation]);
+    );
+  }, [onQueuedSetRevision, revisionSourceFor, runMutation]);
 
-  const removeSet = useCallback(async (workoutSetId: string) => runMutation(
+  const removeSet = useCallback(async (workoutSetId: string) => {
+    const expectedRevision = revisionSourceFor(workoutSetId)?.revision ?? null;
+    return runMutation(
     'remove', workoutSetId,
-    { kind: 'REMOVE_SET', payload: { workoutSetId } },
+    { kind: 'REMOVE_SET', payload: { workoutSetId, expectedRevision } },
     async () => { await serviceRef.current!.removeSet(workoutSetId); },
-  ), [runMutation]);
+    );
+  }, [revisionSourceFor, runMutation]);
 
   return { status, sets, busy, error, retry: load, addSet, copySet, saveSet, removeSet };
 }
