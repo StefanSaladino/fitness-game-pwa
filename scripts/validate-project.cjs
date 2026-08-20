@@ -463,7 +463,7 @@ ok(workoutSetCss.length > 1200, 'set-entry styling is substantial and colocated 
 ok(!/WorkoutSetList|setRow|setStage|completeButton/.test(read('src/styles/global.css')), 'Phase 6.3 selectors are not added to global CSS');
 ok(Number.isInteger(phase63Plan) && phase63Plan === 34 && phase63Plan === phase63Count, 'Phase 6.3 pgTAP plan matches 34 assertions');
 ok(/Set tracking — DONE/.test(read('docs/ROADMAP.md')), 'roadmap records Phase 6.3 completion');
-ok(/Workout reliability — IN PROGRESS/.test(read('docs/ROADMAP.md')), 'roadmap records Phase 6.4 reliability in progress');
+ok(/Workout reliability — DONE/.test(read('docs/ROADMAP.md')), 'roadmap records Phase 6.4 reliability completion');
 ok(/does not add or change lifting-v1 XP reconciliation/i.test(read('docs/PHASE6.3-SET-TRACKING.md')), 'Phase 6.3 explicitly leaves XP persistence unchanged');
 
 
@@ -594,8 +594,42 @@ ok(/Workout is no longer active on the server/.test(conflictMigration), 'complet
 ok(/receipt/.test(conflictDoc) && /Legacy v0\.5\.2/.test(conflictDoc), 'conflict policy preserves exact idempotent replay and handles legacy queued writes safely');
 ok(Number.isInteger(phase64cPlan) && phase64cPlan === 31 && phase64cPlan === phase64cCount, 'Phase 6.4C pgTAP plan matches 31 assertions');
 ok(/6\.4C Conflict and destructive-edit safety — DONE/.test(read('docs/ROADMAP.md')), 'roadmap records Phase 6.4C completion');
-ok(/6\.4D Reliability integration gate — NEXT/.test(read('docs/ROADMAP.md')), 'roadmap advances to Phase 6.4D reliability integration');
-ok(/"version": "0\.5\.3"/.test(read('package.json')) && /"version": "0\.5\.3"/.test(read('package-lock.json')), 'project metadata records the v0.5.3 checkpoint');
+ok(/6\.4D Reliability integration gate — DONE/.test(read('docs/ROADMAP.md')), 'roadmap records Phase 6.4D reliability integration completion');
+ok(/Phase 6\.4C/.test(conflictDoc), 'Phase 6.4C keeps its historical checkpoint documentation');
+
+
+// Phase 6.4D — reliability integration gate
+for (const rel of [
+  'tests/integration/workout-reliability-journey.test.tsx',
+  'tests/e2e/workout-reliability.spec.ts',
+  'tests/e2e/reliabilityHarness.tsx',
+  'reliability.e2e.html',
+  'supabase/tests/021_workout_reliability_gate.test.sql',
+  'docs/PHASE6.4D-RELIABILITY-INTEGRATION-GATE.md',
+]) ok(fs.existsSync(path.join(root, rel)), `${rel} exists`);
+const reliabilityIntegration = read('tests/integration/workout-reliability-journey.test.tsx');
+const reliabilityE2e = read('tests/e2e/workout-reliability.spec.ts');
+const reliabilityHarness = read('tests/e2e/reliabilityHarness.tsx');
+const reliabilityDbTest = read('supabase/tests/021_workout_reliability_gate.test.sql');
+const reliabilityDoc = read('docs/PHASE6.4D-RELIABILITY-INTEGRATION-GATE.md');
+const reliabilityVite = read('vite.config.ts');
+const reliabilityPlaywright = read('playwright.config.ts');
+const phase64dPlan = Number((reliabilityDbTest.match(/select\s+plan\((\d+)\)/i) || [])[1]);
+const phase64dCount = (reliabilityDbTest.match(/select\s+(?:has_table|has_column|has_function|col_is_pk|results_eq|throws_ok|lives_ok|is|cmp_ok|ok)\s*\(/gi) || []).length;
+ok(/offline set edit/i.test(reliabilityDoc) && /refresh\/restart/i.test(reliabilityDoc) && /reconnect/i.test(reliabilityDoc), 'Phase 6.4D documents the complete offline recovery journey');
+ok(/setOnline\(false\)/.test(reliabilityIntegration) && /firstRender\.unmount\(\)/.test(reliabilityIntegration) && /setOnline\(true\)/.test(reliabilityIntegration), 'integration gate covers offline edit, restart, and reconnect');
+ok(/failAfterCommitOnce\('ADD_SET'\)/.test(reliabilityIntegration) && /new Set\(backend\.mutationCalls\)/.test(reliabilityIntegration), 'integration gate proves ambiguous retry reuses one idempotency key');
+ok(/mutateSetElsewhere/.test(reliabilityIntegration) && /Use server version/.test(reliabilityIntegration), 'integration gate proves stale writes require explicit server recovery');
+ok(/raceLifecycle/.test(reliabilityIntegration) && /Finish workout/.test(reliabilityIntegration) && /Cancel workout/.test(reliabilityIntegration), 'integration gate covers finish and cancel races');
+ok(/FITNESS_E2E_RELIABILITY/.test(reliabilityVite) && /FITNESS_E2E_RELIABILITY/.test(reliabilityPlaywright), 'browser reliability fixture is included only for the E2E build');
+ok(/Offline workout copy/.test(reliabilityE2e) && /Workout changed elsewhere/.test(reliabilityE2e), 'Playwright covers phone-first offline and conflict recovery states');
+ok(/scrollWidth - window\.innerWidth/.test(reliabilityE2e), 'phone reliability E2E checks horizontal overflow');
+ok(/ActiveWorkoutScreen/.test(reliabilityHarness) && /recoveryState=\{offline \? 'offline' : 'synced'\}/.test(reliabilityHarness), 'E2E harness renders the real workout recovery presentation');
+ok(Number.isInteger(phase64dPlan) && phase64dPlan === 17 && phase64dPlan === phase64dCount, 'Phase 6.4D pgTAP plan matches 17 assertions');
+ok(/no new migration/i.test(reliabilityDoc), 'Phase 6.4D remains a validation-only database slice');
+ok(/6\.4D Reliability integration gate — DONE/.test(read('docs/ROADMAP.md')), 'roadmap records Phase 6.4D completion');
+ok(/Phase 7 — Authoritative lifting-v1 scoring persistence — NEXT/.test(read('docs/ROADMAP.md')), 'roadmap advances to Phase 7 authoritative scoring');
+ok(/"version": "0\.5\.4"/.test(read('package.json')) && /"version": "0\.5\.4"/.test(read('package-lock.json')), 'project metadata records the v0.5.4 reliability gate');
 
 
 // Phase 5.6.1 — targeted user invitations

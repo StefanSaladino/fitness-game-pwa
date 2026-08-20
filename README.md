@@ -1,19 +1,24 @@
-# Fitness Game PWA — v0.5.3
+# Fitness Game PWA — v0.5.4
 
-Current checkpoint: **Phase 6.4C — Conflict and destructive-edit safety**.
+Current checkpoint: **Phase 6.4D — Reliability integration gate**.
 
-The lifting workout flow now has local recovery, an idempotent ordered mutation queue, and optimistic-concurrency protection for stale set/exercise edits. Conflicts never overwrite newer server data automatically; the user can explicitly discard the unsafe local queue and reload the authoritative server version. Completed/cancelled workouts remain immutable.
+The lifting capture path now has local recovery, durable idempotent replay, optimistic-concurrency conflict protection, and integration/browser coverage proving those layers work together across offline, refresh, retry, and competing-device scenarios.
 
 ## Reliability state
 
 - Phase 6.4A local active-workout recovery — DONE
 - Phase 6.4B idempotent workout mutation queue — DONE
 - Phase 6.4C conflict and destructive-edit safety — DONE
-- Phase 6.4D reliability integration gate — NEXT
+- Phase 6.4D reliability integration gate — DONE
+- Phase 7 authoritative lifting-v1 scoring persistence — NEXT
 
-## Supabase for v0.5.3
+## Supabase for v0.5.4
 
-Apply `supabase/migrations/20260820000200_workout_conflict_safety.sql`. Then run `supabase/tests/019_idempotent_workout_mutations.test.sql` and `supabase/tests/020_workout_conflict_safety.test.sql`.
+No new migration. Run:
+
+1. `supabase/tests/019_idempotent_workout_mutations.test.sql`
+2. `supabase/tests/020_workout_conflict_safety.test.sql`
+3. `supabase/tests/021_workout_reliability_gate.test.sql`
 
 ## Local validation
 

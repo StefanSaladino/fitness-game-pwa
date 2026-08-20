@@ -347,7 +347,7 @@ Apply the UI design gate before coding the workout builder.
 - duplicate/copy previous set conveniences without forcing copied values to stay linked
 - unit display conversion without changing canonical stored units
 
-### 6.4 Workout reliability — IN PROGRESS
+### 6.4 Workout reliability — DONE
 
 Phase 6.4 is intentionally split into small reliability slices. Do not implement it as one large offline/sync patch.
 
@@ -389,7 +389,7 @@ Primary boundary: reconcile local and remote workout state without silently over
 
 Exit criteria: reconnect/retry cannot silently lose newer workout data or revive intentionally removed data.
 
-#### 6.4D Reliability integration gate — NEXT
+#### 6.4D Reliability integration gate — DONE
 
 Primary boundary: prove the complete capture flow survives ordinary connectivity failures.
 
@@ -402,7 +402,7 @@ Primary boundary: prove the complete capture flow survives ordinary connectivity
 
 Exit criteria: an ordinary connection interruption cannot lose or duplicate a workout, exercise, or set.
 
-## Phase 7 — Authoritative lifting-v1 scoring persistence
+## Phase 7 — Authoritative lifting-v1 scoring persistence — NEXT
 
 Objective: make PostgreSQL compute/reconcile the new score safely.
 
