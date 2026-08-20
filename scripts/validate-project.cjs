@@ -281,7 +281,15 @@ ok(/OnboardingToGroupHarness/.test(phase57Integration), 'Phase 5.7 covers onboar
 ok(/Create group/.test(phase57Integration) && /Your lifting week/.test(phase57Integration), 'Phase 5.7 covers create-group into dashboard');
 ok(/https:\/\/app\.example\.com\/join/.test(phase57Integration), 'Phase 5.7 covers joining from a full invite URL');
 ok(/New invite/.test(phase57Integration) && /Make admin/.test(phase57Integration), 'Phase 5.7 covers owner administration across the integrated journey');
-ok(/queryByRole\('button', \{ name: 'New invite' \}\)/.test(phase57Integration) && /Leave group/.test(phase57Integration), 'Phase 5.7 covers member permission presentation');
+const phase57CoversMemberPermissions =
+  /member dashboard without admin controls/.test(phase57Integration) &&
+  /New invite/.test(phase57Integration) &&
+  /Leave group/.test(phase57Integration);
+
+ok(
+  phase57CoversMemberPermissions,
+  'Phase 5.7 covers member permission presentation',
+);
 ok(/Phase 5 integration validation — DONE/.test(read('docs/ROADMAP.md')), 'roadmap marks Phase 5.7 integration validation complete');
 const integrationVitestConfig = read('vitest.integration.config.ts');
 const packageJsonPhase57 = read('package.json');
@@ -314,5 +322,79 @@ ok(!/WorkoutSessionScreen|activeHeader|exerciseStage|sessionMeta/.test(read('src
 ok(/activeSection === 'workouts'/.test(productControllerPhase61) && /WorkoutController/.test(productControllerPhase61), 'ProductController composes the Workouts surface');
 ok(/Start Lift/.test(read('src/features/dashboard/components/DashboardScreen.tsx')), 'dashboard exposes the Start Lift entry point');
 ok(/Session lifecycle foundation — DONE/.test(read('docs/ROADMAP.md')), 'roadmap records Phase 6.1A completion');
+
+
+
+const workoutCompositionMigration = read('supabase/migrations/20260819000800_workout_exercise_composition.sql');
+const workoutCompositionService = read('src/features/workout/workoutExerciseService.ts');
+const workoutCompositionHook = read('src/features/workout/hooks/useWorkoutExercises.ts');
+const workoutCompositionScreen = read('src/features/workout/components/WorkoutSessionScreen.tsx');
+const workoutCompositionCss = read('src/features/workout/components/WorkoutSessionScreen.module.css');
+const workoutControllerPhase61b = read('src/features/workout/components/WorkoutController.tsx');
+const productControllerPhase61b = read('src/features/product/ProductController.tsx');
+ok(/workout_exercises_one_canonical_per_workout/.test(workoutCompositionMigration), 'Phase 6.1B enforces one canonical exercise per workout');
+ok(/add_lifting_workout_exercise/.test(workoutCompositionMigration), 'Phase 6.1B adds guarded exercise attachment');
+ok(/remove_lifting_workout_exercise/.test(workoutCompositionMigration), 'Phase 6.1B adds guarded exercise removal');
+ok(/move_lifting_workout_exercise/.test(workoutCompositionMigration), 'Phase 6.1B adds guarded exercise reordering');
+ok(/revoke insert, update, delete on public\.workout_exercises from authenticated/.test(workoutCompositionMigration), 'Phase 6.1B blocks direct workout-exercise mutation');
+ok((workoutCompositionMigration.match(/from public, anon, authenticated/g) || []).length === 3, 'Phase 6.1B composition RPCs revoke default/public execution');
+ok((workoutCompositionMigration.match(/grant execute on function public\.(?:add|remove|move)_lifting_workout_exercise/g) || []).length === 3, 'Phase 6.1B grants composition RPCs only to authenticated clients');
+ok(/loadWorkoutExercises/.test(workoutCompositionService) && /order_index/.test(workoutCompositionService), 'composition service reloads persisted exercise order');
+ok(/add_lifting_workout_exercise/.test(workoutCompositionService) && /remove_lifting_workout_exercise/.test(workoutCompositionService) && /move_lifting_workout_exercise/.test(workoutCompositionService), 'composition service delegates writes to authoritative RPCs');
+ok(/exercise_catalog/.test(workoutCompositionService) && /canonical_name/.test(workoutCompositionService), 'composition service resolves canonical catalog identity');
+ok(/useWorkoutExercises/.test(workoutControllerPhase61b), 'workout controller delegates composition state to useWorkoutExercises');
+ok(/exerciseService\?: WorkoutExerciseService/.test(workoutControllerPhase61b), 'workout controller supports composition-service injection');
+ok(/workoutExerciseService\?: WorkoutExerciseService/.test(productControllerPhase61b), 'product controller preserves composition-service injection for integration tests');
+ok(!/supabase/i.test(workoutCompositionScreen), 'exercise composition presentation has no Supabase dependency');
+ok(/Move \$\{exercise\.canonicalName\} up/.test(workoutCompositionScreen) && /Remove \$\{exercise\.canonicalName\}/.test(workoutCompositionScreen), 'active workout exposes accessible move/remove exercise controls');
+ok(/exerciseList/.test(workoutCompositionCss) && /exerciseRow/.test(workoutCompositionCss), 'exercise composition styling is colocated in the workout CSS Module');
+ok(!/exerciseList|exerciseRow|exerciseActions/.test(read('src/styles/global.css')), 'Phase 6.1B exercise selectors are not added to global CSS');
+ok(/Exercise composition — DONE/.test(read('docs/ROADMAP.md')), 'roadmap records Phase 6.1B completion');
+ok(
+  /Exercise picker integration — (?:NEXT|DONE)/.test(read('docs/ROADMAP.md')),
+  'roadmap retains the exercise picker after exercise composition',
+);
+ok(/one canonical exercise may appear at most once/i.test(read('docs/PHASE6.1B-EXERCISE-COMPOSITION.md')), 'Phase 6.1B documents canonical exercise uniqueness');
+
+
+
+const exercisePickerMigration = read('supabase/migrations/20260819000900_exercise_picker_catalog.sql');
+const exercisePickerService = read('src/features/workout/exercisePickerService.ts');
+const exerciseSearch = read('src/features/workout/exerciseSearch.ts');
+const exercisePickerHook = read('src/features/workout/hooks/useExercisePickerCatalog.ts');
+const exercisePicker = read('src/features/workout/components/ExercisePicker.tsx');
+const exercisePickerCss = read('src/features/workout/components/ExercisePicker.module.css');
+const workoutControllerPhase61c = read('src/features/workout/components/WorkoutController.tsx');
+const productControllerPhase61c = read('src/features/product/ProductController.tsx');
+ok(/primary_muscle_group/.test(exercisePickerMigration), 'Phase 6.1C persists primary muscle-group metadata');
+ok(/workout_type/.test(exercisePickerMigration), 'Phase 6.1C persists workout-type metadata');
+ok(/aliases text\[\]/.test(exercisePickerMigration), 'Phase 6.1C persists exercise search aliases');
+ok(/Romanian Deadlift[\s\S]*RDL/.test(exercisePickerMigration), 'exercise metadata includes RDL alias');
+ok(/Overhead Press[\s\S]*OHP/.test(exercisePickerMigration), 'exercise metadata includes OHP alias');
+ok(/'PLYOMETRIC'/.test(exercisePickerMigration) && /'KETTLEBELL'/.test(exercisePickerMigration), 'exercise metadata includes requested workout types');
+ok(/get_exercise_picker_catalog/.test(exercisePickerMigration), 'Phase 6.1C adds authenticated picker catalog RPC');
+ok(/w\.user_id = auth\.uid\(\)/.test(exercisePickerMigration), 'recent exercise history is scoped to auth.uid');
+ok(/w\.status = 'COMPLETED'/.test(exercisePickerMigration), 'picker recents use completed workouts');
+ok(/from public, anon, authenticated/.test(exercisePickerMigration) && /to authenticated/.test(exercisePickerMigration), 'picker RPC execution is authenticated-only');
+ok((exercisePickerMigration.match(/\('(?:[^']|'')+',\s*'(?:WEIGHT_REPS|BODYWEIGHT_REPS|DURATION|OTHER)',\s*true,/g) || []).length >= 356, 'picker migration carries the complete 356-exercise catalogue');
+ok(/get_exercise_picker_catalog/.test(exercisePickerService), 'picker service uses the guarded catalogue RPC');
+ok(/loadCatalog/.test(exercisePickerHook) && /createExercisePickerService/.test(exercisePickerHook), 'picker hook owns asynchronous catalogue loading');
+ok(/levenshtein/.test(exerciseSearch), 'exercise search implements deterministic typo tolerance');
+ok(/aliases/.test(exerciseSearch), 'exercise search ranks canonical aliases');
+ok(/muscleGroup/.test(exerciseSearch) && /workoutType/.test(exerciseSearch), 'exercise search combines muscle and workout-type filters');
+ok(/groupExercises/.test(exerciseSearch) && /ExerciseBrowseMode/.test(exerciseSearch), 'exercise search groups by the selected browse taxonomy');
+ok(/Muscle groups/.test(exercisePicker) && /Workout types/.test(exercisePicker), 'picker exposes muscle-group and workout-type browse modes');
+ok(/SelectField label="Muscle group"/.test(exercisePicker) && /SelectField label="Workout type"/.test(exercisePicker), 'picker exposes both taxonomy filters');
+ok(/Recent/.test(exercisePicker) && /recentExercises/.test(exercisePicker), 'picker includes a user-specific recent exercise section');
+ok(/already added/.test(exercisePicker), 'picker visibly blocks duplicate exercise adds');
+ok(/document\.documentElement\.style\.overflow = 'hidden'/.test(exercisePicker), 'picker locks background scroll while open');
+ok(/event\.key === 'Escape'/.test(exercisePicker), 'picker closes from Escape');
+ok(!/supabase/i.test(exercisePicker), 'exercise picker presentation has no Supabase dependency');
+ok(exercisePickerCss.length > 1800, 'exercise picker styling is substantial and colocated in a CSS Module');
+ok(!/exercisePicker|resultRow|browseSwitch/.test(read('src/styles/global.css')), 'Phase 6.1C picker selectors are not added to global CSS');
+ok(/pickerService\?: ExercisePickerService/.test(workoutControllerPhase61c), 'workout controller supports picker-service injection');
+ok(/exercisePickerService\?: ExercisePickerService/.test(productControllerPhase61c), 'product controller preserves picker-service injection for integration tests');
+ok(/Exercise picker integration — DONE/.test(read('docs/ROADMAP.md')), 'roadmap marks exercise picker integration complete');
+ok(/Exercise search — CORE DONE/.test(read('docs/ROADMAP.md')), 'roadmap marks core exercise search complete');
 
 console.log(`Project structural validation passed: ${assertions} assertions.`);

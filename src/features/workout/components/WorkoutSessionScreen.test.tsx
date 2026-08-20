@@ -1,7 +1,8 @@
 import { fireEvent, render, screen } from '@testing-library/react';
+import type { ComponentProps } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import type { OnboardingProfile } from '../../onboarding';
-import type { ActiveWorkoutSession } from '../model';
+import type { ActiveWorkoutSession, WorkoutExercise } from '../model';
 import { ActiveWorkoutScreen, WorkoutStartScreen } from './WorkoutSessionScreen';
 
 const profile: OnboardingProfile = {
@@ -15,6 +16,45 @@ const active: ActiveWorkoutSession = {
   lastResumedAt: new Date(Date.now() - 60_000).toISOString(),
 };
 
+const exercises: WorkoutExercise[] = [
+  { id: 'we-1', workoutId: 'workout-1', exerciseId: 'exercise-1', orderIndex: 0, canonicalName: 'Barbell Bench Press', measurementType: 'WEIGHT_REPS' },
+  { id: 'we-2', workoutId: 'workout-1', exerciseId: 'exercise-2', orderIndex: 1, canonicalName: 'Pull Up', measurementType: 'BODYWEIGHT_REPS' },
+];
+
+const compositionProps = {
+  compositionBusyAction: null,
+  compositionError: '',
+  exerciseCatalog: [],
+  exercisePickerError: '',
+  exercisePickerStatus: 'ready' as const,
+  exerciseStatus: 'ready' as const,
+  exercises: [] as WorkoutExercise[],
+  onAddExercise: vi.fn(async () => true),
+  onMoveExercise: vi.fn(async () => true),
+  onRemoveExercise: vi.fn(async () => true),
+  onRetryExercisePicker: vi.fn(async () => []),
+  onRetryExercises: vi.fn(async () => [] as WorkoutExercise[]),
+};
+
+function activeScreen(overrides: Partial<ComponentProps<typeof ActiveWorkoutScreen>> = {}) {
+  return (
+    <ActiveWorkoutScreen
+      busyAction={null}
+      error=""
+      onCancel={async () => undefined}
+      onFinish={async () => undefined}
+      onNavigate={() => undefined}
+      onPause={async () => undefined}
+      onResume={async () => undefined}
+      onSignOut={() => undefined}
+      profile={profile}
+      workout={active}
+      {...compositionProps}
+      {...overrides}
+    />
+  );
+}
+
 describe('workout session presentation', () => {
   it('starts a lift from the dedicated workout surface', () => {
     const onStart = vi.fn(async () => undefined);
@@ -24,15 +64,38 @@ describe('workout session presentation', () => {
   });
 
   it('shows a running persisted session with pause and finish controls', () => {
-    render(<ActiveWorkoutScreen busyAction={null} error="" onCancel={async () => undefined} onFinish={async () => undefined} onNavigate={() => undefined} onPause={async () => undefined} onResume={async () => undefined} onSignOut={() => undefined} profile={profile} workout={active} />);
+    render(activeScreen());
     expect(screen.getByRole('heading', { name: 'Workout in progress' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Pause timer' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Finish workout' })).toBeInTheDocument();
   });
 
   it('shows resume instead of pause when the session is persisted as paused', () => {
-    render(<ActiveWorkoutScreen busyAction={null} error="" onCancel={async () => undefined} onFinish={async () => undefined} onNavigate={() => undefined} onPause={async () => undefined} onResume={async () => undefined} onSignOut={() => undefined} profile={profile} workout={{ ...active, activeDurationSeconds: 60, pausedAt: new Date().toISOString(), lastResumedAt: null }} />);
+    render(activeScreen({ workout: { ...active, activeDurationSeconds: 60, pausedAt: new Date().toISOString(), lastResumedAt: null } }));
     expect(screen.getByRole('heading', { name: 'Workout paused' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Resume timer' })).toBeInTheDocument();
+  });
+
+  it('opens the real exercise picker from the active workout', () => {
+    render(activeScreen());
+    fireEvent.click(screen.getByRole('button', { name: 'Add exercise' }));
+    expect(screen.getByRole('dialog', { name: 'Add exercise' })).toBeInTheDocument();
+    expect(screen.getByLabelText('Search exercises')).toBeInTheDocument();
+  });
+
+  it('renders ordered canonical exercises with restrained move and remove controls', () => {
+    const onMoveExercise = vi.fn(async () => true);
+    const onRemoveExercise = vi.fn(async () => true);
+    render(activeScreen({ exercises, onMoveExercise, onRemoveExercise }));
+
+    expect(screen.getByRole('heading', { name: '2 in this lift' })).toBeInTheDocument();
+    expect(screen.getByText('Barbell Bench Press')).toBeInTheDocument();
+    expect(screen.getByText('Pull Up')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Move Pull Up up' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Remove Barbell Bench Press' }));
+
+    expect(onMoveExercise).toHaveBeenCalledWith('we-2', 0);
+    expect(onRemoveExercise).toHaveBeenCalledWith('we-1');
   });
 });

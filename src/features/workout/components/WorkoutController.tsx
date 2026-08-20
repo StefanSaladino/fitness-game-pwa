@@ -1,8 +1,12 @@
 import { AppShell, type AppSection } from '../../../components/layout';
 import { Button } from '../../../components/ui';
 import type { OnboardingProfile } from '../../onboarding';
+import type { WorkoutExerciseService } from '../workoutExerciseService';
+import type { ExercisePickerService } from '../exercisePickerService';
 import type { WorkoutService } from '../workoutService';
 import { useActiveWorkout } from '../hooks/useActiveWorkout';
+import { useWorkoutExercises } from '../hooks/useWorkoutExercises';
+import { useExercisePickerCatalog } from '../hooks/useExercisePickerCatalog';
 import { ActiveWorkoutScreen, WorkoutStartScreen } from './WorkoutSessionScreen';
 import styles from './WorkoutSessionScreen.module.css';
 
@@ -11,10 +15,14 @@ interface WorkoutControllerProps {
   onNavigate: (section: AppSection) => void;
   onSignOut: () => void;
   service?: WorkoutService;
+  exerciseService?: WorkoutExerciseService;
+  pickerService?: ExercisePickerService;
 }
 
-export function WorkoutController({ profile, onNavigate, onSignOut, service }: WorkoutControllerProps) {
+export function WorkoutController({ profile, onNavigate, onSignOut, service, exerciseService, pickerService }: WorkoutControllerProps) {
   const workout = useActiveWorkout(profile.id, service);
+  const composition = useWorkoutExercises(workout.activeWorkout?.id ?? null, exerciseService);
+  const picker = useExercisePickerCatalog(Boolean(workout.activeWorkout), pickerService);
 
   if (workout.status === 'loading') {
     return (
@@ -42,12 +50,24 @@ export function WorkoutController({ profile, onNavigate, onSignOut, service }: W
   return (
     <ActiveWorkoutScreen
       busyAction={workout.busyAction}
+      compositionBusyAction={composition.busyAction}
+      compositionError={composition.error}
+      exerciseCatalog={picker.catalog}
+      exercisePickerError={picker.error}
+      exercisePickerStatus={picker.status}
+      exerciseStatus={composition.status}
+      exercises={composition.exercises}
       error={workout.error}
       onCancel={async () => { const id = await workout.cancel(); if (id) onNavigate('home'); return id; }}
       onFinish={async () => { const id = await workout.finish(); if (id) onNavigate('home'); return id; }}
+      onAddExercise={composition.addExercise}
+      onMoveExercise={composition.moveExercise}
       onNavigate={onNavigate}
       onPause={workout.pause}
+      onRemoveExercise={composition.removeExercise}
       onResume={workout.resume}
+      onRetryExercisePicker={picker.retry}
+      onRetryExercises={composition.retry}
       onSignOut={onSignOut}
       profile={profile}
       workout={workout.activeWorkout}

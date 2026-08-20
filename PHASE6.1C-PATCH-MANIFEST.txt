@@ -1,0 +1,36 @@
+Phase 6.1C / 6.2 — Exercise picker and search (v0.4.2)
+
+Modified:
+- package.json
+- README.md
+- CHANGELOG.md
+- docs/ROADMAP.md
+- scripts/validate-project.cjs
+- src/features/product/ProductController.tsx
+- src/features/workout/index.ts
+- src/features/workout/model.ts
+- src/features/workout/components/WorkoutController.tsx
+- src/features/workout/components/WorkoutSessionScreen.tsx
+- src/features/workout/components/WorkoutSessionScreen.module.css
+- src/features/workout/components/WorkoutSessionScreen.test.tsx
+
+Added:
+- docs/PHASE6.1C-EXERCISE-PICKER.md
+- supabase/migrations/20260819000900_exercise_picker_catalog.sql
+- supabase/tests/014_exercise_picker_catalog.test.sql
+- src/features/workout/exercisePickerService.ts
+- src/features/workout/exercisePickerService.test.ts
+- src/features/workout/exerciseSearch.ts
+- src/features/workout/exerciseSearch.test.ts
+- src/features/workout/hooks/useExercisePickerCatalog.ts
+- src/features/workout/hooks/useExercisePickerCatalog.test.tsx
+- src/features/workout/components/ExercisePicker.tsx
+- src/features/workout/components/ExercisePicker.module.css
+- src/features/workout/components/ExercisePicker.test.tsx
+
+Not changed:
+- lifting-v1 scoring formulas
+- set logging
+- global.css
+- environment files
+- profile picture/avatar behavior

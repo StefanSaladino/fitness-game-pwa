@@ -1,5 +1,26 @@
 # Changelog
 
+## 0.4.2 — Phase 6.1C / 6.2 exercise picker and search
+
+- Added a self-contained 356-exercise canonical catalogue migration.
+- Added primary muscle-group and workout-type taxonomy metadata.
+- Added aliases including RDL/OHP and common equipment abbreviations.
+- Added authenticated picker-catalog RPC with user-scoped completed-workout recents.
+- Added deterministic local case-insensitive search with conservative typo tolerance.
+- Added phone-first picker UI with Muscle Groups / Workout Types browse modes and cross-filters.
+- Added duplicate-add presentation, background-scroll lock, and Escape close behavior.
+- Kept all new picker styling in `ExercisePicker.module.css`.
+- No scoring or set-logging changes.
+
+## 0.4.1 — Phase 6.1B workout exercise composition
+
+- Added authenticated-only add/remove/move RPCs for active workout exercises.
+- Added one-canonical-exercise-per-workout and dense ordering invariants.
+- Revoked direct authenticated mutation of `workout_exercises`.
+- Added ordered exercise composition service/hook boundaries.
+- Active workout presentation now renders persisted exercises with move/remove controls.
+- Added pgTAP, service, hook, component, and structural regression coverage.
+
 ## 0.4.0 — Phase 6.1A active lifting session foundation
 
 - Added idempotent Start Lift and active-session recovery.

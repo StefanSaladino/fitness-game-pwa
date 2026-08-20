@@ -240,22 +240,39 @@ Apply the UI design gate before coding the workout builder.
 - single-active-in-app-lift database invariant
 - client direct workout-session mutation removed
 
-#### 6.1B Exercise composition — NEXT
+#### 6.1B Exercise composition — DONE
 
-- add exercises to the active session
-- reorder/remove exercises
-- connect the workout shell to canonical exercise selection
+- canonical exercises attach through authenticated-only composition RPCs
+- duplicate adds are idempotent per workout/canonical exercise
+- reorder/remove operations preserve dense zero-based ordering
+- direct browser mutation of `workout_exercises` is removed
+- active workout UI renders persisted canonical exercise order and move/remove controls
+- service/hook boundary is ready for the real catalog search picker
 
-### 6.2 Exercise search
+#### 6.1C Exercise picker integration — DONE
 
-- searchable expanded exercise catalog
-- instant case-insensitive search
-- aliases (`RDL`, `OHP`, etc.)
-- typo tolerance where identity remains unambiguous
-- equipment/movement filters when metadata lands
-- recents
-- favorites
+- active workout opens the real canonical exercise picker
+- selected exercises attach only by canonical exercise ID
+- duplicate adds remain blocked by the composition layer
+- phone-first picker locks background scroll and closes with Escape
+
+### 6.2 Exercise search — CORE DONE
+
+- searchable expanded 356-exercise catalog
+- instant case-insensitive local search
+- aliases (`RDL`, `OHP`, DB / KB variants, etc.)
+- conservative typo tolerance where identity remains unambiguous
+- browse/group by primary muscle group
+- browse/group by workout type (barbell, dumbbell, kettlebell, plyometric, etc.)
+- filter one taxonomy by the other
+- user-scoped recents from completed lifting workouts
 - canonical IDs always remain scoring/progression identity
+- favorites remain a later convenience, not a blocker for set logging
+
+#### 6.2A Favorites — LATER
+
+- favorite/unfavorite canonical exercises
+- favorites shortcut in the picker without changing exercise identity
 
 ### 6.3 Set tracking
 
