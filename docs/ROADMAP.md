@@ -419,7 +419,7 @@ Objective: make PostgreSQL compute/reconcile the new score safely.
 
 Exit criteria: duplicate, concurrent, retried, edited, or deleted data cannot manufacture or orphan XP.
 
-## Phase 8 — Exercise progression engine + history — NEXT
+## Phase 8 — Exercise progression engine + history — DONE
 
 Objective: make each canonical lift a first-class progression timeline.
 
@@ -433,7 +433,7 @@ Objective: make each canonical lift a first-class progression timeline.
 - added-weight/assisted comparison rules when defensible
 - no cross-user comparison in progression calculation
 
-## Phase 9 — Weekly lifting consistency + badges
+## Phase 9 — Weekly lifting consistency + badges — NEXT
 
 - weekly lifting-goal snapshots
 - completed-week goal streak

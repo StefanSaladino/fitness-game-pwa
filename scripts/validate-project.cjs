@@ -629,7 +629,7 @@ ok(Number.isInteger(phase64dPlan) && phase64dPlan === 17 && phase64dPlan === pha
 ok(/no new migration/i.test(reliabilityDoc), 'Phase 6.4D remains a validation-only database slice');
 ok(/6\.4D Reliability integration gate — DONE/.test(read('docs/ROADMAP.md')), 'roadmap records Phase 6.4D completion');
 ok(/Phase 7 — Authoritative lifting-v1 scoring persistence — DONE/.test(read('docs/ROADMAP.md')), 'roadmap records Phase 7 authoritative scoring completion');
-ok(/"version": "0\.6\.0"/.test(read('package.json')) && /"version": "0\.6\.0"/.test(read('package-lock.json')), 'project metadata records the v0.6.0 authoritative scoring checkpoint');
+ok(/"version": "0\.7\.0"/.test(read('package.json')) && /"version": "0\.7\.0"/.test(read('package-lock.json')), 'project metadata records the v0.7.0 progression-history checkpoint');
 
 
 // Phase 7 — authoritative lifting-v1 scoring persistence
@@ -664,8 +664,56 @@ ok(/w\.source = 'IN_APP'/.test(phase7Migration) && /MANUAL/.test(phase7Doc) && /
 ok(/best_weight_kg/.test(phase7Migration) && /best_reps/.test(phase7Migration), 'personal-best snapshots retain source weight and reps');
 ok(Number.isInteger(phase7Plan) && phase7Plan === 32 && phase7Plan === phase7Count, 'Phase 7 pgTAP plan matches 32 assertions');
 ok(/Phase 7 — Authoritative lifting-v1 scoring persistence — DONE/.test(read('docs/ROADMAP.md')), 'roadmap records Phase 7 completion');
-ok(/Phase 8 — Exercise progression engine \+ history — NEXT/.test(read('docs/ROADMAP.md')), 'roadmap advances to Phase 8 progression history');
+ok(/Phase 8 — Exercise progression engine \+ history — DONE/.test(read('docs/ROADMAP.md')), 'roadmap retains completed Phase 8 progression history');
 ok(/full history rebuild/i.test(phase7Doc) && /historical edits and deletes/i.test(phase7Doc), 'Phase 7 documents downstream-safe historical reconciliation');
+
+
+// Phase 8 — exercise progression engine + history
+for (const rel of [
+  'src/features/progress/model.ts',
+  'src/features/progress/progressService.ts',
+  'src/features/progress/hooks/useExerciseProgress.ts',
+  'src/features/progress/components/ExerciseProgressController.tsx',
+  'src/features/progress/components/ExerciseProgressScreen.tsx',
+  'src/features/progress/components/ExerciseProgressScreen.module.css',
+  'supabase/migrations/20260820000400_exercise_progress_history.sql',
+  'supabase/tests/023_exercise_progress_history.test.sql',
+  'docs/PHASE8-EXERCISE-PROGRESSION-HISTORY.md',
+]) ok(fs.existsSync(path.join(root, rel)), `${rel} exists`);
+const progressHistoryMigration = read('supabase/migrations/20260820000400_exercise_progress_history.sql');
+const progressHistoryTest = read('supabase/tests/023_exercise_progress_history.test.sql');
+const progressHistoryService = read('src/features/progress/progressService.ts');
+const progressHistoryHook = read('src/features/progress/hooks/useExerciseProgress.ts');
+const progressHistoryScreen = read('src/features/progress/components/ExerciseProgressScreen.tsx');
+const progressHistoryCss = read('src/features/progress/components/ExerciseProgressScreen.module.css');
+const progressHistoryDoc = read('docs/PHASE8-EXERCISE-PROGRESSION-HISTORY.md');
+const progressProductController = read('src/features/product/ProductController.tsx');
+const phase8Plan = Number((progressHistoryTest.match(/select\s+plan\((\d+)\)/i) || [])[1]);
+const phase8Count = (progressHistoryTest.match(/select\s+(?:has_table|has_column|has_function|col_is_pk|results_eq|throws_ok|lives_ok|is|cmp_ok|ok)\s*\(/gi) || []).length;
+ok(/get_my_exercise_progress_overview/.test(progressHistoryMigration), 'Phase 8 adds the self-scoped exercise progression overview RPC');
+ok(/get_my_exercise_progress_history/.test(progressHistoryMigration), 'Phase 8 adds the self-scoped exercise history RPC');
+ok((progressHistoryMigration.match(/auth\.uid\(\)/g) || []).length >= 2, 'Phase 8 progression read models derive identity from auth.uid');
+ok(!/p_user_id/.test(progressHistoryMigration), 'Phase 8 read models never accept another user id');
+ok(/session_volume_kg_reps/.test(progressHistoryMigration) && /weight_kg \* ws\.reps/.test(progressHistoryMigration), 'Phase 8 exposes completed working-set volume for analytics');
+ok(/previous_pr_value/.test(progressHistoryMigration) && /rows between unbounded preceding and 1 preceding/.test(progressHistoryMigration), 'Phase 8 derives prior PR context from earlier observations');
+ok(/added_weight_sets/.test(progressHistoryMigration) && /assisted_sets/.test(progressHistoryMigration), 'Phase 8 retains bodyweight variants as explicit analytics');
+ok(!/insert into public\.scoring_events|update public\.exercise_progress|delete from public\.scoring_events/i.test(progressHistoryMigration), 'Phase 8 read models do not mutate authoritative scoring state');
+ok(/from public, anon, authenticated/.test(progressHistoryMigration) && (progressHistoryMigration.match(/to authenticated/g) || []).length === 2, 'Phase 8 RPC execution is authenticated-only');
+ok(Number.isInteger(phase8Plan) && phase8Plan === 31 && phase8Plan === phase8Count, 'Phase 8 pgTAP plan matches 31 assertions');
+ok(/get_my_exercise_progress_overview/.test(progressHistoryService) && /get_my_exercise_progress_history/.test(progressHistoryService), 'progress service delegates to guarded Phase 8 read models');
+ok(/createExerciseProgressService/.test(progressHistoryHook) && /loadHistory/.test(progressHistoryHook), 'progress hook owns the progression service and selected-exercise history loading');
+ok(!/supabase/i.test(progressHistoryScreen), 'progress presentation has no Supabase dependency');
+ok(/Current PR/.test(progressHistoryScreen) && /Previous PR/.test(progressHistoryScreen), 'progress screen separates current and previous personal records');
+ok(/Volume is analytics-only and never awards XP/.test(progressHistoryScreen), 'progress screen labels volume as non-scoring analytics');
+ok(/Added-weight and assisted sets stay visible as analytics/.test(progressHistoryScreen), 'progress screen explains conservative bodyweight comparison rules');
+ok(/activeItem="progress"/.test(progressHistoryScreen), 'Progress destination is represented as the active primary navigation section');
+ok(/progressService\?: ExerciseProgressService/.test(progressProductController) && /activeSection === 'progress'/.test(progressProductController), 'ProductController composes the Progress section with injectable service boundary');
+ok(progressHistoryCss.length > 2500, 'Phase 8 Progress styling is substantial and colocated in a CSS Module');
+ok(!/exercisePanel|progressGrid|historyList/.test(read('src/styles/global.css')), 'Phase 8 Progress selectors are not added to global CSS');
+ok(/Phase 8 — Exercise progression engine \+ history — DONE/.test(read('docs/ROADMAP.md')), 'roadmap records Phase 8 progression history completion');
+ok(/Phase 9 — Weekly lifting consistency \+ badges — NEXT/.test(read('docs/ROADMAP.md')), 'roadmap advances to Phase 9 weekly consistency and badges');
+ok(/does not[\s\S]*change `lifting-v1` scoring/i.test(progressHistoryDoc), 'Phase 8 documentation preserves authoritative Phase 7 scoring rules');
+ok(/no cross-user/i.test(progressHistoryDoc), 'Phase 8 documents personal-only progression comparison');
 
 
 // Phase 5.6.1 — targeted user invitations

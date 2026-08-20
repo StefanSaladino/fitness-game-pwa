@@ -1,20 +1,26 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
+import type { AppSection } from '../../components/layout';
 import type { GroupSummary } from '../groups';
 import type { OnboardingProfile } from '../onboarding';
 
 vi.mock('../dashboard', () => ({
-  DashboardController: ({ group, onNavigate }: { group: GroupSummary; onNavigate: (section: 'groups') => void }) => (
+  DashboardController: ({ group, onNavigate }: { group: GroupSummary; onNavigate: (section: AppSection) => void }) => (
     <div>
       <p>Dashboard for {group.name}</p>
       <button onClick={() => onNavigate('groups')} type="button">Open groups</button>
+      <button onClick={() => onNavigate('progress')} type="button">Open progress</button>
     </div>
   ),
 }));
 
 vi.mock('../groups', () => ({
   GroupAdministrationController: ({ selectedGroupId }: { selectedGroupId: string }) => <p>Admin for {selectedGroupId}</p>,
+}));
+
+vi.mock('../progress', () => ({
+  ExerciseProgressController: () => <p>Progress screen</p>,
 }));
 
 import { ProductController } from './ProductController';
@@ -34,6 +40,14 @@ describe('ProductController', () => {
     render(<ProductController groups={groups} onGroupsChanged={vi.fn()} profile={profile} />);
 
     expect(screen.getByText('Dashboard for Iron Crew')).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Open progress' }));
+    expect(screen.getByText('Progress screen')).toBeInTheDocument();
+  });
+
+  it('still routes group administration through the same controller boundary', async () => {
+    const user = userEvent.setup();
+    render(<ProductController groups={groups} onGroupsChanged={vi.fn()} profile={profile} />);
+
     await user.click(screen.getByRole('button', { name: 'Open groups' }));
     expect(screen.getByText('Admin for group-1')).toBeInTheDocument();
   });
