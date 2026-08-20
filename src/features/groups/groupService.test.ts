@@ -75,9 +75,11 @@ describe('group service', () => {
     expect(ownMemberships.eq).toHaveBeenCalledWith('user_id', 'user-1');
   });
 
-  it('normalizes a group name and relies on the database owner trigger', async () => {
-    const create = query({ data: { id: 'group-1', name: 'Iron Crew', created_at: '2026-08-19T20:00:00Z' }, error: null });
-    const fake = clientFor({ groups: [create] });
+  it('normalizes a group name and creates it through the authenticated RPC', async () => {
+    const fake = clientFor({}, {
+      data: { id: 'group-1', name: 'Iron Crew', created_at: '2026-08-19T20:00:00Z' },
+      error: null,
+    });
     const service = createGroupService(fake.client);
 
     await expect(service.createGroup('user-1', { name: '  Iron   Crew ' })).resolves.toEqual({
@@ -88,7 +90,8 @@ describe('group service', () => {
       joinedAt: '2026-08-19T20:00:00Z',
       createdAt: '2026-08-19T20:00:00Z',
     });
-    expect(create.insert).toHaveBeenCalledWith({ name: 'Iron Crew', created_by: 'user-1' });
+    expect(fake.rpc).toHaveBeenCalledWith('create_group', { p_name: 'Iron Crew' });
+    expect(fake.from).not.toHaveBeenCalledWith('groups');
   });
 
   it('combines membership roles with shared-group profile identity', async () => {

@@ -1,17 +1,26 @@
-# SelectField native menu contrast hotfix
+# Group creation RLS hotfix
 
-Apply over the current project tree.
+Apply this over the current v0.4.0 tree.
 
-This fixes native select menus on Windows/Chromium where the popup could render a white background while inheriting white app text.
+## Why
 
-Changes:
-- Adds `SelectField.module.css`.
-- Applies `color-scheme: dark` to the reusable SelectField.
-- Gives native `option`/`optgroup` entries explicit app text/background colors.
-- Does not modify global.css or onboarding-specific styles.
+The browser previously used `.from('groups').insert(...).select(...)`. The `groups_select`
+RLS policy only exposes groups to active members, while OWNER membership is established by
+the group-created trigger. Returning the inserted row therefore creates an avoidable RLS
+boundary during creation.
 
-After applying, run:
+## What changes
 
-npm run typecheck
-npm test
-npm run build
+- Adds authenticated `create_group(text)` SECURITY DEFINER RPC.
+- RPC derives ownership from `auth.uid()` instead of trusting a client-supplied user id.
+- Existing `group_created_owner` trigger still establishes the single OWNER membership.
+- Revokes direct `INSERT` on `groups` from `authenticated`.
+- Changes `groupService.createGroup` to use the RPC.
+- Adds 10 pgTAP assertions and updates the unit test.
+
+## Apply
+
+1. Run `supabase/migrations/20260819000700_create_group_rpc.sql` in Supabase SQL Editor.
+2. Run `supabase/tests/012_create_group_rpc.test.sql`.
+3. Apply the two TypeScript files.
+4. Run the normal local validation suite.

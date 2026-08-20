@@ -125,18 +125,20 @@ export function createGroupService(client: SupabaseClient = getSupabaseClient())
         .sort((a, b) => a.joinedAt.localeCompare(b.joinedAt));
     },
 
-    async createGroup(userId, input) {
+    async createGroup(_userId, input) {
       const name = assertValidCreateGroupInput(input);
-      const result = await client
-        .from('groups')
-        .insert({ name, created_by: userId })
-        .select('id, name, created_at')
-        .single();
+      const result = await client.rpc('create_group', { p_name: name });
 
       if (result.error) throw result.error;
-      if (!result.data) throw new Error('Group was not created.');
+      if (!result.data || typeof result.data !== 'object' || Array.isArray(result.data)) {
+        throw new Error('Group was not created.');
+      }
 
-      const row = result.data as GroupRow;
+      const row = result.data as unknown as GroupRow;
+      if (typeof row.id !== 'string' || typeof row.name !== 'string' || typeof row.created_at !== 'string') {
+        throw new Error('Group creation returned an invalid response.');
+      }
+
       return {
         id: row.id,
         name: row.name,
