@@ -3,6 +3,7 @@ import { AppShell, type AppSection } from '../../../components/layout';
 import { Button } from '../../../components/ui';
 import type { OnboardingProfile } from '../../onboarding';
 import type { ActiveWorkoutSession, ExercisePickerItem, WeightDisplayUnit, WorkoutCompositionAction, WorkoutExercise, WorkoutLifecycleAction, WorkoutSet, WorkoutSetInput, WorkoutSetType } from '../model';
+import type { WorkoutRecoverySetDraft, WorkoutRecoveryState } from '../recovery/workoutRecoveryModel';
 import type { WorkoutExerciseStatus } from '../hooks/useWorkoutExercises';
 import type { ExercisePickerStatus } from '../hooks/useExercisePickerCatalog';
 import type { WorkoutSetBusyState, WorkoutSetStatus } from '../hooks/useWorkoutSets';
@@ -50,6 +51,12 @@ interface ActiveProps extends SharedProps {
   onResume: (actionAtMs?: number) => Promise<unknown>;
   onFinish: () => Promise<unknown>;
   onCancel: () => Promise<unknown>;
+  recoveryState?: WorkoutRecoveryState;
+  recoveryDrafts?: Record<string, WorkoutRecoverySetDraft>;
+  initialWeightUnit?: WeightDisplayUnit;
+  onSetDraftChange?: (workoutSetId: string, draft: WorkoutRecoverySetDraft) => void;
+  onSetDraftPersisted?: (workoutSetId: string) => void;
+  onWeightUnitChange?: (unit: WeightDisplayUnit) => void;
 }
 
 function WorkoutShell({ profile, onNavigate, onSignOut, children }: SharedProps & { children: ReactNode }) {
@@ -139,7 +146,7 @@ export function WorkoutStartScreen(props: StartProps) {
 
 export function ActiveWorkoutScreen(props: ActiveProps) {
   const [pickerOpen, setPickerOpen] = useState(false);
-  const [weightUnit, setWeightUnit] = useState<WeightDisplayUnit>('KG');
+  const [weightUnit, setWeightUnit] = useState<WeightDisplayUnit>(props.initialWeightUnit ?? 'KG');
   const [pauseIntentAtMs, setPauseIntentAtMs] = useState<number | null>(null);
   const [resumeIntentAtMs, setResumeIntentAtMs] = useState<number | null>(null);
   const seconds = useWorkoutClock(props.workout, pauseIntentAtMs, resumeIntentAtMs);
@@ -147,6 +154,8 @@ export function ActiveWorkoutScreen(props: ActiveProps) {
   const displayPaused = persistedPaused && resumeIntentAtMs === null;
   const lifecycleBusy = props.busyAction !== null;
   const compositionBusy = props.compositionBusyAction !== null;
+  const recoveryState = props.recoveryState ?? 'synced';
+  const serverMutationsEnabled = recoveryState === 'synced';
 
   useEffect(() => {
     if (pauseIntentAtMs !== null && props.busyAction !== 'pause' && (props.workout.pausedAt !== null || props.error)) {
@@ -159,6 +168,19 @@ export function ActiveWorkoutScreen(props: ActiveProps) {
       setResumeIntentAtMs(null);
     }
   }, [resumeIntentAtMs, props.busyAction, props.error, props.workout.pausedAt]);
+
+  useEffect(() => {
+    setWeightUnit(props.initialWeightUnit ?? 'KG');
+  }, [props.initialWeightUnit, props.workout.id]);
+
+  useEffect(() => {
+    if (!serverMutationsEnabled) setPickerOpen(false);
+  }, [serverMutationsEnabled]);
+
+  const changeWeightUnit = (unit: WeightDisplayUnit) => {
+    setWeightUnit(unit);
+    props.onWeightUnitChange?.(unit);
+  };
 
   const pauseNow = () => {
     const actionAtMs = Date.now();
@@ -175,6 +197,18 @@ export function ActiveWorkoutScreen(props: ActiveProps) {
   return (
     <WorkoutShell {...props}>
       <main className={styles.active}>
+        {recoveryState !== 'synced' && (
+          <section className={styles.recoveryNotice} aria-live="polite" role="status">
+            <strong>{recoveryState === 'offline' ? 'Offline workout copy' : recoveryState === 'recovering' ? 'Recovering workout' : 'Local workout copy'}</strong>
+            <span>
+              {recoveryState === 'offline'
+                ? 'This lift stays on this device. Existing set drafts remain editable; server actions wait for a connection.'
+                : recoveryState === 'recovering'
+                  ? 'Your saved local lift is visible while the server copy is checked.'
+                  : 'The server could not be reached. Your local lift remains visible and set drafts stay on this device.'}
+            </span>
+          </section>
+        )}
         <header className={styles.activeHeader}>
           <div>
             <p className={styles.kicker}>ACTIVE LIFT</p>
@@ -197,11 +231,11 @@ export function ActiveWorkoutScreen(props: ActiveProps) {
             </div>
             <div className={styles.exerciseHeadingActions}>
               <div aria-label="Weight unit" className={styles.unitSwitch} role="group">
-                <button aria-pressed={weightUnit === 'KG'} onClick={() => setWeightUnit('KG')} type="button">kg</button>
-                <button aria-pressed={weightUnit === 'LB'} onClick={() => setWeightUnit('LB')} type="button">lb</button>
+                <button aria-pressed={weightUnit === 'KG'} onClick={() => changeWeightUnit('KG')} type="button">kg</button>
+                <button aria-pressed={weightUnit === 'LB'} onClick={() => changeWeightUnit('LB')} type="button">lb</button>
               </div>
               {props.exercises.length > 0 && <span className={styles.exerciseCount}>{props.exercises.length}</span>}
-              <button className={styles.addExerciseButton} onClick={() => setPickerOpen(true)} type="button">Add exercise</button>
+              <button className={styles.addExerciseButton} disabled={!serverMutationsEnabled} onClick={() => setPickerOpen(true)} type="button">Add exercise</button>
             </div>
           </div>
 
@@ -230,20 +264,20 @@ export function ActiveWorkoutScreen(props: ActiveProps) {
                   <div className={styles.exerciseActions}>
                     <button
                       aria-label={`Move ${exercise.canonicalName} up`}
-                      disabled={compositionBusy || index === 0}
+                      disabled={!serverMutationsEnabled || compositionBusy || index === 0}
                       onClick={() => void props.onMoveExercise(exercise.id, index - 1)}
                       type="button"
                     >↑</button>
                     <button
                       aria-label={`Move ${exercise.canonicalName} down`}
-                      disabled={compositionBusy || index === props.exercises.length - 1}
+                      disabled={!serverMutationsEnabled || compositionBusy || index === props.exercises.length - 1}
                       onClick={() => void props.onMoveExercise(exercise.id, index + 1)}
                       type="button"
                     >↓</button>
                     <button
                       aria-label={`Remove ${exercise.canonicalName}`}
                       className={styles.removeExercise}
-                      disabled={compositionBusy}
+                      disabled={!serverMutationsEnabled || compositionBusy}
                       onClick={() => void props.onRemoveExercise(exercise.id)}
                       type="button"
                     >Remove</button>
@@ -253,8 +287,12 @@ export function ActiveWorkoutScreen(props: ActiveProps) {
                     exercise={exercise}
                     onAddSet={props.onAddSet}
                     onCopySet={props.onCopySet}
+                    onDraftChange={props.onSetDraftChange}
+                    onDraftPersisted={props.onSetDraftPersisted}
                     onRemoveSet={props.onRemoveSet}
                     onSaveSet={props.onSaveSet}
+                    recoveryDrafts={props.recoveryDrafts}
+                    serverMutationsEnabled={serverMutationsEnabled}
                     sets={props.workoutSets.filter((set) => set.workoutExerciseId === exercise.id)}
                     status={props.setStatus}
                     unit={weightUnit}
@@ -289,14 +327,14 @@ export function ActiveWorkoutScreen(props: ActiveProps) {
 
         <div className={styles.lifecycleActions}>
           {persistedPaused ? (
-            <Button disabled={lifecycleBusy} onClick={resumeNow}>{props.busyAction === 'resume' ? 'Resuming…' : 'Resume timer'}</Button>
+            <Button disabled={!serverMutationsEnabled || lifecycleBusy} onClick={resumeNow}>{props.busyAction === 'resume' ? 'Resuming…' : 'Resume timer'}</Button>
           ) : (
-            <Button disabled={lifecycleBusy} onClick={pauseNow}>{props.busyAction === 'pause' ? 'Pausing…' : 'Pause timer'}</Button>
+            <Button disabled={!serverMutationsEnabled || lifecycleBusy} onClick={pauseNow}>{props.busyAction === 'pause' ? 'Pausing…' : 'Pause timer'}</Button>
           )}
-          <Button disabled={lifecycleBusy} onClick={() => void props.onFinish()}>{props.busyAction === 'finish' ? 'Finishing…' : 'Finish workout'}</Button>
+          <Button disabled={!serverMutationsEnabled || lifecycleBusy} onClick={() => void props.onFinish()}>{props.busyAction === 'finish' ? 'Finishing…' : 'Finish workout'}</Button>
         </div>
 
-        <button className={styles.cancelButton} disabled={lifecycleBusy} onClick={() => void props.onCancel()} type="button">
+        <button className={styles.cancelButton} disabled={!serverMutationsEnabled || lifecycleBusy} onClick={() => void props.onCancel()} type="button">
           {props.busyAction === 'cancel' ? 'Cancelling…' : 'Cancel workout'}
         </button>
       </main>

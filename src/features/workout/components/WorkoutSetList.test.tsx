@@ -106,4 +106,32 @@ describe('WorkoutSetList', () => {
     expect(lastCall?.[0]).toBe('set-2');
     expect(lastCall?.[1].weightKg).toBeCloseTo(100, 2);
   });
+
+  it('hydrates an unsaved recovery draft instead of overwriting it with the last server value', () => {
+    render(<WorkoutSetList {...props({
+      unit: 'LB',
+      recoveryDrafts: {
+        'set-2': { setType: 'WORKING', weight: '225', reps: '6', bodyweightMode: 'BODYWEIGHT' },
+      },
+    })} />);
+
+    expect(screen.getByLabelText('Set 2 weight in lb')).toHaveValue(225);
+    expect(screen.getByLabelText('Set 2 reps')).toHaveValue(6);
+  });
+
+  it('keeps set-entry drafts editable offline without attempting a server mutation', () => {
+    const onSaveSet = vi.fn(async (_id: string, _input: WorkoutSetInput) => true);
+    const onDraftChange = vi.fn();
+    render(<WorkoutSetList {...props({ serverMutationsEnabled: false, onSaveSet, onDraftChange })} />);
+
+    fireEvent.change(screen.getByLabelText('Set 2 weight in kg'), { target: { value: '107.5' } });
+    fireEvent.change(screen.getByLabelText('Set 2 reps'), { target: { value: '3' } });
+    fireEvent.blur(screen.getByLabelText('Set 2 reps'));
+
+    expect(onDraftChange).toHaveBeenLastCalledWith('set-2', expect.objectContaining({ weight: '107.5', reps: '3' }));
+    expect(onSaveSet).not.toHaveBeenCalled();
+    expect(screen.getByRole('button', { name: 'Mark set 2 complete' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Copy last set' })).toBeDisabled();
+  });
+
 });

@@ -8,6 +8,7 @@ import type {
   WorkoutSetInput,
   WorkoutSetType,
 } from '../model';
+import type { WorkoutRecoverySetDraft } from '../recovery/workoutRecoveryModel';
 import { displayWeightToKg, formatWeightInput, weightUnitLabel } from '../weightUnits';
 import styles from './WorkoutSetList.module.css';
 
@@ -21,14 +22,13 @@ interface WorkoutSetListProps {
   onCopySet: (workoutSetId: string) => Promise<boolean>;
   onSaveSet: (workoutSetId: string, input: WorkoutSetInput) => Promise<boolean>;
   onRemoveSet: (workoutSetId: string) => Promise<boolean>;
+  recoveryDrafts?: Record<string, WorkoutRecoverySetDraft>;
+  serverMutationsEnabled?: boolean;
+  onDraftChange?: (workoutSetId: string, draft: WorkoutRecoverySetDraft) => void;
+  onDraftPersisted?: (workoutSetId: string) => void;
 }
 
-interface SetDraft {
-  setType: 'WARMUP' | 'WORKING';
-  weight: string;
-  reps: string;
-  bodyweightMode: BodyweightLoadMode;
-}
+type SetDraft = WorkoutRecoverySetDraft;
 
 function editableSetType(setType: WorkoutSetType): 'WARMUP' | 'WORKING' {
   return setType === 'WARMUP' ? 'WARMUP' : 'WORKING';
@@ -67,8 +67,12 @@ function SetRow({
   onCopySet,
   onSaveSet,
   onRemoveSet,
-}: Omit<WorkoutSetListProps, 'sets' | 'status' | 'onAddSet'> & { set: WorkoutSet }) {
-  const [draft, setDraft] = useState<SetDraft>(() => draftFromSet(set, unit));
+  recoveryDraft,
+  serverMutationsEnabled = true,
+  onDraftChange,
+  onDraftPersisted,
+}: Omit<WorkoutSetListProps, 'sets' | 'status' | 'onAddSet' | 'recoveryDrafts'> & { set: WorkoutSet; recoveryDraft?: WorkoutRecoverySetDraft }) {
+  const [draft, setDraft] = useState<SetDraft>(() => recoveryDraft ?? draftFromSet(set, unit));
   const [validationError, setValidationError] = useState('');
   const previousUnit = useRef(unit);
   const rowBusy = busy?.targetId === set.id;
@@ -76,22 +80,32 @@ function SetRow({
   const usesExternalLoad = isBodyweight && draft.bodyweightMode !== 'BODYWEIGHT';
 
   useEffect(() => {
-    setDraft(draftFromSet(set, previousUnit.current));
+    setDraft(recoveryDraft ?? draftFromSet(set, previousUnit.current));
     setValidationError('');
-  }, [set.id, set.setType, set.weightKg, set.reps, set.bodyweightMode, set.completed]);
+  }, [recoveryDraft, set.id, set.setType, set.weightKg, set.reps, set.bodyweightMode, set.completed]);
 
   useEffect(() => {
     if (previousUnit.current === unit) return;
     const priorUnit = previousUnit.current;
     setDraft((current) => {
       const canonical = parseWeight(current.weight, priorUnit);
-      return {
+      const next = {
         ...current,
         weight: canonical === null || canonical === 'invalid' ? current.weight : formatWeightInput(canonical, unit),
       };
+      onDraftChange?.(set.id, next);
+      return next;
     });
     previousUnit.current = unit;
-  }, [unit]);
+  }, [onDraftChange, set.id, unit]);
+
+  const updateDraft = (update: (current: SetDraft) => SetDraft) => {
+    setDraft((current) => {
+      const next = update(current);
+      onDraftChange?.(set.id, next);
+      return next;
+    });
+  };
 
   const buildInput = (completed: boolean, override: Partial<SetDraft> = {}): WorkoutSetInput | null => {
     const next = { ...draft, ...override };
@@ -138,13 +152,18 @@ function SetRow({
   const saveDraft = async (override: Partial<SetDraft> = {}) => {
     const input = buildInput(set.completed, override);
     if (!input) return false;
-    return onSaveSet(set.id, input);
+    if (!serverMutationsEnabled) return true;
+    const saved = await onSaveSet(set.id, input);
+    if (saved) onDraftPersisted?.(set.id);
+    return saved;
   };
 
   const toggleCompleted = async () => {
     const input = buildInput(!set.completed);
     if (!input) return;
-    await onSaveSet(set.id, input);
+    if (!serverMutationsEnabled) return;
+    const saved = await onSaveSet(set.id, input);
+    if (saved) onDraftPersisted?.(set.id);
   };
 
   return (
@@ -152,7 +171,7 @@ function SetRow({
       <button
         aria-label={set.completed ? `Reopen set ${set.setNumber}` : `Mark set ${set.setNumber} complete`}
         className={styles.completeButton}
-        disabled={Boolean(rowBusy)}
+        disabled={Boolean(rowBusy) || !serverMutationsEnabled}
         onClick={() => void toggleCompleted()}
         type="button"
       >
@@ -166,7 +185,7 @@ function SetRow({
           disabled={Boolean(rowBusy)}
           onChange={(event) => {
             const setType = event.target.value as SetDraft['setType'];
-            setDraft((current) => ({ ...current, setType }));
+            updateDraft((current) => ({ ...current, setType }));
             void saveDraft({ setType });
           }}
           value={draft.setType}
@@ -185,7 +204,7 @@ function SetRow({
             onChange={(event) => {
               const bodyweightMode = event.target.value as BodyweightLoadMode;
               const nextWeight = bodyweightMode === 'BODYWEIGHT' ? '' : draft.weight;
-              setDraft((current) => ({ ...current, bodyweightMode, weight: nextWeight }));
+              updateDraft((current) => ({ ...current, bodyweightMode, weight: nextWeight }));
               void saveDraft({ bodyweightMode, weight: nextWeight });
             }}
             value={draft.bodyweightMode}
@@ -206,7 +225,7 @@ function SetRow({
             inputMode="decimal"
             min="0"
             onBlur={() => void saveDraft()}
-            onChange={(event) => setDraft((current) => ({ ...current, weight: event.target.value }))}
+            onChange={(event) => updateDraft((current) => ({ ...current, weight: event.target.value }))}
             placeholder="0"
             step="any"
             type="number"
@@ -223,7 +242,7 @@ function SetRow({
           inputMode="numeric"
           min="1"
           onBlur={() => void saveDraft()}
-          onChange={(event) => setDraft((current) => ({ ...current, reps: event.target.value }))}
+          onChange={(event) => updateDraft((current) => ({ ...current, reps: event.target.value }))}
           placeholder="0"
           step="1"
           type="number"
@@ -232,8 +251,8 @@ function SetRow({
       </label>
 
       <div className={styles.rowActions}>
-        <button aria-label={`Copy set ${set.setNumber}`} disabled={Boolean(rowBusy)} onClick={() => void onCopySet(set.id)} type="button">Copy</button>
-        <button aria-label={`Delete set ${set.setNumber}`} disabled={Boolean(rowBusy)} onClick={() => void onRemoveSet(set.id)} type="button">Delete</button>
+        <button aria-label={`Copy set ${set.setNumber}`} disabled={Boolean(rowBusy) || !serverMutationsEnabled} onClick={() => void onCopySet(set.id)} type="button">Copy</button>
+        <button aria-label={`Delete set ${set.setNumber}`} disabled={Boolean(rowBusy) || !serverMutationsEnabled} onClick={() => void onRemoveSet(set.id)} type="button">Delete</button>
       </div>
 
       {validationError && <p className={styles.validationError} role="alert">{validationError}</p>}
@@ -245,6 +264,8 @@ export function WorkoutSetList(props: WorkoutSetListProps) {
   const supportsSets = props.exercise.measurementType === 'WEIGHT_REPS' || props.exercise.measurementType === 'BODYWEIGHT_REPS';
   const addBusy = props.busy?.action === 'add' && props.busy.targetId === props.exercise.id;
   const lastSet = props.sets.at(-1);
+  const serverMutationsEnabled = props.serverMutationsEnabled ?? true;
+  const actionsDisabled = Boolean(props.busy) || !serverMutationsEnabled;
 
   if (!supportsSets) {
     return <p className={styles.unsupported}>Set entry for this measurement type is not part of the current weight/reps logging slice.</p>;
@@ -264,8 +285,12 @@ export function WorkoutSetList(props: WorkoutSetListProps) {
               exercise={props.exercise}
               key={set.id}
               onCopySet={props.onCopySet}
+              onDraftChange={props.onDraftChange}
+              onDraftPersisted={props.onDraftPersisted}
               onRemoveSet={props.onRemoveSet}
               onSaveSet={props.onSaveSet}
+              recoveryDraft={props.recoveryDrafts?.[set.id]}
+              serverMutationsEnabled={props.serverMutationsEnabled}
               set={set}
               unit={props.unit}
             />
@@ -274,11 +299,11 @@ export function WorkoutSetList(props: WorkoutSetListProps) {
       )}
 
       <div className={styles.addActions}>
-        <button disabled={Boolean(props.busy)} onClick={() => void props.onAddSet(props.exercise.id, 'WORKING')} type="button">
+        <button disabled={actionsDisabled} onClick={() => void props.onAddSet(props.exercise.id, 'WORKING')} type="button">
           {addBusy ? 'Adding…' : '+ Working set'}
         </button>
-        <button disabled={Boolean(props.busy)} onClick={() => void props.onAddSet(props.exercise.id, 'WARMUP')} type="button">+ Warmup</button>
-        {lastSet && <button disabled={Boolean(props.busy)} onClick={() => void props.onCopySet(lastSet.id)} type="button">Copy last set</button>}
+        <button disabled={actionsDisabled} onClick={() => void props.onAddSet(props.exercise.id, 'WARMUP')} type="button">+ Warmup</button>
+        {lastSet && <button disabled={actionsDisabled} onClick={() => void props.onCopySet(lastSet.id)} type="button">Copy last set</button>}
       </div>
     </section>
   );

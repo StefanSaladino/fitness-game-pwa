@@ -32,6 +32,33 @@ CSS separation rules are equally strict:
 
 See `docs/UI-DEVELOPMENT-GATE.md`, `docs/UI-ARCHITECTURE.md`, and `docs/CSS-ARCHITECTURE.md`.
 
+## Engineering execution rules — REQUIRED
+
+These rules apply to every remaining phase, including non-visual backend/reliability work.
+
+### Separation of concerns
+
+- domain rules and pure calculations stay framework-independent and must not import React, Supabase, or browser APIs;
+- presentation components render state and emit user intent; they do not own persistence, scoring, or cross-feature orchestration;
+- focused hooks/controllers own feature state, async orchestration, optimistic UI, and recovery behavior;
+- services/repositories are the only feature layer that communicates directly with Supabase;
+- persistence DTOs and UI view models should be mapped at clear boundaries rather than leaking database-row shapes throughout the component tree;
+- feature-specific CSS remains colocated in CSS Modules; application-wide style files remain limited to tokens/reset/base/shared utilities;
+- migrations should solve one database concern at a time; historical migrations remain immutable and repairs use new migrations;
+- tests should be written at the same layer as the behavior they prove: pure logic -> unit tests, components -> RTL, service contracts -> focused service tests, authorization/data invariants -> pgTAP, real flows -> integration/E2E;
+- avoid god components, god hooks, and god services. If a file begins owning unrelated state, persistence, presentation, and domain rules, split the responsibility before adding more behavior.
+
+### Small-slice delivery
+
+- do not combine unrelated features, cleanup, schema changes, and UI redesigns into one implementation patch;
+- each subphase should have one primary behavior boundary, explicit non-goals, its own tests, and a clear exit condition;
+- prefer the smallest deployable/testable vertical slice over completing an entire large phase at once;
+- database migration + service + hook/controller + UI + tests may ship together only when they are all required for that one vertical behavior;
+- cleanup discovered during a slice should be fixed immediately only when it blocks correctness or directly touches the same boundary; otherwise add it to the roadmap as a separate slice;
+- after each slice, run the relevant focused tests first, then the full project gate before advancing;
+- keep checkpoint commits narrow so a regression can be bisected to one behavior change;
+- when a phase is still large after decomposition, split it into lettered subphases before coding rather than creating a large patch and dividing it afterward.
+
 ## Phase 0 — Original product rules — SUPERSEDED
 
 The original v0.2 general-fitness model (100 base XP/day + calibrated Performance XP) was implemented and tested, then intentionally superseded by the lifting-first v0.3 product direction.
@@ -320,12 +347,60 @@ Apply the UI design gate before coding the workout builder.
 - duplicate/copy previous set conveniences without forcing copied values to stay linked
 - unit display conversion without changing canonical stored units
 
-### 6.4 Workout reliability — NEXT
+### 6.4 Workout reliability — IN PROGRESS
 
-- offline active-session persistence
-- queued/idempotent sync
-- safe edit/delete rules
-- no workout loss on ordinary connection failure
+Phase 6.4 is intentionally split into small reliability slices. Do not implement it as one large offline/sync patch.
+
+#### 6.4A Local active-workout recovery — DONE
+
+Primary boundary: preserve the user's in-progress workout locally when connectivity disappears.
+
+- define a local active-workout snapshot contract separate from Supabase row types
+- persist active session, exercise order, and current set-entry state locally
+- recover the local snapshot after refresh/app restart before attempting remote reconciliation
+- make online/offline/recovering state explicit in the workout controller
+- do not introduce a general mutation queue yet
+- no scoring changes
+
+Exit criteria: refreshing or losing connectivity during an active lift does not make the visible workout disappear.
+
+#### 6.4B Idempotent workout mutation queue — NEXT
+
+Primary boundary: safely retry workout-capture mutations created while offline or during transient failures.
+
+- queue only workout-capture mutations that have explicit idempotency keys
+- preserve mutation order where ordering is semantically required
+- retry safely after reconnect without duplicating exercises or sets
+- distinguish retryable transport failures from authorization/validation failures
+- keep queue persistence/orchestration separate from presentation components
+- no scoring reconciliation in this slice
+
+Exit criteria: replaying the same queued mutation more than once cannot duplicate persisted workout data.
+
+#### 6.4C Conflict and destructive-edit safety — LATER
+
+Primary boundary: reconcile local and remote workout state without silently overwriting newer data.
+
+- define conflict rules for set edits, deletes, reorder operations, finish, and cancel
+- prevent stale local state from resurrecting deleted data
+- preserve completed/cancelled workout immutability
+- surface actionable recovery UI when automatic reconciliation is unsafe
+- keep destructive operations explicit and independently retryable
+
+Exit criteria: reconnect/retry cannot silently lose newer workout data or revive intentionally removed data.
+
+#### 6.4D Reliability integration gate — LATER
+
+Primary boundary: prove the complete capture flow survives ordinary connectivity failures.
+
+- integration coverage for offline -> edit -> reconnect -> reconcile
+- refresh/restart recovery coverage
+- duplicate retry/idempotency coverage
+- finish/cancel race coverage
+- browser/E2E validation for phone-first recovery states
+- full project gate remains required before Phase 7
+
+Exit criteria: an ordinary connection interruption cannot lose or duplicate a workout, exercise, or set.
 
 ## Phase 7 — Authoritative lifting-v1 scoring persistence
 

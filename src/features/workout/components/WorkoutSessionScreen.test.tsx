@@ -200,4 +200,26 @@ describe('workout session presentation', () => {
     expect(screen.getByRole('button', { name: 'Copy last set' })).toBeInTheDocument();
   });
 
+
+  it('keeps the recovered workout visible while clearly gating server-only actions offline', () => {
+    render(activeScreen({
+      recoveryState: 'offline',
+      initialWeightUnit: 'LB',
+      recoveryDrafts: {
+        'set-1': { setType: 'WORKING', weight: '225', reps: '6', bodyweightMode: 'BODYWEIGHT' },
+      },
+      exercises: [exercises[0]],
+      workoutSets: [
+        { id: 'set-1', workoutExerciseId: 'we-1', setNumber: 1, setType: 'WORKING', weightKg: 100, reps: 5, bodyweightMode: null, completed: false, completedAt: null },
+      ],
+    }));
+
+    expect(screen.getByRole('status')).toHaveTextContent('Offline workout copy');
+    expect(screen.getByText('Barbell Bench Press')).toBeInTheDocument();
+    expect(screen.getByLabelText('Set 1 weight in lb')).toHaveValue(225);
+    expect(screen.getByRole('button', { name: 'Add exercise' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Pause timer' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Finish workout' })).toBeDisabled();
+  });
+
 });

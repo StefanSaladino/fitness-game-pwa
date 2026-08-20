@@ -1,5 +1,16 @@
 # Changelog
 
+## v0.5.1 — Phase 6.4A local active-workout recovery
+
+- Added a versioned local recovery snapshot separate from Supabase row shapes.
+- Persisted the active session, exercise order, canonical set rows, display unit, and unsaved set-entry drafts.
+- Active workouts now render from the local snapshot immediately after refresh/app restart while remote reads reconcile.
+- Offline/local-only/recovering states are explicit in the workout controller and visible in the active-workout surface.
+- Existing set drafts remain editable while offline; server-only mutations are gated until the server copy is available.
+- Reconnect triggers one read-only reconciliation attempt for the session, exercises, sets, and picker catalogue.
+- Corrupt/cross-user local snapshots are discarded safely and localStorage failures never block the authoritative workout flow.
+- No mutation queue, conflict engine, database migration, or lifting-v1 scoring changes were introduced.
+
 ## v0.5.0 — Phase 6.3 per-set workout logging
 
 - Added independent persisted set rows for every workout exercise.

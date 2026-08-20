@@ -1,0 +1,30 @@
+Fitness Game PWA — v0.5.1 / Phase 6.4A Local Active-Workout Recovery
+
+NEW
+- src/features/workout/recovery/workoutRecoveryModel.ts
+- src/features/workout/recovery/workoutRecoveryStorage.ts
+- src/features/workout/recovery/workoutRecoveryModel.test.ts
+- src/features/workout/recovery/workoutRecoveryStorage.test.ts
+- src/features/workout/hooks/useWorkoutRecovery.ts
+- src/features/workout/hooks/useWorkoutRecovery.test.tsx
+- src/features/workout/components/WorkoutController.test.tsx
+- docs/PHASE6.4A-LOCAL-WORKOUT-RECOVERY.md
+
+MODIFIED
+- src/features/workout/components/WorkoutController.tsx
+- src/features/workout/components/WorkoutSessionScreen.tsx
+- src/features/workout/components/WorkoutSessionScreen.module.css
+- src/features/workout/components/WorkoutSessionScreen.test.tsx
+- src/features/workout/components/WorkoutSetList.tsx
+- src/features/workout/components/WorkoutSetList.test.tsx
+- src/features/workout/index.ts
+- docs/ROADMAP.md
+- scripts/validate-project.cjs
+- package.json
+- CHANGELOG.md
+
+NO DATABASE MIGRATION
+NO SCORING CHANGES
+NO MUTATION QUEUE
+NO CONFLICT ENGINE
+NO GLOBAL CSS FEATURE RULES

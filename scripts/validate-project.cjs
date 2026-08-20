@@ -463,8 +463,48 @@ ok(workoutSetCss.length > 1200, 'set-entry styling is substantial and colocated 
 ok(!/WorkoutSetList|setRow|setStage|completeButton/.test(read('src/styles/global.css')), 'Phase 6.3 selectors are not added to global CSS');
 ok(Number.isInteger(phase63Plan) && phase63Plan === 34 && phase63Plan === phase63Count, 'Phase 6.3 pgTAP plan matches 34 assertions');
 ok(/Set tracking — DONE/.test(read('docs/ROADMAP.md')), 'roadmap records Phase 6.3 completion');
-ok(/Workout reliability — NEXT/.test(read('docs/ROADMAP.md')), 'roadmap advances to Phase 6.4 reliability');
+ok(/Workout reliability — IN PROGRESS/.test(read('docs/ROADMAP.md')), 'roadmap records Phase 6.4 reliability in progress');
 ok(/does not add or change lifting-v1 XP reconciliation/i.test(read('docs/PHASE6.3-SET-TRACKING.md')), 'Phase 6.3 explicitly leaves XP persistence unchanged');
+
+
+// Phase 6.4A — local active-workout recovery
+for (const rel of [
+  'src/features/workout/recovery/workoutRecoveryModel.ts',
+  'src/features/workout/recovery/workoutRecoveryStorage.ts',
+  'src/features/workout/hooks/useWorkoutRecovery.ts',
+  'src/features/workout/components/WorkoutController.test.tsx',
+  'src/features/workout/recovery/workoutRecoveryModel.test.ts',
+  'src/features/workout/recovery/workoutRecoveryStorage.test.ts',
+  'src/features/workout/hooks/useWorkoutRecovery.test.tsx',
+  'docs/PHASE6.4A-LOCAL-WORKOUT-RECOVERY.md',
+]) ok(fs.existsSync(path.join(root, rel)), `${rel} exists`);
+const recoveryModel = read('src/features/workout/recovery/workoutRecoveryModel.ts');
+const recoveryStorage = read('src/features/workout/recovery/workoutRecoveryStorage.ts');
+const recoveryHook = read('src/features/workout/hooks/useWorkoutRecovery.ts');
+const recoveryController = read('src/features/workout/components/WorkoutController.tsx');
+const recoveryScreen = read('src/features/workout/components/WorkoutSessionScreen.tsx');
+const recoverySetList = read('src/features/workout/components/WorkoutSetList.tsx');
+const recoveryDoc = read('docs/PHASE6.4A-LOCAL-WORKOUT-RECOVERY.md');
+ok(/WORKOUT_RECOVERY_VERSION = 1/.test(recoveryModel), 'Phase 6.4A versions the local recovery contract');
+ok(/WorkoutRecoverySessionSnapshot/.test(recoveryModel) && /WorkoutRecoveryExerciseSnapshot/.test(recoveryModel) && /WorkoutRecoverySetSnapshot/.test(recoveryModel), 'recovery snapshot uses explicit local contracts instead of database row shapes');
+ok(!/supabase/i.test(recoveryModel), 'pure recovery model has no Supabase dependency');
+ok(/fitness-game:active-workout:v1:/.test(recoveryStorage), 'recovery storage is versioned and namespaced');
+ok(/parseWorkoutRecoverySnapshot/.test(recoveryStorage) && /removeItem/.test(recoveryStorage), 'invalid local recovery snapshots are discarded');
+ok(!/supabase/i.test(recoveryStorage), 'local recovery storage has no Supabase dependency');
+ok(/addEventListener\('online'/.test(recoveryHook) && /addEventListener\('offline'/.test(recoveryHook), 'recovery hook owns browser connectivity state');
+ok(/reconnectCount/.test(recoveryHook) && /captureCanonical/.test(recoveryHook), 'recovery hook exposes one-shot reconnect and canonical capture orchestration');
+ok(/restoreWorkoutSession/.test(recoveryController) && /restoreWorkoutExercises/.test(recoveryController) && /restoreWorkoutSets/.test(recoveryController), 'workout controller can present a complete local workout snapshot');
+ok(/useRecoveredWorkout/.test(recoveryController) && /useRecoveredExercises/.test(recoveryController) && /useRecoveredSets/.test(recoveryController), 'controller explicitly chooses local fallback boundaries');
+ok(/captureCanonical/.test(recoveryController) && /workout\.status === 'ready' && workout\.activeWorkout === null/.test(recoveryController), 'authoritative remote reads refresh or clear local recovery state');
+ok(/Offline workout copy/.test(recoveryScreen) && /Recovering workout/.test(recoveryScreen) && /Local workout copy/.test(recoveryScreen), 'workout presentation exposes explicit recovery states');
+ok(/serverMutationsEnabled/.test(recoveryScreen) && /serverMutationsEnabled/.test(recoverySetList), 'server-only workout mutations are gated while using a local recovery copy');
+ok(/recoveryDrafts/.test(recoverySetList) && /onDraftChange/.test(recoverySetList), 'set entry hydrates and persists unsaved local drafts');
+ok(!/localStorage|supabase/i.test(recoveryScreen), 'workout presentation does not own persistence');
+ok(!/recoveryNotice/.test(read('src/styles/global.css')), 'Phase 6.4A recovery styling is not added to global CSS');
+ok(/6\.4A Local active-workout recovery — DONE/.test(read('docs/ROADMAP.md')), 'roadmap records Phase 6.4A completion');
+ok(/6\.4B Idempotent workout mutation queue — NEXT/.test(read('docs/ROADMAP.md')), 'roadmap advances to the smaller Phase 6.4B queue slice');
+ok(/no general mutation queue/i.test(recoveryDoc) && /no lifting-v1 scoring changes/i.test(recoveryDoc), 'Phase 6.4A documents its reliability non-goals');
+
 
 // Phase 5.6.1 — targeted user invitations
 const targetedInviteMigration = read('supabase/migrations/20260819001100_targeted_group_invitations.sql');

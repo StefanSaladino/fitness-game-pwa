@@ -14,3 +14,6 @@ export * from './workoutSetService';
 export * from './weightUnits';
 export * from './hooks/useWorkoutSets';
 export * from './components/WorkoutSetList';
+export * from './recovery/workoutRecoveryModel';
+export * from './recovery/workoutRecoveryStorage';
+export * from './hooks/useWorkoutRecovery';
