@@ -6,11 +6,14 @@ import type { WorkoutExerciseService } from '../workoutExerciseService';
 import type { ExercisePickerService } from '../exercisePickerService';
 import type { WorkoutService } from '../workoutService';
 import type { WorkoutSetService } from '../workoutSetService';
+import { toUserFacingWorkoutError } from '../workoutMessages';
+import type { WorkoutMutationService } from '../mutations/workoutMutationService';
 import { useActiveWorkout } from '../hooks/useActiveWorkout';
 import { useWorkoutExercises } from '../hooks/useWorkoutExercises';
 import { useWorkoutSets } from '../hooks/useWorkoutSets';
 import { useExercisePickerCatalog } from '../hooks/useExercisePickerCatalog';
 import { useWorkoutRecovery } from '../hooks/useWorkoutRecovery';
+import { useWorkoutMutationQueue } from '../hooks/useWorkoutMutationQueue';
 import {
   restoreWorkoutExercises,
   restoreWorkoutSession,
@@ -28,9 +31,10 @@ interface WorkoutControllerProps {
   exerciseService?: WorkoutExerciseService;
   pickerService?: ExercisePickerService;
   setService?: WorkoutSetService;
+  mutationService?: WorkoutMutationService;
 }
 
-export function WorkoutController({ profile, onNavigate, onSignOut, service, exerciseService, pickerService, setService }: WorkoutControllerProps) {
+export function WorkoutController({ profile, onNavigate, onSignOut, service, exerciseService, pickerService, setService, mutationService }: WorkoutControllerProps) {
   const recovery = useWorkoutRecovery(profile.id);
   const workout = useActiveWorkout(profile.id, service);
   const recoveredWorkout = recovery.snapshot ? restoreWorkoutSession(recovery.snapshot.session) : null;
@@ -38,13 +42,14 @@ export function WorkoutController({ profile, onNavigate, onSignOut, service, exe
   const activeWorkout = workout.activeWorkout ?? (useRecoveredWorkout ? recoveredWorkout : null);
   const recoveryMatchesWorkout = Boolean(activeWorkout && recovery.snapshot?.session.id === activeWorkout.id);
   const recoveredExercises = recoveryMatchesWorkout && recovery.snapshot ? restoreWorkoutExercises(recovery.snapshot) : [];
+  const mutationQueue = useWorkoutMutationQueue(profile.id, activeWorkout?.id ?? null, mutationService);
 
-  const composition = useWorkoutExercises(activeWorkout?.id ?? null, exerciseService);
+  const composition = useWorkoutExercises(activeWorkout?.id ?? null, exerciseService, mutationQueue.executor);
   const useRecoveredExercises = recoveryMatchesWorkout && composition.status !== 'ready';
   const exercises = useRecoveredExercises ? recoveredExercises : composition.exercises;
 
   const picker = useExercisePickerCatalog(Boolean(activeWorkout), pickerService);
-  const sets = useWorkoutSets(exercises.map((exercise) => exercise.id), setService);
+  const sets = useWorkoutSets(exercises.map((exercise) => exercise.id), setService, mutationQueue.executor);
   const recoveredSets = recoveryMatchesWorkout && recovery.snapshot
     ? restoreWorkoutSets(recovery.snapshot).filter((set) => exercises.some((exercise) => exercise.id === set.workoutExerciseId))
     : [];
@@ -64,13 +69,23 @@ export function WorkoutController({ profile, onNavigate, onSignOut, service, exe
   useEffect(() => {
     if (recovery.reconnectCount === 0 || recovery.reconnectCount <= handledReconnect.current) return;
     handledReconnect.current = recovery.reconnectCount;
+    void mutationQueue.replay();
     void workout.retry();
     if (activeWorkout) {
       void composition.retry();
       void sets.retry();
       void picker.retry();
     }
-  }, [activeWorkout, composition.retry, picker.retry, recovery.reconnectCount, sets.retry, workout.retry]);
+  }, [activeWorkout, composition.retry, mutationQueue.replay, picker.retry, recovery.reconnectCount, sets.retry, workout.retry]);
+
+  const handledMutationRevision = useRef(0);
+  useEffect(() => {
+    if (mutationQueue.appliedRevision === 0 || mutationQueue.appliedRevision <= handledMutationRevision.current) return;
+    handledMutationRevision.current = mutationQueue.appliedRevision;
+    if (!activeWorkout) return;
+    void composition.retry();
+    void sets.retry();
+  }, [activeWorkout, composition.retry, mutationQueue.appliedRevision, sets.retry]);
 
   const usingAnyRecovery = useRecoveredWorkout || useRecoveredExercises || useRecoveredSets;
   const hasRemoteReadError = workout.status === 'error' || composition.status === 'error' || sets.status === 'error';
@@ -116,6 +131,10 @@ export function WorkoutController({ profile, onNavigate, onSignOut, service, exe
       exercises={exercises}
       error={useRecoveredWorkout ? '' : workout.error}
       initialWeightUnit={initialWeightUnit}
+      mutationQueueError={mutationQueue.status === 'blocked' ? toUserFacingWorkoutError(new Error(mutationQueue.error)) : ''}
+      mutationQueuePendingCount={mutationQueue.pendingCount}
+      mutationQueueStatus={mutationQueue.status}
+      onRetryMutationQueue={mutationQueue.retryBlocked}
       onCancel={async () => {
         const id = await workout.cancel();
         if (id) {

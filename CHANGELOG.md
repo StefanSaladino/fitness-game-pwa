@@ -1,5 +1,16 @@
 # Changelog
 
+## v0.5.2 — Phase 6.4B idempotent workout mutation queue
+
+- Added a durable per-user FIFO queue for workout-capture mutations.
+- Added explicit UUID idempotency keys and PostgreSQL mutation receipts so ambiguous retries cannot duplicate workout data.
+- Added the single `apply_lifting_workout_mutation` gateway for queued exercise/set writes.
+- Added retryable transport/server failure classification while treating authorization/validation failures as terminal.
+- Existing set edits can now enqueue safely while offline; structural/lifecycle actions remain gated until conflict safety is implemented.
+- Reconnect replays pending writes in order and re-reads authoritative exercise/set state after successful replay.
+- Added client unit/hook coverage and pgTAP duplicate-replay coverage.
+- No scoring, XP, progression, or conflict-merge rules changed.
+
 ## v0.5.1 — Phase 6.4A local active-workout recovery
 
 - Added a versioned local recovery snapshot separate from Supabase row shapes.
@@ -109,8 +120,6 @@
 - Added reusable PFP + initials fallback components with CSS Modules.
 - Added PFP path to group-member identity for future leaderboard/activity rendering.
 - No avatar/customization system was introduced.
-
-# Changelog
 
 ## 0.3.4 — Phase 5.5D real lifting dashboard
 

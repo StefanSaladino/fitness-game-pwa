@@ -6,6 +6,7 @@ import type { WorkoutExerciseService } from '../workoutExerciseService';
 import type { WorkoutService } from '../workoutService';
 import type { WorkoutSetService } from '../workoutSetService';
 import { createWorkoutRecoveryStorage } from '../recovery/workoutRecoveryStorage';
+import { createWorkoutMutationStorage } from '../mutations/workoutMutationStorage';
 import type { ActiveWorkoutRecoverySnapshot } from '../recovery/workoutRecoveryModel';
 import { WorkoutController } from './WorkoutController';
 
@@ -82,5 +83,8 @@ describe('WorkoutController local recovery', () => {
       expect(saved?.ui.setDrafts['set-1']?.weight).toBe('230');
     });
     expect(setService.saveSet).not.toHaveBeenCalled();
+    const queued = createWorkoutMutationStorage(window.localStorage).load('user-1');
+    expect(queued).toHaveLength(1);
+    expect(queued[0]).toEqual(expect.objectContaining({ kind: 'SAVE_SET', workoutId: 'workout-1' }));
   });
 });

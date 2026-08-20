@@ -57,6 +57,10 @@ interface ActiveProps extends SharedProps {
   onSetDraftChange?: (workoutSetId: string, draft: WorkoutRecoverySetDraft) => void;
   onSetDraftPersisted?: (workoutSetId: string) => void;
   onWeightUnitChange?: (unit: WeightDisplayUnit) => void;
+  mutationQueuePendingCount?: number;
+  mutationQueueStatus?: 'idle' | 'replaying' | 'blocked';
+  mutationQueueError?: string;
+  onRetryMutationQueue?: () => Promise<void>;
 }
 
 function WorkoutShell({ profile, onNavigate, onSignOut, children }: SharedProps & { children: ReactNode }) {
@@ -155,7 +159,12 @@ export function ActiveWorkoutScreen(props: ActiveProps) {
   const lifecycleBusy = props.busyAction !== null;
   const compositionBusy = props.compositionBusyAction !== null;
   const recoveryState = props.recoveryState ?? 'synced';
-  const serverMutationsEnabled = recoveryState === 'synced';
+  const mutationQueuePendingCount = props.mutationQueuePendingCount ?? 0;
+  const mutationQueueStatus = props.mutationQueueStatus ?? 'idle';
+  const queueBlocked = mutationQueueStatus === 'blocked';
+  const serverMutationsEnabled = recoveryState === 'synced' && !queueBlocked && mutationQueuePendingCount === 0;
+  const setEditsEnabled = recoveryState !== 'recovering' && !queueBlocked;
+  const lifecycleMutationsEnabled = serverMutationsEnabled;
 
   useEffect(() => {
     if (pauseIntentAtMs !== null && props.busyAction !== 'pause' && (props.workout.pausedAt !== null || props.error)) {
@@ -202,13 +211,36 @@ export function ActiveWorkoutScreen(props: ActiveProps) {
             <strong>{recoveryState === 'offline' ? 'Offline workout copy' : recoveryState === 'recovering' ? 'Recovering workout' : 'Local workout copy'}</strong>
             <span>
               {recoveryState === 'offline'
-                ? 'This lift stays on this device. Existing set drafts remain editable; server actions wait for a connection.'
+                ? 'This lift stays on this device. Existing set edits are queued safely; structural and lifecycle actions wait for a connection.'
                 : recoveryState === 'recovering'
                   ? 'Your saved local lift is visible while the server copy is checked.'
                   : 'The server could not be reached. Your local lift remains visible and set drafts stay on this device.'}
             </span>
           </section>
         )}
+        {mutationQueuePendingCount > 0 && (
+          <section className={styles.queueNotice} aria-live="polite" role="status">
+            <strong>
+              {queueBlocked
+                ? 'Workout sync needs attention'
+                : mutationQueueStatus === 'replaying'
+                  ? 'Syncing workout changes'
+                  : `${mutationQueuePendingCount} workout change${mutationQueuePendingCount === 1 ? '' : 's'} queued`}
+            </strong>
+            <span>
+              {queueBlocked
+                ? 'A queued change was rejected, so later changes are paused instead of being applied out of order.'
+                : recoveryState === 'offline'
+                  ? 'Queued changes are saved on this device and will replay in order after reconnecting.'
+                  : 'The app will retry these changes in order without duplicating persisted workout data.'}
+            </span>
+            {mutationQueueStatus !== 'replaying' && recoveryState !== 'offline' && props.onRetryMutationQueue && (
+              <button onClick={() => void props.onRetryMutationQueue?.()} type="button">Retry sync</button>
+            )}
+            {queueBlocked && props.mutationQueueError && <span className={styles.queueError}>{props.mutationQueueError}</span>}
+          </section>
+        )}
+
         <header className={styles.activeHeader}>
           <div>
             <p className={styles.kicker}>ACTIVE LIFT</p>
@@ -293,6 +325,7 @@ export function ActiveWorkoutScreen(props: ActiveProps) {
                     onSaveSet={props.onSaveSet}
                     recoveryDrafts={props.recoveryDrafts}
                     serverMutationsEnabled={serverMutationsEnabled}
+                    setEditsEnabled={setEditsEnabled}
                     sets={props.workoutSets.filter((set) => set.workoutExerciseId === exercise.id)}
                     status={props.setStatus}
                     unit={weightUnit}
@@ -327,14 +360,14 @@ export function ActiveWorkoutScreen(props: ActiveProps) {
 
         <div className={styles.lifecycleActions}>
           {persistedPaused ? (
-            <Button disabled={!serverMutationsEnabled || lifecycleBusy} onClick={resumeNow}>{props.busyAction === 'resume' ? 'Resuming…' : 'Resume timer'}</Button>
+            <Button disabled={!lifecycleMutationsEnabled || lifecycleBusy} onClick={resumeNow}>{props.busyAction === 'resume' ? 'Resuming…' : 'Resume timer'}</Button>
           ) : (
-            <Button disabled={!serverMutationsEnabled || lifecycleBusy} onClick={pauseNow}>{props.busyAction === 'pause' ? 'Pausing…' : 'Pause timer'}</Button>
+            <Button disabled={!lifecycleMutationsEnabled || lifecycleBusy} onClick={pauseNow}>{props.busyAction === 'pause' ? 'Pausing…' : 'Pause timer'}</Button>
           )}
-          <Button disabled={!serverMutationsEnabled || lifecycleBusy} onClick={() => void props.onFinish()}>{props.busyAction === 'finish' ? 'Finishing…' : 'Finish workout'}</Button>
+          <Button disabled={!lifecycleMutationsEnabled || lifecycleBusy} onClick={() => void props.onFinish()}>{props.busyAction === 'finish' ? 'Finishing…' : 'Finish workout'}</Button>
         </div>
 
-        <button className={styles.cancelButton} disabled={!serverMutationsEnabled || lifecycleBusy} onClick={() => void props.onCancel()} type="button">
+        <button className={styles.cancelButton} disabled={!lifecycleMutationsEnabled || lifecycleBusy} onClick={() => void props.onCancel()} type="button">
           {props.busyAction === 'cancel' ? 'Cancelling…' : 'Cancel workout'}
         </button>
       </main>

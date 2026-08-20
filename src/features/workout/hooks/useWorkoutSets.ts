@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { WorkoutSet, WorkoutSetAction, WorkoutSetInput, WorkoutSetType } from '../model';
+import type { WorkoutMutationExecutor, WorkoutMutationRequest } from '../mutations/workoutMutationModel';
 import { toUserFacingWorkoutError } from '../workoutMessages';
 import { createWorkoutSetService, type WorkoutSetService } from '../workoutSetService';
 
@@ -10,7 +11,7 @@ export interface WorkoutSetBusyState {
   targetId: string;
 }
 
-export function useWorkoutSets(workoutExerciseIds: readonly string[], injectedService?: WorkoutSetService) {
+export function useWorkoutSets(workoutExerciseIds: readonly string[], injectedService?: WorkoutSetService, mutationExecutor?: WorkoutMutationExecutor) {
   const serviceRef = useRef<WorkoutSetService | null>(null);
   if (!serviceRef.current) serviceRef.current = injectedService ?? createWorkoutSetService();
 
@@ -52,11 +53,23 @@ export function useWorkoutSets(workoutExerciseIds: readonly string[], injectedSe
   const runMutation = useCallback(async (
     action: Exclude<WorkoutSetAction, null>,
     targetId: string,
+    request: WorkoutMutationRequest,
     task: () => Promise<void>,
+    onQueued?: () => void,
   ) => {
     setBusy({ action, targetId });
     setError('');
     try {
+      if (mutationExecutor) {
+        const outcome = await mutationExecutor.execute(request);
+        if (outcome.state === 'failed') throw new Error(outcome.error ?? 'Workout change was rejected.');
+        if (outcome.state === 'applied') {
+          await load(true);
+          return true;
+        }
+        onQueued?.();
+        return false;
+      }
       await task();
       await load(true);
       return true;
@@ -66,23 +79,42 @@ export function useWorkoutSets(workoutExerciseIds: readonly string[], injectedSe
     } finally {
       setBusy(null);
     }
-  }, [load]);
+  }, [load, mutationExecutor]);
 
-  const addSet = useCallback(async (workoutExerciseId: string, setType: WorkoutSetType = 'WORKING') => runMutation('add', workoutExerciseId, async () => {
-    await serviceRef.current!.addSet(workoutExerciseId, setType);
-  }), [runMutation]);
+  const addSet = useCallback(async (workoutExerciseId: string, setType: WorkoutSetType = 'WORKING') => runMutation(
+    'add', workoutExerciseId,
+    { kind: 'ADD_SET', payload: { workoutExerciseId, setType: setType === 'WARMUP' ? 'WARMUP' : 'WORKING' } },
+    async () => { await serviceRef.current!.addSet(workoutExerciseId, setType); },
+  ), [runMutation]);
 
-  const copySet = useCallback(async (workoutSetId: string) => runMutation('copy', workoutSetId, async () => {
-    await serviceRef.current!.copySet(workoutSetId);
-  }), [runMutation]);
+  const copySet = useCallback(async (workoutSetId: string) => runMutation(
+    'copy', workoutSetId,
+    { kind: 'COPY_SET', payload: { workoutSetId } },
+    async () => { await serviceRef.current!.copySet(workoutSetId); },
+  ), [runMutation]);
 
-  const saveSet = useCallback(async (workoutSetId: string, input: WorkoutSetInput) => runMutation('save', workoutSetId, async () => {
-    await serviceRef.current!.saveSet(workoutSetId, input);
-  }), [runMutation]);
+  const saveSet = useCallback(async (workoutSetId: string, input: WorkoutSetInput) => runMutation(
+    'save', workoutSetId,
+    { kind: 'SAVE_SET', payload: { workoutSetId, ...input, setType: input.setType === 'WARMUP' ? 'WARMUP' : 'WORKING' } },
+    async () => { await serviceRef.current!.saveSet(workoutSetId, input); },
+    () => {
+      setSets((current) => current.map((set) => set.id === workoutSetId ? {
+        ...set,
+        setType: input.setType,
+        weightKg: input.weightKg,
+        reps: input.reps,
+        bodyweightMode: input.bodyweightMode,
+        completed: input.completed,
+        completedAt: input.completed ? (set.completedAt ?? new Date().toISOString()) : null,
+      } : set));
+    },
+  ), [runMutation]);
 
-  const removeSet = useCallback(async (workoutSetId: string) => runMutation('remove', workoutSetId, async () => {
-    await serviceRef.current!.removeSet(workoutSetId);
-  }), [runMutation]);
+  const removeSet = useCallback(async (workoutSetId: string) => runMutation(
+    'remove', workoutSetId,
+    { kind: 'REMOVE_SET', payload: { workoutSetId } },
+    async () => { await serviceRef.current!.removeSet(workoutSetId); },
+  ), [runMutation]);
 
   return { status, sets, busy, error, retry: load, addSet, copySet, saveSet, removeSet };
 }

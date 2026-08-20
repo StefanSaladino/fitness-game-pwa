@@ -1,6 +1,7 @@
 import { act, renderHook, waitFor } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import type { WorkoutExercise } from '../model';
+import type { WorkoutMutationExecutor } from '../mutations/workoutMutationModel';
 import type { WorkoutExerciseService } from '../workoutExerciseService';
 import { useWorkoutExercises } from './useWorkoutExercises';
 
@@ -33,6 +34,22 @@ describe('useWorkoutExercises', () => {
     await waitFor(() => expect(result.current.status).toBe('ready'));
     expect(api.loadWorkoutExercises).not.toHaveBeenCalled();
     expect(result.current.exercises).toEqual([]);
+  });
+
+
+  it('routes composition writes through the mutation executor when one is provided', async () => {
+    const api = service();
+    const executor: WorkoutMutationExecutor = {
+      execute: vi.fn(async () => ({ state: 'applied' as const, idempotencyKey: '11111111-1111-4111-8111-111111111111' })),
+    };
+    const { result } = renderHook(() => useWorkoutExercises('workout-1', api, executor));
+    await waitFor(() => expect(result.current.status).toBe('ready'));
+
+    await act(async () => { await result.current.addExercise('exercise-2'); });
+
+    expect(executor.execute).toHaveBeenCalledWith({ kind: 'ADD_EXERCISE', payload: { exerciseId: 'exercise-2' } });
+    expect(api.addExercise).not.toHaveBeenCalled();
+    expect(api.loadWorkoutExercises).toHaveBeenCalledTimes(2);
   });
 
   it('reloads authoritative order after a move', async () => {

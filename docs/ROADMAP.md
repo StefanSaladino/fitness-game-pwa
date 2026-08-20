@@ -169,7 +169,7 @@ CSS architecture is also locked in this phase. Existing Phase 5 global selectors
 
 See `docs/DOMAIN-RULES.md` and `docs/CSS-ARCHITECTURE.md`.
 
-### 5.5 Group setup + first real lifting dashboard — IN PROGRESS
+### 5.5 Group setup + first real lifting dashboard — DONE
 
 The lifting-first mobile/desktop/watch concept direction has been explored. Implementation remains componentized and follows the CSS architecture rules even where the concept art is still provisional.
 
@@ -267,7 +267,7 @@ Objective: make logging a real lifting session fast, resilient, and progression-
 
 Apply the UI design gate before coding the workout builder.
 
-### 6.1 Active lifting session — IN PROGRESS
+### 6.1 Active lifting session — DONE
 
 #### 6.1A Session lifecycle foundation — DONE
 
@@ -364,7 +364,7 @@ Primary boundary: preserve the user's in-progress workout locally when connectiv
 
 Exit criteria: refreshing or losing connectivity during an active lift does not make the visible workout disappear.
 
-#### 6.4B Idempotent workout mutation queue — NEXT
+#### 6.4B Idempotent workout mutation queue — DONE
 
 Primary boundary: safely retry workout-capture mutations created while offline or during transient failures.
 
@@ -377,7 +377,7 @@ Primary boundary: safely retry workout-capture mutations created while offline o
 
 Exit criteria: replaying the same queued mutation more than once cannot duplicate persisted workout data.
 
-#### 6.4C Conflict and destructive-edit safety — LATER
+#### 6.4C Conflict and destructive-edit safety — NEXT
 
 Primary boundary: reconcile local and remote workout state without silently overwriting newer data.
 

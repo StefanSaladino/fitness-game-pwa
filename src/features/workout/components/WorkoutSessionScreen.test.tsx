@@ -201,6 +201,22 @@ describe('workout session presentation', () => {
   });
 
 
+
+  it('gates new structural actions while a mutation is pending and exposes an explicit retry', () => {
+    const onRetryMutationQueue = vi.fn(async () => undefined);
+    render(activeScreen({
+      mutationQueuePendingCount: 1,
+      mutationQueueStatus: 'idle',
+      onRetryMutationQueue,
+    }));
+
+    expect(screen.getByRole('status')).toHaveTextContent('1 workout change queued');
+    expect(screen.getByRole('button', { name: 'Add exercise' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Finish workout' })).toBeDisabled();
+    fireEvent.click(screen.getByRole('button', { name: 'Retry sync' }));
+    expect(onRetryMutationQueue).toHaveBeenCalledTimes(1);
+  });
+
   it('keeps the recovered workout visible while clearly gating server-only actions offline', () => {
     render(activeScreen({
       recoveryState: 'offline',
@@ -217,6 +233,7 @@ describe('workout session presentation', () => {
     expect(screen.getByRole('status')).toHaveTextContent('Offline workout copy');
     expect(screen.getByText('Barbell Bench Press')).toBeInTheDocument();
     expect(screen.getByLabelText('Set 1 weight in lb')).toHaveValue(225);
+    expect(screen.getByLabelText('Set 1 weight in lb')).toBeEnabled();
     expect(screen.getByRole('button', { name: 'Add exercise' })).toBeDisabled();
     expect(screen.getByRole('button', { name: 'Pause timer' })).toBeDisabled();
     expect(screen.getByRole('button', { name: 'Finish workout' })).toBeDisabled();

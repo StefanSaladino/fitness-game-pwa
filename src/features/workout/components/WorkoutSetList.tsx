@@ -24,6 +24,7 @@ interface WorkoutSetListProps {
   onRemoveSet: (workoutSetId: string) => Promise<boolean>;
   recoveryDrafts?: Record<string, WorkoutRecoverySetDraft>;
   serverMutationsEnabled?: boolean;
+  setEditsEnabled?: boolean;
   onDraftChange?: (workoutSetId: string, draft: WorkoutRecoverySetDraft) => void;
   onDraftPersisted?: (workoutSetId: string) => void;
 }
@@ -69,10 +70,12 @@ function SetRow({
   onRemoveSet,
   recoveryDraft,
   serverMutationsEnabled = true,
+  setEditsEnabled = true,
   onDraftChange,
   onDraftPersisted,
 }: Omit<WorkoutSetListProps, 'sets' | 'status' | 'onAddSet' | 'recoveryDrafts'> & { set: WorkoutSet; recoveryDraft?: WorkoutRecoverySetDraft }) {
   const [draft, setDraft] = useState<SetDraft>(() => recoveryDraft ?? draftFromSet(set, unit));
+  const draftRef = useRef(draft);
   const [validationError, setValidationError] = useState('');
   const previousUnit = useRef(unit);
   const rowBusy = busy?.targetId === set.id;
@@ -80,31 +83,32 @@ function SetRow({
   const usesExternalLoad = isBodyweight && draft.bodyweightMode !== 'BODYWEIGHT';
 
   useEffect(() => {
-    setDraft(recoveryDraft ?? draftFromSet(set, previousUnit.current));
+    const next = recoveryDraft ?? draftFromSet(set, previousUnit.current);
+    draftRef.current = next;
+    setDraft(next);
     setValidationError('');
   }, [recoveryDraft, set.id, set.setType, set.weightKg, set.reps, set.bodyweightMode, set.completed]);
 
   useEffect(() => {
     if (previousUnit.current === unit) return;
     const priorUnit = previousUnit.current;
-    setDraft((current) => {
-      const canonical = parseWeight(current.weight, priorUnit);
-      const next = {
-        ...current,
-        weight: canonical === null || canonical === 'invalid' ? current.weight : formatWeightInput(canonical, unit),
-      };
-      onDraftChange?.(set.id, next);
-      return next;
-    });
+    const current = draftRef.current;
+    const canonical = parseWeight(current.weight, priorUnit);
+    const next = {
+      ...current,
+      weight: canonical === null || canonical === 'invalid' ? current.weight : formatWeightInput(canonical, unit),
+    };
+    draftRef.current = next;
+    setDraft(next);
+    onDraftChange?.(set.id, next);
     previousUnit.current = unit;
   }, [onDraftChange, set.id, unit]);
 
   const updateDraft = (update: (current: SetDraft) => SetDraft) => {
-    setDraft((current) => {
-      const next = update(current);
-      onDraftChange?.(set.id, next);
-      return next;
-    });
+    const next = update(draftRef.current);
+    draftRef.current = next;
+    setDraft(next);
+    onDraftChange?.(set.id, next);
   };
 
   const buildInput = (completed: boolean, override: Partial<SetDraft> = {}): WorkoutSetInput | null => {
@@ -152,7 +156,7 @@ function SetRow({
   const saveDraft = async (override: Partial<SetDraft> = {}) => {
     const input = buildInput(set.completed, override);
     if (!input) return false;
-    if (!serverMutationsEnabled) return true;
+    if (!setEditsEnabled) return false;
     const saved = await onSaveSet(set.id, input);
     if (saved) onDraftPersisted?.(set.id);
     return saved;
@@ -182,7 +186,7 @@ function SetRow({
         <span>Type</span>
         <select
           aria-label={`Set ${set.setNumber} type`}
-          disabled={Boolean(rowBusy)}
+          disabled={Boolean(rowBusy) || !setEditsEnabled}
           onChange={(event) => {
             const setType = event.target.value as SetDraft['setType'];
             updateDraft((current) => ({ ...current, setType }));
@@ -200,7 +204,7 @@ function SetRow({
           <span>Mode</span>
           <select
             aria-label={`Set ${set.setNumber} bodyweight mode`}
-            disabled={Boolean(rowBusy)}
+            disabled={Boolean(rowBusy) || !setEditsEnabled}
             onChange={(event) => {
               const bodyweightMode = event.target.value as BodyweightLoadMode;
               const nextWeight = bodyweightMode === 'BODYWEIGHT' ? '' : draft.weight;
@@ -221,7 +225,7 @@ function SetRow({
           <span>{usesExternalLoad ? (draft.bodyweightMode === 'ASSISTED' ? 'Assist' : 'Added') : 'Weight'} ({weightUnitLabel(unit)})</span>
           <input
             aria-label={`Set ${set.setNumber} ${usesExternalLoad ? 'load' : 'weight'} in ${weightUnitLabel(unit)}`}
-            disabled={Boolean(rowBusy)}
+            disabled={Boolean(rowBusy) || !setEditsEnabled}
             inputMode="decimal"
             min="0"
             onBlur={() => void saveDraft()}
@@ -238,7 +242,7 @@ function SetRow({
         <span>Reps</span>
         <input
           aria-label={`Set ${set.setNumber} reps`}
-          disabled={Boolean(rowBusy)}
+          disabled={Boolean(rowBusy) || !setEditsEnabled}
           inputMode="numeric"
           min="1"
           onBlur={() => void saveDraft()}
@@ -291,6 +295,7 @@ export function WorkoutSetList(props: WorkoutSetListProps) {
               onSaveSet={props.onSaveSet}
               recoveryDraft={props.recoveryDrafts?.[set.id]}
               serverMutationsEnabled={props.serverMutationsEnabled}
+              setEditsEnabled={props.setEditsEnabled}
               set={set}
               unit={props.unit}
             />

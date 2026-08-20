@@ -1,0 +1,47 @@
+Fitness Game PWA — v0.5.2 / Phase 6.4B Idempotent Workout Mutation Queue
+
+NEW
+- src/features/workout/mutations/workoutMutationModel.ts
+- src/features/workout/mutations/workoutMutationStorage.ts
+- src/features/workout/mutations/workoutMutationService.ts
+- src/features/workout/mutations/workoutMutationReplay.ts
+- src/features/workout/mutations/workoutMutationModel.test.ts
+- src/features/workout/mutations/workoutMutationStorage.test.ts
+- src/features/workout/mutations/workoutMutationService.test.ts
+- src/features/workout/mutations/workoutMutationReplay.test.ts
+- src/features/workout/hooks/useWorkoutMutationQueue.ts
+- src/features/workout/hooks/useWorkoutMutationQueue.test.tsx
+- supabase/migrations/20260820000100_idempotent_workout_mutations.sql
+- supabase/tests/019_idempotent_workout_mutations.test.sql
+- docs/PHASE6.4B-IDEMPOTENT-WORKOUT-MUTATIONS.md
+- README-PHASE6.4B.md
+
+MODIFIED
+- src/features/workout/hooks/useWorkoutExercises.ts
+- src/features/workout/hooks/useWorkoutExercises.test.tsx
+- src/features/workout/hooks/useWorkoutSets.ts
+- src/features/workout/hooks/useWorkoutSets.test.tsx
+- src/features/workout/components/WorkoutController.tsx
+- src/features/workout/components/WorkoutController.test.tsx
+- src/features/workout/components/WorkoutSessionScreen.tsx
+- src/features/workout/components/WorkoutSessionScreen.module.css
+- src/features/workout/components/WorkoutSetList.tsx
+- src/features/workout/components/WorkoutSetList.test.tsx
+- src/features/workout/components/WorkoutSessionScreen.test.tsx
+- src/features/product/ProductController.tsx
+- src/features/workout/index.ts
+- docs/ROADMAP.md
+- scripts/validate-project.cjs
+- package.json
+- package-lock.json
+- README.md
+- CHANGELOG.md
+
+DATABASE
+- new workout_mutation_receipts table
+- new apply_lifting_workout_mutation(uuid, uuid, text, jsonb) RPC
+
+NO SCORING CHANGES
+NO CONFLICT/MERGE ENGINE
+NO OFFLINE FINISH/CANCEL
+NO GLOBAL CSS FEATURE RULES

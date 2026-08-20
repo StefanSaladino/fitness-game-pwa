@@ -17,3 +17,8 @@ export * from './components/WorkoutSetList';
 export * from './recovery/workoutRecoveryModel';
 export * from './recovery/workoutRecoveryStorage';
 export * from './hooks/useWorkoutRecovery';
+export * from './mutations/workoutMutationModel';
+export * from './mutations/workoutMutationStorage';
+export * from './mutations/workoutMutationService';
+export * from './mutations/workoutMutationReplay';
+export * from './hooks/useWorkoutMutationQueue';

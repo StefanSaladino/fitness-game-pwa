@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { WorkoutCompositionAction, WorkoutExercise } from '../model';
+import type { WorkoutMutationExecutor, WorkoutMutationRequest } from '../mutations/workoutMutationModel';
 import { toUserFacingWorkoutError } from '../workoutMessages';
 import { createWorkoutExerciseService, type WorkoutExerciseService } from '../workoutExerciseService';
 
 export type WorkoutExerciseStatus = 'loading' | 'ready' | 'error';
 
-export function useWorkoutExercises(workoutId: string | null, injectedService?: WorkoutExerciseService) {
+export function useWorkoutExercises(workoutId: string | null, injectedService?: WorkoutExerciseService, mutationExecutor?: WorkoutMutationExecutor) {
   const serviceRef = useRef<WorkoutExerciseService | null>(null);
   if (!serviceRef.current) serviceRef.current = injectedService ?? createWorkoutExerciseService();
 
@@ -43,10 +44,20 @@ export function useWorkoutExercises(workoutId: string | null, injectedService?: 
 
   useEffect(() => { void load(); }, [load]);
 
-  const runMutation = useCallback(async (action: Exclude<WorkoutCompositionAction, null>, task: () => Promise<void>) => {
+  const runMutation = useCallback(async (
+    action: Exclude<WorkoutCompositionAction, null>,
+    request: WorkoutMutationRequest,
+    task: () => Promise<void>,
+  ) => {
     setBusyAction(action);
     setError('');
     try {
+      if (mutationExecutor) {
+        const outcome = await mutationExecutor.execute(request);
+        if (outcome.state === 'failed') throw new Error(outcome.error ?? 'Workout change was rejected.');
+        if (outcome.state === 'applied') await load();
+        return true;
+      }
       await task();
       await load();
       return true;
@@ -56,22 +67,26 @@ export function useWorkoutExercises(workoutId: string | null, injectedService?: 
     } finally {
       setBusyAction(null);
     }
-  }, [load]);
+  }, [load, mutationExecutor]);
 
   const addExercise = useCallback(async (exerciseId: string) => {
     if (!workoutId) return false;
-    return runMutation('add', async () => {
+    return runMutation('add', { kind: 'ADD_EXERCISE', payload: { exerciseId } }, async () => {
       await serviceRef.current!.addExercise(workoutId, exerciseId);
     });
   }, [runMutation, workoutId]);
 
-  const removeExercise = useCallback(async (workoutExerciseId: string) => runMutation('remove', async () => {
-    await serviceRef.current!.removeExercise(workoutExerciseId);
-  }), [runMutation]);
+  const removeExercise = useCallback(async (workoutExerciseId: string) => runMutation(
+    'remove',
+    { kind: 'REMOVE_EXERCISE', payload: { workoutExerciseId } },
+    async () => { await serviceRef.current!.removeExercise(workoutExerciseId); },
+  ), [runMutation]);
 
-  const moveExercise = useCallback(async (workoutExerciseId: string, newOrderIndex: number) => runMutation('move', async () => {
-    await serviceRef.current!.moveExercise(workoutExerciseId, newOrderIndex);
-  }), [runMutation]);
+  const moveExercise = useCallback(async (workoutExerciseId: string, newOrderIndex: number) => runMutation(
+    'move',
+    { kind: 'MOVE_EXERCISE', payload: { workoutExerciseId, newOrderIndex } },
+    async () => { await serviceRef.current!.moveExercise(workoutExerciseId, newOrderIndex); },
+  ), [runMutation]);
 
   return { status, exercises, busyAction, error, retry: load, addExercise, removeExercise, moveExercise };
 }

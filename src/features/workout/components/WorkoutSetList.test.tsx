@@ -1,5 +1,5 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
-import type { ComponentProps } from 'react';
+import { useState, type ComponentProps } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import type { WorkoutExercise, WorkoutSet, WorkoutSetInput } from '../model';
 import { WorkoutSetList } from './WorkoutSetList';
@@ -119,19 +119,49 @@ describe('WorkoutSetList', () => {
     expect(screen.getByLabelText('Set 2 reps')).toHaveValue(6);
   });
 
-  it('keeps set-entry drafts editable offline without attempting a server mutation', () => {
-    const onSaveSet = vi.fn(async (_id: string, _input: WorkoutSetInput) => true);
+  it('keeps existing set fields editable while structural offline actions remain gated', async () => {
+    const onSaveSet = vi.fn(async (_id: string, _input: WorkoutSetInput) => false);
     const onDraftChange = vi.fn();
-    render(<WorkoutSetList {...props({ serverMutationsEnabled: false, onSaveSet, onDraftChange })} />);
+    render(<WorkoutSetList {...props({ serverMutationsEnabled: false, setEditsEnabled: true, onSaveSet, onDraftChange })} />);
 
     fireEvent.change(screen.getByLabelText('Set 2 weight in kg'), { target: { value: '107.5' } });
     fireEvent.change(screen.getByLabelText('Set 2 reps'), { target: { value: '3' } });
     fireEvent.blur(screen.getByLabelText('Set 2 reps'));
 
     expect(onDraftChange).toHaveBeenLastCalledWith('set-2', expect.objectContaining({ weight: '107.5', reps: '3' }));
-    expect(onSaveSet).not.toHaveBeenCalled();
+    await waitFor(() => expect(onSaveSet).toHaveBeenCalledWith('set-2', expect.objectContaining({ weightKg: 107.5, reps: 3 })));
     expect(screen.getByRole('button', { name: 'Mark set 2 complete' })).toBeDisabled();
     expect(screen.getByRole('button', { name: 'Copy last set' })).toBeDisabled();
+  });
+
+  it('freezes set fields while recovery is still reconciling', () => {
+    render(<WorkoutSetList {...props({ serverMutationsEnabled: false, setEditsEnabled: false })} />);
+
+    expect(screen.getByLabelText('Set 2 weight in kg')).toBeDisabled();
+    expect(screen.getByLabelText('Set 2 reps')).toBeDisabled();
+  });
+
+  it('notifies recovery state outside the child state updater', () => {
+    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+
+    function Harness() {
+      const [, setLatestDraft] = useState('');
+      return (
+        <WorkoutSetList
+          {...props({
+            onDraftChange: (_setId, draft) => setLatestDraft(`${draft.weight}:${draft.reps}`),
+          })}
+        />
+      );
+    }
+
+    render(<Harness />);
+    fireEvent.change(screen.getByLabelText('Set 2 weight in kg'), { target: { value: '107.5' } });
+
+    expect(
+      consoleError.mock.calls.some(([message]) => String(message).includes('Cannot update a component')),
+    ).toBe(false);
+    consoleError.mockRestore();
   });
 
 });

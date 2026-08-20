@@ -1,5 +1,6 @@
 import { act, renderHook, waitFor } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
+import type { WorkoutMutationExecutor } from '../mutations/workoutMutationModel';
 import type { WorkoutSetService } from '../workoutSetService';
 import { useWorkoutSets } from './useWorkoutSets';
 
@@ -38,6 +39,30 @@ describe('useWorkoutSets', () => {
 
     expect(injected.saveSet).toHaveBeenCalledWith('set-1', expect.objectContaining({ weightKg: 105, reps: 4, completed: true }));
     expect(injected.loadWorkoutSets).toHaveBeenCalledTimes(2);
+  });
+
+
+  it('routes queued saves through the mutation executor and keeps the local row current', async () => {
+    const injected = service();
+    const executor: WorkoutMutationExecutor = {
+      execute: vi.fn(async () => ({ state: 'queued' as const, idempotencyKey: '11111111-1111-4111-8111-111111111111' })),
+    };
+    const { result } = renderHook(() => useWorkoutSets(['we-1'], injected, executor));
+    await waitFor(() => expect(result.current.status).toBe('ready'));
+
+    let saved = true;
+    await act(async () => {
+      saved = await result.current.saveSet('set-1', { setType: 'WORKING', weightKg: 107.5, reps: 3, bodyweightMode: null, completed: false });
+    });
+
+    expect(saved).toBe(false);
+    expect(executor.execute).toHaveBeenCalledWith({
+      kind: 'SAVE_SET',
+      payload: { workoutSetId: 'set-1', setType: 'WORKING', weightKg: 107.5, reps: 3, bodyweightMode: null, completed: false },
+    });
+    expect(injected.saveSet).not.toHaveBeenCalled();
+    expect(result.current.sets[0]).toEqual(expect.objectContaining({ weightKg: 107.5, reps: 3 }));
+    expect(injected.loadWorkoutSets).toHaveBeenCalledTimes(1);
   });
 
   it('stays ready without making a request when the workout has no exercises', async () => {

@@ -502,8 +502,64 @@ ok(/recoveryDrafts/.test(recoverySetList) && /onDraftChange/.test(recoverySetLis
 ok(!/localStorage|supabase/i.test(recoveryScreen), 'workout presentation does not own persistence');
 ok(!/recoveryNotice/.test(read('src/styles/global.css')), 'Phase 6.4A recovery styling is not added to global CSS');
 ok(/6\.4A Local active-workout recovery — DONE/.test(read('docs/ROADMAP.md')), 'roadmap records Phase 6.4A completion');
-ok(/6\.4B Idempotent workout mutation queue — NEXT/.test(read('docs/ROADMAP.md')), 'roadmap advances to the smaller Phase 6.4B queue slice');
+ok(/6\.4B Idempotent workout mutation queue — DONE/.test(read('docs/ROADMAP.md')), 'roadmap records Phase 6.4B queue completion');
 ok(/no general mutation queue/i.test(recoveryDoc) && /no lifting-v1 scoring changes/i.test(recoveryDoc), 'Phase 6.4A documents its reliability non-goals');
+
+
+// Phase 6.4B — idempotent workout mutation queue
+for (const rel of [
+  'src/features/workout/mutations/workoutMutationModel.ts',
+  'src/features/workout/mutations/workoutMutationStorage.ts',
+  'src/features/workout/mutations/workoutMutationService.ts',
+  'src/features/workout/mutations/workoutMutationReplay.ts',
+  'src/features/workout/hooks/useWorkoutMutationQueue.ts',
+  'supabase/migrations/20260820000100_idempotent_workout_mutations.sql',
+  'supabase/tests/019_idempotent_workout_mutations.test.sql',
+  'docs/PHASE6.4B-IDEMPOTENT-WORKOUT-MUTATIONS.md',
+]) ok(fs.existsSync(path.join(root, rel)), `${rel} exists`);
+const mutationModel = read('src/features/workout/mutations/workoutMutationModel.ts');
+const mutationStorage = read('src/features/workout/mutations/workoutMutationStorage.ts');
+const mutationService = read('src/features/workout/mutations/workoutMutationService.ts');
+const mutationReplay = read('src/features/workout/mutations/workoutMutationReplay.ts');
+const mutationHook = read('src/features/workout/hooks/useWorkoutMutationQueue.ts');
+const mutationMigration = read('supabase/migrations/20260820000100_idempotent_workout_mutations.sql');
+const mutationTest = read('supabase/tests/019_idempotent_workout_mutations.test.sql');
+const mutationDoc = read('docs/PHASE6.4B-IDEMPOTENT-WORKOUT-MUTATIONS.md');
+const phase64bPlan = Number((mutationTest.match(/select\s+plan\((\d+)\)/i) || [])[1]);
+const phase64bCount = (mutationTest.match(/select\s+(?:has_table|has_column|has_function|col_is_pk|results_eq|throws_ok|lives_ok|is)\s*\(/gi) || []).length;
+ok(/WORKOUT_MUTATION_QUEUE_VERSION = 1/.test(mutationModel), 'Phase 6.4B versions the queued mutation contract');
+ok(/ADD_EXERCISE/.test(mutationModel) && /SAVE_SET/.test(mutationModel) && /REMOVE_SET/.test(mutationModel), 'mutation model covers exercise and set capture writes');
+ok(/classifyWorkoutMutationError/.test(mutationModel) && /retryable/.test(mutationModel) && /terminal/.test(mutationModel), 'mutation model distinguishes retryable and terminal failures');
+ok(!/React|Supabase|localStorage/.test(mutationModel), 'pure mutation model has no React, Supabase, or browser-storage dependency');
+ok(/fitness-game:workout-mutations:v1:/.test(mutationStorage), 'mutation queue storage is versioned and per-user namespaced');
+ok(/parseWorkoutMutationQueue/.test(mutationStorage) && /removeItem/.test(mutationStorage), 'invalid mutation queues are discarded instead of replayed');
+ok(/while \(queue\.length > 0\)/.test(mutationReplay) && /queue\.shift\(\)/.test(mutationReplay), 'mutation replay preserves FIFO ordering');
+ok(/status: kind === 'terminal' \? 'failed' : 'pending'/.test(mutationReplay), 'terminal failures block while transport failures remain retryable');
+ok(/apply_lifting_workout_mutation/.test(mutationService) && /p_idempotency_key/.test(mutationService), 'client mutation service uses the explicit idempotent RPC boundary');
+ok(/storageRef\.current!\.save\(userId, next\)/.test(mutationHook) && /await replay\(\)/.test(mutationHook), 'queue persists a mutation before attempting replay');
+ok(/addEventListener\('online'/.test(mutationHook), 'queued workout writes automatically retry after reconnect');
+ok(/retryBlocked/.test(mutationHook) && /status: 'pending' as const/.test(mutationHook), 'blocked queued writes require an explicit user retry before replay');
+ok(/useWorkoutMutationQueue/.test(recoveryController) && /mutationQueue\.executor/.test(recoveryController), 'workout controller injects one queue executor into capture hooks');
+const productControllerPhase64b = read('src/features/product/ProductController.tsx');
+ok(
+  /workoutMutationService\s*\?\s*:\s*WorkoutMutationService/.test(productControllerPhase64b)
+    && /mutationService\s*=\s*\{\s*workoutMutationService\s*\}/.test(productControllerPhase64b),
+  'product controller preserves mutation-service injection for integration tests',
+);
+ok(/mutationExecutor\?/.test(workoutSetHook) && /mutationExecutor\?/.test(read('src/features/workout/hooks/useWorkoutExercises.ts')), 'exercise and set hooks support the queue orchestration boundary');
+ok(/mutationQueuePendingCount/.test(recoveryScreen) && /Workout sync needs attention/.test(recoveryScreen), 'workout presentation exposes queued and blocked sync states');
+ok(/setEditsEnabled/.test(recoverySetList), 'existing set edits remain separately controllable from structural offline mutations');
+ok(!/queueNotice/.test(read('src/styles/global.css')), 'Phase 6.4B queue styling remains colocated outside global CSS');
+ok(/create table if not exists public\.workout_mutation_receipts/.test(mutationMigration), 'database stores durable per-user mutation receipts');
+ok(/primary key \(user_id, idempotency_key\)/.test(mutationMigration), 'idempotency uniqueness is scoped per user');
+ok(/request_payload <> v_payload/.test(mutationMigration), 'same idempotency key cannot be reused with a different request');
+ok(/apply_lifting_workout_mutation/.test(mutationMigration) && /grant execute on function public\.apply_lifting_workout_mutation/.test(mutationMigration), 'authenticated clients receive the idempotent mutation gateway');
+ok(/add_lifting_workout_set/.test(mutationMigration) && /copy_lifting_workout_set/.test(mutationMigration) && /save_lifting_workout_set/.test(mutationMigration), 'idempotent gateway delegates set writes to guarded authoritative functions');
+ok(Number.isInteger(phase64bPlan) && phase64bPlan === 26 && phase64bPlan === phase64bCount, 'Phase 6.4B pgTAP plan matches 26 assertions');
+ok(/6\.4B Idempotent workout mutation queue — DONE/.test(read('docs/ROADMAP.md')), 'roadmap records Phase 6.4B completion');
+ok(/6\.4C Conflict and destructive-edit safety — NEXT/.test(read('docs/ROADMAP.md')), 'roadmap advances to Phase 6.4C conflict safety');
+ok(/no scoring reconciliation/i.test(mutationDoc) && /no optimistic local exercise\/set creation/i.test(mutationDoc), 'Phase 6.4B documents scoring and conflict-safety non-goals');
+ok(/"version": "0\.5\.2"/.test(read('package.json')) && /"version": "0\.5\.2"/.test(read('package-lock.json')) && /v0\.5\.2/.test(read('CHANGELOG.md')), 'project metadata records the v0.5.2 checkpoint');
 
 
 // Phase 5.6.1 — targeted user invitations
