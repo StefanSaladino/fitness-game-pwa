@@ -45,26 +45,26 @@ export function useActiveWorkout(userId: string, injectedService?: WorkoutServic
     }
   }, []);
 
-  const start = useCallback(async () => runSessionAction('start', async () => {
-    const workout = await serviceRef.current!.startOrResumeWorkout();
+  const start = useCallback(async (actionAtMs: number = Date.now()) => runSessionAction('start', async () => {
+    const workout = await serviceRef.current!.startOrResumeWorkout(actionAtMs);
     setActiveWorkout(workout);
     setStatus('ready');
     return workout;
   }), [runSessionAction]);
 
-  const pause = useCallback(async () => {
+  const pause = useCallback(async (actionAtMs: number = Date.now()) => {
     if (!activeWorkout) return null;
     return runSessionAction('pause', async () => {
-      const workout = await serviceRef.current!.pauseWorkout(activeWorkout.id);
+      const workout = await serviceRef.current!.pauseWorkout(activeWorkout.id, actionAtMs);
       setActiveWorkout(workout);
       return workout;
     });
   }, [activeWorkout, runSessionAction]);
 
-  const resume = useCallback(async () => {
+  const resume = useCallback(async (actionAtMs: number = Date.now()) => {
     if (!activeWorkout) return null;
     return runSessionAction('resume', async () => {
-      const workout = await serviceRef.current!.resumeWorkout(activeWorkout.id);
+      const workout = await serviceRef.current!.resumeWorkout(activeWorkout.id, actionAtMs);
       setActiveWorkout(workout);
       return workout;
     });

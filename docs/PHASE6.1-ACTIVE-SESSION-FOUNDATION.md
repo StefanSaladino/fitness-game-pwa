@@ -14,19 +14,23 @@ This slice establishes the durable workout-session lifecycle before exercise sel
 
 ## Authorization
 
-Authenticated clients retain RLS-filtered read access to their workout sessions, but direct insert/update/delete privileges are revoked. Session lifecycle writes go through authenticated-only security-definer RPCs:
+Authenticated clients retain RLS-filtered read access to their workout sessions, but direct insert/update/delete privileges are revoked. Session lifecycle writes go through authenticated-only security-definer RPCs. The current browser client uses the intent-aware variants for interactive timing:
 
-- `start_or_resume_lifting_workout()`
-- `pause_lifting_workout(uuid)`
-- `resume_lifting_workout(uuid)`
+- `start_or_resume_lifting_workout_intent(timestamptz)`
+- `pause_lifting_workout_intent(uuid, timestamptz)`
+- `resume_lifting_workout_intent(uuid, timestamptz)`
 - `finish_lifting_workout(uuid)`
 - `cancel_lifting_workout(uuid)`
+
+The original start/pause/resume RPCs remain only for migration compatibility.
 
 Each mutation resolves `auth.uid()` server-side and only acts on that user's active in-app strength workout.
 
 ## Timer model
 
-`active_duration_seconds` stores completed active intervals. `last_resumed_at` marks the beginning of the current running interval. When paused, `paused_at` is populated and `last_resumed_at` is null. The client derives its display timer from this persisted state instead of owning authoritative elapsed time in React.
+`active_duration_seconds` stores completed active intervals. `last_resumed_at` marks the beginning of the current running interval. When paused, `paused_at` is populated and `last_resumed_at` is null.
+
+For Start, Pause, and Resume, the UI captures the timestamp of the user's button action immediately. The intent-aware RPC accepts that timestamp only when it is within a narrow sanity window around server time; otherwise it falls back to server time. This prevents ordinary network latency from adding or removing several seconds from the workout while preserving a server-side authority boundary. The RPC returns the updated session snapshot directly, so no second read is needed before rendering the new timer state.
 
 ## Scope boundary
 

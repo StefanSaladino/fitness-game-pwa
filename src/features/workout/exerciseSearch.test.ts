@@ -8,6 +8,7 @@ const catalog: ExercisePickerItem[] = [
   { id: '3', canonicalName: 'Barbell Bench Press', measurementType: 'WEIGHT_REPS', primaryMuscleGroup: 'CHEST', workoutType: 'BARBELL', aliases: ['Bench Press'], lastUsedAt: '2026-08-17T12:00:00.000Z' },
   { id: '4', canonicalName: 'Dumbbell Bench Press', measurementType: 'WEIGHT_REPS', primaryMuscleGroup: 'CHEST', workoutType: 'DUMBBELL', aliases: ['DB Bench'], lastUsedAt: null },
   { id: '5', canonicalName: 'Box Jump', measurementType: 'OTHER', primaryMuscleGroup: 'QUADS', workoutType: 'PLYOMETRIC', aliases: ['Box Jumps'], lastUsedAt: null },
+  { id: '6', canonicalName: 'Side Plank', measurementType: 'DURATION', primaryMuscleGroup: 'OBLIQUES', workoutType: 'ISOMETRIC', aliases: [], lastUsedAt: null },
 ];
 
 const all = { muscleGroup: '' as const, workoutType: '' as const };
@@ -30,6 +31,11 @@ describe('exercise picker search', () => {
   it('groups the same catalogue by either muscle group or workout type', () => {
     expect(groupExercises(catalog, 'muscle').find((group) => group.label === 'Chest')?.exercises).toHaveLength(2);
     expect(groupExercises(catalog, 'type').find((group) => group.label === 'Barbell')?.exercises).toHaveLength(3);
+  });
+
+  it('treats obliques as a first-class muscle filter', () => {
+    const result = filterAndRankExercises(catalog, { query: '', muscleGroup: 'OBLIQUES', workoutType: '' });
+    expect(result.map((exercise) => exercise.canonicalName)).toEqual(['Side Plank']);
   });
 
   it('sorts recent exercises by persisted last-used time', () => {

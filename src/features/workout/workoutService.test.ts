@@ -34,26 +34,35 @@ describe('workoutService', () => {
     expect(query.eq).toHaveBeenCalledWith('status', 'IN_PROGRESS');
   });
 
-  it('starts through the authoritative RPC then reloads persisted session state', async () => {
-    const query = queryResult(row);
-    const client = { from: vi.fn(() => query), rpc: vi.fn(async () => ({ data: 'workout-1', error: null })) } as never;
-    const workout = await createWorkoutService(client).startOrResumeWorkout();
+  it('starts from the user action timestamp and receives the session snapshot in one RPC', async () => {
+    const rpc = vi.fn(async () => ({ data: row, error: null }));
+    const client = { from: vi.fn(), rpc } as never;
+    const workout = await createWorkoutService(client).startOrResumeWorkout(Date.parse('2026-08-19T22:00:00.000Z'));
 
     expect(workout.id).toBe('workout-1');
-    expect((client as { rpc: ReturnType<typeof vi.fn> }).rpc).toHaveBeenCalledWith('start_or_resume_lifting_workout');
+    expect(rpc).toHaveBeenCalledWith('start_or_resume_lifting_workout_intent', {
+      p_action_at: '2026-08-19T22:00:00.000Z',
+    });
+    expect((client as { from: ReturnType<typeof vi.fn> }).from).not.toHaveBeenCalled();
   });
 
-  it('pauses and resumes through lifecycle RPCs and reloads persisted timer state', async () => {
-    const query = queryResult(row);
-    const rpc = vi.fn(async () => ({ data: 'workout-1', error: null }));
-    const client = { from: vi.fn(() => query), rpc } as never;
+  it('pauses and resumes from user action timestamps without a follow-up select round trip', async () => {
+    const rpc = vi.fn(async () => ({ data: row, error: null }));
+    const client = { from: vi.fn(), rpc } as never;
     const service = createWorkoutService(client);
 
-    await service.pauseWorkout('workout-1');
-    await service.resumeWorkout('workout-1');
+    await service.pauseWorkout('workout-1', Date.parse('2026-08-19T22:01:00.000Z'));
+    await service.resumeWorkout('workout-1', Date.parse('2026-08-19T22:02:00.000Z'));
 
-    expect(rpc).toHaveBeenNthCalledWith(1, 'pause_lifting_workout', { p_workout_id: 'workout-1' });
-    expect(rpc).toHaveBeenNthCalledWith(2, 'resume_lifting_workout', { p_workout_id: 'workout-1' });
+    expect(rpc).toHaveBeenNthCalledWith(1, 'pause_lifting_workout_intent', {
+      p_workout_id: 'workout-1',
+      p_action_at: '2026-08-19T22:01:00.000Z',
+    });
+    expect(rpc).toHaveBeenNthCalledWith(2, 'resume_lifting_workout_intent', {
+      p_workout_id: 'workout-1',
+      p_action_at: '2026-08-19T22:02:00.000Z',
+    });
+    expect((client as { from: ReturnType<typeof vi.fn> }).from).not.toHaveBeenCalled();
   });
 
   it('finishes and cancels only through lifecycle RPCs', async () => {

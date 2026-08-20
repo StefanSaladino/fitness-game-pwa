@@ -15,11 +15,14 @@ function service(): GroupService {
     createGroup: vi.fn(async () => group),
     getMembers: vi.fn(async () => []),
     createInvite: vi.fn(async () => ({
-      id: 'invite-1', groupId: group.id, token: '6ccccccc-cccc-4ccc-8ccc-cccccccccccc',
-      expiresAt: '2099-08-26T20:00:00Z', maxUses: 25, useCount: 0, revokedAt: null,
+      id: 'invite-1', groupId: group.id, invitedUserId: 'member-1', invitedUsername: 'alex',
+      invitedDisplayName: 'Alex', createdAt: '2026-08-20T00:00:00Z',
     })),
     joinByInvite: vi.fn(async () => group.id),
     listInvites: vi.fn(async () => []),
+    listPendingInvites: vi.fn(async () => []),
+    acceptInvite: vi.fn(async () => group.id),
+    declineInvite: vi.fn(async () => undefined),
     renameGroup: vi.fn(async () => undefined),
     revokeInvite: vi.fn(async () => undefined),
     setMemberRole: vi.fn(async () => undefined),
@@ -37,6 +40,7 @@ describe('useGroupAdministration', () => {
     await waitFor(() => expect(result.current.status).toBe('ready'));
     expect(api.getMembers).toHaveBeenCalledWith('group-1');
     expect(api.listInvites).toHaveBeenCalledWith('group-1');
+    expect(api.listPendingInvites).toHaveBeenCalled();
   });
 
   it('does not request private invite administration data for an ordinary member', async () => {
@@ -47,6 +51,7 @@ describe('useGroupAdministration', () => {
     await waitFor(() => expect(result.current.status).toBe('ready'));
     expect(api.getMembers).toHaveBeenCalledWith('group-1');
     expect(api.listInvites).not.toHaveBeenCalled();
+    expect(api.listPendingInvites).toHaveBeenCalled();
   });
 
   it('delegates role changes to the service and refreshes persisted group state', async () => {

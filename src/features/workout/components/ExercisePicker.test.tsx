@@ -16,26 +16,52 @@ function picker(overrides: Partial<ComponentProps<typeof ExercisePicker>> = {}) 
 }
 
 describe('ExercisePicker', () => {
-  it('searches shorthand aliases and adds the canonical exercise', () => {
+  it('opens a dedicated muscle-group screen and filters that group by workout type', () => {
+    render(picker());
+
+    fireEvent.click(screen.getByRole('button', { name: 'Open Chest exercises' }));
+    expect(screen.getByRole('heading', { name: 'Chest exercises' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Back to exercise library' })).toBeInTheDocument();
+
+    fireEvent.change(screen.getByLabelText('Workout type'), { target: { value: 'DUMBBELL' } });
+    expect(screen.getByText('Dumbbell Bench Press')).toBeInTheDocument();
+    expect(screen.queryByText('Barbell Bench Press')).not.toBeInTheDocument();
+    expect(screen.queryByText('Romanian Deadlift')).not.toBeInTheDocument();
+  });
+
+  it('uses the back arrow to return from a muscle-group screen to the top-level selector', () => {
+    render(picker());
+    fireEvent.click(screen.getByRole('button', { name: 'Open Quads exercises' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Back to exercise library' }));
+
+    expect(screen.getByRole('heading', { name: 'Add exercise' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Open Chest exercises' })).toBeInTheDocument();
+  });
+
+  it('keeps a separate Search all exercises path with alias search', () => {
     const onAdd = vi.fn(async () => true);
     render(picker({ onAdd }));
-    fireEvent.change(screen.getByLabelText('Search exercises'), { target: { value: 'rdl' } });
+
+    fireEvent.click(screen.getByRole('button', { name: 'Search all exercises' }));
+    expect(screen.getByRole('heading', { name: 'All exercises' })).toBeInTheDocument();
+    fireEvent.change(screen.getByLabelText('Search all exercises'), { target: { value: 'rdl' } });
     fireEvent.click(screen.getByRole('button', { name: 'Add Romanian Deadlift' }));
     expect(onAdd).toHaveBeenCalledWith('rdl');
   });
 
-  it('can browse by workout type and filter to dumbbell chest exercises', () => {
+  it('uses icon-and-label muscle navigation while keeping workout type text-first on detail screens', () => {
     render(picker());
-    fireEvent.click(screen.getByRole('button', { name: 'Workout types' }));
-    fireEvent.change(screen.getByLabelText('Muscle group'), { target: { value: 'CHEST' } });
-    fireEvent.change(screen.getByLabelText('Workout type'), { target: { value: 'DUMBBELL' } });
-    expect(screen.getByRole('heading', { name: 'Dumbbell' })).toBeInTheDocument();
-    expect(screen.getByText('Dumbbell Bench Press')).toBeInTheDocument();
-    expect(screen.queryByText('Barbell Bench Press')).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Open Chest exercises' }).querySelector('img')).not.toBeNull();
+    expect(screen.getByRole('button', { name: 'Open Obliques exercises' })).toBeInTheDocument();
+    expect(screen.queryByLabelText('Workout type')).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Open Chest exercises' }));
+    expect(screen.getByLabelText('Workout type')).toBeInTheDocument();
   });
 
   it('marks exercises already in the active workout instead of offering a duplicate add', () => {
     render(picker({ selectedExerciseIds: ['bench-bb'] }));
+    fireEvent.click(screen.getByRole('button', { name: 'Search all exercises' }));
     expect(screen.getByRole('button', { name: 'Barbell Bench Press already added' })).toBeDisabled();
   });
 });

@@ -17,7 +17,7 @@ const required = [
   'src/domain/scoring/exerciseXp.ts','src/domain/scoring/cardioBonus.ts','src/domain/scoring/dailyXp.ts','src/styles/tokens.css','src/styles/reset.css','src/styles/base.css',
   'src/features/auth/authService.ts','src/features/auth/AuthProvider.tsx','src/features/auth/AuthScreen.tsx','src/features/auth/ResetPasswordScreen.tsx','src/features/auth/authValidation.ts','src/features/auth/authMessages.ts','src/features/auth/hooks/useAuthActions.ts','src/features/auth/components/AuthLayout.tsx','src/features/auth/components/SignInForm.tsx','src/features/auth/components/SignUpForm.tsx','src/features/auth/components/ForgotPasswordForm.tsx','src/features/auth/components/VerifyEmailPanel.tsx',
   'src/features/onboarding/model.ts','src/features/onboarding/validation.ts','src/features/onboarding/state.ts','src/features/onboarding/onboardingService.ts','src/features/onboarding/timezones.ts','src/features/onboarding/onboardingMessages.ts','src/features/onboarding/hooks/useOnboarding.ts','src/features/onboarding/components/OnboardingForm.tsx','src/features/onboarding/components/OnboardingScreen.tsx','src/features/onboarding/components/WeeklyTargetPicker.tsx',
-  'src/features/groups/model.ts','src/features/groups/validation.ts','src/features/groups/groupMessages.ts','src/features/groups/groupService.ts','src/features/groups/hooks/useGroups.ts','src/features/groups/hooks/useCreateGroup.ts','src/features/groups/hooks/useJoinGroup.ts','src/features/groups/components/CreateGroupForm.tsx','src/features/groups/components/JoinGroupForm.tsx','src/features/groups/components/GroupSetupScreen.tsx','src/features/groups/components/GroupSetupController.tsx','src/features/groups/components/GroupGate.tsx','src/features/groups/components/GroupSetup.module.css','src/features/groups/components/GroupGate.module.css',
+  'src/features/groups/model.ts','src/features/groups/validation.ts','src/features/groups/groupMessages.ts','src/features/groups/groupService.ts','src/features/groups/hooks/useGroups.ts','src/features/groups/hooks/useCreateGroup.ts','src/features/groups/hooks/useJoinGroup.ts','src/features/groups/hooks/usePendingGroupInvites.ts','src/features/groups/components/CreateGroupForm.tsx','src/features/groups/components/JoinGroupForm.tsx','src/features/groups/components/GroupSetupScreen.tsx','src/features/groups/components/GroupSetupController.tsx','src/features/groups/components/GroupGate.tsx','src/features/groups/components/GroupSetup.module.css','src/features/groups/components/GroupGate.module.css',
   'src/features/profile-picture/model.ts','src/features/profile-picture/validation.ts','src/features/profile-picture/profilePictureMessages.ts','src/features/profile-picture/profilePictureService.ts','src/features/profile-picture/hooks/useProfilePicture.ts','src/features/profile-picture/components/ProfilePicture.tsx','src/features/profile-picture/components/ProfilePictureManager.tsx','src/features/profile-picture/components/ProfilePicture.module.css','src/features/profile-picture/components/ProfilePictureManager.module.css',
   'src/features/dashboard/model.ts','src/features/dashboard/dashboardMath.ts','src/features/dashboard/dashboardMessages.ts','src/features/dashboard/dashboardService.ts','src/features/dashboard/hooks/useDashboard.ts','src/features/dashboard/components/DashboardController.tsx','src/features/dashboard/components/DashboardScreen.tsx','src/features/dashboard/components/DashboardScreen.module.css','docs/PHASE5.5D-LIFTING-DASHBOARD.md',
   'src/components/ui/Button.tsx','src/components/ui/Card.tsx','src/components/ui/Icon.tsx','src/components/ui/ProgressBar.tsx','src/components/ui/TextField.tsx','src/components/ui/SelectField.tsx',
@@ -125,13 +125,13 @@ ok(/future native companion/i.test(phase53Doc), 'Phase 5.3A preserves the separa
 ok(/generic password-reset response/i.test(phase53Doc), 'Phase 5.3A documents account-enumeration-safe reset behavior');
 
 const groupService = read('src/features/groups/groupService.ts');
-ok(/join_group_by_invite/.test(groupService), 'group service joins through the authoritative invite RPC');
+ok(/create_group_invite/.test(groupService) && /accept_group_invite/.test(groupService), 'group service uses recipient-targeted invite RPCs');
 ok(!/from\(['"]group_members['"]\)\s*\.insert|from\(['"]group_members['"]\)\s*\.update|from\(['"]group_members['"]\)\s*\.delete/.test(groupService), 'group service does not directly mutate membership rows');
 ok(/Promise\.all/.test(groupService), 'group service aggregates group metadata/member counts without a single-group assumption');
 const useGroups = read('src/features/groups/hooks/useGroups.ts');
 ok(/GroupSummary\[\]/.test(useGroups), 'group loading state is explicitly multi-group');
 ok(/listGroups\(userId\)/.test(useGroups), 'group controller delegates loading to the service');
-for (const rel of ['src/features/groups/hooks/useGroups.ts','src/features/groups/hooks/useCreateGroup.ts','src/features/groups/hooks/useJoinGroup.ts']) {
+for (const rel of ['src/features/groups/hooks/useGroups.ts','src/features/groups/hooks/useCreateGroup.ts','src/features/groups/hooks/useJoinGroup.ts','src/features/groups/hooks/usePendingGroupInvites.ts']) {
   const source = read(rel);
   ok(!/supabase/i.test(source), `${rel} has no direct Supabase dependency`);
 }
@@ -189,7 +189,7 @@ ok(!/getSupabaseClient|createGroupService/.test(groupSetupController), 'GroupSet
 ok(!/getSupabaseClient|createGroupService/.test(groupGate), 'GroupGate delegates group loading through useGroups');
 ok(/validateCreateGroupInput/.test(createGroupForm), 'CreateGroupForm performs local pure validation');
 ok(/validateInviteToken/.test(joinGroupForm), 'JoinGroupForm performs local invite normalization and validation');
-ok(/useCreateGroup/.test(groupSetupController) && /useJoinGroup/.test(groupSetupController), 'GroupSetupController uses focused create/join hooks');
+ok(/useCreateGroup/.test(groupSetupController) && /usePendingGroupInvites/.test(groupSetupController) && !/useJoinGroup/.test(groupSetupController), 'GroupSetupController uses create + targeted pending-invite hooks');
 ok(/useGroups/.test(groupGate), 'GroupGate uses the multi-group loader hook');
 ok(/groups\.length === 0/.test(groupGate), 'GroupGate only requires setup for zero groups');
 ok(/GroupGate/.test(appSource), 'App gates onboarded users through persisted group membership');
@@ -260,7 +260,7 @@ ok(!/supabase/i.test(groupAdministrationScreen), 'group administration presentat
 ok(/ProfilePicture/.test(groupAdministrationScreen), 'group administration reuses real profile pictures');
 ok(/Make admin/.test(groupAdministrationScreen) && /Transfer ownership/.test(groupAdministrationScreen), 'owner role controls are represented in group administration');
 ok(/Leave group/.test(groupAdministrationScreen), 'non-owner leave flow is represented in group administration');
-ok(/listInvites/.test(groupAdministrationHook) && /group\.role === 'OWNER' \|\| group\.role === 'ADMIN'/.test(groupAdministrationHook), 'invite administration is only loaded for owner/admin roles');
+ok(/listInvites/.test(groupAdministrationHook) && /canManage=group\.role==='OWNER'\|\|group\.role==='ADMIN'/.test(groupAdministrationHook), 'outgoing invite administration is only loaded for owner/admin roles');
 ok(/setMemberRole/.test(groupAdministrationHook) && /transferOwnership/.test(groupAdministrationHook), 'group administration hook delegates role/ownership mutations to the service');
 ok(/activeSection/.test(productController) && /selectedGroupId/.test(productController), 'ProductController owns section and selected-group navigation state');
 ok(/DashboardController/.test(productController) && /GroupAdministrationController/.test(productController), 'ProductController composes dashboard and group administration views');
@@ -279,11 +279,11 @@ ok(/service\?: DashboardService/.test(dashboardControllerPhase57), 'DashboardCon
 ok(/useDashboard\([\s\S]*service\)/.test(dashboardControllerPhase57), 'DashboardController forwards the injected service to useDashboard');
 ok(/OnboardingToGroupHarness/.test(phase57Integration), 'Phase 5.7 covers onboarding into group gating');
 ok(/Create group/.test(phase57Integration) && /Your lifting week/.test(phase57Integration), 'Phase 5.7 covers create-group into dashboard');
-ok(/https:\/\/app\.example\.com\/join/.test(phase57Integration), 'Phase 5.7 covers joining from a full invite URL');
-ok(/New invite/.test(phase57Integration) && /Make admin/.test(phase57Integration), 'Phase 5.7 covers owner administration across the integrated journey');
+ok(/invite/i.test(phase57Integration), 'Phase 5.7 retains a group invitation journey');
+ok(/Make admin/.test(phase57Integration), 'Phase 5.7 covers owner administration across the integrated journey');
 const phase57CoversMemberPermissions =
   /member dashboard without admin controls/.test(phase57Integration) &&
-  /New invite/.test(phase57Integration) &&
+  /Send invite/.test(phase57Integration) &&
   /Leave group/.test(phase57Integration);
 
 ok(
@@ -383,12 +383,12 @@ ok(/levenshtein/.test(exerciseSearch), 'exercise search implements deterministic
 ok(/aliases/.test(exerciseSearch), 'exercise search ranks canonical aliases');
 ok(/muscleGroup/.test(exerciseSearch) && /workoutType/.test(exerciseSearch), 'exercise search combines muscle and workout-type filters');
 ok(/groupExercises/.test(exerciseSearch) && /ExerciseBrowseMode/.test(exerciseSearch), 'exercise search groups by the selected browse taxonomy');
-ok(/Muscle groups/.test(exercisePicker) && /Workout types/.test(exercisePicker), 'picker exposes muscle-group and workout-type browse modes');
-ok(/SelectField label="Muscle group"/.test(exercisePicker) && /SelectField label="Workout type"/.test(exercisePicker), 'picker exposes both taxonomy filters');
+ok(/MuscleGroupSelector/.test(exercisePicker) && /Search all exercises/.test(exercisePicker), 'picker exposes muscle-group navigation and all-exercise search');
+ok(/SelectField label="Workout type"/.test(exercisePicker) && /view === 'muscle'/.test(exercisePicker), 'workout type remains text-first inside muscle-group detail screens');
 ok(/Recent/.test(exercisePicker) && /recentExercises/.test(exercisePicker), 'picker includes a user-specific recent exercise section');
 ok(/already added/.test(exercisePicker), 'picker visibly blocks duplicate exercise adds');
 ok(/document\.documentElement\.style\.overflow = 'hidden'/.test(exercisePicker), 'picker locks background scroll while open');
-ok(/event\.key === 'Escape'/.test(exercisePicker), 'picker closes from Escape');
+ok(/event\.key !== 'Escape'/.test(exercisePicker) && /goHome/.test(exercisePicker), 'Escape navigates back from detail before closing the top-level picker');
 ok(!/supabase/i.test(exercisePicker), 'exercise picker presentation has no Supabase dependency');
 ok(exercisePickerCss.length > 1800, 'exercise picker styling is substantial and colocated in a CSS Module');
 ok(!/exercisePicker|resultRow|browseSwitch/.test(read('src/styles/global.css')), 'Phase 6.1C picker selectors are not added to global CSS');
@@ -396,5 +396,59 @@ ok(/pickerService\?: ExercisePickerService/.test(workoutControllerPhase61c), 'wo
 ok(/exercisePickerService\?: ExercisePickerService/.test(productControllerPhase61c), 'product controller preserves picker-service injection for integration tests');
 ok(/Exercise picker integration — DONE/.test(read('docs/ROADMAP.md')), 'roadmap marks exercise picker integration complete');
 ok(/Exercise search — CORE DONE/.test(read('docs/ROADMAP.md')), 'roadmap marks core exercise search complete');
+
+
+// Phase 6.1C.1 / 6.1C.2 — muscle-group navigation + timer intent sync
+const muscleGroupFilter = read('src/features/workout/components/MuscleGroupFilter.tsx');
+const muscleGroupFilterCss = read('src/features/workout/components/MuscleGroupFilter.module.css');
+const phase61c1Migration = read('supabase/migrations/20260819001000_oblique_muscle_group.sql');
+const phase61c1SqlTest = read('supabase/tests/015_muscle_group_icon_taxonomy.test.sql');
+const timerIntentMigration = read('supabase/migrations/20260819001200_workout_timer_intent_sync.sql');
+const timerIntentTest = read('supabase/tests/017_workout_timer_intent_sync.test.sql');
+const workoutScreenPhase61c2 = read('src/features/workout/components/WorkoutSessionScreen.tsx');
+const workoutServicePhase61c2 = read('src/features/workout/workoutService.ts');
+const phase61c1IconDir = path.join(root, 'src/assets/muscle-groups');
+const phase61c1Icons = fs.readdirSync(phase61c1IconDir).filter((name) => name.endsWith('.png'));
+const phase61c1Plan = Number((phase61c1SqlTest.match(/select\s+plan\((\d+)\)/i) || [])[1]);
+const phase61c1Count = (phase61c1SqlTest.match(/select\s+(?:has_table|has_column|has_function|col_is_pk|results_eq|throws_ok|lives_ok|is)\s*\(/gi) || []).length;
+const timerIntentPlan = Number((timerIntentTest.match(/select\s+plan\((\d+)\)/i) || [])[1]);
+const timerIntentCount = (timerIntentTest.match(/select\s+(?:has_table|has_column|has_function|col_is_pk|results_eq|throws_ok|lives_ok|is)\s*\(/gi) || []).length;
+ok(/MuscleGroupSelector/.test(muscleGroupFilter) && /onSelect/.test(muscleGroupFilter), 'muscle icons navigate into dedicated exercise-library screens');
+ok(!/aria-pressed/.test(muscleGroupFilter), 'muscle-group navigation is not represented as a toggle filter');
+ok(/Open \$\{MUSCLE_GROUP_LABELS\[group\]\} exercises/.test(muscleGroupFilter), 'muscle-group destinations expose descriptive accessible names');
+ok(/grid-template-columns: repeat\(3/.test(muscleGroupFilterCss) && /grid-template-columns: repeat\(2/.test(muscleGroupFilterCss), 'muscle selector has phone-first responsive grid fallbacks');
+ok(phase61c1Icons.length === 14, 'muscle selector ships 14 individual transparent PNG assets');
+ok(/background-color: #0b0f14/.test(exercisePickerCss) && (exercisePickerCss.match(/background-color: #0b0f14/g) || []).length >= 2, 'picker panel and sticky surfaces use guaranteed opaque backgrounds');
+ok(/Search all exercises/.test(exercisePicker) && /view === 'muscle'/.test(exercisePicker), 'picker preserves all-exercise search and dedicated muscle detail screens');
+ok(/Back to exercise library/.test(exercisePicker) && /goHome/.test(exercisePicker), 'picker detail screens expose explicit back navigation');
+ok(/SelectField label="Workout type"/.test(exercisePicker), 'muscle detail screens can narrow by workout type');
+ok(/'OBLIQUES'/.test(phase61c1Migration) && /primary_muscle_group = 'OBLIQUES'/.test(phase61c1Migration), 'Phase 6.1C.1 adds real oblique taxonomy');
+ok(Number.isInteger(phase61c1Plan) && phase61c1Plan === 6 && phase61c1Plan === phase61c1Count, 'Phase 6.1C.1 pgTAP plan matches 6 assertions');
+ok(/start_or_resume_lifting_workout_intent/.test(timerIntentMigration) && /pause_lifting_workout_intent/.test(timerIntentMigration) && /resume_lifting_workout_intent/.test(timerIntentMigration), 'timer intent migration adds latency-aware lifecycle RPCs');
+ok(/interval '15 seconds'/.test(timerIntentMigration) && /interval '2 seconds'/.test(timerIntentMigration), 'timer intent timestamps are accepted only inside a narrow server-time window');
+ok(/start_or_resume_lifting_workout_intent/.test(workoutServicePhase61c2) && /pause_lifting_workout_intent/.test(workoutServicePhase61c2), 'workout service uses intent-aware lifecycle RPCs');
+ok(!/loadById/.test(workoutServicePhase61c2), 'start/pause/resume no longer require a second session-select round trip');
+ok(/startingAtMs/.test(workoutScreenPhase61c2) && /pauseIntentAtMs/.test(workoutScreenPhase61c2) && /resumeIntentAtMs/.test(workoutScreenPhase61c2), 'visible timer follows immediate start/pause/resume intent');
+ok(Number.isInteger(timerIntentPlan) && timerIntentPlan === 16 && timerIntentPlan === timerIntentCount, 'timer intent pgTAP plan matches 16 assertions');
+ok(/Picker drill-down \+ timer synchronization — DONE/.test(read('docs/ROADMAP.md')), 'roadmap records picker/timer cleanup completion');
+ok(/Set tracking — NEXT/.test(read('docs/ROADMAP.md')) && /every set is stored independently/.test(read('docs/ROADMAP.md')), 'roadmap locks per-set values before Phase 6.3');
+ok(!/muscleGroupFilter|selectedMark/.test(read('src/styles/global.css')), 'Phase 6.1C cleanup selectors are not added to global CSS');
+
+
+// Phase 5.6.1 — targeted user invitations
+const targetedInviteMigration = read('supabase/migrations/20260819001100_targeted_group_invitations.sql');
+const targetedInviteTest = read('supabase/tests/016_targeted_group_invitations.test.sql');
+const targetedInvitePlan = Number((targetedInviteTest.match(/select\s+plan\((\d+)\)/i)||[])[1]);
+const targetedInviteCount=(targetedInviteTest.match(/select\s+(?:has_table|has_column|has_function|col_is_pk|results_eq|throws_ok|lives_ok|is)\s*\(/gi)||[]).length;
+ok(/profile_code/.test(targetedInviteMigration),'profiles receive stable invite IDs');
+ok(/drop function if exists public\.join_group_by_invite/.test(targetedInviteMigration),'legacy reusable join RPC is retired');
+ok(/create_group_invite/.test(targetedInviteMigration)&&/accept_group_invite/.test(targetedInviteMigration)&&/decline_group_invite/.test(targetedInviteMigration),'targeted invite lifecycle RPCs exist');
+ok((targetedInviteMigration.match(/delete from public\.group_invites/g)||[]).length >= 4,'accept, decline, revoke, and legacy cleanup remove inactive invite rows');
+ok(/Username or invite ID/.test(read('src/features/groups/components/GroupAdministrationScreen.tsx')),'group admin invites one specific user');
+ok(/pending invitations/i.test(read('src/features/groups/components/GroupSetupScreen.tsx')),'zero-group setup exposes recipient inbox');
+ok(/Your invite ID/.test(read('src/features/groups/components/GroupSetupScreen.tsx')) && /Your invite ID/.test(read('src/features/groups/components/GroupAdministrationScreen.tsx')),'stable profile invite ID is visible before and after joining a group');
+ok(/is null or v_role not in/.test(targetedInviteMigration),'targeted invite admin checks reject null/outsider roles');
+ok(!/Copy code/.test(read('src/features/groups/components/GroupAdministrationScreen.tsx')),'group UI does not expose reusable copy-code actions');
+ok(Number.isInteger(targetedInvitePlan) && targetedInvitePlan===targetedInviteCount && targetedInvitePlan>=29,'targeted invitation pgTAP plan covers the full recipient lifecycle');
 
 console.log(`Project structural validation passed: ${assertions} assertions.`);

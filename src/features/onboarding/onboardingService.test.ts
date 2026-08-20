@@ -16,6 +16,7 @@ function createClient(overrides?: {
       weekly_workout_target: 4,
       pending_weekly_workout_target: null,
       onboarding_completed_at: null,
+      profile_code: 'FG-1A2B3C4D5E',
     },
     error: overrides?.profileError ?? null,
   });
@@ -41,6 +42,7 @@ describe('onboarding service', () => {
       weeklyWorkoutTarget: 4,
       pendingWeeklyWorkoutTarget: null,
       onboardingCompletedAt: null,
+      profileCode: 'FG-1A2B3C4D5E',
     });
 
     expect(fake.from).toHaveBeenCalledWith('profiles');

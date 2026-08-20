@@ -1,0 +1,28 @@
+Fitness Game PWA v0.4.5 — picker drill-down + timer intent synchronization
+
+Changed:
+- package.json
+- README.md
+- CHANGELOG.md
+- docs/ROADMAP.md
+- docs/PHASE6.1C.1-MUSCLE-FILTER.md
+- docs/PHASE6.1-ACTIVE-SESSION-FOUNDATION.md
+- scripts/validate-project.cjs
+- src/features/workout/workoutService.ts
+- src/features/workout/workoutService.test.ts
+- src/features/workout/hooks/useActiveWorkout.ts
+- src/features/workout/hooks/useActiveWorkout.test.tsx
+- src/features/workout/components/WorkoutSessionScreen.tsx
+- src/features/workout/components/WorkoutSessionScreen.test.tsx
+- src/features/workout/components/WorkoutSessionScreen.module.css
+- src/features/workout/components/ExercisePicker.tsx
+- src/features/workout/components/ExercisePicker.test.tsx
+- src/features/workout/components/ExercisePicker.module.css
+- src/features/workout/components/MuscleGroupFilter.tsx
+- src/features/workout/components/MuscleGroupFilter.test.tsx
+- src/features/workout/components/MuscleGroupFilter.module.css
+
+New:
+- supabase/migrations/20260819001200_workout_timer_intent_sync.sql
+- supabase/tests/017_workout_timer_intent_sync.test.sql
+- PHASE6.1C.2-PATCH-MANIFEST.txt

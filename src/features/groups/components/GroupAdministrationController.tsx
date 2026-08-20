@@ -56,8 +56,11 @@ export function GroupAdministrationController(props: GroupAdministrationControll
       group={group}
       groups={props.groups}
       invites={administration.invites}
+      pendingInvites={administration.pendingInvites}
       members={administration.members}
       onCreateInvite={administration.createInvite}
+      onAcceptInvite={administration.acceptInvite}
+      onDeclineInvite={administration.declineInvite}
       onLeaveGroup={async () => { const result = await administration.leaveGroup(); if (result !== null) props.onNavigate('home'); return result; }}
       onNavigate={props.onNavigate}
       onRemoveMember={administration.removeMember}

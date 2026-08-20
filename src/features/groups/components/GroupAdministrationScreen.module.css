@@ -163,3 +163,6 @@
   .renameForm { grid-template-columns: 1fr; }
   .sectionHeader { align-items: start; flex-direction: column; gap: 8px; }
 }
+
+.inviteForm { display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:end;max-width:720px;margin-bottom:18px; }
+@media(max-width:760px){.inviteForm{grid-template-columns:1fr;}}

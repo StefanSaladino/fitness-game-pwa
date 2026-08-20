@@ -39,7 +39,7 @@ function ProfileGate({ userId }: { userId: string }) {
   }
 
   return (
-    <GroupGate userId={userId}>
+    <GroupGate profileCode={onboarding.profile.profileCode} userId={userId}>
       {(groups, refreshGroups) => <ProductController groups={groups} onGroupsChanged={refreshGroups} profile={onboarding.profile!} />}
     </GroupGate>
   );

@@ -2,8 +2,8 @@ import type { ExerciseBrowseMode, ExerciseMuscleGroup, ExercisePickerItem, Exerc
 
 export const MUSCLE_GROUP_LABELS: Record<ExerciseMuscleGroup, string> = {
   CHEST: 'Chest', BACK: 'Back', SHOULDERS: 'Shoulders', BICEPS: 'Biceps', TRICEPS: 'Triceps',
-  QUADS: 'Quads', HAMSTRINGS: 'Hamstrings', GLUTES: 'Glutes', CALVES: 'Calves', CORE: 'Core',
-  FOREARMS_GRIP: 'Forearms / grip', NECK: 'Neck', FULL_BODY: 'Full body', OTHER: 'Other',
+  QUADS: 'Quads', HAMSTRINGS: 'Hamstrings', GLUTES: 'Glutes', CALVES: 'Calves', CORE: 'Core / abs',
+  OBLIQUES: 'Obliques', FOREARMS_GRIP: 'Forearms / grip', NECK: 'Neck', FULL_BODY: 'Full body', OTHER: 'Other',
 };
 
 export const WORKOUT_TYPE_LABELS: Record<ExerciseWorkoutType, string> = {

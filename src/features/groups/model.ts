@@ -22,25 +22,28 @@ export interface GroupMember {
 export interface GroupInvite {
   id: string;
   groupId: string;
-  token: string;
-  expiresAt: string;
-  maxUses: number;
-  useCount: number;
-  revokedAt: string | null;
-}
-
-export interface ManagedGroupInvite extends GroupInvite {
+  invitedUserId: string;
+  invitedUsername: string;
+  invitedDisplayName: string;
   createdAt: string;
 }
 
-export interface CreateGroupInput {
-  name: string;
+export type ManagedGroupInvite = GroupInvite;
+
+export interface PendingGroupInvite {
+  id: string;
+  groupId: string;
+  groupName: string;
+  invitedByUserId: string;
+  invitedByUsername: string;
+  invitedByDisplayName: string;
+  createdAt: string;
 }
 
-export interface CreateInviteOptions {
-  maxUses?: number;
-  expiresAt?: string;
-}
+export interface CreateGroupInput { name: string; }
+
+/** Retained only for source compatibility; targeted invites no longer use these fields. */
+export interface CreateInviteOptions { maxUses?: number; expiresAt?: string; }
 
 export interface GroupValidationIssue {
   field: 'name' | 'inviteToken' | 'maxUses' | 'expiresAt';

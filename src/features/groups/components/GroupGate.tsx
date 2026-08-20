@@ -10,9 +10,10 @@ interface GroupGateProps {
   userId: string;
   children(groups: GroupSummary[], refreshGroups: () => Promise<GroupSummary[] | null>): ReactNode;
   service?: GroupService;
+  profileCode?: string;
 }
 
-export function GroupGate({ userId, children, service }: GroupGateProps) {
+export function GroupGate({ userId, children, service, profileCode }: GroupGateProps) {
   const groupState = useGroups(userId, service);
 
   if (groupState.status === 'loading') {
@@ -43,6 +44,7 @@ export function GroupGate({ userId, children, service }: GroupGateProps) {
         onMembershipReady={groupState.retry}
         service={service}
         userId={userId}
+        profileCode={profileCode}
       />
     );
   }

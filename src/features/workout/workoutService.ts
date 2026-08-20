@@ -19,9 +19,9 @@ const ACTIVE_COLUMNS = 'id, user_id, status, started_at, ended_at, active_durati
 
 export interface WorkoutService {
   loadActiveWorkout(userId: string): Promise<ActiveWorkoutSession | null>;
-  startOrResumeWorkout(): Promise<ActiveWorkoutSession>;
-  pauseWorkout(workoutId: string): Promise<ActiveWorkoutSession>;
-  resumeWorkout(workoutId: string): Promise<ActiveWorkoutSession>;
+  startOrResumeWorkout(actionAtMs?: number): Promise<ActiveWorkoutSession>;
+  pauseWorkout(workoutId: string, actionAtMs?: number): Promise<ActiveWorkoutSession>;
+  resumeWorkout(workoutId: string, actionAtMs?: number): Promise<ActiveWorkoutSession>;
   finishWorkout(workoutId: string): Promise<void>;
   cancelWorkout(workoutId: string): Promise<void>;
 }
@@ -41,18 +41,31 @@ function mapWorkout(row: WorkoutRow): ActiveWorkoutSession {
   };
 }
 
-export function createWorkoutService(client: SupabaseClient = getSupabaseClient()): WorkoutService {
-  const loadById = async (workoutId: string): Promise<ActiveWorkoutSession> => {
-    const result = await client
-      .from('workout_sessions')
-      .select(ACTIVE_COLUMNS)
-      .eq('id', workoutId)
-      .single();
-    if (result.error) throw result.error;
-    if (!result.data) throw new Error('Workout session was not found.');
-    return mapWorkout(result.data as WorkoutRow);
-  };
+function mapRpcWorkout(data: unknown): ActiveWorkoutSession {
+  if (!data || typeof data !== 'object' || Array.isArray(data)) {
+    throw new Error('Workout lifecycle did not return a session snapshot.');
+  }
+  const row = data as Partial<WorkoutRow>;
+  if (
+    typeof row.id !== 'string'
+    || typeof row.user_id !== 'string'
+    || typeof row.status !== 'string'
+    || typeof row.started_at !== 'string'
+    || typeof row.active_duration_seconds !== 'number'
+    || typeof row.timezone_at_start !== 'string'
+    || typeof row.scoring_date !== 'string'
+  ) {
+    throw new Error('Workout lifecycle returned an invalid session snapshot.');
+  }
+  return mapWorkout(row as WorkoutRow);
+}
 
+function actionTimestamp(actionAtMs?: number): string {
+  const value = Number.isFinite(actionAtMs) ? actionAtMs! : Date.now();
+  return new Date(value).toISOString();
+}
+
+export function createWorkoutService(client: SupabaseClient = getSupabaseClient()): WorkoutService {
   return {
     async loadActiveWorkout(userId) {
       const result = await client
@@ -70,23 +83,30 @@ export function createWorkoutService(client: SupabaseClient = getSupabaseClient(
       return result.data ? mapWorkout(result.data as WorkoutRow) : null;
     },
 
-    async startOrResumeWorkout() {
-      const result = await client.rpc('start_or_resume_lifting_workout');
+    async startOrResumeWorkout(actionAtMs) {
+      const result = await client.rpc('start_or_resume_lifting_workout_intent', {
+        p_action_at: actionTimestamp(actionAtMs),
+      });
       if (result.error) throw result.error;
-      if (typeof result.data !== 'string') throw new Error('Workout start did not return a session id.');
-      return loadById(result.data);
+      return mapRpcWorkout(result.data);
     },
 
-    async pauseWorkout(workoutId) {
-      const result = await client.rpc('pause_lifting_workout', { p_workout_id: workoutId });
+    async pauseWorkout(workoutId, actionAtMs) {
+      const result = await client.rpc('pause_lifting_workout_intent', {
+        p_workout_id: workoutId,
+        p_action_at: actionTimestamp(actionAtMs),
+      });
       if (result.error) throw result.error;
-      return loadById(workoutId);
+      return mapRpcWorkout(result.data);
     },
 
-    async resumeWorkout(workoutId) {
-      const result = await client.rpc('resume_lifting_workout', { p_workout_id: workoutId });
+    async resumeWorkout(workoutId, actionAtMs) {
+      const result = await client.rpc('resume_lifting_workout_intent', {
+        p_workout_id: workoutId,
+        p_action_at: actionTimestamp(actionAtMs),
+      });
       if (result.error) throw result.error;
-      return loadById(workoutId);
+      return mapRpcWorkout(result.data);
     },
 
     async finishWorkout(workoutId) {

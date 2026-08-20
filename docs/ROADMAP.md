@@ -204,7 +204,7 @@ See `docs/PHASE5.5D-LIFTING-DASHBOARD.md`.
 - product-level Home / Groups navigation boundary;
 - multi-group switcher without introducing a single-group assumption;
 - active member list with real PFPs and role labels;
-- owner/admin invite creation, usage visibility, copy, and revocation;
+- owner/admin targeted invitation by username or stable profile invite ID;
 - owner-only promote/demote and ownership-transfer controls;
 - owner/admin member-removal controls matching database permissions;
 - non-owner leave-group flow; owners must transfer ownership first;
@@ -212,13 +212,24 @@ See `docs/PHASE5.5D-LIFTING-DASHBOARD.md`.
 - explicit authenticated-only EXECUTE grants for membership-mutating RPCs;
 - all new group administration styling remains colocated in CSS Modules.
 
+#### 5.6.1 Targeted user invitations — DONE
+
+- invite a specific user by canonical username or stable `FG-...` profile invite ID;
+- each profile receives a stable invite ID that is not a reusable group secret;
+- recipients see pending invitations and explicitly Accept or Decline;
+- accepting creates/reactivates MEMBER membership and removes the invitation row;
+- declining removes the invitation row;
+- revoking removes the invitation row;
+- the invite table represents pending invitations only;
+- the old reusable token/URL join flow is retired from the active product.
+
 ### 5.7 Phase 5 integration validation — DONE
 
 - onboarding -> persisted group setup transition
 - zero-group -> create -> membership refresh -> lifting dashboard
-- zero-group -> full invite URL -> join -> membership refresh -> lifting dashboard
-- owner invite and member-promotion controls across real controllers/hooks
-- member presentation excludes admin invite controls and preserves leave-group access
+- zero-group -> recipient pending invite -> accept -> membership refresh -> lifting dashboard
+- owner targeted-invite and member-promotion controls across real controllers/hooks
+- member presentation excludes outgoing invite controls, preserves incoming accept/decline, and preserves leave-group access
 - service-level scalable member-count coverage remains green
 - pgTAP/RLS/RPC permission suites remain the authority for database authorization
 - onboarding labels continue to describe lifting-day targets
@@ -274,13 +285,39 @@ Apply the UI design gate before coding the workout builder.
 - favorite/unfavorite canonical exercises
 - favorites shortcut in the picker without changing exercise identity
 
-### 6.3 Set tracking
+#### 6.1C.1 Muscle group icon integration — DONE
 
+- replace plain-text muscle-group choices with compact icon + visible-label controls
+- cover Chest, Back, Shoulders, Biceps, Triceps, Forearms/Grip, Core/Abs, Obliques, Quads, Hamstrings, Glutes, Calves, Neck, and Full Body
+- keep workout-type filtering intentionally simpler and text-first (Barbell, Dumbbell, Kettlebell, Cable, Machine, Plyometric, etc.)
+- phone-first responsive layout: compact 2-3 column muscle grid; desktop wraps cleanly without oversized cards
+- use individual transparent assets; SVG preferred, optimized transparent PNG acceptable
+- keep visual treatment restrained: no glow, decorative feature cards, or unnecessary shadow/chrome
+- icons remain a picker affordance only; do not spread muscle illustrations throughout unrelated app surfaces
+- exercise picker panel is fully opaque; only the outside backdrop may be translucent
+
+#### 6.1C.2 Picker drill-down + timer synchronization — DONE
+
+- muscle-group icons are navigation destinations, not toggle filters
+- selecting a muscle group opens a dedicated exercise-library screen for that group
+- the muscle-group screen can be narrowed further by workout/equipment type
+- Search all exercises remains a separate top-level path across the entire canonical catalogue
+- detail screens provide an explicit back arrow to return to the top-level exercise selector
+- Escape returns from a detail screen before closing the picker from its top level
+- workout start shows an immediate local timer while the start request is in flight
+- pause freezes at the exact user click timestamp; resume begins locally at the exact user click timestamp
+- intent-aware lifecycle RPCs use a narrowly bounded client action timestamp so network transport time is not counted as workout time
+- intent-aware start/pause/resume RPCs return the session snapshot directly, removing the extra follow-up select round trip
+
+### 6.3 Set tracking — NEXT
+
+- every set is stored independently; an exercise never has one shared weight/reps value for all sets
 - warmup vs working sets
-- weight/reps
-- bodyweight reps
+- per-set weight and reps (for example 135 × 10, 185 × 8, 205 × 6 in the same exercise)
+- bodyweight reps and supported bodyweight loading modes
 - completed set state
-- duplicate/copy previous set conveniences
+- add/remove sets and preserve stable set ordering
+- duplicate/copy previous set conveniences without forcing copied values to stay linked
 - unit display conversion without changing canonical stored units
 
 ### 6.4 Workout reliability
@@ -396,3 +433,4 @@ Wearables never increase scoring simply because a device was used.
 - privacy/data export/delete
 - backup/restore drills
 - larger-group query/performance testing
+

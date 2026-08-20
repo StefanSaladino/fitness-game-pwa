@@ -81,3 +81,18 @@ Authoritative scoring writes will be performed through controlled server/databas
 ## Dashboard read model
 
 Phase 5.5D adds `get_group_lifting_leaderboard(group_id, week_start)`. The function is `SECURITY DEFINER`, requires the caller to be an active member of the requested group, and returns only active group members with their lifting-v1 XP total for the supplied Monday-Sunday scoring week. It exists because raw `scoring_events` remain self-readable only under RLS; the dashboard must not weaken that policy just to render a group leaderboard.
+
+
+## Targeted group invitations (v0.4.4)
+
+`profiles.profile_code` is a stable, system-assigned `FG-...` identifier. It is an alternate lookup key for inviting a specific user; it is **not** a reusable group join secret.
+
+`group_invites` now represents pending recipient-specific invitations only:
+
+- one pending row per `(group_id, invited_user_id)`;
+- owners/admins create invitations by username or profile invite ID through `create_group_invite`;
+- recipients read their inbox through `get_my_pending_group_invites`;
+- recipients explicitly accept or decline;
+- accept, decline, and revoke hard-delete the invite row;
+- direct authenticated table mutation is revoked;
+- the old token/URL `join_group_by_invite` flow is retired.

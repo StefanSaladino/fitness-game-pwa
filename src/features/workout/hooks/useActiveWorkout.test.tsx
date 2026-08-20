@@ -37,15 +37,24 @@ describe('useActiveWorkout', () => {
     expect(result.current.activeWorkout?.id).toBe('workout-1');
   });
 
-  it('persists pause/resume state through the service', async () => {
+  it('forwards exact pause/resume button timestamps to the service', async () => {
     const api = service({ loadActiveWorkout: vi.fn(async () => active) });
     const { result } = renderHook(() => useActiveWorkout('user-1', api));
     await waitFor(() => expect(result.current.activeWorkout).not.toBeNull());
 
-    await act(async () => { await result.current.pause(); });
-    expect(result.current.activeWorkout?.pausedAt).not.toBeNull();
-    await act(async () => { await result.current.resume(); });
-    expect(result.current.activeWorkout?.lastResumedAt).not.toBeNull();
+    await act(async () => { await result.current.pause(1_000); });
+    expect(api.pauseWorkout).toHaveBeenCalledWith('workout-1', 1_000);
+    await act(async () => { await result.current.resume(2_000); });
+    expect(api.resumeWorkout).toHaveBeenCalledWith('workout-1', 2_000);
+  });
+
+  it('forwards the exact start button timestamp instead of waiting for the network', async () => {
+    const api = service();
+    const { result } = renderHook(() => useActiveWorkout('user-1', api));
+    await waitFor(() => expect(result.current.status).toBe('ready'));
+
+    await act(async () => { await result.current.start(3_000); });
+    expect(api.startOrResumeWorkout).toHaveBeenCalledWith(3_000);
   });
 
   it('clears local active state only after finish succeeds', async () => {

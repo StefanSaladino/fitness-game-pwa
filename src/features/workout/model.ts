@@ -31,7 +31,7 @@ export type WorkoutCompositionAction = 'add' | 'remove' | 'move' | null;
 
 export type ExerciseMuscleGroup =
   | 'CHEST' | 'BACK' | 'SHOULDERS' | 'BICEPS' | 'TRICEPS' | 'QUADS' | 'HAMSTRINGS'
-  | 'GLUTES' | 'CALVES' | 'CORE' | 'FOREARMS_GRIP' | 'NECK' | 'FULL_BODY' | 'OTHER';
+  | 'GLUTES' | 'CALVES' | 'CORE' | 'OBLIQUES' | 'FOREARMS_GRIP' | 'NECK' | 'FULL_BODY' | 'OTHER';
 
 export type ExerciseWorkoutType =
   | 'BARBELL' | 'DUMBBELL' | 'KETTLEBELL' | 'MACHINE' | 'CABLE' | 'BODYWEIGHT'

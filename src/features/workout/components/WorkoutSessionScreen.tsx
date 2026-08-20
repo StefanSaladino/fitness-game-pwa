@@ -18,7 +18,7 @@ interface SharedProps {
 }
 
 interface StartProps extends SharedProps {
-  onStart: () => Promise<unknown>;
+  onStart: (actionAtMs?: number) => Promise<unknown>;
 }
 
 interface ActiveProps extends SharedProps {
@@ -35,8 +35,8 @@ interface ActiveProps extends SharedProps {
   onMoveExercise: (workoutExerciseId: string, newOrderIndex: number) => Promise<boolean>;
   onRemoveExercise: (workoutExerciseId: string) => Promise<boolean>;
   onRetryExercisePicker: () => Promise<ExercisePickerItem[]>;
-  onPause: () => Promise<unknown>;
-  onResume: () => Promise<unknown>;
+  onPause: (actionAtMs?: number) => Promise<unknown>;
+  onResume: (actionAtMs?: number) => Promise<unknown>;
   onFinish: () => Promise<unknown>;
   onCancel: () => Promise<unknown>;
 }
@@ -49,14 +49,36 @@ function WorkoutShell({ profile, onNavigate, onSignOut, children }: SharedProps 
   );
 }
 
-function useWorkoutClock(workout: ActiveWorkoutSession): number {
+function useStartingClock(startingAtMs: number | null): number {
   const [now, setNow] = useState(() => Date.now());
   useEffect(() => {
-    if (workout.pausedAt) return undefined;
+    if (startingAtMs === null) return undefined;
     setNow(Date.now());
-    const timer = window.setInterval(() => setNow(Date.now()), 1000);
+    const timer = window.setInterval(() => setNow(Date.now()), 250);
     return () => window.clearInterval(timer);
-  }, [workout.id, workout.pausedAt, workout.lastResumedAt]);
+  }, [startingAtMs]);
+  if (startingAtMs === null) return 0;
+  return Math.max(0, Math.floor((now - startingAtMs) / 1000));
+}
+
+function useWorkoutClock(workout: ActiveWorkoutSession, pauseIntentAtMs: number | null, resumeIntentAtMs: number | null): number {
+  const [now, setNow] = useState(() => Date.now());
+  const locallyRunningFromResume = resumeIntentAtMs !== null && workout.pausedAt !== null;
+  const locallyFrozenAtPause = pauseIntentAtMs !== null && workout.pausedAt === null;
+  const shouldTick = locallyRunningFromResume || (!workout.pausedAt && !locallyFrozenAtPause);
+
+  useEffect(() => {
+    if (!shouldTick) return undefined;
+    setNow(Date.now());
+    const timer = window.setInterval(() => setNow(Date.now()), 250);
+    return () => window.clearInterval(timer);
+  }, [workout.id, workout.pausedAt, workout.lastResumedAt, shouldTick, resumeIntentAtMs]);
+
+  if (locallyFrozenAtPause) return elapsedWorkoutSeconds(workout, pauseIntentAtMs);
+  if (locallyRunningFromResume) {
+    const persisted = Math.max(0, Math.floor(workout.activeDurationSeconds));
+    return persisted + Math.max(0, Math.floor((now - resumeIntentAtMs) / 1000));
+  }
   return elapsedWorkoutSeconds(workout, now);
 }
 
@@ -70,15 +92,34 @@ function measurementLabel(exercise: WorkoutExercise): string {
 }
 
 export function WorkoutStartScreen(props: StartProps) {
+  const [startingAtMs, setStartingAtMs] = useState<number | null>(null);
+  const startingSeconds = useStartingClock(startingAtMs);
+
+  useEffect(() => {
+    if (startingAtMs !== null && props.busyAction !== 'start' && props.error) setStartingAtMs(null);
+  }, [props.busyAction, props.error, startingAtMs]);
+
+  const startNow = () => {
+    const actionAtMs = Date.now();
+    setStartingAtMs(actionAtMs);
+    void props.onStart(actionAtMs);
+  };
+
   return (
     <WorkoutShell {...props}>
       <main className={styles.start}>
         <p className={styles.kicker}>WORKOUT</p>
         <h1>Start a lift</h1>
         <p>Start the session now. If a workout is already active on your account, this resumes it instead of creating a duplicate.</p>
+        {startingAtMs !== null && (
+          <div className={styles.startingClock} role="status">
+            <span>Starting workout</span>
+            <time dateTime={`PT${startingSeconds}S`}>{formatWorkoutDuration(startingSeconds)}</time>
+          </div>
+        )}
         {props.error && <p className={styles.error} role="alert">{props.error}</p>}
-        <Button disabled={props.busyAction !== null} onClick={() => void props.onStart()}>
-          {props.busyAction === 'start' ? 'Starting…' : 'Start Lift'}
+        <Button disabled={props.busyAction !== null || startingAtMs !== null} onClick={startNow}>
+          {props.busyAction === 'start' || startingAtMs !== null ? 'Starting…' : 'Start Lift'}
         </Button>
       </main>
     </WorkoutShell>
@@ -87,10 +128,37 @@ export function WorkoutStartScreen(props: StartProps) {
 
 export function ActiveWorkoutScreen(props: ActiveProps) {
   const [pickerOpen, setPickerOpen] = useState(false);
-  const seconds = useWorkoutClock(props.workout);
-  const isPaused = props.workout.pausedAt !== null;
+  const [pauseIntentAtMs, setPauseIntentAtMs] = useState<number | null>(null);
+  const [resumeIntentAtMs, setResumeIntentAtMs] = useState<number | null>(null);
+  const seconds = useWorkoutClock(props.workout, pauseIntentAtMs, resumeIntentAtMs);
+  const persistedPaused = props.workout.pausedAt !== null;
+  const displayPaused = persistedPaused && resumeIntentAtMs === null;
   const lifecycleBusy = props.busyAction !== null;
   const compositionBusy = props.compositionBusyAction !== null;
+
+  useEffect(() => {
+    if (pauseIntentAtMs !== null && props.busyAction !== 'pause' && (props.workout.pausedAt !== null || props.error)) {
+      setPauseIntentAtMs(null);
+    }
+  }, [pauseIntentAtMs, props.busyAction, props.error, props.workout.pausedAt]);
+
+  useEffect(() => {
+    if (resumeIntentAtMs !== null && props.busyAction !== 'resume' && (props.workout.pausedAt === null || props.error)) {
+      setResumeIntentAtMs(null);
+    }
+  }, [resumeIntentAtMs, props.busyAction, props.error, props.workout.pausedAt]);
+
+  const pauseNow = () => {
+    const actionAtMs = Date.now();
+    setPauseIntentAtMs(actionAtMs);
+    void props.onPause(actionAtMs);
+  };
+
+  const resumeNow = () => {
+    const actionAtMs = Date.now();
+    setResumeIntentAtMs(actionAtMs);
+    void props.onResume(actionAtMs);
+  };
 
   return (
     <WorkoutShell {...props}>
@@ -98,7 +166,7 @@ export function ActiveWorkoutScreen(props: ActiveProps) {
         <header className={styles.activeHeader}>
           <div>
             <p className={styles.kicker}>ACTIVE LIFT</p>
-            <h1>{isPaused ? 'Workout paused' : 'Workout in progress'}</h1>
+            <h1>{displayPaused ? 'Workout paused' : 'Workout in progress'}</h1>
           </div>
           <time className={styles.timer} dateTime={`PT${seconds}S`}>{formatWorkoutDuration(seconds)}</time>
         </header>
@@ -106,7 +174,7 @@ export function ActiveWorkoutScreen(props: ActiveProps) {
         <section className={styles.sessionMeta} aria-label="Workout session state">
           <div><span>Started</span><strong>{new Intl.DateTimeFormat('en-CA', { hour: 'numeric', minute: '2-digit' }).format(new Date(props.workout.startedAt))}</strong></div>
           <div><span>Scoring date</span><strong>{props.workout.scoringDate}</strong></div>
-          <div><span>Timer</span><strong>{isPaused ? 'Paused' : 'Running'}</strong></div>
+          <div><span>Timer</span><strong>{displayPaused ? 'Paused' : 'Running'}</strong></div>
         </section>
 
         <section className={styles.exerciseStage} aria-labelledby="workout-exercises-heading">
@@ -186,11 +254,11 @@ export function ActiveWorkoutScreen(props: ActiveProps) {
 
         {props.error && <p className={styles.error} role="alert">{props.error}</p>}
 
-        <div className={styles.primaryActions}>
-          {isPaused ? (
-            <Button disabled={lifecycleBusy} onClick={() => void props.onResume()}>{props.busyAction === 'resume' ? 'Resuming…' : 'Resume timer'}</Button>
+        <div className={styles.lifecycleActions}>
+          {persistedPaused ? (
+            <Button disabled={lifecycleBusy} onClick={resumeNow}>{props.busyAction === 'resume' ? 'Resuming…' : 'Resume timer'}</Button>
           ) : (
-            <Button disabled={lifecycleBusy} onClick={() => void props.onPause()} variant="secondary">{props.busyAction === 'pause' ? 'Pausing…' : 'Pause timer'}</Button>
+            <Button disabled={lifecycleBusy} onClick={pauseNow}>{props.busyAction === 'pause' ? 'Pausing…' : 'Pause timer'}</Button>
           )}
           <Button disabled={lifecycleBusy} onClick={() => void props.onFinish()}>{props.busyAction === 'finish' ? 'Finishing…' : 'Finish workout'}</Button>
         </div>

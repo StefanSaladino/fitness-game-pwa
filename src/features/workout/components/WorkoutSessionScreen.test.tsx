@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen } from '@testing-library/react';
 import type { ComponentProps } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import type { OnboardingProfile } from '../../onboarding';
@@ -56,11 +56,22 @@ function activeScreen(overrides: Partial<ComponentProps<typeof ActiveWorkoutScre
 }
 
 describe('workout session presentation', () => {
-  it('starts a lift from the dedicated workout surface', () => {
-    const onStart = vi.fn(async () => undefined);
-    render(<WorkoutStartScreen busyAction={null} error="" onNavigate={() => undefined} onSignOut={() => undefined} onStart={onStart} profile={profile} />);
-    fireEvent.click(screen.getByRole('button', { name: 'Start Lift' }));
-    expect(onStart).toHaveBeenCalledOnce();
+  it('starts the visible clock immediately while session creation is still in flight', () => {
+    vi.useFakeTimers();
+    try {
+      vi.setSystemTime('2026-08-19T20:00:00.000Z');
+      const onStart = vi.fn(() => new Promise<unknown>(() => undefined));
+      render(<WorkoutStartScreen busyAction={null} error="" onNavigate={() => undefined} onSignOut={() => undefined} onStart={onStart} profile={profile} />);
+
+      fireEvent.click(screen.getByRole('button', { name: 'Start Lift' }));
+      expect(onStart).toHaveBeenCalledWith(Date.parse('2026-08-19T20:00:00.000Z'));
+      expect(screen.getByText('00:00')).toBeInTheDocument();
+
+      act(() => vi.advanceTimersByTime(4_000));
+      expect(screen.getByText('00:04')).toBeInTheDocument();
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it('shows a running persisted session with pause and finish controls', () => {
@@ -76,11 +87,77 @@ describe('workout session presentation', () => {
     expect(screen.getByRole('button', { name: 'Resume timer' })).toBeInTheDocument();
   });
 
+  it('does not add extra seconds when a paused response retains the previous resume timestamp', () => {
+    const pausedAt = new Date();
+    const lastResumedAt = new Date(pausedAt.getTime() - 60_000);
+    render(activeScreen({
+      workout: {
+        ...active,
+        activeDurationSeconds: 60,
+        pausedAt: pausedAt.toISOString(),
+        lastResumedAt: lastResumedAt.toISOString(),
+      },
+    }));
+    expect(screen.getByText('01:00')).toBeInTheDocument();
+  });
+
+  it('freezes at the exact pause click even when the pause request takes four seconds', () => {
+    vi.useFakeTimers();
+    try {
+      vi.setSystemTime('2026-08-19T20:01:00.000Z');
+      const onPause = vi.fn(() => new Promise<unknown>(() => undefined));
+      render(activeScreen({
+        onPause,
+        workout: {
+          ...active,
+          activeDurationSeconds: 0,
+          pausedAt: null,
+          lastResumedAt: '2026-08-19T20:00:00.000Z',
+        },
+      }));
+
+      fireEvent.click(screen.getByRole('button', { name: 'Pause timer' }));
+      expect(onPause).toHaveBeenCalledWith(Date.parse('2026-08-19T20:01:00.000Z'));
+      expect(screen.getByText('01:00')).toBeInTheDocument();
+
+      act(() => vi.advanceTimersByTime(4_000));
+      expect(screen.getByText('01:00')).toBeInTheDocument();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('resumes the visible clock immediately instead of waiting for the resume request', () => {
+    vi.useFakeTimers();
+    try {
+      vi.setSystemTime('2026-08-19T20:02:00.000Z');
+      const onResume = vi.fn(() => new Promise<unknown>(() => undefined));
+      render(activeScreen({
+        onResume,
+        workout: {
+          ...active,
+          activeDurationSeconds: 60,
+          pausedAt: '2026-08-19T20:01:00.000Z',
+          lastResumedAt: null,
+        },
+      }));
+
+      fireEvent.click(screen.getByRole('button', { name: 'Resume timer' }));
+      expect(onResume).toHaveBeenCalledWith(Date.parse('2026-08-19T20:02:00.000Z'));
+      expect(screen.getByRole('heading', { name: 'Workout in progress' })).toBeInTheDocument();
+
+      act(() => vi.advanceTimersByTime(4_000));
+      expect(screen.getByText('01:04')).toBeInTheDocument();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   it('opens the real exercise picker from the active workout', () => {
     render(activeScreen());
     fireEvent.click(screen.getByRole('button', { name: 'Add exercise' }));
     expect(screen.getByRole('dialog', { name: 'Add exercise' })).toBeInTheDocument();
-    expect(screen.getByLabelText('Search exercises')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Search all exercises' })).toBeInTheDocument();
   });
 
   it('renders ordered canonical exercises with restrained move and remove controls', () => {

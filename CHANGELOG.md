@@ -1,5 +1,38 @@
 # Changelog
 
+## 0.4.5 — Picker drill-down + timer intent synchronization
+
+- Changed muscle-group icons from toggle filters into exercise-library navigation destinations.
+- Added dedicated muscle-group screens with workout-type narrowing and in-group search.
+- Kept a separate Search all exercises path across the canonical catalogue.
+- Added explicit back navigation from picker detail screens.
+- Added immediate start/resume display timing and exact click-time pause freezing.
+- Added intent-aware start/pause/resume RPCs that exclude ordinary request latency from persisted workout time.
+- Lifecycle RPCs now return their session snapshot directly to remove a second network round trip.
+- Clarified Phase 6.3 set tracking: every set has independent weight/reps/type/completion values.
+- No scoring changes.
+
+## 0.4.4 — Targeted group invitations
+
+- Replaced reusable group join codes with recipient-specific invitations.
+- Owners/admins can invite by username or stable `FG-...` profile invite ID.
+- Added pending invitation inbox with Accept and Decline actions.
+- Accept, decline, and revoke remove the invitation row immediately.
+- Added stable profile invite IDs and surfaced them in group/setup UI.
+- Removed the active token/URL join path and blocked direct browser invite-table writes.
+- Updated integration, group, permission, and pgTAP coverage for the new lifecycle.
+
+## 0.4.3 — Phase 6.1C.1 muscle-group icon filter + picker/timer fixes
+
+- Replaced the muscle-group dropdown with accessible icon + visible-label toggle controls.
+- Added optimized transparent muscle assets for the targeted muscle groups, including Core/Abs and Obliques.
+- Added explicit `OBLIQUES` catalogue taxonomy with a small migration for rotational/side-core exercises.
+- Kept workout-type filtering text-first and preserved two-axis filtering.
+- Made the exercise picker panel fully opaque while retaining a dimmed translucent backdrop.
+- Fixed paused timer double-counting when `last_resumed_at` remains populated after a pause.
+- Added regression tests for icon selection, oblique taxonomy, and paused timer display.
+- No set-logging or scoring-rule changes.
+
 ## 0.4.2 — Phase 6.1C / 6.2 exercise picker and search
 
 - Added a self-contained 356-exercise canonical catalogue migration.
