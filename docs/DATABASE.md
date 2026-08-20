@@ -10,7 +10,7 @@
 - `exercise_catalog`: canonical exercise identity and measurement type.
 - `workout_sessions`: session category/status/timing plus derived scoring-date flags.
 - `workout_exercises`: ordered canonical exercises inside a workout.
-- `workout_sets`: warmup/working set data.
+- `workout_sets`: independent ordered set rows with per-set type, canonical `weight_kg`, reps, bodyweight loading mode, and completion state.
 
 Phase 5.4 adds explicit session flags:
 
@@ -18,6 +18,8 @@ Phase 5.4 adds explicit session flags:
 - `qualifies_cardio_bonus`
 
 The old `qualifies` column remains temporarily as a transitional aggregate flag.
+
+Phase 6.3 moves set writes behind authenticated active-workout RPCs (`add_lifting_workout_set`, `copy_lifting_workout_set`, `save_lifting_workout_set`, and `remove_lifting_workout_set`). Authenticated clients retain RLS-scoped read access but no longer insert/update/delete `workout_sets` directly.
 
 ## lifting-v1 scoring persistence
 

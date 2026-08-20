@@ -323,3 +323,32 @@
   font-weight: 720;
   font-variant-numeric: tabular-nums;
 }
+
+.exerciseRow > section {
+  grid-column: 1 / -1;
+  width: 100%;
+}
+
+.unitSwitch {
+  display: inline-flex;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.unitSwitch button {
+  min-width: 34px;
+  min-height: 30px;
+  border: 0;
+  background: transparent;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.unitSwitch button[aria-pressed='true'] {
+  background: var(--color-surface-raised, #171c23);
+  color: var(--color-text);
+}

@@ -1,5 +1,16 @@
 # Changelog
 
+## v0.5.0 — Phase 6.3 per-set workout logging
+
+- Added independent persisted set rows for every workout exercise.
+- Added warmup/working set entry with per-set weight and reps.
+- Added plain, added-weight, and assisted bodyweight modes without conflating progression identities.
+- Added complete/reopen, copy-last, copy-row, delete, and dense set ordering.
+- Added kg/lb display conversion while keeping kilograms canonical in storage.
+- Moved workout-set writes behind authenticated active-workout RPCs.
+- Added pgTAP, service, hook, conversion, component, and workout-screen regression coverage.
+- No lifting-v1 XP award logic changed in this phase.
+
 ## 0.4.5 — Picker drill-down + timer intent synchronization
 
 - Changed muscle-group icons from toggle filters into exercise-library navigation destinations.

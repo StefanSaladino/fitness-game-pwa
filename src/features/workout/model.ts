@@ -49,3 +49,29 @@ export interface ExercisePickerItem {
 }
 
 export type ExerciseBrowseMode = 'muscle' | 'type';
+
+export type WorkoutSetType = 'WARMUP' | 'WORKING' | 'DROP' | 'FAILURE';
+export type BodyweightLoadMode = 'BODYWEIGHT' | 'ADDED_WEIGHT' | 'ASSISTED';
+export type WeightDisplayUnit = 'KG' | 'LB';
+
+export interface WorkoutSet {
+  id: string;
+  workoutExerciseId: string;
+  setNumber: number;
+  setType: WorkoutSetType;
+  weightKg: number | null;
+  reps: number | null;
+  bodyweightMode: BodyweightLoadMode | null;
+  completed: boolean;
+  completedAt: string | null;
+}
+
+export interface WorkoutSetInput {
+  setType: WorkoutSetType;
+  weightKg: number | null;
+  reps: number | null;
+  bodyweightMode: BodyweightLoadMode | null;
+  completed: boolean;
+}
+
+export type WorkoutSetAction = 'add' | 'copy' | 'save' | 'remove' | null;

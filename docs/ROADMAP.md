@@ -309,7 +309,7 @@ Apply the UI design gate before coding the workout builder.
 - intent-aware lifecycle RPCs use a narrowly bounded client action timestamp so network transport time is not counted as workout time
 - intent-aware start/pause/resume RPCs return the session snapshot directly, removing the extra follow-up select round trip
 
-### 6.3 Set tracking — NEXT
+### 6.3 Set tracking — DONE
 
 - every set is stored independently; an exercise never has one shared weight/reps value for all sets
 - warmup vs working sets
@@ -320,7 +320,7 @@ Apply the UI design gate before coding the workout builder.
 - duplicate/copy previous set conveniences without forcing copied values to stay linked
 - unit display conversion without changing canonical stored units
 
-### 6.4 Workout reliability
+### 6.4 Workout reliability — NEXT
 
 - offline active-session persistence
 - queued/idempotent sync

@@ -2,11 +2,13 @@ import { useEffect, useState, type ReactNode } from 'react';
 import { AppShell, type AppSection } from '../../../components/layout';
 import { Button } from '../../../components/ui';
 import type { OnboardingProfile } from '../../onboarding';
-import type { ActiveWorkoutSession, ExercisePickerItem, WorkoutCompositionAction, WorkoutExercise, WorkoutLifecycleAction } from '../model';
+import type { ActiveWorkoutSession, ExercisePickerItem, WeightDisplayUnit, WorkoutCompositionAction, WorkoutExercise, WorkoutLifecycleAction, WorkoutSet, WorkoutSetInput, WorkoutSetType } from '../model';
 import type { WorkoutExerciseStatus } from '../hooks/useWorkoutExercises';
 import type { ExercisePickerStatus } from '../hooks/useExercisePickerCatalog';
+import type { WorkoutSetBusyState, WorkoutSetStatus } from '../hooks/useWorkoutSets';
 import { elapsedWorkoutSeconds, formatWorkoutDuration } from '../workoutTime';
 import { ExercisePicker } from './ExercisePicker';
+import { WorkoutSetList } from './WorkoutSetList';
 import styles from './WorkoutSessionScreen.module.css';
 
 interface SharedProps {
@@ -35,6 +37,15 @@ interface ActiveProps extends SharedProps {
   onMoveExercise: (workoutExerciseId: string, newOrderIndex: number) => Promise<boolean>;
   onRemoveExercise: (workoutExerciseId: string) => Promise<boolean>;
   onRetryExercisePicker: () => Promise<ExercisePickerItem[]>;
+  workoutSets: WorkoutSet[];
+  setStatus: WorkoutSetStatus;
+  setBusy: WorkoutSetBusyState | null;
+  setError: string;
+  onRetrySets: () => Promise<WorkoutSet[]>;
+  onAddSet: (workoutExerciseId: string, setType?: WorkoutSetType) => Promise<boolean>;
+  onCopySet: (workoutSetId: string) => Promise<boolean>;
+  onSaveSet: (workoutSetId: string, input: WorkoutSetInput) => Promise<boolean>;
+  onRemoveSet: (workoutSetId: string) => Promise<boolean>;
   onPause: (actionAtMs?: number) => Promise<unknown>;
   onResume: (actionAtMs?: number) => Promise<unknown>;
   onFinish: () => Promise<unknown>;
@@ -128,6 +139,7 @@ export function WorkoutStartScreen(props: StartProps) {
 
 export function ActiveWorkoutScreen(props: ActiveProps) {
   const [pickerOpen, setPickerOpen] = useState(false);
+  const [weightUnit, setWeightUnit] = useState<WeightDisplayUnit>('KG');
   const [pauseIntentAtMs, setPauseIntentAtMs] = useState<number | null>(null);
   const [resumeIntentAtMs, setResumeIntentAtMs] = useState<number | null>(null);
   const seconds = useWorkoutClock(props.workout, pauseIntentAtMs, resumeIntentAtMs);
@@ -184,6 +196,10 @@ export function ActiveWorkoutScreen(props: ActiveProps) {
               <h2 id="workout-exercises-heading">{props.exercises.length > 0 ? `${props.exercises.length} in this lift` : 'No exercises yet'}</h2>
             </div>
             <div className={styles.exerciseHeadingActions}>
+              <div aria-label="Weight unit" className={styles.unitSwitch} role="group">
+                <button aria-pressed={weightUnit === 'KG'} onClick={() => setWeightUnit('KG')} type="button">kg</button>
+                <button aria-pressed={weightUnit === 'LB'} onClick={() => setWeightUnit('LB')} type="button">lb</button>
+              </div>
               {props.exercises.length > 0 && <span className={styles.exerciseCount}>{props.exercises.length}</span>}
               <button className={styles.addExerciseButton} onClick={() => setPickerOpen(true)} type="button">Add exercise</button>
             </div>
@@ -232,12 +248,29 @@ export function ActiveWorkoutScreen(props: ActiveProps) {
                       type="button"
                     >Remove</button>
                   </div>
+                  <WorkoutSetList
+                    busy={props.setBusy}
+                    exercise={exercise}
+                    onAddSet={props.onAddSet}
+                    onCopySet={props.onCopySet}
+                    onRemoveSet={props.onRemoveSet}
+                    onSaveSet={props.onSaveSet}
+                    sets={props.workoutSets.filter((set) => set.workoutExerciseId === exercise.id)}
+                    status={props.setStatus}
+                    unit={weightUnit}
+                  />
                 </li>
               ))}
             </ol>
           )}
 
           {props.compositionError && props.exerciseStatus !== 'error' && <p className={styles.error} role="alert">{props.compositionError}</p>}
+          {props.setStatus === 'error' && (
+            <div className={styles.exerciseError}>
+              <p role="alert">{props.setError || 'Unable to load workout sets.'}</p>
+              <button type="button" onClick={() => void props.onRetrySets()}>Retry sets</button>
+            </div>
+          )}
         </section>
 
         <ExercisePicker

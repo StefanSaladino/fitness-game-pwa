@@ -431,9 +431,40 @@ ok(!/loadById/.test(workoutServicePhase61c2), 'start/pause/resume no longer requ
 ok(/startingAtMs/.test(workoutScreenPhase61c2) && /pauseIntentAtMs/.test(workoutScreenPhase61c2) && /resumeIntentAtMs/.test(workoutScreenPhase61c2), 'visible timer follows immediate start/pause/resume intent');
 ok(Number.isInteger(timerIntentPlan) && timerIntentPlan === 16 && timerIntentPlan === timerIntentCount, 'timer intent pgTAP plan matches 16 assertions');
 ok(/Picker drill-down \+ timer synchronization — DONE/.test(read('docs/ROADMAP.md')), 'roadmap records picker/timer cleanup completion');
-ok(/Set tracking — NEXT/.test(read('docs/ROADMAP.md')) && /every set is stored independently/.test(read('docs/ROADMAP.md')), 'roadmap locks per-set values before Phase 6.3');
+ok(/Set tracking — (?:NEXT|DONE)/.test(read('docs/ROADMAP.md')) && /every set is stored independently/.test(read('docs/ROADMAP.md')), 'roadmap retains the independent per-set requirement');
 ok(!/muscleGroupFilter|selectedMark/.test(read('src/styles/global.css')), 'Phase 6.1C cleanup selectors are not added to global CSS');
 
+
+
+// Phase 6.3 — per-set workout logging
+const setTrackingMigration = read('supabase/migrations/20260819001300_workout_set_tracking.sql');
+const setTrackingTest = read('supabase/tests/018_workout_set_tracking.test.sql');
+const workoutSetService = read('src/features/workout/workoutSetService.ts');
+const workoutSetHook = read('src/features/workout/hooks/useWorkoutSets.ts');
+const workoutSetList = read('src/features/workout/components/WorkoutSetList.tsx');
+const workoutSetCss = read('src/features/workout/components/WorkoutSetList.module.css');
+const weightUnits = read('src/features/workout/weightUnits.ts');
+const phase63Plan = Number((setTrackingTest.match(/select\s+plan\((\d+)\)/i) || [])[1]);
+const phase63Count = (setTrackingTest.match(/select\s+(?:has_table|has_column|has_function|col_is_pk|results_eq|throws_ok|lives_ok|is)\s*\(/gi) || []).length;
+ok(/bodyweight_mode/.test(setTrackingMigration), 'Phase 6.3 persists bodyweight loading mode per set');
+ok(/add_lifting_workout_set/.test(setTrackingMigration) && /copy_lifting_workout_set/.test(setTrackingMigration), 'Phase 6.3 adds guarded add/copy set RPCs');
+ok(/save_lifting_workout_set/.test(setTrackingMigration) && /remove_lifting_workout_set/.test(setTrackingMigration), 'Phase 6.3 adds guarded save/remove set RPCs');
+ok(/revoke insert, update, delete on public\.workout_sets from authenticated/.test(setTrackingMigration), 'Phase 6.3 blocks direct workout-set mutation');
+ok((setTrackingMigration.match(/from public, anon, authenticated/g) || []).length === 4, 'Phase 6.3 set RPCs revoke default/public execution');
+ok((setTrackingMigration.match(/grant execute on function public\.(?:add|copy|save|remove)_lifting_workout_set/g) || []).length === 4, 'Phase 6.3 grants set RPCs only to authenticated clients');
+ok(/loadWorkoutSets/.test(workoutSetService) && /set_number/.test(workoutSetService), 'set service reloads persisted independent set order');
+ok(/add_lifting_workout_set/.test(workoutSetService) && /save_lifting_workout_set/.test(workoutSetService), 'set service delegates writes to authoritative RPCs');
+ok(/useWorkoutSets/.test(read('src/features/workout/components/WorkoutController.tsx')), 'workout controller delegates set state to useWorkoutSets');
+ok(/workoutSetService\?: WorkoutSetService/.test(read('src/features/product/ProductController.tsx')), 'product controller preserves set-service injection for integration tests');
+ok(/Copy last set/.test(workoutSetList) && /Mark set \$\{set\.setNumber\} complete/.test(workoutSetList), 'set UI supports fast copy and independent completion');
+ok(/ADDED_WEIGHT/.test(workoutSetList) && /ASSISTED/.test(workoutSetList), 'set UI distinguishes bodyweight loading modes');
+ok(/displayWeightToKg/.test(weightUnits) && /kgToDisplayWeight/.test(weightUnits), 'weight display conversion preserves canonical kilograms');
+ok(workoutSetCss.length > 1200, 'set-entry styling is substantial and colocated in a CSS Module');
+ok(!/WorkoutSetList|setRow|setStage|completeButton/.test(read('src/styles/global.css')), 'Phase 6.3 selectors are not added to global CSS');
+ok(Number.isInteger(phase63Plan) && phase63Plan === 34 && phase63Plan === phase63Count, 'Phase 6.3 pgTAP plan matches 34 assertions');
+ok(/Set tracking — DONE/.test(read('docs/ROADMAP.md')), 'roadmap records Phase 6.3 completion');
+ok(/Workout reliability — NEXT/.test(read('docs/ROADMAP.md')), 'roadmap advances to Phase 6.4 reliability');
+ok(/does not add or change lifting-v1 XP reconciliation/i.test(read('docs/PHASE6.3-SET-TRACKING.md')), 'Phase 6.3 explicitly leaves XP persistence unchanged');
 
 // Phase 5.6.1 — targeted user invitations
 const targetedInviteMigration = read('supabase/migrations/20260819001100_targeted_group_invitations.sql');

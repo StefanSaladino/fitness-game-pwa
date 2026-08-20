@@ -10,3 +10,7 @@ export * from './hooks/useExercisePickerCatalog';
 export * from './components/WorkoutController';
 export * from './components/WorkoutSessionScreen';
 export * from './components/ExercisePicker';
+export * from './workoutSetService';
+export * from './weightUnits';
+export * from './hooks/useWorkoutSets';
+export * from './components/WorkoutSetList';

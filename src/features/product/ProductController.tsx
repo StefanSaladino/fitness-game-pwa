@@ -4,7 +4,7 @@ import { signOut } from '../auth/authService';
 import { DashboardController, type DashboardService } from '../dashboard';
 import { GroupAdministrationController, type GroupService, type GroupSummary } from '../groups';
 import type { OnboardingProfile } from '../onboarding';
-import { WorkoutController, type ExercisePickerService, type WorkoutExerciseService, type WorkoutService } from '../workout';
+import { WorkoutController, type ExercisePickerService, type WorkoutExerciseService, type WorkoutService, type WorkoutSetService } from '../workout';
 
 interface ProductControllerProps {
   profile: OnboardingProfile;
@@ -15,9 +15,10 @@ interface ProductControllerProps {
   workoutService?: WorkoutService;
   workoutExerciseService?: WorkoutExerciseService;
   exercisePickerService?: ExercisePickerService;
+  workoutSetService?: WorkoutSetService;
 }
 
-export function ProductController({ profile, groups, onGroupsChanged, groupService, dashboardService, workoutService, workoutExerciseService, exercisePickerService }: ProductControllerProps) {
+export function ProductController({ profile, groups, onGroupsChanged, groupService, dashboardService, workoutService, workoutExerciseService, exercisePickerService, workoutSetService }: ProductControllerProps) {
   const [activeSection, setActiveSection] = useState<AppSection>('home');
   const [selectedGroupId, setSelectedGroupId] = useState(groups[0]?.id ?? '');
 
@@ -46,6 +47,7 @@ export function ProductController({ profile, groups, onGroupsChanged, groupServi
         service={workoutService}
         exerciseService={workoutExerciseService}
         pickerService={exercisePickerService}
+        setService={workoutSetService}
       />
     );
   }

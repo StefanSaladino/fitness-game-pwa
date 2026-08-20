@@ -4,8 +4,10 @@ import type { OnboardingProfile } from '../../onboarding';
 import type { WorkoutExerciseService } from '../workoutExerciseService';
 import type { ExercisePickerService } from '../exercisePickerService';
 import type { WorkoutService } from '../workoutService';
+import type { WorkoutSetService } from '../workoutSetService';
 import { useActiveWorkout } from '../hooks/useActiveWorkout';
 import { useWorkoutExercises } from '../hooks/useWorkoutExercises';
+import { useWorkoutSets } from '../hooks/useWorkoutSets';
 import { useExercisePickerCatalog } from '../hooks/useExercisePickerCatalog';
 import { ActiveWorkoutScreen, WorkoutStartScreen } from './WorkoutSessionScreen';
 import styles from './WorkoutSessionScreen.module.css';
@@ -17,12 +19,14 @@ interface WorkoutControllerProps {
   service?: WorkoutService;
   exerciseService?: WorkoutExerciseService;
   pickerService?: ExercisePickerService;
+  setService?: WorkoutSetService;
 }
 
-export function WorkoutController({ profile, onNavigate, onSignOut, service, exerciseService, pickerService }: WorkoutControllerProps) {
+export function WorkoutController({ profile, onNavigate, onSignOut, service, exerciseService, pickerService, setService }: WorkoutControllerProps) {
   const workout = useActiveWorkout(profile.id, service);
   const composition = useWorkoutExercises(workout.activeWorkout?.id ?? null, exerciseService);
   const picker = useExercisePickerCatalog(Boolean(workout.activeWorkout), pickerService);
+  const sets = useWorkoutSets(composition.exercises.map((exercise) => exercise.id), setService);
 
   if (workout.status === 'loading') {
     return (
@@ -68,6 +72,15 @@ export function WorkoutController({ profile, onNavigate, onSignOut, service, exe
       onResume={workout.resume}
       onRetryExercisePicker={picker.retry}
       onRetryExercises={composition.retry}
+      workoutSets={sets.sets}
+      setStatus={sets.status}
+      setBusy={sets.busy}
+      setError={sets.error}
+      onRetrySets={sets.retry}
+      onAddSet={sets.addSet}
+      onCopySet={sets.copySet}
+      onSaveSet={sets.saveSet}
+      onRemoveSet={sets.removeSet}
       onSignOut={onSignOut}
       profile={profile}
       workout={workout.activeWorkout}

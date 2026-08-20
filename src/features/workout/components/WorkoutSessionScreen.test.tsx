@@ -34,6 +34,15 @@ const compositionProps = {
   onRemoveExercise: vi.fn(async () => true),
   onRetryExercisePicker: vi.fn(async () => []),
   onRetryExercises: vi.fn(async () => [] as WorkoutExercise[]),
+  workoutSets: [],
+  setStatus: 'ready' as const,
+  setBusy: null,
+  setError: '',
+  onRetrySets: vi.fn(async () => []),
+  onAddSet: vi.fn(async () => true),
+  onCopySet: vi.fn(async () => true),
+  onSaveSet: vi.fn(async () => true),
+  onRemoveSet: vi.fn(async () => true),
 };
 
 function activeScreen(overrides: Partial<ComponentProps<typeof ActiveWorkoutScreen>> = {}) {
@@ -175,4 +184,20 @@ describe('workout session presentation', () => {
     expect(onMoveExercise).toHaveBeenCalledWith('we-2', 0);
     expect(onRemoveExercise).toHaveBeenCalledWith('we-1');
   });
+
+  it('renders independent per-set entry for weighted exercises', () => {
+    render(activeScreen({
+      exercises: [exercises[0]],
+      workoutSets: [
+        { id: 'set-1', workoutExerciseId: 'we-1', setNumber: 1, setType: 'WARMUP', weightKg: 60, reps: 10, bodyweightMode: null, completed: false, completedAt: null },
+        { id: 'set-2', workoutExerciseId: 'we-1', setNumber: 2, setType: 'WORKING', weightKg: 100, reps: 5, bodyweightMode: null, completed: false, completedAt: null },
+      ],
+    }));
+
+    expect(screen.getByRole('region', { name: 'Barbell Bench Press sets' })).toBeInTheDocument();
+    expect(screen.getByLabelText('Set 1 weight in kg')).toHaveValue(60);
+    expect(screen.getByLabelText('Set 2 weight in kg')).toHaveValue(100);
+    expect(screen.getByRole('button', { name: 'Copy last set' })).toBeInTheDocument();
+  });
+
 });
