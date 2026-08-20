@@ -402,7 +402,7 @@ Primary boundary: prove the complete capture flow survives ordinary connectivity
 
 Exit criteria: an ordinary connection interruption cannot lose or duplicate a workout, exercise, or set.
 
-## Phase 7 — Authoritative lifting-v1 scoring persistence — NEXT
+## Phase 7 — Authoritative lifting-v1 scoring persistence — DONE
 
 Objective: make PostgreSQL compute/reconcile the new score safely.
 
@@ -419,7 +419,7 @@ Objective: make PostgreSQL compute/reconcile the new score safely.
 
 Exit criteria: duplicate, concurrent, retried, edited, or deleted data cannot manufacture or orphan XP.
 
-## Phase 8 — Exercise progression engine + history
+## Phase 8 — Exercise progression engine + history — NEXT
 
 Objective: make each canonical lift a first-class progression timeline.
 

@@ -628,8 +628,44 @@ ok(/ActiveWorkoutScreen/.test(reliabilityHarness) && /recoveryState=\{offline \?
 ok(Number.isInteger(phase64dPlan) && phase64dPlan === 17 && phase64dPlan === phase64dCount, 'Phase 6.4D pgTAP plan matches 17 assertions');
 ok(/no new migration/i.test(reliabilityDoc), 'Phase 6.4D remains a validation-only database slice');
 ok(/6\.4D Reliability integration gate — DONE/.test(read('docs/ROADMAP.md')), 'roadmap records Phase 6.4D completion');
-ok(/Phase 7 — Authoritative lifting-v1 scoring persistence — NEXT/.test(read('docs/ROADMAP.md')), 'roadmap advances to Phase 7 authoritative scoring');
-ok(/"version": "0\.5\.4"/.test(read('package.json')) && /"version": "0\.5\.4"/.test(read('package-lock.json')), 'project metadata records the v0.5.4 reliability gate');
+ok(/Phase 7 — Authoritative lifting-v1 scoring persistence — DONE/.test(read('docs/ROADMAP.md')), 'roadmap records Phase 7 authoritative scoring completion');
+ok(/"version": "0\.6\.0"/.test(read('package.json')) && /"version": "0\.6\.0"/.test(read('package-lock.json')), 'project metadata records the v0.6.0 authoritative scoring checkpoint');
+
+
+// Phase 7 — authoritative lifting-v1 scoring persistence
+for (const rel of [
+  'supabase/migrations/20260820000300_authoritative_lifting_scoring.sql',
+  'supabase/tests/022_authoritative_lifting_scoring.test.sql',
+  'docs/PHASE7-AUTHORITATIVE-LIFTING-SCORING.md',
+]) ok(fs.existsSync(path.join(root, rel)), `${rel} exists`);
+const phase7Migration = read('supabase/migrations/20260820000300_authoritative_lifting_scoring.sql');
+const phase7Test = read('supabase/tests/022_authoritative_lifting_scoring.test.sql');
+const phase7Doc = read('docs/PHASE7-AUTHORITATIVE-LIFTING-SCORING.md');
+const phase7Plan = Number((phase7Test.match(/select\s+plan\((\d+)\)/i) || [])[1]);
+const phase7Count = (phase7Test.match(/select\s+(?:has_table|has_column|has_function|col_is_pk|results_eq|throws_ok|lives_ok|is|cmp_ok|ok)\s*\(/gi) || []).length;
+ok((phase7Migration.match(/\$\$/g) || []).length % 2 === 0, 'Phase 7 migration dollar-quote delimiters are balanced');
+ok(/reconcile_lifting_v1_scoring_for_user/.test(phase7Migration) && /pg_advisory_xact_lock/.test(phase7Migration), 'Phase 7 serializes authoritative per-user reconciliation');
+ok(/reconcile_my_lifting_v1_scoring/.test(phase7Migration) && /to authenticated/.test(phase7Migration), 'Phase 7 exposes only the self-scoped authenticated rebuild RPC');
+ok(/revoke all on function public\.reconcile_lifting_v1_scoring_for_user\(uuid\) from public, anon, authenticated/.test(phase7Migration), 'clients cannot target another user for scoring reconciliation');
+ok(/scoring_events_lifting_workout_unique[\s\S]*scoring_version/.test(phase7Migration) && /scoring_events_exercise_progress_unique[\s\S]*scoring_version/.test(phase7Migration), 'authoritative ledger uniqueness includes scoring version');
+ok(/'LIFTING_WORKOUT'[\s\S]*50[\s\S]*'lifting-v1'/.test(phase7Migration), 'Phase 7 persists the locked 50-XP lifting award');
+ok(/'EXERCISE_COMPLETE'[\s\S]*5[\s\S]*dailyExerciseCap/.test(phase7Migration), 'Phase 7 persists canonical 5-XP exercise completion with daily cap metadata');
+ok(/completed_working_sets[\s\S]*having count\(\*\) >= 2/.test(phase7Migration) && /daily_rank <= 6/.test(phase7Migration), 'exercise completion requires two working sets and caps at six exercises');
+ok(/when 'RUNNING' then w\.active_duration_seconds >= 900/.test(phase7Migration) && /when 'WALKING_HIKING' then w\.active_duration_seconds >= 1800/.test(phase7Migration) && /when 'HIIT' then w\.active_duration_seconds >= 720/.test(phase7Migration), 'Phase 7 cardio qualification matches the current TypeScript oracle');
+ok(/when w\.active_duration_seconds >= 2700 then 15/.test(phase7Migration) && /when w\.active_duration_seconds >= 1800 then 10/.test(phase7Migration), 'Phase 7 cardio tiers preserve 5/10/15 duration scoring');
+ok(/ws\.reps between 1 and 12/.test(phase7Migration) && /ws\.weight_kg \* \(1 \+ ws\.reps::numeric \/ 30\)/.test(phase7Migration), 'weighted progression uses best-set Epley e1RM for 1-12 reps');
+ok(/BODYWEIGHT_REPS/.test(phase7Migration) && /coalesce\(ws\.bodyweight_mode, 'BODYWEIGHT'\) = 'BODYWEIGHT'/.test(phase7Migration), 'plain bodyweight progression excludes added and assisted loading');
+ok(/v_has_previous_best := found/.test(phase7Migration) && /qualifying_lifting_workout/.test(phase7Migration), 'first observation is baseline-only and progression requires a qualifying lift');
+ok(/greatest\(0, 30 - v_daily_progression\)/.test(phase7Migration) && /dailyProgressionCap', 30/.test(phase7Migration), 'progression awards enforce the 30-XP daily ceiling');
+ok(/having sum\(se\.amount\) > 125/.test(phase7Migration), 'Phase 7 has an executable 125-XP daily safety guard');
+ok(/delete from public\.scoring_events[\s\S]*scoring_version = 'lifting-v1'/.test(phase7Migration) && /delete from public\.exercise_progress_observations/.test(phase7Migration), 'reconciliation replaces derived lifting-v1 state instead of stacking retries');
+ok(/after insert or update or delete on public\.workout_sessions/.test(phase7Migration) && /after insert or update or delete on public\.workout_sets/.test(phase7Migration), 'completed source edits/deletes trigger authoritative rebuilds');
+ok(/w\.source = 'IN_APP'/.test(phase7Migration) && /MANUAL/.test(phase7Doc) && /EXTERNAL/.test(phase7Doc), 'Phase 7 documents and enforces conservative automatic-scoring source policy');
+ok(/best_weight_kg/.test(phase7Migration) && /best_reps/.test(phase7Migration), 'personal-best snapshots retain source weight and reps');
+ok(Number.isInteger(phase7Plan) && phase7Plan === 32 && phase7Plan === phase7Count, 'Phase 7 pgTAP plan matches 32 assertions');
+ok(/Phase 7 — Authoritative lifting-v1 scoring persistence — DONE/.test(read('docs/ROADMAP.md')), 'roadmap records Phase 7 completion');
+ok(/Phase 8 — Exercise progression engine \+ history — NEXT/.test(read('docs/ROADMAP.md')), 'roadmap advances to Phase 8 progression history');
+ok(/full history rebuild/i.test(phase7Doc) && /historical edits and deletes/i.test(phase7Doc), 'Phase 7 documents downstream-safe historical reconciliation');
 
 
 // Phase 5.6.1 — targeted user invitations

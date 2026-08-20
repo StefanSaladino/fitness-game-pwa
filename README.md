@@ -1,24 +1,26 @@
-# Fitness Game PWA — v0.5.4
+# Fitness Game PWA — v0.6.0
 
-Current checkpoint: **Phase 6.4D — Reliability integration gate**.
+Current checkpoint: **Phase 7 — Authoritative lifting-v1 scoring persistence**.
 
-The lifting capture path now has local recovery, durable idempotent replay, optimistic-concurrency conflict protection, and integration/browser coverage proving those layers work together across offline, refresh, retry, and competing-device scenarios.
+Completed in this checkpoint:
 
-## Reliability state
+- PostgreSQL-authoritative `lifting-v1` scoring reconciliation;
+- 50 XP lifting-workout daily award;
+- 5 XP canonical exercise completion with six-exercise daily cap;
+- 5/10/15 exercise progression with baseline-first semantics and 30 XP daily cap;
+- best-of-day 5/10/15 cardio bonus;
+- 125 XP daily ceiling;
+- deterministic progression observation / PB rebuilds;
+- automatic edit/delete/backfill reconciliation for completed in-app source data;
+- version-aware scoring-event uniqueness;
+- authenticated self-rebuild recovery RPC;
+- manual/external history remains non-scoring until an explicit import policy is added.
 
-- Phase 6.4A local active-workout recovery — DONE
-- Phase 6.4B idempotent workout mutation queue — DONE
-- Phase 6.4C conflict and destructive-edit safety — DONE
-- Phase 6.4D reliability integration gate — DONE
-- Phase 7 authoritative lifting-v1 scoring persistence — NEXT
+Next roadmap slice: **Phase 8 — Exercise progression engine + history**.
 
-## Supabase for v0.5.4
+## Supabase for v0.6.0
 
-No new migration. Run:
-
-1. `supabase/tests/019_idempotent_workout_mutations.test.sql`
-2. `supabase/tests/020_workout_conflict_safety.test.sql`
-3. `supabase/tests/021_workout_reliability_gate.test.sql`
+Apply `supabase/migrations/20260820000300_authoritative_lifting_scoring.sql`, then run the Phase 7 database regression set ending with `022_authoritative_lifting_scoring.test.sql`.
 
 ## Local validation
 
@@ -31,5 +33,3 @@ npm run test:structure
 npm run test:e2e
 npm run test:internal
 ```
-
-No lifting-v1 scoring rules change in this phase.
