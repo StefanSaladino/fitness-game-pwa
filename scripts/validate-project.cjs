@@ -958,8 +958,65 @@ ok(/reports loading immediately when exercise identities change/.test(read('src/
 ok(/snapshot\?\.exercises\.map[\s\S]*WORKOUT_EXERCISE_ID[\s\S]*snapshot\?\.sets\.map[\s\S]*SET_ID/.test(phase12ReliabilityIntegration), 'reliability integration waits for a complete canonical recovery snapshot before simulating offline loss');
 ok(/no Supabase migration/i.test(phase12Doc) && /no scoring\/XP changes/i.test(phase12Doc), 'Phase 12A documentation locks database and scoring non-goals');
 ok(/12A IndexedDB workout durability — DONE/.test(phase12Roadmap), 'roadmap records Phase 12A completion');
-ok(/12B Offline shell \+ install UX — NEXT/.test(phase12Roadmap), 'roadmap advances to Phase 12B');
-ok(packageJson.version === '0.11.0' && packageLockJson.version === '0.11.0', 'project metadata records v0.11.0');
+ok(/12B Offline shell \+ install UX — (?:NEXT|DONE)/.test(phase12Roadmap), 'roadmap retains Phase 12B offline shell/install UX');
+ok(versionAtLeast(packageJson.version, '0.11.0') && versionAtLeast(packageLockJson.version, '0.11.0'), 'project metadata is at or beyond v0.11.0');
+
+
+// Phase 12B — offline shell + install UX
+for (const rel of [
+  'src/pwa/pwaService.ts',
+  'src/pwa/usePwaLifecycle.ts',
+  'src/pwa/PwaStatus.tsx',
+  'src/pwa/PwaStatus.module.css',
+  'src/pwa/PwaStatus.test.tsx',
+  'docs/PHASE12B-OFFLINE-SHELL-INSTALL-UX.md',
+  'tests/e2e/pwa-shell.spec.ts',
+]) ok(fs.existsSync(path.join(root, rel)), `${rel} exists`);
+const phase12bSw = read('public/sw.js');
+const phase12bRegister = read('src/pwa/registerServiceWorker.ts');
+const phase12bService = read('src/pwa/pwaService.ts');
+const phase12bStatus = read('src/pwa/PwaStatus.tsx');
+const phase12bCss = read('src/pwa/PwaStatus.module.css');
+const phase12bTest = read('src/pwa/PwaStatus.test.tsx');
+const phase12bE2e = read('tests/e2e/pwa-shell.spec.ts');
+const phase12bDoc = read('docs/PHASE12B-OFFLINE-SHELL-INSTALL-UX.md');
+const phase12bManifest = JSON.parse(read('public/manifest.webmanifest'));
+ok(/CACHE_PREFIX = 'workout-game-shell-'/.test(phase12bSw) && /v12b-2/.test(phase12bSw), 'Phase 12B service worker uses an explicit versioned shell cache');
+ok(/fetchForPrecache\('\/'\)/.test(phase12bSw) && /shellAssetPaths\(html\)/.test(phase12bSw), 'Phase 12B discovers and precaches built production shell assets from the deployed root HTML');
+ok(/manifest\.webmanifest/.test(phase12bSw) && /icon-192\.png/.test(phase12bSw) && /icon-512\.png/.test(phase12bSw), 'Phase 12B precaches install metadata and icons');
+ok(/url\.origin !== self\.location\.origin\) return/.test(phase12bSw), 'service worker ignores every cross-origin request rather than caching Supabase/auth/data traffic');
+ok(/request\.mode === 'navigate'/.test(phase12bSw) && /cache\.match\('\/', \{ ignoreVary: true \}\)/.test(phase12bSw), 'navigation requests fall back to the cached production app shell offline');
+ok(/cacheableDestination/.test(phase12bSw) && /cacheablePath/.test(phase12bSw), 'runtime caching is restricted to same-origin static application resources');
+ok(/cache\.match\(request, \{ ignoreVary: true \}\)/.test(phase12bSw), 'same-origin shell assets ignore Vary header differences between precache and module requests');
+ok(/key\.startsWith\(CACHE_PREFIX\) && key !== CACHE/.test(phase12bSw), 'activation removes superseded app-shell cache versions');
+ok(/if \(!self\.registration\.active\) await self\.skipWaiting\(\)/.test(phase12bSw), 'first service-worker install may activate immediately without forcing later updates');
+ok(/event\.data\?\.type === 'SKIP_WAITING'/.test(phase12bSw), 'later service-worker activation requires the explicit SKIP_WAITING message');
+ok(!/self\.skipWaiting\(\);\s*\}\);\s*self\.addEventListener\('activate'/.test(phase12bSw), 'service-worker install no longer unconditionally skips waiting on updates');
+ok(/registration\.waiting/.test(phase12bRegister) && /updatefound/.test(phase12bRegister), 'registration reports already-waiting and newly-installed updates');
+ok(/controllerchange/.test(phase12bRegister) && /activateWaitingServiceWorker/.test(phase12bRegister), 'registration exposes explicit waiting-worker activation and controller-change lifecycle');
+ok(/beforeinstallprompt/.test(phase12bService) && /installPrompt/.test(phase12bService), 'PWA service captures browser-supported install prompting');
+ok(/appinstalled/.test(phase12bService) && /display-mode: standalone/.test(phase12bService) && /standalone\?/.test(phase12bService), 'PWA service tracks installed/standalone display mode across supported browsers');
+ok(/applyUpdate/.test(phase12bService) && /snapshot\.applyingUpdate/.test(phase12bService) && /window\.location\.reload\(\)/.test(phase12bService), 'reload occurs only after an explicitly applied update changes the controller');
+ok(/if \(cancelled \|\| !this\.snapshot\.applyingUpdate\) return/.test(phase12bService), 'ordinary service-worker controller changes never auto-reload the application');
+ok(/Update ready/.test(phase12bStatus) && /Update app/.test(phase12bStatus) && /Active lifts recover after reload/.test(phase12bStatus), 'update UX is explicit and non-interrupting by default');
+ok(/Install Workout Game/.test(phase12bStatus) && /pwa\.installAvailable && !pwa\.standalone/.test(phase12bStatus), 'install affordance appears only when supported and not already standalone');
+ok(/Workout changes stay on this device until you reconnect/.test(phase12bStatus), 'offline UX describes local durability without claiming remote availability');
+ok(!/supabase/i.test(phase12bStatus) && !/supabase/i.test(phase12bCss), 'Phase 12B presentation remains independent of Supabase');
+ok(/PwaStatus/.test(read('src/main.tsx')) && !/registerServiceWorker\(\);/.test(read('src/main.tsx')), 'PWA lifecycle is composed through the focused status/controller boundary instead of a fire-and-forget registration call');
+ok(/offers install only when the browser exposes an install prompt/.test(phase12bTest) && /never applies an available update until the user chooses it/.test(phase12bTest), 'component coverage locks install and user-controlled update behavior');
+ok(/hides install affordance in standalone mode/.test(phase12bTest) && /offline shell message/.test(phase12bTest), 'component coverage locks standalone and offline states');
+ok(/browserName !== 'chromium'/.test(phase12bE2e) && /Phase 12D/.test(phase12bE2e), 'service-worker-specific Playwright proof is Chromium-only and defers WebKit/iOS lifecycle sign-off to Phase 12D');
+ok(/context\.setOffline\(true\)/.test(phase12bE2e) && /__phase12b-network-probe__/.test(phase12bE2e) && /networkIsActuallyOffline/.test(phase12bE2e), 'Phase 12B browser gate proves the Chromium context really has no network before shell fallback');
+ok(/offline-shell=1/.test(phase12bE2e) && /locator\('#root'\)/.test(phase12bE2e) && /not\.toBeEmpty/.test(phase12bE2e), 'Phase 12B browser gate proves the cached production shell boots during an actual offline navigation');
+ok(/cachedShellPaths/.test(phase12bE2e) && /\.js/.test(phase12bE2e) && /\.css/.test(phase12bE2e), 'Phase 12B browser gate verifies hashed JS and CSS are cached before simulating offline navigation');
+ok(!/getByText\('Offline'/.test(phase12bE2e), 'offline-shell E2E does not confuse navigator.onLine UI signaling with service-worker cache correctness');
+ok(!/page\.reload/.test(phase12bE2e), 'Phase 12B browser gate avoids unsupported/flaky WebKit offline reload mechanics');
+ok(phase12bManifest.id === '/' && phase12bManifest.scope === '/' && phase12bManifest.display === 'standalone', 'manifest has stable root identity/scope and standalone display');
+ok(phase12bManifest.icons.every((icon) => /maskable/.test(icon.purpose || '')), 'install icons are declared maskable-capable');
+ok(/no Supabase migration/i.test(phase12bDoc) && /no scoring\/XP changes/i.test(phase12bDoc), 'Phase 12B documentation locks database and scoring non-goals');
+ok(/12B Offline shell \+ install UX — DONE/.test(phase12Roadmap), 'roadmap records Phase 12B completion');
+ok(/12C Reconnect \+ retry hardening — NEXT/.test(phase12Roadmap), 'roadmap advances to Phase 12C');
+ok(packageJson.version === '0.11.1' && packageLockJson.version === '0.11.1', 'project metadata records v0.11.1');
 
 
 // Phase 5.6.1 — targeted user invitations

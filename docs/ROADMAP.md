@@ -483,7 +483,7 @@ Primary boundary: move active-lift recovery and the queued workout-mutation jour
 - localStorage is fallback-only when IndexedDB is unavailable or rejects a write;
 - no scoring, Supabase schema, or workout behavior changes.
 
-### 12B Offline shell + install UX — NEXT
+### 12B Offline shell + install UX — DONE
 
 - production offline app shell;
 - service-worker cache/version lifecycle;
@@ -491,7 +491,7 @@ Primary boundary: move active-lift recovery and the queued workout-mutation jour
 - standalone/display-mode handling;
 - update/reload UX that does not interrupt an active workout.
 
-### 12C Reconnect + retry hardening — LATER
+### 12C Reconnect + retry hardening — NEXT
 
 - reconcile IndexedDB state with the authoritative server after reconnect;
 - preserve existing idempotency/conflict guarantees through app restart;

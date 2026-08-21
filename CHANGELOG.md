@@ -1,5 +1,15 @@
 # Changelog
 
+## v0.11.1 — Phase 12B offline shell + install UX
+
+- Upgraded the service worker to precache the production app shell and built same-origin assets on first install.
+- Limited shell caching to same-origin application resources so Supabase/auth/data responses are never cached by the PWA shell.
+- Added versioned cache cleanup and user-controlled service-worker update activation instead of automatic reloads.
+- Added a compact global offline/install/update status surface with standalone-mode detection.
+- Added browser-driven install prompting where supported and suppresses the affordance once installed.
+- Added desktop/mobile Playwright coverage proving the production app reloads from the cached shell while offline.
+- No database migration, reconnect/backoff changes, or scoring/XP behavior changed.
+
 ## v0.11.0 — Phase 12A IndexedDB workout durability
 
 - Moved active-workout recovery persistence to asynchronous IndexedDB storage.

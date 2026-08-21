@@ -1,26 +1,23 @@
-# Fitness Game PWA — v0.10.0
+# Fitness Game PWA — v0.11.1
 
-Current checkpoint: **Phase 11 — Cardio accessory logging**.
+Current checkpoint: **Phase 12B — Offline shell + install UX**.
 
 Completed in this checkpoint:
 
-- lightweight completed-cardio logging for Running, Walking/Hiking, Cycling, Swimming, Sport, Cardio, and HIIT;
-- duration-only 5/10/15 XP tier preview using the locked activity minimums;
-- authoritative best-of-day cardio scoring through the existing `lifting-v1` reconciler;
-- safe cardio deletion with automatic XP reconciliation;
-- recent cardio history showing which activity currently owns the daily bonus;
-- lightweight session/minute/30-day cardio analytics;
-- dashboard and lifting-entry shortcuts into accessory cardio;
-- no pace, GPS, distance, heart-rate, calorie, wearable, or cardio-progression system;
-- cardio remains excluded from weekly lifting-day consistency.
+- production app shell and built same-origin assets are precached for offline reload;
+- the service worker ignores cross-origin Supabase/auth/data requests rather than caching them;
+- service-worker caches are versioned and old shell caches are removed on activation;
+- later app updates wait for an explicit **Update app** action instead of force-reloading an active lift;
+- browser-supported install prompts surface a compact **Install** affordance;
+- standalone display mode suppresses redundant install UI;
+- a compact global offline state explains that workout changes remain on-device until reconnect;
+- Playwright validates offline production-shell reload in both configured browser projects.
 
-Next roadmap slice: **Phase 12 — PWA/offline hardening**.
+Next roadmap slice: **Phase 12C — Reconnect + retry hardening**.
 
-## Supabase for v0.10.0
+## Supabase for v0.11.1
 
-Run `supabase/migrations/20260821000200_cardio_accessory_logging.sql` after the Phase 10 migration.
-
-Cardio logging is accessory-only: completed IN_APP cardio rows reconcile through the existing lifting-v1 ledger, only the best eligible cardio bonus scores each day, and cardio never satisfies weekly lifting-day targets.
+No new Supabase migration is required for Phase 12B. Continue using the database schema already established through Phase 11.
 
 ## Previous v0.9.0 Supabase checkpoint
 
