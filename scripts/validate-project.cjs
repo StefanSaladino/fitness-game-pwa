@@ -849,8 +849,57 @@ ok(/no level formula/i.test(phase10Doc) && /leaves levels undefined/i.test(phase
 ok(/never add XP|never affect XP|never add XP/i.test(phase10Doc) || /never add XP/i.test(phase10Doc), 'Phase 10 documentation keeps social mechanics outside XP');
 ok(/raw sets/i.test(phase10Doc) && /workout notes/i.test(phase10Doc), 'Phase 10 documentation locks privacy-safe feed summaries');
 ok(/Phase 10 — Group competition\/social — DONE/.test(read('docs/ROADMAP.md')), 'roadmap records Phase 10 competition/social completion');
-ok(/Phase 11 — Cardio accessory logging — NEXT/.test(read('docs/ROADMAP.md')), 'roadmap advances to Phase 11 cardio accessory logging');
-ok(packageJson.version === '0.9.0' && packageLockJson.version === '0.9.0', 'project metadata records v0.9.0');
+ok(/Phase 11 — Cardio accessory logging — (?:NEXT|DONE)/.test(read('docs/ROADMAP.md')), 'roadmap retains Phase 11 cardio accessory logging');
+ok(versionAtLeast(packageJson.version, '0.9.0') && versionAtLeast(packageLockJson.version, '0.9.0'), 'project metadata is at or beyond v0.9.0');
+
+
+// Phase 11 — cardio accessory logging
+for (const rel of [
+  'src/features/cardio/model.ts',
+  'src/features/cardio/cardioService.ts',
+  'src/features/cardio/hooks/useCardio.ts',
+  'src/features/cardio/components/CardioController.tsx',
+  'src/features/cardio/components/CardioScreen.tsx',
+  'src/features/cardio/components/CardioScreen.module.css',
+  'supabase/migrations/20260821000200_cardio_accessory_logging.sql',
+  'supabase/tests/026_cardio_accessory_logging.test.sql',
+  'docs/PHASE11-CARDIO-ACCESSORY-LOGGING.md',
+  'tests/integration/cardio-accessory-journey.test.tsx',
+]) ok(fs.existsSync(path.join(root, rel)), `${rel} exists`);
+const phase11Migration = read('supabase/migrations/20260821000200_cardio_accessory_logging.sql');
+const phase11Test = read('supabase/tests/026_cardio_accessory_logging.test.sql');
+const phase11Model = read('src/features/cardio/model.ts');
+const phase11Service = read('src/features/cardio/cardioService.ts');
+const phase11Screen = read('src/features/cardio/components/CardioScreen.tsx');
+const phase11Product = read('src/features/product/ProductController.tsx');
+const phase11Doc = read('docs/PHASE11-CARDIO-ACCESSORY-LOGGING.md');
+const phase11Plan = Number((phase11Test.match(/select\s+plan\((\d+)\)/i) || [])[1]);
+const phase11Count = (phase11Test.match(/select\s+(?:has_table|has_column|has_function|col_is_pk|results_eq|throws_ok|lives_ok|is|cmp_ok|ok)\s*\(/gi) || []).length;
+ok((phase11Migration.match(/\$\$/g) || []).length % 2 === 0, 'Phase 11 migration dollar-quote delimiters are balanced');
+ok(/log_cardio_activity/.test(phase11Migration) && /delete_cardio_activity/.test(phase11Migration), 'Phase 11 exposes guarded cardio log and correction RPCs');
+ok(/get_my_cardio_history/.test(phase11Migration) && /get_my_cardio_summary/.test(phase11Migration), 'Phase 11 exposes guarded cardio history and analytics RPCs');
+ok(/'RUNNING','WALKING_HIKING','CYCLING','SWIMMING','SPORT','CARDIO','HIIT'/.test(phase11Migration), 'Phase 11 server supports exactly the locked cardio categories');
+ok(/source, started_at, ended_at/.test(phase11Migration) && /'COMPLETED', 'IN_APP'/.test(phase11Migration), 'cardio logger stores completed in-app source sessions');
+ok(!/insert into public\.scoring_events|update public\.scoring_events|delete from public\.scoring_events/i.test(phase11Migration), 'Phase 11 does not create a second scoring writer');
+ok(!/weekly_lifting_snapshots|lifting_consistency_state/.test(phase11Migration), 'cardio migration never writes weekly lifting consistency state');
+ok(/daily_bonus_xp/.test(phase11Migration) && /event_type = 'CARDIO_BONUS'/.test(phase11Migration), 'cardio history identifies authoritative daily bonus ownership');
+ok(/least\(greatest\(coalesce\(p_limit,50\),1\),100\)/.test(phase11Migration), 'cardio history read model has a server-side result cap');
+ok(Number.isInteger(phase11Plan) && phase11Plan === 34 && phase11Plan === phase11Count, 'Phase 11 pgTAP plan matches 34 assertions');
+ok(/CARDIO_BONUS_MIN_ACTIVE_SECONDS/.test(phase11Model) && /cardioDurationTierXp/.test(phase11Model), 'cardio UI derives qualification minimums from the locked domain oracle');
+ok(/get_my_cardio_history/.test(phase11Service) && /get_my_cardio_summary/.test(phase11Service) && /log_cardio_activity/.test(phase11Service), 'cardio service uses only guarded Phase 11 RPCs');
+ok(/never counts as a lifting day/i.test(phase11Screen), 'cardio screen explicitly preserves lifting-day semantics');
+ok(/Only the day’s best eligible cardio bonus is awarded/.test(phase11Screen), 'cardio screen explains best-of-day bonus behavior');
+ok(/activeSection === 'cardio'/.test(phase11Product) && /cardioService\?: CardioService/.test(phase11Product), 'ProductController composes injectable accessory cardio navigation');
+const phase11Navigation = read('src/components/layout/navigation.ts');
+ok(/export type AppSection = [^\n]*'cardio'/.test(phase11Navigation), 'AppSection explicitly includes the Phase 11 cardio route');
+ok(!/\{ id: 'cardio', label:/.test(phase11Navigation), 'cardio remains an accessory route rather than a primary navigation item');
+ok(/Log cardio/.test(read('src/features/dashboard/components/DashboardScreen.tsx')) && /Log cardio instead/.test(read('src/features/workout/components/WorkoutSessionScreen.tsx')), 'cardio is reachable from home and lifting entry points');
+ok(/never counts as a lifting day/i.test(read('tests/integration/cardio-accessory-journey.test.tsx')) && /Delete Cycling/.test(read('tests/integration/cardio-accessory-journey.test.tsx')), 'Phase 11 integration journey covers accessory semantics and correction');
+ok(/does not add pace, distance, GPS routes, heart rate/i.test(phase11Doc), 'Phase 11 documentation keeps cardio scope deliberately lightweight');
+ok(/Cardio never creates `LIFTING_WORKOUT` events/.test(phase11Doc), 'Phase 11 documentation locks cardio outside lifting-day consistency');
+ok(/Phase 11 — Cardio accessory logging — DONE/.test(read('docs/ROADMAP.md')), 'roadmap records Phase 11 cardio accessory logging completion');
+ok(/Phase 12 — PWA\/offline hardening — NEXT/.test(read('docs/ROADMAP.md')), 'roadmap advances to Phase 12 PWA/offline hardening');
+ok(packageJson.version === '0.10.0' && packageLockJson.version === '0.10.0', 'project metadata records v0.10.0');
 
 
 // Phase 5.6.1 — targeted user invitations

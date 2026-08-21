@@ -108,7 +108,7 @@ export function DashboardScreen({ profile, group, snapshot, onNavigate, onSignOu
             <p className={styles.subhead}>Progress from completed lifts and authoritative lifting-v1 scoring.</p>
           </div>
           <div className={styles.headerRight}>
-            <Button onClick={() => onNavigate('workouts')}>Start Lift</Button>
+            <div className={styles.primaryActions}><Button onClick={() => onNavigate('workouts')}>Start Lift</Button><Button variant="secondary" onClick={() => onNavigate('cardio')}>Log cardio</Button></div>
             <div className={styles.identity}>
               <ProfilePicture displayName={profile.displayName} size="lg" src={snapshot.currentUserProfilePictureUrl} />
               <div>

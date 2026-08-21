@@ -360,3 +360,5 @@
 }
 
 .leaderboardActions { display:flex; align-items:center; gap:10px; flex-wrap:wrap; justify-content:flex-end; }
+
+.primaryActions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}@media(max-width:760px){.primaryActions{justify-content:flex-start}}

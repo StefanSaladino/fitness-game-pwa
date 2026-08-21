@@ -418,3 +418,5 @@
 .queueError {
   font-size: 0.72rem !important;
 }
+
+.startActions{display:flex;gap:10px;flex-wrap:wrap}

@@ -1,24 +1,28 @@
-# Fitness Game PWA — v0.9.0
+# Fitness Game PWA — v0.10.0
 
-Current checkpoint: **Phase 10 — Group competition/social**.
+Current checkpoint: **Phase 11 — Cardio accessory logging**.
 
 Completed in this checkpoint:
 
-- first-class **Compete** destination for each workout group;
-- authoritative current-week and all-time `lifting-v1` XP standings;
-- lifting-day, PR, and earned-badge context alongside XP rank;
-- privacy-safe crew feed for qualifying lifts, real PRs, badges, and completed weekly goals;
-- stable cursor pagination for larger group histories;
-- one lightweight `FIRE`, `STRONG`, or `CLAP` reaction per member/activity;
-- opaque deterministic activity keys so social APIs do not expose source row identifiers;
-- active-membership enforcement for standings, feed reads, and reactions;
-- raw sets, workout notes, and complete workout contents remain private;
-- reactions and badges remain non-XP and cannot affect ranking/progression;
-- authoritative XP totals are surfaced without inventing an unapproved level curve.
+- lightweight completed-cardio logging for Running, Walking/Hiking, Cycling, Swimming, Sport, Cardio, and HIIT;
+- duration-only 5/10/15 XP tier preview using the locked activity minimums;
+- authoritative best-of-day cardio scoring through the existing `lifting-v1` reconciler;
+- safe cardio deletion with automatic XP reconciliation;
+- recent cardio history showing which activity currently owns the daily bonus;
+- lightweight session/minute/30-day cardio analytics;
+- dashboard and lifting-entry shortcuts into accessory cardio;
+- no pace, GPS, distance, heart-rate, calorie, wearable, or cardio-progression system;
+- cardio remains excluded from weekly lifting-day consistency.
 
-Next roadmap slice: **Phase 11 — Cardio accessory logging**.
+Next roadmap slice: **Phase 12 — PWA/offline hardening**.
 
-## Supabase for v0.9.0
+## Supabase for v0.10.0
+
+Run `supabase/migrations/20260821000200_cardio_accessory_logging.sql` after the Phase 10 migration.
+
+Cardio logging is accessory-only: completed IN_APP cardio rows reconcile through the existing lifting-v1 ledger, only the best eligible cardio bonus scores each day, and cardio never satisfies weekly lifting-day targets.
+
+## Previous v0.9.0 Supabase checkpoint
 
 Apply `supabase/migrations/20260821000100_group_competition_social.sql`, then run the database regression set ending with `025_group_competition_social.test.sql`.
 

@@ -1,6 +1,6 @@
 import type { IconName } from '../ui';
 
-export type AppSection = 'home' | 'workouts' | 'groups' | 'progress' | 'compete' | 'profile';
+export type AppSection = 'home' | 'workouts' | 'cardio' | 'groups' | 'progress' | 'compete' | 'profile';
 
 export interface NavigationItem {
   id: AppSection;

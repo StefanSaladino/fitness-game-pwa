@@ -454,7 +454,7 @@ Apply the UI design gate before leaderboard/activity-feed implementation.
 - lightweight reactions
 - privacy-safe summaries rather than raw workout-set exposure
 
-## Phase 11 — Cardio accessory logging — NEXT
+## Phase 11 — Cardio accessory logging — DONE
 
 Cardio remains deliberately secondary.
 
@@ -467,7 +467,7 @@ Cardio remains deliberately secondary.
 - history/analytics
 - no cardio contribution to lifting-day weekly target
 
-## Phase 12 — PWA/offline hardening
+## Phase 12 — PWA/offline hardening — NEXT
 
 - IndexedDB active lift state
 - queued mutations

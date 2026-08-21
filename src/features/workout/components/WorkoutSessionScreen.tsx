@@ -168,9 +168,12 @@ export function WorkoutStartScreen(props: StartProps) {
           </div>
         )}
         {props.error && <p className={styles.error} role="alert">{props.error}</p>}
-        <Button disabled={props.busyAction !== null || startingAtMs !== null} onClick={startNow}>
-          {props.busyAction === 'start' || startingAtMs !== null ? 'Starting…' : 'Start Lift'}
-        </Button>
+        <div className={styles.startActions}>
+          <Button disabled={props.busyAction !== null || startingAtMs !== null} onClick={startNow}>
+            {props.busyAction === 'start' || startingAtMs !== null ? 'Starting…' : 'Start Lift'}
+          </Button>
+          <Button variant="secondary" disabled={props.busyAction !== null || startingAtMs !== null} onClick={() => props.onNavigate('cardio')}>Log cardio instead</Button>
+        </div>
       </main>
     </WorkoutShell>
   );

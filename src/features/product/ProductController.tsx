@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import type { AppSection } from '../../components/layout';
 import { signOut } from '../auth/authService';
 import { DashboardController, type DashboardService } from '../dashboard';
+import { CardioController, type CardioService } from '../cardio';
 import { GroupAdministrationController, type GroupService, type GroupSummary } from '../groups';
 import type { OnboardingProfile } from '../onboarding';
 import { ExerciseProgressController, type ExerciseProgressService } from '../progress';
@@ -21,9 +22,10 @@ interface ProductControllerProps {
   workoutMutationService?: WorkoutMutationService;
   progressService?: ExerciseProgressService;
   socialService?: GroupSocialService;
+  cardioService?: CardioService;
 }
 
-export function ProductController({ profile, groups, onGroupsChanged, groupService, dashboardService, workoutService, workoutExerciseService, exercisePickerService, workoutSetService, workoutMutationService, progressService, socialService }: ProductControllerProps) {
+export function ProductController({ profile, groups, onGroupsChanged, groupService, dashboardService, workoutService, workoutExerciseService, exercisePickerService, workoutSetService, workoutMutationService, progressService, socialService, cardioService }: ProductControllerProps) {
   const [activeSection, setActiveSection] = useState<AppSection>('home');
   const [selectedGroupId, setSelectedGroupId] = useState(groups[0]?.id ?? '');
 
@@ -37,7 +39,7 @@ export function ProductController({ profile, groups, onGroupsChanged, groupServi
   );
 
   const onNavigate = (section: AppSection) => {
-    if (section === 'home' || section === 'groups' || section === 'workouts' || section === 'progress' || section === 'compete') setActiveSection(section);
+    if (section === 'home' || section === 'groups' || section === 'workouts' || section === 'cardio' || section === 'progress' || section === 'compete') setActiveSection(section);
   };
   const onSignOut = () => { void signOut(); };
 
@@ -56,6 +58,11 @@ export function ProductController({ profile, groups, onGroupsChanged, groupServi
         mutationService={workoutMutationService}
       />
     );
+  }
+
+
+  if (activeSection === 'cardio') {
+    return <CardioController onNavigate={onNavigate} onSignOut={onSignOut} profile={profile} service={cardioService} />;
   }
 
   if (activeSection === 'progress') {
