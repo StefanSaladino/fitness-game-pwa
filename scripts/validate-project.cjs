@@ -226,7 +226,7 @@ ok(/get_group_lifting_leaderboard/.test(dashboardMigration), 'dashboard migratio
 ok(/is_active_group_member\(p_group_id\)/.test(dashboardMigration), 'leaderboard RPC requires active group membership');
 ok(/scoring_version = 'lifting-v1'/.test(dashboardMigration), 'leaderboard aggregates only lifting-v1 scoring events');
 ok(/revoke all on function public\.get_group_lifting_leaderboard/.test(dashboardMigration), 'leaderboard RPC revokes public execution');
-ok(/qualifies_lifting/.test(dashboardService), 'dashboard weekly progress reads explicit lifting qualification');
+ok(/event_type === 'LIFTING_WORKOUT'/.test(dashboardService), 'dashboard weekly progress reads authoritative lifting-v1 scoring dates');
 ok(/exercise_progress/.test(dashboardService), 'dashboard reads exercise progress snapshots for PRs');
 ok(/get_group_lifting_leaderboard/.test(dashboardService), 'dashboard service uses the guarded leaderboard RPC');
 ok(/useDashboard/.test(read('src/features/dashboard/components/DashboardController.tsx')), 'dashboard controller delegates async reads to useDashboard');
@@ -629,7 +629,7 @@ ok(Number.isInteger(phase64dPlan) && phase64dPlan === 17 && phase64dPlan === pha
 ok(/no new migration/i.test(reliabilityDoc), 'Phase 6.4D remains a validation-only database slice');
 ok(/6\.4D Reliability integration gate — DONE/.test(read('docs/ROADMAP.md')), 'roadmap records Phase 6.4D completion');
 ok(/Phase 7 — Authoritative lifting-v1 scoring persistence — DONE/.test(read('docs/ROADMAP.md')), 'roadmap records Phase 7 authoritative scoring completion');
-ok(/"version": "0\.7\.0"/.test(read('package.json')) && /"version": "0\.7\.0"/.test(read('package-lock.json')), 'project metadata records the v0.7.0 progression-history checkpoint');
+ok(/"version": "0\.8\.0"/.test(read('package.json')) && /"version": "0\.8\.0"/.test(read('package-lock.json')), 'project metadata records the v0.8.0 weekly-consistency checkpoint');
 
 
 // Phase 7 — authoritative lifting-v1 scoring persistence
@@ -711,9 +711,61 @@ ok(/progressService\?: ExerciseProgressService/.test(progressProductController) 
 ok(progressHistoryCss.length > 2500, 'Phase 8 Progress styling is substantial and colocated in a CSS Module');
 ok(!/exercisePanel|progressGrid|historyList/.test(read('src/styles/global.css')), 'Phase 8 Progress selectors are not added to global CSS');
 ok(/Phase 8 — Exercise progression engine \+ history — DONE/.test(read('docs/ROADMAP.md')), 'roadmap records Phase 8 progression history completion');
-ok(/Phase 9 — Weekly lifting consistency \+ badges — NEXT/.test(read('docs/ROADMAP.md')), 'roadmap advances to Phase 9 weekly consistency and badges');
+ok(/Phase 9 — Weekly lifting consistency \+ badges — DONE/.test(read('docs/ROADMAP.md')), 'roadmap records Phase 9 weekly consistency and badges completion');
 ok(/does not[\s\S]*change `lifting-v1` scoring/i.test(progressHistoryDoc), 'Phase 8 documentation preserves authoritative Phase 7 scoring rules');
 ok(/no cross-user/i.test(progressHistoryDoc), 'Phase 8 documents personal-only progression comparison');
+
+
+// Phase 9 — weekly lifting consistency + badges
+for (const rel of [
+  'src/features/consistency/model.ts',
+  'src/features/consistency/badges.ts',
+  'src/features/consistency/consistencyService.ts',
+  'supabase/migrations/20260820000500_weekly_consistency_badges.sql',
+  'supabase/tests/024_weekly_consistency_badges.test.sql',
+  'docs/PHASE9-WEEKLY-CONSISTENCY-BADGES.md',
+]) ok(fs.existsSync(path.join(root, rel)), `${rel} exists`);
+const phase9Migration = read('supabase/migrations/20260820000500_weekly_consistency_badges.sql');
+const phase9Test = read('supabase/tests/024_weekly_consistency_badges.test.sql');
+const phase9Doc = read('docs/PHASE9-WEEKLY-CONSISTENCY-BADGES.md');
+const consistencyService = read('src/features/consistency/consistencyService.ts');
+const badgeCatalog = read('src/features/consistency/badges.ts');
+const phase9DashboardService = read('src/features/dashboard/dashboardService.ts');
+const phase9DashboardScreen = read('src/features/dashboard/components/DashboardScreen.tsx');
+const phase9DashboardCss = read('src/features/dashboard/components/DashboardScreen.module.css');
+const phase9Plan = Number((phase9Test.match(/select\s+plan\((\d+)\)/i) || [])[1]);
+const phase9Count = (phase9Test.match(/select\s+(?:has_table|has_column|has_function|col_is_pk|results_eq|throws_ok|lives_ok|is|cmp_ok|ok)\s*\(/gi) || []).length;
+ok((phase9Migration.match(/\$\$/g) || []).length % 2 === 0, 'Phase 9 migration dollar-quote delimiters are balanced');
+ok(/create table if not exists public\.weekly_lifting_snapshots/.test(phase9Migration), 'Phase 9 persists completed-week lifting snapshots');
+ok(/create table if not exists public\.lifting_consistency_state/.test(phase9Migration), 'Phase 9 persists completed-week streak state');
+ok(/create table if not exists public\.user_badges/.test(phase9Migration), 'Phase 9 persists non-XP badges');
+ok(/pending_weekly_workout_target_week_start/.test(phase9Migration) && /v_current_week_start \+ 7/.test(phase9Migration), 'scheduled weekly target changes persist their next-Monday boundary');
+ok(/normalize_pending_weekly_target_boundary/.test(phase9Migration) && /profiles_normalize_pending_weekly_target_boundary/.test(phase9Migration), 'profile boundary keeps pending target and effective Monday paired across older writers');
+ok(/event_type = 'LIFTING_WORKOUT'/.test(phase9Migration) && /scoring_version = 'lifting-v1'/.test(phase9Migration), 'weekly lifting days derive from the authoritative lifting-v1 ledger');
+ok(/v_week < v_current_week_start/.test(phase9Migration), 'current in-progress week is excluded from completed-week snapshots');
+ok(/current_completed_week_streak/.test(phase9Migration) && /best_completed_week_streak/.test(phase9Migration), 'Phase 9 maintains current and best completed-week streaks');
+ok(/sync_lifting_badge/.test(phase9Migration) && /FIRST_PR/.test(phase9Migration) && /GOAL_STREAK_4/.test(phase9Migration), 'Phase 9 derives PR and consistency badge milestones');
+ok(/CARDIO_BONUS_DAYS_5/.test(phase9Migration) && /event_type = 'CARDIO_BONUS'/.test(phase9Migration), 'cardio accessory badges remain separate from lifting-day consistency');
+ok(!/insert into public\.scoring_events|update public\.scoring_events/i.test(phase9Migration), 'Phase 9 never writes XP/scoring events');
+ok(/revoke all on public\.user_badges from public, anon, authenticated/.test(phase9Migration), 'authenticated clients cannot directly mutate badge state');
+ok(/get_my_lifting_consistency_summary/.test(phase9Migration) && /auth\.uid\(\)/.test(phase9Migration), 'Phase 9 exposes a self-scoped authenticated consistency summary');
+ok(/reconcile_weekly_lifting_consistency_for_user/.test(phase9Migration) && /pg_advisory_xact_lock/.test(phase9Migration), 'Phase 9 serializes authoritative per-user consistency reconciliation');
+ok(/zz_weekly_consistency_workout_sessions/.test(phase9Migration) && /zz_weekly_consistency_workout_sets/.test(phase9Migration), 'source changes reconcile weekly consistency after Phase 7 scoring');
+ok(Number.isInteger(phase9Plan) && phase9Plan === 46 && phase9Plan === phase9Count, 'Phase 9 pgTAP plan matches 46 assertions');
+ok(/get_my_lifting_consistency_summary/.test(consistencyService), 'consistency service delegates to the guarded Phase 9 summary RPC');
+ok(/LIFTING_BADGE_KEYS/.test(consistencyService) && /parseBadges/.test(consistencyService), 'consistency service validates persisted badge keys');
+ok(/never add XP/i.test(phase9DashboardScreen), 'dashboard explicitly labels badges as non-XP recognition');
+ok(/Recent completed weeks/.test(phase9DashboardScreen) && /currentCompletedWeekStreak/.test(phase9DashboardScreen), 'dashboard surfaces completed-week snapshot and streak state');
+ok(/liftingBadgeDefinition/.test(phase9DashboardScreen) && /Earned badges/.test(phase9DashboardScreen), 'dashboard renders badge catalog copy from persisted earned keys');
+ok(/event_type === 'LIFTING_WORKOUT'/.test(phase9DashboardService), 'dashboard current lifting days use authoritative scoring events');
+ok(/createLiftingConsistencyService/.test(phase9DashboardService), 'dashboard composes the Phase 9 consistency read boundary');
+ok(/GOAL_STREAK_8/.test(badgeCatalog) && /CARDIO_BONUS_DAYS_10/.test(badgeCatalog), 'badge catalog includes capped consistency and accessory-cardio milestones');
+ok(/consistencySection/.test(phase9DashboardCss) && /badgeGrid/.test(phase9DashboardCss), 'Phase 9 dashboard styling remains colocated in its CSS Module');
+ok(!/consistencySection|badgeGrid|recentWeeks/.test(read('src/styles/global.css')), 'Phase 9 selectors are not added to global CSS');
+ok(/Phase 9 — Weekly lifting consistency \+ badges — DONE/.test(read('docs/ROADMAP.md')), 'roadmap records Phase 9 completion');
+ok(/Phase 10 — Group competition\/social — NEXT/.test(read('docs/ROADMAP.md')), 'roadmap advances to Phase 10 group competition/social');
+ok(/badges are derived recognition only/i.test(phase9Doc) && /never write `scoring_events`/i.test(phase9Doc), 'Phase 9 documentation keeps badges outside XP scoring');
+ok(/"version": "0\.8\.0"/.test(read('package.json')) && /"version": "0\.8\.0"/.test(read('package-lock.json')), 'project metadata records v0.8.0');
 
 
 // Phase 5.6.1 — targeted user invitations
@@ -731,5 +783,17 @@ ok(/Your invite ID/.test(read('src/features/groups/components/GroupSetupScreen.t
 ok(/is null or v_role not in/.test(targetedInviteMigration),'targeted invite admin checks reject null/outsider roles');
 ok(!/Copy code/.test(read('src/features/groups/components/GroupAdministrationScreen.tsx')),'group UI does not expose reusable copy-code actions');
 ok(Number.isInteger(targetedInvitePlan) && targetedInvitePlan===targetedInviteCount && targetedInvitePlan>=29,'targeted invitation pgTAP plan covers the full recipient lifecycle');
+
+
+// Phase 9 integration fixture must carry the complete dashboard consistency contract.
+const phase9GroupProductIntegration = read('tests/integration/group-product-journey.test.tsx');
+ok(
+  /consistency:\s*\{[\s\S]*currentCompletedWeekStreak[\s\S]*bestCompletedWeekStreak[\s\S]*badges:\s*\[\]/.test(phase9GroupProductIntegration),
+  'Phase 9 group-product integration fixture includes the required consistency snapshot',
+);
+ok(
+  (phase9GroupProductIntegration.match(/Completed weeks & badges/g) || []).length >= 2,
+  'Phase 9 integrated owner and member journeys render weekly consistency content',
+);
 
 console.log(`Project structural validation passed: ${assertions} assertions.`);

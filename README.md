@@ -1,26 +1,23 @@
-# Fitness Game PWA — v0.7.0
+# Fitness Game PWA — v0.8.0
 
-Current checkpoint: **Phase 8 — Exercise progression engine + history**.
+Current checkpoint: **Phase 9 — Weekly lifting consistency + badges**.
 
 Completed in this checkpoint:
 
-- active Progress destination in the primary product navigation;
-- self-scoped exercise progression overview read model;
-- per-exercise session history read model;
-- current PR / previous PR / latest-performance separation;
-- weighted Epley e1RM history from authoritative Phase 7 observations;
-- plain-bodyweight best-rep history;
-- baseline, PR, and current-PR timeline states;
-- completed-session frequency and last-performed context;
-- completed working-set volume exposed as analytics-only;
-- added-weight/assisted bodyweight work retained as analytics without being compared to plain-bodyweight PRs;
-- service, hook, presentation, integration, structural, and pgTAP coverage.
+- authoritative Monday-Sunday lifting-goal snapshots;
+- completed-week current and best streak state;
+- next-Monday effective dates for scheduled weekly-target changes;
+- PR, lift-day, consistency, and accessory-cardio badges;
+- badges remain recognition-only and award no XP;
+- historical reconciliation removes stale streak/badge state after corrected workout history;
+- dashboard surfaces completed-week consistency, recent weekly snapshots, and earned badges;
+- current lifting days are derived from authoritative `lifting-v1` scoring events rather than transitional qualification flags.
 
-Next roadmap slice: **Phase 9 — Weekly lifting consistency + badges**.
+Next roadmap slice: **Phase 10 — Group competition/social**.
 
-## Supabase for v0.7.0
+## Supabase for v0.8.0
 
-Apply `supabase/migrations/20260820000400_exercise_progress_history.sql`, then run the database regression set ending with `023_exercise_progress_history.test.sql`.
+Apply `supabase/migrations/20260820000500_weekly_consistency_badges.sql`, then run the database regression set ending with `024_weekly_consistency_badges.test.sql`.
 
 ## Local validation
 

@@ -27,7 +27,8 @@ class FakeQuery {
     if (this.table === 'scoring_events') {
       if (this.inFilters.has('workout_id')) return { data: [{ event_type: 'LIFTING_WORKOUT', amount: 50, workout_id: 'lift-1' }], error: null };
       return { data: [
-        { event_type: 'LIFTING_WORKOUT', amount: 50, workout_id: 'lift-1' },
+        { event_type: 'LIFTING_WORKOUT', amount: 50, workout_id: 'lift-1', scoring_date: '2026-08-17' },
+        { event_type: 'LIFTING_WORKOUT', amount: 50, workout_id: 'lift-2', scoring_date: '2026-08-19' },
         { event_type: 'EXERCISE_COMPLETE', amount: 20, workout_id: 'lift-1' },
         { event_type: 'EXERCISE_PROGRESS', amount: 10, workout_id: 'lift-1' },
         { event_type: 'CARDIO_BONUS', amount: 5, workout_id: null },
@@ -51,11 +52,27 @@ class FakeQuery {
 function fakeClient(): SupabaseClient {
   const client = {
     from(table: string) { return new FakeQuery(table); },
-    rpc() {
+    rpc(name: string) {
+      if (name === 'get_my_lifting_consistency_summary') {
+        return Promise.resolve({
+          data: [{
+            current_week_start: '2026-08-17',
+            current_week_target: 4,
+            current_week_lifting_days: 2,
+            current_completed_week_streak: 2,
+            best_completed_week_streak: 3,
+            completed_weeks: 4,
+            goals_hit: 3,
+            recent_weeks: [{ weekStart: '2026-08-10', target: 4, liftingDays: 4, achieved: true }],
+            badges: [{ badgeKey: 'GOAL_STREAK_2', earnedAt: '2026-08-17T04:00:00Z' }],
+          }],
+          error: null,
+        });
+      }
       return Promise.resolve({
         data: [
           { member_user_id: 'user-2', username: 'alex', display_name: 'Alex', profile_picture_path: null, xp: 100 },
-          { member_user_id: 'user-1', username: 'stefan', display_name: 'Stefan', profile_picture_path: 'user-1/pfp.webp', xp: 85 },
+          { member_user_id: 'user-1', username: 'stefan', display_name: 'Stefan', profile_picture_path: 'user-1/pfp.webp', xp: 135 },
         ],
         error: null,
       });
@@ -76,11 +93,12 @@ describe('dashboard service', () => {
 
     expect(result.weekStart).toBe('2026-08-17');
     expect(result.completedLiftingDays).toBe(2);
-    expect(result.weeklyXp).toBe(85);
-    expect(result.xpBreakdown).toEqual({ workout: 50, exercises: 20, progression: 10, cardio: 5 });
+    expect(result.weeklyXp).toBe(135);
+    expect(result.xpBreakdown).toEqual({ workout: 100, exercises: 20, progression: 10, cardio: 5 });
     expect(result.recentLifts[0]).toMatchObject({ title: 'Upper Push', exerciseCount: 2, xp: 50 });
     expect(result.recentPrs[0]).toMatchObject({ exerciseName: 'Bench Press', bestValue: 111 });
-    expect(result.leaderboard[1]).toMatchObject({ rank: 2, isCurrentUser: true, xp: 85 });
+    expect(result.leaderboard[1]).toMatchObject({ rank: 2, isCurrentUser: true, xp: 135 });
     expect(result.currentUserProfilePictureUrl).toContain('user-1/pfp.webp');
+    expect(result.consistency).toMatchObject({ currentCompletedWeekStreak: 2, bestCompletedWeekStreak: 3, goalsHit: 3 });
   });
 });

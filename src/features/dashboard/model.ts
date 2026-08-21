@@ -1,3 +1,5 @@
+import type { LiftingConsistencySummary } from '../consistency';
+
 export type DashboardXpEventType = 'LIFTING_WORKOUT' | 'EXERCISE_COMPLETE' | 'EXERCISE_PROGRESS' | 'CARDIO_BONUS';
 
 export interface DashboardXpBreakdown {
@@ -51,6 +53,7 @@ export interface DashboardSnapshot {
   recentPrs: DashboardRecentPr[];
   leaderboard: DashboardLeaderboardEntry[];
   currentUserProfilePictureUrl: string | null;
+  consistency: LiftingConsistencySummary;
 }
 
 export interface DashboardLoadInput {

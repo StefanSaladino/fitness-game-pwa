@@ -433,7 +433,7 @@ Objective: make each canonical lift a first-class progression timeline.
 - added-weight/assisted comparison rules when defensible
 - no cross-user comparison in progression calculation
 
-## Phase 9 — Weekly lifting consistency + badges — NEXT
+## Phase 9 — Weekly lifting consistency + badges — DONE
 
 - weekly lifting-goal snapshots
 - completed-week goal streak
@@ -443,7 +443,7 @@ Objective: make each canonical lift a first-class progression timeline.
 - cardio accessory milestones where useful
 - badges remain non-XP initially
 
-## Phase 10 — Group competition/social
+## Phase 10 — Group competition/social — NEXT
 
 Apply the UI design gate before leaderboard/activity-feed implementation.
 

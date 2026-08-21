@@ -16,6 +16,11 @@ const snapshot: DashboardSnapshot = {
   recentPrs: [],
   leaderboard: [],
   currentUserProfilePictureUrl: null,
+  consistency: {
+    currentWeekStart: '2026-08-17', currentWeekTarget: 4, currentWeekLiftingDays: 2,
+    currentCompletedWeekStreak: 2, bestCompletedWeekStreak: 3, completedWeeks: 4, goalsHit: 3,
+    recentWeeks: [], badges: [],
+  },
 };
 
 describe('useDashboard', () => {

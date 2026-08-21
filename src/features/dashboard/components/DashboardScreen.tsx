@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { AppShell, type AppSection } from '../../../components/layout';
 import { Button } from '../../../components/ui';
+import { liftingBadgeDefinition } from '../../consistency';
 import type { GroupSummary } from '../../groups';
 import type { OnboardingProfile } from '../../onboarding';
 import { ProfilePicture } from '../../profile-picture';
@@ -57,14 +58,14 @@ function weekDates(weekStart: string): Array<{ date: string; label: string }> {
   });
 }
 
-function DashboardShell({ profile, children, onNavigate, onSignOut }: { profile: OnboardingProfile; children: ReactNode; onNavigate: (section: AppSection) => void; onSignOut: () => void }) {
+function DashboardShell({ profile, children, onNavigate, onSignOut, weeklyTarget = profile.weeklyWorkoutTarget }: { profile: OnboardingProfile; children: ReactNode; onNavigate: (section: AppSection) => void; onSignOut: () => void; weeklyTarget?: number }) {
   return (
     <AppShell
       activeItem="home"
       onNavigate={onNavigate}
       onSignOut={onSignOut}
       userLabel={profile.displayName}
-      userMeta={`@${profile.username} · ${profile.weeklyWorkoutTarget} lift days`}
+      userMeta={`@${profile.username} · ${weeklyTarget} lift days`}
     >
       {children}
     </AppShell>
@@ -98,7 +99,7 @@ export function DashboardScreen({ profile, group, snapshot, onNavigate, onSignOu
   const targetPercent = Math.min(100, Math.round((snapshot.completedLiftingDays / snapshot.weeklyTarget) * 100));
 
   return (
-    <DashboardShell profile={profile} onNavigate={onNavigate} onSignOut={onSignOut}>
+    <DashboardShell profile={profile} onNavigate={onNavigate} onSignOut={onSignOut} weeklyTarget={snapshot.weeklyTarget}>
       <div className={styles.dashboard}>
         <header className={styles.header}>
           <div>
@@ -145,6 +146,12 @@ export function DashboardScreen({ profile, group, snapshot, onNavigate, onSignOu
           </div>
 
           <div className={styles.metric}>
+            <span>Goal streak</span>
+            <strong>{snapshot.consistency.currentCompletedWeekStreak} wk</strong>
+            <small>Completed weeks only</small>
+          </div>
+
+          <div className={styles.metric}>
             <span>Group rank</span>
             <strong>{currentRank ? `#${currentRank.rank}` : '—'}</strong>
             <small>{snapshot.leaderboard.length ? `${snapshot.leaderboard.length} active members` : 'No ranking yet'}</small>
@@ -165,6 +172,63 @@ export function DashboardScreen({ profile, group, snapshot, onNavigate, onSignOu
             <div><dt>Progression</dt><dd>{snapshot.xpBreakdown.progression}</dd></div>
             <div className={styles.cardioRow}><dt>Cardio bonus</dt><dd>{snapshot.xpBreakdown.cardio}</dd></div>
           </dl>
+        </section>
+
+        <section className={styles.consistencySection} aria-labelledby="consistency-heading">
+          <div className={styles.sectionHeading}>
+            <div>
+              <p className={styles.sectionLabel}>Consistency</p>
+              <h2 id="consistency-heading">Completed weeks & badges</h2>
+            </div>
+            <p>Badges recognize lifting habits and PRs only. They never add XP.</p>
+          </div>
+
+          <div className={styles.consistencyOverview}>
+            <dl className={styles.consistencyStats}>
+              <div><dt>Current streak</dt><dd>{snapshot.consistency.currentCompletedWeekStreak} weeks</dd></div>
+              <div><dt>Best streak</dt><dd>{snapshot.consistency.bestCompletedWeekStreak} weeks</dd></div>
+              <div><dt>Goals hit</dt><dd>{snapshot.consistency.goalsHit} / {snapshot.consistency.completedWeeks}</dd></div>
+            </dl>
+
+            <div className={styles.recentWeeks}>
+              <strong>Recent completed weeks</strong>
+              {snapshot.consistency.recentWeeks.length === 0 ? (
+                <p className={styles.empty}>Your first completed week will be snapshotted here.</p>
+              ) : (
+                <ul>
+                  {snapshot.consistency.recentWeeks.slice(0, 4).map((week) => (
+                    <li key={week.weekStart}>
+                      <time dateTime={week.weekStart}>{formatScoringDate(week.weekStart)}</time>
+                      <span>{week.liftingDays}/{week.target} lift days</span>
+                      <b className={week.achieved ? styles.weekHit : styles.weekMiss}>{week.achieved ? 'Hit' : 'Miss'}</b>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          </div>
+
+          <div className={styles.badgeHeading}>
+            <strong>Earned badges</strong>
+            <span>{snapshot.consistency.badges.length}</span>
+          </div>
+          {snapshot.consistency.badges.length === 0 ? (
+            <p className={styles.empty}>Complete lift days, weekly goals, and personal records to earn recognition badges.</p>
+          ) : (
+            <ul className={styles.badgeGrid}>
+              {snapshot.consistency.badges.map((badge) => {
+                const definition = liftingBadgeDefinition(badge.badgeKey);
+                return (
+                  <li key={badge.badgeKey}>
+                    <span className={styles.badgeCategory}>{definition.category}</span>
+                    <strong>{definition.title}</strong>
+                    <p>{definition.description}</p>
+                    <time dateTime={badge.earnedAt}>Earned {formatTimestamp(badge.earnedAt)}</time>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
         </section>
 
         <div className={styles.trainingColumns}>

@@ -43,6 +43,12 @@ const snapshot: DashboardSnapshot = {
     { rank: 1, userId: 'user-2', username: 'alex', displayName: 'Alex', profilePictureUrl: null, xp: 110, isCurrentUser: false },
     { rank: 2, userId: 'user-1', username: 'stefan', displayName: 'Stefan', profilePictureUrl: null, xp: 90, isCurrentUser: true },
   ],
+  consistency: {
+    currentWeekStart: '2026-08-17', currentWeekTarget: 4, currentWeekLiftingDays: 2,
+    currentCompletedWeekStreak: 2, bestCompletedWeekStreak: 3, completedWeeks: 4, goalsHit: 3,
+    recentWeeks: [{ weekStart: '2026-08-10', target: 4, liftingDays: 4, achieved: true }],
+    badges: [{ badgeKey: 'GOAL_STREAK_2', earnedAt: '2026-08-17T04:00:00.000Z' }],
+  },
 };
 
 describe('DashboardScreen', () => {
@@ -57,6 +63,10 @@ describe('DashboardScreen', () => {
     expect(screen.getByText('Bench Press')).toBeInTheDocument();
     expect(screen.getByText('Stefan (You)')).toBeInTheDocument();
     expect(screen.getByText('Cardio bonus')).toBeInTheDocument();
+    expect(screen.getByText('2 wk')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Completed weeks & badges' })).toBeInTheDocument();
+    expect(screen.getByText('2-Week Streak')).toBeInTheDocument();
+    expect(screen.getByText(/never add XP/i)).toBeInTheDocument();
     expect(screen.queryByText(/unlock your potential/i)).not.toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'Start Lift' }));
     expect(onNavigate).toHaveBeenCalledWith('workouts');

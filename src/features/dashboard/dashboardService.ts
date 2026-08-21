@@ -1,5 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { getSupabaseClient } from '../../lib/supabase';
+import { createLiftingConsistencyService } from '../consistency';
 import { scoringDateInTimezone, summarizeScoringEvents, uniqueScoringDayCount, weekBoundsForScoringDate } from './dashboardMath';
 import type {
   DashboardLeaderboardEntry,
@@ -22,7 +23,7 @@ type WorkoutRow = {
 };
 
 type WorkoutExerciseRow = { workout_id: string; exercise_id: string };
-type ScoringEventRow = { event_type: DashboardXpEventType; amount: number; workout_id: string | null };
+type ScoringEventRow = { event_type: DashboardXpEventType; amount: number; workout_id: string | null; scoring_date?: string };
 type ProgressRow = {
   exercise_id: string;
   metric_type: DashboardPrMetric;
@@ -65,26 +66,13 @@ export function createDashboardService(client: SupabaseClient = getSupabaseClien
   return {
     async load(input, now = new Date()) {
       const scoringDate = scoringDateInTimezone(now, input.timezone);
-      const { weekStart, weekEnd } = weekBoundsForScoringDate(scoringDate);
+      const consistency = await createLiftingConsistencyService(client).load();
+      const { weekStart, weekEnd } = weekBoundsForScoringDate(consistency.currentWeekStart || scoringDate);
 
-      const [weeklyGoalResult, weeklySessionsResult, weeklyEventsResult, recentWorkoutsResult, progressResult, profileResult, leaderboardResult] = await Promise.all([
-        client
-          .from('weekly_goals')
-          .select('target')
-          .eq('user_id', input.userId)
-          .eq('week_start', weekStart)
-          .limit(1),
-        client
-          .from('workout_sessions')
-          .select('scoring_date')
-          .eq('user_id', input.userId)
-          .eq('status', 'COMPLETED')
-          .eq('qualifies_lifting', true)
-          .gte('scoring_date', weekStart)
-          .lte('scoring_date', weekEnd),
+      const [weeklyEventsResult, recentWorkoutsResult, progressResult, profileResult, leaderboardResult] = await Promise.all([
         client
           .from('scoring_events')
-          .select('event_type, amount, workout_id')
+          .select('event_type, amount, workout_id, scoring_date')
           .eq('user_id', input.userId)
           .eq('scoring_version', 'lifting-v1')
           .gte('scoring_date', weekStart)
@@ -114,14 +102,15 @@ export function createDashboardService(client: SupabaseClient = getSupabaseClien
         }),
       ]);
 
-      for (const result of [weeklyGoalResult, weeklySessionsResult, weeklyEventsResult, recentWorkoutsResult, progressResult, profileResult, leaderboardResult]) {
+      for (const result of [weeklyEventsResult, recentWorkoutsResult, progressResult, profileResult, leaderboardResult]) {
         if (result.error) throw result.error;
       }
 
-      const weeklyGoalRows = (weeklyGoalResult.data ?? []) as Array<{ target: number }>;
-      const resolvedWeeklyTarget = weeklyGoalRows[0]?.target ?? input.weeklyTarget;
-      const weeklySessionDates = ((weeklySessionsResult.data ?? []) as Array<{ scoring_date: string }>).map((row) => row.scoring_date);
+      const resolvedWeeklyTarget = consistency.currentWeekTarget ?? input.weeklyTarget;
       const weeklyEvents = (weeklyEventsResult.data ?? []) as ScoringEventRow[];
+      const weeklySessionDates = weeklyEvents
+        .filter((event) => event.event_type === 'LIFTING_WORKOUT' && typeof event.scoring_date === 'string')
+        .map((event) => event.scoring_date!);
       const scoreSummary = summarizeScoringEvents(weeklyEvents.map((event) => ({ eventType: event.event_type, amount: Number(event.amount) })));
       const recentWorkoutRows = (recentWorkoutsResult.data ?? []) as WorkoutRow[];
       const progressRows = (progressResult.data ?? []) as ProgressRow[];
@@ -208,6 +197,7 @@ export function createDashboardService(client: SupabaseClient = getSupabaseClien
         recentPrs,
         leaderboard,
         currentUserProfilePictureUrl: publicPictureUrl(currentProfilePicturePath),
+        consistency,
       };
     },
   };
