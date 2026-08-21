@@ -41,7 +41,7 @@ describe('useWorkoutMutationQueue', () => {
     expect(result.current.appliedRevision).toBeGreaterThan(0);
   });
 
-  it('keeps retryable failures queued but returns terminal online failures immediately', async () => {
+  it('keeps retryable failures queued through backoff but returns terminal online failures immediately', async () => {
     const apply = vi.fn()
       .mockRejectedValueOnce(new TypeError('Failed to fetch'))
       .mockResolvedValueOnce(undefined);
@@ -49,14 +49,22 @@ describe('useWorkoutMutationQueue', () => {
     const { result } = renderHook(() => useWorkoutMutationQueue('user-1', 'workout-1', service));
     await waitFor(() => expect(result.current.hydrated).toBe(true));
 
-    await act(async () => {
-      const outcome = await result.current.executor.execute(request);
-      expect(outcome.state).toBe('queued');
-    });
-    expect(result.current.pendingCount).toBe(1);
+    vi.useFakeTimers();
+    try {
+      vi.setSystemTime('2026-08-21T19:35:00.000Z');
+      await act(async () => {
+        const outcome = await result.current.executor.execute(request);
+        expect(outcome.state).toBe('queued');
+      });
+      expect(result.current.pendingCount).toBe(1);
+      expect(apply).toHaveBeenCalledTimes(1);
 
-    await act(async () => { await result.current.replay(); });
-    await waitFor(() => expect(result.current.pendingCount).toBe(0));
+      await act(async () => { await vi.advanceTimersByTimeAsync(1_000); });
+      expect(result.current.pendingCount).toBe(0);
+      expect(apply).toHaveBeenCalledTimes(2);
+    } finally {
+      vi.useRealTimers();
+    }
 
     apply.mockRejectedValueOnce({ code: '22023', message: 'Weight is out of range' });
     await act(async () => {
@@ -88,7 +96,7 @@ describe('useWorkoutMutationQueue', () => {
     await act(async () => { await result.current.retryBlocked(); });
 
     await waitFor(() => expect(result.current.pendingCount).toBe(0));
-    expect(apply).toHaveBeenCalledWith(expect.objectContaining({ idempotencyKey: queued!.idempotencyKey }));
+    expect(apply).toHaveBeenCalledWith(expect.objectContaining({ idempotencyKey: queued!.idempotencyKey, attemptCount: 0 }));
   });
 
   it('keeps stale writes as explicit conflicts until the user chooses the server version', async () => {
@@ -133,4 +141,26 @@ describe('useWorkoutMutationQueue', () => {
     expect(apply).not.toHaveBeenCalled();
     expect(result.current.pendingCount).toBe(0);
   });
+  it('normalizes an exhausted persisted retry into an explicit blocked state after restart', async () => {
+    const storage = createWorkoutMutationStorage(null, window.localStorage);
+    const seedService = { apply: vi.fn(async () => undefined) } as WorkoutMutationService;
+    const seeded = renderHook(() => useWorkoutMutationQueue('user-1', 'workout-1', seedService, storage));
+    await waitFor(() => expect(seeded.result.current.hydrated).toBe(true));
+
+    Object.defineProperty(window.navigator, 'onLine', { configurable: true, value: false });
+    await act(async () => { await seeded.result.current.executor.execute(request); });
+    const [queued] = await storage.load('user-1');
+    expect(queued).toBeDefined();
+    await storage.save('user-1', [{ ...queued!, attemptCount: 4, lastAttemptAtMs: 1_000, status: 'pending' }]);
+    seeded.unmount();
+
+    Object.defineProperty(window.navigator, 'onLine', { configurable: true, value: true });
+    const apply = vi.fn(async () => undefined);
+    const restarted = renderHook(() => useWorkoutMutationQueue('user-1', 'workout-1', { apply } as WorkoutMutationService, storage));
+    await waitFor(() => expect(restarted.result.current.status).toBe('blocked'));
+
+    expect(apply).not.toHaveBeenCalled();
+    expect((await storage.load('user-1'))[0]).toEqual(expect.objectContaining({ attemptCount: 4, status: 'failed' }));
+  });
+
 });

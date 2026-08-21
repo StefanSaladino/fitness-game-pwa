@@ -1015,8 +1015,46 @@ ok(phase12bManifest.id === '/' && phase12bManifest.scope === '/' && phase12bMani
 ok(phase12bManifest.icons.every((icon) => /maskable/.test(icon.purpose || '')), 'install icons are declared maskable-capable');
 ok(/no Supabase migration/i.test(phase12bDoc) && /no scoring\/XP changes/i.test(phase12bDoc), 'Phase 12B documentation locks database and scoring non-goals');
 ok(/12B Offline shell \+ install UX — DONE/.test(phase12Roadmap), 'roadmap records Phase 12B completion');
-ok(/12C Reconnect \+ retry hardening — NEXT/.test(phase12Roadmap), 'roadmap advances to Phase 12C');
-ok(packageJson.version === '0.11.1' && packageLockJson.version === '0.11.1', 'project metadata records v0.11.1');
+ok(/12C Reconnect \+ retry hardening — (?:NEXT|DONE)/.test(phase12Roadmap), 'roadmap contains the Phase 12C reconnect/retry slice');
+ok(versionAtLeast(packageJson.version, '0.11.1') && versionAtLeast(packageLockJson.version, '0.11.1'), 'project metadata is at or beyond v0.11.1');
+
+
+// Phase 12C — reconnect + retry hardening
+for (const rel of [
+  'src/features/workout/mutations/workoutMutationRetry.ts',
+  'src/features/workout/mutations/workoutMutationRetry.test.ts',
+  'docs/PHASE12C-RECONNECT-RETRY-HARDENING.md',
+]) ok(fs.existsSync(path.join(root, rel)), `${rel} exists`);
+const phase12cRetry = read('src/features/workout/mutations/workoutMutationRetry.ts');
+const phase12cReplay = read('src/features/workout/mutations/workoutMutationReplay.ts');
+const phase12cReplayTest = read('src/features/workout/mutations/workoutMutationReplay.test.ts');
+const phase12cQueue = read('src/features/workout/hooks/useWorkoutMutationQueue.ts');
+const phase12cQueueTest = read('src/features/workout/hooks/useWorkoutMutationQueue.test.tsx');
+const phase12cController = read('src/features/workout/components/WorkoutController.tsx');
+const phase12cIntegration = read('tests/integration/workout-reliability-journey.test.tsx');
+const phase12cDoc = read('docs/PHASE12C-RECONNECT-RETRY-HARDENING.md');
+ok(/WORKOUT_MUTATION_AUTO_RETRY_LIMIT = 4/.test(phase12cRetry), 'Phase 12C caps each automatic mutation retry cycle at four attempts');
+ok(/RETRY_BASE_DELAY_MS = 1_000/.test(phase12cRetry) && /2 \*\* \(attemptCount - 1\)/.test(phase12cRetry), 'Phase 12C retry policy uses persisted exponential backoff');
+ok(/attemptCount === 0 \|\| item\.lastAttemptAtMs === null/.test(phase12cRetry) && /item\.lastAttemptAtMs \+ delay/.test(phase12cRetry), 'retry scheduling derives from queue-v1 persisted attempt metadata');
+ok(/item\.status !== 'pending'/.test(phase12cRetry), 'automatic retry policy excludes failed and conflict queue items');
+ok(/workoutMutationRetryBudgetExhausted\(nextAttemptCount\)/.test(phase12cReplay) && /retryBudgetExhausted \? 'failed'/.test(phase12cReplay), 'replay converts an exhausted retryable mutation into an explicit blocked item');
+ok(/stops automatic retry after the bounded retry budget is exhausted/.test(phase12cReplayTest), 'replay unit coverage locks automatic retry exhaustion');
+ok(/retryTimerRef/.test(phase12cQueue) && /window\.setTimeout/.test(phase12cQueue) && /workoutMutationNextAutoRetryAtMs/.test(phase12cQueue), 'mutation queue schedules bounded automatic replay rather than tight-loop retry');
+ok(/connectivityRevision/.test(phase12cQueue) && /window\.addEventListener\('online'/.test(phase12cQueue), 'reconnect wakes the retry scheduler without creating a new queue item');
+ok(/head\.status !== 'pending'/.test(phase12cQueue) && /workoutMutationCanAutoReplay\(head\)/.test(phase12cQueue), 'automatic replay only reaches eligible pending queue heads');
+ok(/workoutMutationRetryBudgetExhausted\(item\.attemptCount\)/.test(phase12cQueue) && /status: 'failed' as const/.test(phase12cQueue), 'hydration normalizes pre-12C exhausted pending entries into blocked state');
+ok(/attemptCount: 0/.test(phase12cQueue) && /lastAttemptAtMs: null/.test(phase12cQueue) && /const persisted = await replaceItems\(next\);\s*if \(!persisted\) return;/.test(phase12cQueue), 'manual Retry sync durably resets retry metadata before network replay');
+ok(/idempotencyKey: queued!\.idempotencyKey/.test(phase12cQueueTest), 'manual retry unit coverage preserves the existing idempotency key');
+ok(/normalizes an exhausted persisted retry into an explicit blocked state after restart/.test(phase12cQueueTest), 'hook coverage locks restart normalization for old high-attempt pending entries');
+ok(/await mutationQueue\.replay\(\);[\s\S]*const serverWorkout = await workout\.retry\(\);[\s\S]*Promise\.all\(\[composition\.retry\(\), sets\.retry\(\), picker\.retry\(\)\]\)/.test(phase12cController), 'reconnect orders eligible replay before authoritative workout/exercise/set rereads');
+ok(/preserves the same idempotency key across an app restart and reconciles after automatic retry/.test(phase12cIntegration), 'integration gate covers app-restart replay and reconciliation');
+ok(/persistedBeforeRestart!\.idempotencyKey/.test(phase12cIntegration) && /backend\.addSetEffects\)\.toBe\(1\)/.test(phase12cIntegration), 'restart integration proves same-key replay cannot duplicate the committed ADD_SET effect');
+ok(/createWorkoutMutationStorage\(\)\.load\(USER_ID\)\)\.toEqual\(\[\]\)/.test(phase12cIntegration), 'restart integration proves the durable mutation journal drains after reconciliation');
+ok(!/Background Sync/i.test(phase12cRetry) && !/supabase/i.test(phase12cRetry), 'Phase 12C retry policy is browser-local and does not introduce background-sync or Supabase coupling');
+ok(/No Supabase migration/i.test(phase12cDoc) && /no scoring\/XP changes/i.test(phase12cDoc), 'Phase 12C documentation locks database and scoring non-goals');
+ok(/12C Reconnect \+ retry hardening — DONE/.test(phase12Roadmap), 'roadmap records Phase 12C completion');
+ok(/12D Mobile PWA validation — NEXT/.test(phase12Roadmap), 'roadmap advances to Phase 12D');
+ok(packageJson.version === '0.11.2' && packageLockJson.version === '0.11.2', 'project metadata records v0.11.2');
 
 
 // Phase 5.6.1 — targeted user invitations

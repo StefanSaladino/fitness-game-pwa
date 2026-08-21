@@ -9,6 +9,11 @@ import {
 import { replayWorkoutMutations } from '../mutations/workoutMutationReplay';
 import { createWorkoutMutationService, type WorkoutMutationService } from '../mutations/workoutMutationService';
 import { createWorkoutMutationStorage, type WorkoutMutationStorage } from '../mutations/workoutMutationStorage';
+import {
+  workoutMutationCanAutoReplay,
+  workoutMutationNextAutoRetryAtMs,
+  workoutMutationRetryBudgetExhausted,
+} from '../mutations/workoutMutationRetry';
 
 export type WorkoutMutationQueueStatus = 'idle' | 'replaying' | 'blocked' | 'conflict';
 
@@ -37,6 +42,7 @@ export function useWorkoutMutationQueue(
   const itemsRef = useRef<WorkoutMutationQueueItem[]>([]);
   const hydratedRef = useRef(false);
   const operationChain = useRef<Promise<void>>(Promise.resolve());
+  const retryTimerRef = useRef<number | null>(null);
   const [items, setItems] = useState<WorkoutMutationQueueItem[]>([]);
   const [hydrated, setHydrated] = useState(false);
   const [status, setStatus] = useState<WorkoutMutationQueueStatus>('idle');
@@ -49,11 +55,18 @@ export function useWorkoutMutationQueue(
     itemsRef.current = [];
     setItems([]);
     setStatus('idle');
-    void storageRef.current!.load(userId).then((loaded) => {
+    void storageRef.current!.load(userId).then(async (loaded) => {
       if (cancelled) return;
-      itemsRef.current = loaded;
-      setItems(loaded);
-      setStatus(queueStatus(loaded));
+      const normalized = loaded.map((item) => item.status === 'pending' && workoutMutationRetryBudgetExhausted(item.attemptCount)
+        ? { ...item, status: 'failed' as const }
+        : item);
+      if (normalized.some((item, index) => item !== loaded[index])) {
+        await storageRef.current!.save(userId, normalized);
+        if (cancelled) return;
+      }
+      itemsRef.current = normalized;
+      setItems(normalized);
+      setStatus(queueStatus(normalized));
       hydratedRef.current = true;
       setHydrated(true);
     }, () => {
@@ -68,10 +81,12 @@ export function useWorkoutMutationQueue(
   }, [userId]);
 
   const replaceItems = useCallback(async (next: WorkoutMutationQueueItem[]) => {
+    const persisted = await storageRef.current!.save(userId, next);
+    if (!persisted) return false;
     itemsRef.current = next;
     setItems(next);
     setStatus(queueStatus(next));
-    await storageRef.current!.save(userId, next);
+    return true;
   }, [userId]);
 
   const serialize = useCallback(async <T,>(task: () => Promise<T>): Promise<T> => {
@@ -91,8 +106,9 @@ export function useWorkoutMutationQueue(
 
   const replay = useCallback(async () => serialize(async () => {
     if (!hydratedRef.current || !browserIsOnline() || itemsRef.current.length === 0) return;
-    const headStatus = itemsRef.current[0]?.status;
-    if (headStatus === 'failed' || headStatus === 'conflict') return;
+    const head = itemsRef.current[0];
+    if (!head || head.status === 'failed' || head.status === 'conflict') return;
+    if (!workoutMutationCanAutoReplay(head)) return;
     setStatus('replaying');
     const result = await replayWorkoutMutations(itemsRef.current, serviceRef.current!);
     itemsRef.current = result.items;
@@ -102,16 +118,37 @@ export function useWorkoutMutationQueue(
     setStatus(queueStatus(result.items));
   }), [serialize, userId]);
 
-  useEffect(() => {
-    if (hydrated && itemsRef.current.length > 0 && browserIsOnline()) void replay();
-  }, [hydrated, replay]);
+  const [connectivityRevision, setConnectivityRevision] = useState(0);
 
   useEffect(() => {
     if (typeof window === 'undefined') return undefined;
-    const onOnline = () => { void replay(); };
+    const onOnline = () => setConnectivityRevision((value) => value + 1);
     window.addEventListener('online', onOnline);
     return () => window.removeEventListener('online', onOnline);
-  }, [replay]);
+  }, []);
+
+  useEffect(() => {
+    if (retryTimerRef.current !== null) {
+      window.clearTimeout(retryTimerRef.current);
+      retryTimerRef.current = null;
+    }
+    if (!hydrated || !browserIsOnline()) return undefined;
+    const head = items[0];
+    if (!head || head.status !== 'pending') return undefined;
+    const nextRetryAtMs = workoutMutationNextAutoRetryAtMs(head);
+    if (nextRetryAtMs === null) return undefined;
+    const delayMs = nextRetryAtMs === 0 ? 0 : Math.max(0, nextRetryAtMs - Date.now());
+    retryTimerRef.current = window.setTimeout(() => {
+      retryTimerRef.current = null;
+      void replay();
+    }, delayMs);
+    return () => {
+      if (retryTimerRef.current !== null) {
+        window.clearTimeout(retryTimerRef.current);
+        retryTimerRef.current = null;
+      }
+    };
+  }, [connectivityRevision, hydrated, items, replay]);
 
   const execute = useCallback(async (request: WorkoutMutationRequest): Promise<WorkoutMutationExecutionResult> => {
     if (!hydratedRef.current) {
@@ -163,14 +200,19 @@ export function useWorkoutMutationQueue(
   }, [replay, replaceItems, userId, workoutId]);
 
   const retryBlocked = useCallback(async () => {
-    const firstFailedIndex = itemsRef.current.findIndex((item) => item.status === 'failed');
-    if (firstFailedIndex >= 0) {
-      const next = itemsRef.current.map((item, index) => index === firstFailedIndex ? {
+    const retryIndex = itemsRef.current.findIndex((item) => item.status === 'failed') >= 0
+      ? itemsRef.current.findIndex((item) => item.status === 'failed')
+      : itemsRef.current.findIndex((item) => item.status === 'pending' && item.attemptCount > 0);
+    if (retryIndex >= 0) {
+      const next = itemsRef.current.map((item, index) => index === retryIndex ? {
         ...item,
+        attemptCount: 0,
+        lastAttemptAtMs: null,
         status: 'pending' as const,
         lastError: null,
       } : item);
-      await replaceItems(next);
+      const persisted = await replaceItems(next);
+      if (!persisted) return;
     }
     await replay();
   }, [replaceItems, replay]);
@@ -178,7 +220,8 @@ export function useWorkoutMutationQueue(
   const discardWorkout = useCallback(async (targetWorkoutId: string) => serialize(async () => {
     if (!itemsRef.current.some((item) => item.workoutId === targetWorkoutId)) return null;
     const next = itemsRef.current.filter((item) => item.workoutId !== targetWorkoutId);
-    await replaceItems(next);
+    const persisted = await replaceItems(next);
+    if (!persisted) return null;
     setAppliedRevision((value) => value + 1);
     return targetWorkoutId;
   }), [replaceItems, serialize]);

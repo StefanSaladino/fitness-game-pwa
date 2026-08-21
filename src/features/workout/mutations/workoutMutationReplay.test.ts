@@ -44,4 +44,21 @@ describe('workout mutation replay', () => {
     expect(result.items[1]?.idempotencyKey).toBe(second.idempotencyKey);
   });
 
+  it('stops automatic retry after the bounded retry budget is exhausted', async () => {
+    const apply = vi.fn(async (_item: WorkoutMutationQueueItem) => { throw new TypeError('Failed to fetch'); });
+    let queue: WorkoutMutationQueueItem[] = [first];
+
+    for (let attempt = 1; attempt <= 4; attempt += 1) {
+      const result = await replayWorkoutMutations(queue, { apply } as WorkoutMutationService, () => attempt * 1_000);
+      queue = result.items;
+    }
+
+    expect(apply).toHaveBeenCalledTimes(4);
+    expect(queue[0]).toEqual(expect.objectContaining({
+      idempotencyKey: first.idempotencyKey,
+      attemptCount: 4,
+      status: 'failed',
+    }));
+  });
+
 });

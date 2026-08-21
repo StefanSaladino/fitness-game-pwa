@@ -491,14 +491,14 @@ Primary boundary: move active-lift recovery and the queued workout-mutation jour
 - standalone/display-mode handling;
 - update/reload UX that does not interrupt an active workout.
 
-### 12C Reconnect + retry hardening — NEXT
+### 12C Reconnect + retry hardening — DONE
 
 - reconcile IndexedDB state with the authoritative server after reconnect;
 - preserve existing idempotency/conflict guarantees through app restart;
 - bounded retry/backoff for safe queued mutations;
 - no background mutation that bypasses explicit conflict policy.
 
-### 12D Mobile PWA validation — LATER
+### 12D Mobile PWA validation — NEXT
 
 - iOS Safari/installed-web-app lifecycle validation;
 - Android Chrome/installed-PWA lifecycle validation;

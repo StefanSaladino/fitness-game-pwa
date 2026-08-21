@@ -352,6 +352,34 @@ describe('workout reliability integration gate', () => {
     expect(new Set(backend.mutationCalls).size).toBe(1);
   });
 
+  it('preserves the same idempotency key across an app restart and reconciles after automatic retry', async () => {
+    const user = userEvent.setup();
+    const backend = createReliabilityBackend();
+    backend.failAfterCommitOnce('ADD_SET');
+    const firstRender = renderWorkout(backend);
+    await waitForCanonicalWorkout();
+
+    await user.click(screen.getByRole('button', { name: '+ Working set' }));
+
+    expect(await screen.findByText('1 workout change queued')).toBeInTheDocument();
+    const [persistedBeforeRestart] = await createWorkoutMutationStorage().load(USER_ID);
+    expect(persistedBeforeRestart).toBeDefined();
+    expect(backend.sets).toHaveLength(2);
+
+    firstRender.unmount();
+    renderWorkout(backend);
+
+    expect(await screen.findByText('1 workout change queued')).toBeInTheDocument();
+    await waitFor(() => expect(screen.queryByText('1 workout change queued')).not.toBeInTheDocument(), { timeout: 4_000 });
+    await waitFor(() => expect(screen.getAllByRole('spinbutton', { name: /Set \d+ weight in kg/ })).toHaveLength(2));
+
+    expect(backend.sets).toHaveLength(2);
+    expect(backend.addSetEffects).toBe(1);
+    expect(backend.mutationCalls).toHaveLength(2);
+    expect(new Set(backend.mutationCalls)).toEqual(new Set([persistedBeforeRestart!.idempotencyKey]));
+    expect(await createWorkoutMutationStorage().load(USER_ID)).toEqual([]);
+  });
+
   it('blocks a stale offline edit and only accepts the explicit server-version recovery choice', async () => {
     const user = userEvent.setup();
     const backend = createReliabilityBackend();

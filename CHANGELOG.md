@@ -1,5 +1,17 @@
 # Changelog
 
+## v0.11.2 — Phase 12C reconnect + retry hardening
+
+- Added bounded exponential automatic retry for retryable IndexedDB-backed workout mutations.
+- Persisted retry timing continues across app restart using the existing queue-v1 attempt metadata.
+- Automatic replay stops after four failed attempts and exposes the existing explicit Retry sync recovery path.
+- Manual retry preserves the original idempotency key and persists its reset retry state before network replay.
+- Pending legacy/high-attempt items normalize to blocked on hydration rather than remaining silently stuck.
+- Conflict items remain outside automatic retry and continue to require the explicit server-version decision.
+- Reconnect now orders queue replay before authoritative server rereads, with another reconciliation after later successful replay.
+- Added app-restart integration coverage proving an ambiguous committed mutation does not duplicate server effects.
+- No database migration, scoring, XP, progression, cardio, or social behavior changed.
+
 ## v0.11.1 — Phase 12B offline shell + install UX
 
 - Upgraded the service worker to precache the production app shell and built same-origin assets on first install.

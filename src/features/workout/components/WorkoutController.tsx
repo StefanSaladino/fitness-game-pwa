@@ -76,14 +76,13 @@ export function WorkoutController({ profile, onNavigate, onSignOut, service, exe
   useEffect(() => {
     if (recovery.reconnectCount === 0 || recovery.reconnectCount <= handledReconnect.current) return;
     handledReconnect.current = recovery.reconnectCount;
-    void mutationQueue.replay();
-    void workout.retry();
-    if (activeWorkout) {
-      void composition.retry();
-      void sets.retry();
-      void picker.retry();
-    }
-  }, [activeWorkout, composition.retry, mutationQueue.replay, picker.retry, recovery.reconnectCount, sets.retry, workout.retry]);
+    void (async () => {
+      await mutationQueue.replay();
+      const serverWorkout = await workout.retry();
+      if (!serverWorkout) return;
+      await Promise.all([composition.retry(), sets.retry(), picker.retry()]);
+    })();
+  }, [composition.retry, mutationQueue.replay, picker.retry, recovery.reconnectCount, sets.retry, workout.retry]);
 
   const handledMutationRevision = useRef(0);
   useEffect(() => {

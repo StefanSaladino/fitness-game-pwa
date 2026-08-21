@@ -265,7 +265,7 @@ export function ActiveWorkoutScreen(props: ActiveProps) {
               {queueConflict
                 ? 'A queued change was based on older server data. Nothing newer will be overwritten until you choose the server version.'
                 : queueBlocked
-                  ? 'A queued change was rejected, so later changes are paused instead of being applied out of order.'
+                  ? 'A queued change could not sync automatically, so later changes are paused instead of being applied out of order.'
                   : recoveryState === 'offline'
                     ? 'Queued changes are saved on this device and will replay in order after reconnecting.'
                     : 'The app will retry these changes in order without duplicating persisted workout data.'}

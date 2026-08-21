@@ -1,4 +1,5 @@
 import { classifyWorkoutMutationError, type WorkoutMutationQueueItem } from './workoutMutationModel';
+import { workoutMutationRetryBudgetExhausted } from './workoutMutationRetry';
 import type { WorkoutMutationService } from './workoutMutationService';
 
 export interface WorkoutMutationReplayResult {
@@ -28,11 +29,13 @@ export async function replayWorkoutMutations(
     } catch (error) {
       const kind = classifyWorkoutMutationError(error);
       const message = error instanceof Error ? error.message : String((error as { message?: unknown } | null)?.message ?? error ?? 'Workout mutation failed');
+      const nextAttemptCount = current.attemptCount + 1;
+      const retryBudgetExhausted = kind === 'retryable' && workoutMutationRetryBudgetExhausted(nextAttemptCount);
       queue[0] = {
         ...current,
-        attemptCount: current.attemptCount + 1,
+        attemptCount: nextAttemptCount,
         lastAttemptAtMs: attemptedAt,
-        status: kind === 'terminal' ? 'failed' : kind === 'conflict' ? 'conflict' : 'pending',
+        status: kind === 'terminal' || retryBudgetExhausted ? 'failed' : kind === 'conflict' ? 'conflict' : 'pending',
         lastError: message,
       };
       break;

@@ -1,23 +1,24 @@
-# Fitness Game PWA — v0.11.1
+# Fitness Game PWA — v0.11.2
 
-Current checkpoint: **Phase 12B — Offline shell + install UX**.
+Current checkpoint: **Phase 12C — Reconnect + retry hardening**.
 
 Completed in this checkpoint:
 
-- production app shell and built same-origin assets are precached for offline reload;
-- the service worker ignores cross-origin Supabase/auth/data requests rather than caching them;
-- service-worker caches are versioned and old shell caches are removed on activation;
-- later app updates wait for an explicit **Update app** action instead of force-reloading an active lift;
-- browser-supported install prompts surface a compact **Install** affordance;
-- standalone display mode suppresses redundant install UI;
-- a compact global offline state explains that workout changes remain on-device until reconnect;
-- Playwright validates offline production-shell reload in both configured browser projects.
+- retryable IndexedDB-backed workout mutations automatically replay with bounded exponential backoff;
+- retry timing survives app restart through the existing persisted attempt metadata;
+- automatic replay stops after four failed attempts and requires an explicit **Retry sync**;
+- manual retry keeps the original idempotency key and durably resets the retry cycle before network replay;
+- conflict items are never touched by automatic retry and still require **Use server version**;
+- pre-12C high-attempt pending queue entries normalize into an explicit blocked state on hydration;
+- reconnect processing replays eligible queued work before re-reading the authoritative workout/exercise/set state;
+- successful later retries trigger another authoritative exercise/set reconciliation;
+- integration coverage proves an ambiguous committed set mutation can survive app restart without duplicate server effects.
 
-Next roadmap slice: **Phase 12C — Reconnect + retry hardening**.
+Next roadmap slice: **Phase 12D — Mobile PWA validation**.
 
-## Supabase for v0.11.1
+## Supabase for v0.11.2
 
-No new Supabase migration is required for Phase 12B. Continue using the database schema already established through Phase 11.
+No new Supabase migration is required for Phase 12C. Continue using the database schema already established through Phase 11.
 
 ## Previous v0.9.0 Supabase checkpoint
 
