@@ -1,23 +1,26 @@
-# Fitness Game PWA — v0.8.0
+# Fitness Game PWA — v0.9.0
 
-Current checkpoint: **Phase 9 — Weekly lifting consistency + badges**.
+Current checkpoint: **Phase 10 — Group competition/social**.
 
 Completed in this checkpoint:
 
-- authoritative Monday-Sunday lifting-goal snapshots;
-- completed-week current and best streak state;
-- next-Monday effective dates for scheduled weekly-target changes;
-- PR, lift-day, consistency, and accessory-cardio badges;
-- badges remain recognition-only and award no XP;
-- historical reconciliation removes stale streak/badge state after corrected workout history;
-- dashboard surfaces completed-week consistency, recent weekly snapshots, and earned badges;
-- current lifting days are derived from authoritative `lifting-v1` scoring events rather than transitional qualification flags.
+- first-class **Compete** destination for each workout group;
+- authoritative current-week and all-time `lifting-v1` XP standings;
+- lifting-day, PR, and earned-badge context alongside XP rank;
+- privacy-safe crew feed for qualifying lifts, real PRs, badges, and completed weekly goals;
+- stable cursor pagination for larger group histories;
+- one lightweight `FIRE`, `STRONG`, or `CLAP` reaction per member/activity;
+- opaque deterministic activity keys so social APIs do not expose source row identifiers;
+- active-membership enforcement for standings, feed reads, and reactions;
+- raw sets, workout notes, and complete workout contents remain private;
+- reactions and badges remain non-XP and cannot affect ranking/progression;
+- authoritative XP totals are surfaced without inventing an unapproved level curve.
 
-Next roadmap slice: **Phase 10 — Group competition/social**.
+Next roadmap slice: **Phase 11 — Cardio accessory logging**.
 
-## Supabase for v0.8.0
+## Supabase for v0.9.0
 
-Apply `supabase/migrations/20260820000500_weekly_consistency_badges.sql`, then run the database regression set ending with `024_weekly_consistency_badges.test.sql`.
+Apply `supabase/migrations/20260821000100_group_competition_social.sql`, then run the database regression set ending with `025_group_competition_social.test.sql`.
 
 ## Local validation
 

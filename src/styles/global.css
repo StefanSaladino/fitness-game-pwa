@@ -115,7 +115,7 @@
   bottom: max(8px, env(safe-area-inset-bottom));
   left: 10px;
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-template-columns: repeat(6, minmax(0, 1fr));
   min-height: var(--mobile-nav-height);
   overflow: hidden;
   border: 1px solid var(--color-border-strong);

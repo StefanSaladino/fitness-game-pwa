@@ -26,6 +26,16 @@ const required = [
 for (const rel of required) ok(fs.existsSync(path.join(root, rel)), `${rel} exists`);
 
 const packageJson = JSON.parse(read('package.json'));
+const packageLockJson = JSON.parse(read('package-lock.json'));
+function versionAtLeast(actual, minimum) {
+  const a = String(actual).split('.').map(Number);
+  const b = String(minimum).split('.').map(Number);
+  for (let index = 0; index < 3; index += 1) {
+    if ((a[index] ?? 0) > (b[index] ?? 0)) return true;
+    if ((a[index] ?? 0) < (b[index] ?? 0)) return false;
+  }
+  return true;
+}
 JSON.parse(read('public/manifest.webmanifest'));
 ok(true, 'JSON files parse');
 ok(packageJson.scripts?.['test:internal'] === 'node scripts/internal-test.cjs', 'internal verifier is cross-platform Node');
@@ -629,7 +639,7 @@ ok(Number.isInteger(phase64dPlan) && phase64dPlan === 17 && phase64dPlan === pha
 ok(/no new migration/i.test(reliabilityDoc), 'Phase 6.4D remains a validation-only database slice');
 ok(/6\.4D Reliability integration gate — DONE/.test(read('docs/ROADMAP.md')), 'roadmap records Phase 6.4D completion');
 ok(/Phase 7 — Authoritative lifting-v1 scoring persistence — DONE/.test(read('docs/ROADMAP.md')), 'roadmap records Phase 7 authoritative scoring completion');
-ok(/"version": "0\.8\.0"/.test(read('package.json')) && /"version": "0\.8\.0"/.test(read('package-lock.json')), 'project metadata records the v0.8.0 weekly-consistency checkpoint');
+ok(versionAtLeast(packageJson.version, '0.8.0') && versionAtLeast(packageLockJson.version, '0.8.0'), 'project metadata is at or beyond the v0.8.0 weekly-consistency checkpoint');
 
 
 // Phase 7 — authoritative lifting-v1 scoring persistence
@@ -763,9 +773,84 @@ ok(/GOAL_STREAK_8/.test(badgeCatalog) && /CARDIO_BONUS_DAYS_10/.test(badgeCatalo
 ok(/consistencySection/.test(phase9DashboardCss) && /badgeGrid/.test(phase9DashboardCss), 'Phase 9 dashboard styling remains colocated in its CSS Module');
 ok(!/consistencySection|badgeGrid|recentWeeks/.test(read('src/styles/global.css')), 'Phase 9 selectors are not added to global CSS');
 ok(/Phase 9 — Weekly lifting consistency \+ badges — DONE/.test(read('docs/ROADMAP.md')), 'roadmap records Phase 9 completion');
-ok(/Phase 10 — Group competition\/social — NEXT/.test(read('docs/ROADMAP.md')), 'roadmap advances to Phase 10 group competition/social');
+ok(/Phase 10 — Group competition\/social — (?:NEXT|DONE)/.test(read('docs/ROADMAP.md')), 'roadmap retains Phase 10 group competition/social after Phase 9');
 ok(/badges are derived recognition only/i.test(phase9Doc) && /never write `scoring_events`/i.test(phase9Doc), 'Phase 9 documentation keeps badges outside XP scoring');
-ok(/"version": "0\.8\.0"/.test(read('package.json')) && /"version": "0\.8\.0"/.test(read('package-lock.json')), 'project metadata records v0.8.0');
+ok(versionAtLeast(packageJson.version, '0.8.0') && versionAtLeast(packageLockJson.version, '0.8.0'), 'project metadata is at or beyond v0.8.0');
+
+
+// Phase 10 — group competition/social
+for (const rel of [
+  'src/features/social/model.ts',
+  'src/features/social/socialService.ts',
+  'src/features/social/hooks/useGroupSocial.ts',
+  'src/features/social/components/GroupSocialController.tsx',
+  'src/features/social/components/GroupSocialScreen.tsx',
+  'src/features/social/components/GroupSocialScreen.module.css',
+  'supabase/migrations/20260821000100_group_competition_social.sql',
+  'supabase/tests/025_group_competition_social.test.sql',
+  'docs/PHASE10-GROUP-COMPETITION-SOCIAL.md',
+  'tests/e2e/group-social.spec.ts',
+  'tests/e2e/socialHarness.tsx',
+  'competition.e2e.html',
+]) ok(fs.existsSync(path.join(root, rel)), `${rel} exists`);
+const phase10Migration = read('supabase/migrations/20260821000100_group_competition_social.sql');
+const phase10Test = read('supabase/tests/025_group_competition_social.test.sql');
+const phase10Service = read('src/features/social/socialService.ts');
+const phase10Hook = read('src/features/social/hooks/useGroupSocial.ts');
+const phase10Screen = read('src/features/social/components/GroupSocialScreen.tsx');
+const phase10Css = read('src/features/social/components/GroupSocialScreen.module.css');
+const phase10Doc = read('docs/PHASE10-GROUP-COMPETITION-SOCIAL.md');
+const phase10ProductController = read('src/features/product/ProductController.tsx');
+const phase10Integration = read('tests/integration/group-product-journey.test.tsx');
+const phase10Plan = Number((phase10Test.match(/select\s+plan\((\d+)\)/i) || [])[1]);
+const phase10Count = (phase10Test.match(/select\s+(?:has_table|has_column|has_function|col_is_pk|results_eq|throws_ok|lives_ok|is|cmp_ok|ok)\s*\(/gi) || []).length;
+ok((phase10Migration.match(/\$\$/g) || []).length % 2 === 0, 'Phase 10 migration dollar-quote delimiters are balanced');
+ok(/create table if not exists public\.group_activity_reactions/.test(phase10Migration), 'Phase 10 persists group-scoped lightweight reactions');
+ok(/primary key \(group_id, activity_key, user_id\)/.test(phase10Migration), 'one reaction slot exists per member and activity');
+ok(/reaction_type in \('FIRE', 'STRONG', 'CLAP'\)/.test(phase10Migration), 'reaction catalog is deliberately bounded');
+ok(/alter table public\.group_activity_reactions enable row level security/.test(phase10Migration), 'reaction table has RLS enabled');
+ok(/revoke all on public\.group_activity_reactions from public, anon, authenticated/.test(phase10Migration), 'browser roles cannot directly mutate reaction rows');
+ok(/group_social_activity_key/.test(phase10Migration) && /extensions\.digest\(p_identity, 'sha256'\)/.test(phase10Migration), 'social activities use deterministic opaque SHA-256 keys');
+ok(/group_social_activity_exists/.test(phase10Migration) && /Social activity is not available in this group/.test(phase10Migration), 'reaction writes validate their current group activity target');
+ok(/get_group_competition_leaderboard/.test(phase10Migration), 'Phase 10 adds group competition leaderboard RPC');
+ok(/scoring_version = 'lifting-v1'/.test(phase10Migration), 'competition aggregates only authoritative lifting-v1 scoring');
+ok(/v_period not in \('WEEK', 'ALL_TIME'\)/.test(phase10Migration), 'competition exposes weekly and all-time periods only');
+ok(/dense_rank\(\) over[\s\S]*s\.xp desc[\s\S]*s\.lifting_days desc[\s\S]*pr\.pr_count/.test(phase10Migration), 'competition ranks by XP with deterministic lifting/PR context');
+ok(/get_group_social_feed/.test(phase10Migration), 'Phase 10 adds privacy-safe group activity feed RPC');
+ok(/'LIFT'::text/.test(phase10Migration) && /'PR'::text/.test(phase10Migration) && /'BADGE'::text/.test(phase10Migration) && /'GOAL'::text/.test(phase10Migration), 'social feed is curated to lift, PR, badge, and weekly-goal activity');
+ok(/w\.source = 'IN_APP'[\s\S]*w\.qualifies_lifting/.test(phase10Migration), 'lift feed entries require qualifying in-app lifting sessions');
+ok(/p_before_activity_at/.test(phase10Migration) && /p_before_activity_key/.test(phase10Migration), 'social feed uses a stable timestamp-plus-key cursor');
+ok(/least\(coalesce\(p_limit, 20\), 50\)/.test(phase10Migration), 'server caps feed pagination at 50 activities');
+ok(!/insert into public\.scoring_events|update public\.scoring_events|delete from public\.scoring_events/i.test(phase10Migration), 'social migration never mutates authoritative XP');
+ok(/metadata \? 'sets'/.test(phase10Test) && /metadata \? 'notes'/.test(phase10Test), 'database regression proves raw sets and notes are absent from feed metadata');
+ok(/metadata \? 'workoutId'/.test(phase10Test) && /metadata \? 'exerciseId'/.test(phase10Test), 'database regression proves source row identifiers stay out of feed metadata');
+ok(Number.isInteger(phase10Plan) && phase10Plan === 42 && phase10Plan === phase10Count, 'Phase 10 pgTAP plan matches 42 assertions');
+ok(/get_group_competition_leaderboard/.test(phase10Service) && /get_group_social_feed/.test(phase10Service) && /set_group_activity_reaction/.test(phase10Service), 'social service uses all guarded Phase 10 RPCs');
+ok(/FEED_PAGE_SIZE\s*\+\s*1/.test(phase10Service) && /nextCursor/.test(phase10Service), 'social service implements page-size-plus-one cursor pagination');
+ok(/withOptimisticReaction/.test(phase10Hook) && /setReaction\(groupId,activityKey,nextReaction\)/.test(phase10Hook), 'social hook optimistically applies one reaction and persists it');
+ok(/previous/.test(phase10Hook) && /catch\(caught\)/.test(phase10Hook), 'social hook retains rollback state for failed reaction writes');
+ok(/Individual sets, workout notes, and full exercise details stay private/.test(phase10Screen), 'Compete UI states its privacy boundary explicitly');
+ok(/Reactions never affect XP/.test(phase10Screen), 'Compete UI states reactions are non-XP');
+ok(/This week/.test(phase10Screen) && /All time/.test(phase10Screen), 'Compete UI exposes weekly and all-time standings');
+ok(/Highlights, not surveillance/.test(phase10Screen), 'social feed is presented as curated highlights rather than surveillance');
+ok(!/supabase/i.test(phase10Screen), 'social presentation has no Supabase dependency');
+ok(phase10Css.length > 3500, 'Phase 10 social styling is substantial and colocated in a CSS Module');
+ok(/id: 'compete', label: 'Compete', icon: 'trophy'/.test(read('src/components/layout/navigation.ts')), 'Compete is a first-class trophy navigation destination');
+ok(/grid-template-columns: repeat\(6, minmax\(0, 1fr\)\)/.test(read('src/styles/global.css')), 'mobile navigation deliberately accommodates all six product destinations');
+ok(/socialService\?: GroupSocialService/.test(phase10ProductController) && /activeSection === 'compete'/.test(phase10ProductController), 'ProductController composes injectable group social navigation');
+ok(/GroupSocialController[\s\S]*key=\{selectedGroup\.id\}/.test(phase10ProductController), 'group switching remounts Compete state so previous-group data cannot flash');
+ok(/Open competition/.test(read('src/features/groups/components/GroupAdministrationScreen.tsx')), 'group administration links into competition');
+ok(/View competition/.test(read('src/features/dashboard/components/DashboardScreen.tsx')), 'dashboard compact rank links into competition');
+ok(/GroupSocialService/.test(phase10Integration) && /Crew standings/.test(phase10Integration) && /Highlights, not surveillance/.test(phase10Integration), 'integrated group journeys enter the real Compete surface');
+ok(/competition: resolve\(process\.cwd\(\), 'competition\.e2e\.html'\)/.test(read('vite.config.ts')), 'competition fixture is compiled only through the existing E2E build gate');
+ok(/scrollWidth - window\.innerWidth/.test(read('tests/e2e/group-social.spec.ts')), 'Phase 10 browser coverage checks responsive horizontal overflow');
+ok(/Individual sets, workout notes/.test(read('tests/e2e/group-social.spec.ts')) && /Fire 3/.test(read('tests/e2e/group-social.spec.ts')), 'Phase 10 browser coverage validates privacy copy and reaction interaction');
+ok(/no level formula/i.test(phase10Doc) && /leaves levels undefined/i.test(phase10Doc), 'Phase 10 deliberately avoids inventing a level curve');
+ok(/never add XP|never affect XP|never add XP/i.test(phase10Doc) || /never add XP/i.test(phase10Doc), 'Phase 10 documentation keeps social mechanics outside XP');
+ok(/raw sets/i.test(phase10Doc) && /workout notes/i.test(phase10Doc), 'Phase 10 documentation locks privacy-safe feed summaries');
+ok(/Phase 10 — Group competition\/social — DONE/.test(read('docs/ROADMAP.md')), 'roadmap records Phase 10 competition/social completion');
+ok(/Phase 11 — Cardio accessory logging — NEXT/.test(read('docs/ROADMAP.md')), 'roadmap advances to Phase 11 cardio accessory logging');
+ok(packageJson.version === '0.9.0' && packageLockJson.version === '0.9.0', 'project metadata records v0.9.0');
 
 
 // Phase 5.6.1 — targeted user invitations

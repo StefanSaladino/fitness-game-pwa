@@ -5,6 +5,7 @@ import { DashboardController, type DashboardService } from '../dashboard';
 import { GroupAdministrationController, type GroupService, type GroupSummary } from '../groups';
 import type { OnboardingProfile } from '../onboarding';
 import { ExerciseProgressController, type ExerciseProgressService } from '../progress';
+import { GroupSocialController, type GroupSocialService } from '../social';
 import { WorkoutController, type ExercisePickerService, type WorkoutExerciseService, type WorkoutMutationService, type WorkoutService, type WorkoutSetService } from '../workout';
 
 interface ProductControllerProps {
@@ -19,9 +20,10 @@ interface ProductControllerProps {
   workoutSetService?: WorkoutSetService;
   workoutMutationService?: WorkoutMutationService;
   progressService?: ExerciseProgressService;
+  socialService?: GroupSocialService;
 }
 
-export function ProductController({ profile, groups, onGroupsChanged, groupService, dashboardService, workoutService, workoutExerciseService, exercisePickerService, workoutSetService, workoutMutationService, progressService }: ProductControllerProps) {
+export function ProductController({ profile, groups, onGroupsChanged, groupService, dashboardService, workoutService, workoutExerciseService, exercisePickerService, workoutSetService, workoutMutationService, progressService, socialService }: ProductControllerProps) {
   const [activeSection, setActiveSection] = useState<AppSection>('home');
   const [selectedGroupId, setSelectedGroupId] = useState(groups[0]?.id ?? '');
 
@@ -35,7 +37,7 @@ export function ProductController({ profile, groups, onGroupsChanged, groupServi
   );
 
   const onNavigate = (section: AppSection) => {
-    if (section === 'home' || section === 'groups' || section === 'workouts' || section === 'progress') setActiveSection(section);
+    if (section === 'home' || section === 'groups' || section === 'workouts' || section === 'progress' || section === 'compete') setActiveSection(section);
   };
   const onSignOut = () => { void signOut(); };
 
@@ -63,6 +65,21 @@ export function ProductController({ profile, groups, onGroupsChanged, groupServi
         onSignOut={onSignOut}
         profile={profile}
         service={progressService}
+      />
+    );
+  }
+
+  if (activeSection === 'compete') {
+    return (
+      <GroupSocialController
+        key={selectedGroup.id}
+        groups={groups}
+        onNavigate={onNavigate}
+        onSelectGroup={setSelectedGroupId}
+        onSignOut={onSignOut}
+        profile={profile}
+        selectedGroupId={selectedGroup.id}
+        service={socialService}
       />
     );
   }

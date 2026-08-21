@@ -292,7 +292,7 @@ export function DashboardScreen({ profile, group, snapshot, onNavigate, onSignOu
               <p className={styles.sectionLabel}>{group.name}</p>
               <h2 id="group-rank-heading">This week’s group rank</h2>
             </div>
-            <span className={styles.memberCount}>{group.memberCount} members</span>
+            <div className={styles.leaderboardActions}><span className={styles.memberCount}>{group.memberCount} members</span><Button onClick={() => onNavigate('compete')} variant="ghost">View competition</Button></div>
           </div>
 
           <ol className={styles.leaderboardRows}>

@@ -11,6 +11,7 @@ vi.mock('../dashboard', () => ({
       <p>Dashboard for {group.name}</p>
       <button onClick={() => onNavigate('groups')} type="button">Open groups</button>
       <button onClick={() => onNavigate('progress')} type="button">Open progress</button>
+      <button onClick={() => onNavigate('compete')} type="button">Open competition</button>
     </div>
   ),
 }));
@@ -21,6 +22,10 @@ vi.mock('../groups', () => ({
 
 vi.mock('../progress', () => ({
   ExerciseProgressController: () => <p>Progress screen</p>,
+}));
+
+vi.mock('../social', () => ({
+  GroupSocialController: ({ selectedGroupId }: { selectedGroupId: string }) => <p>Competition for {selectedGroupId}</p>,
 }));
 
 import { ProductController } from './ProductController';
@@ -50,5 +55,13 @@ describe('ProductController', () => {
 
     await user.click(screen.getByRole('button', { name: 'Open groups' }));
     expect(screen.getByText('Admin for group-1')).toBeInTheDocument();
+  });
+
+  it('routes group competition through the product controller boundary', async () => {
+    const user = userEvent.setup();
+    render(<ProductController groups={groups} onGroupsChanged={vi.fn()} profile={profile} />);
+
+    await user.click(screen.getByRole('button', { name: 'Open competition' }));
+    expect(screen.getByText('Competition for group-1')).toBeInTheDocument();
   });
 });

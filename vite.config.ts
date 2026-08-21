@@ -13,6 +13,7 @@ export default defineConfig({
         input: {
           app: resolve(process.cwd(), 'index.html'),
           reliability: resolve(process.cwd(), 'reliability.e2e.html'),
+          competition: resolve(process.cwd(), 'competition.e2e.html'),
         },
       },
     } : {}),

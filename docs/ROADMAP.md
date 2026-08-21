@@ -443,18 +443,18 @@ Objective: make each canonical lift a first-class progression timeline.
 - cardio accessory milestones where useful
 - badges remain non-XP initially
 
-## Phase 10 — Group competition/social — NEXT
+## Phase 10 — Group competition/social — DONE
 
 Apply the UI design gate before leaderboard/activity-feed implementation.
 
 - weekly/all-time leaderboard
-- XP/level totals
+- authoritative weekly/all-time XP totals; level formula remains intentionally undefined rather than invented
 - curated lift/PR activity feed
 - badge feed
 - lightweight reactions
 - privacy-safe summaries rather than raw workout-set exposure
 
-## Phase 11 — Cardio accessory logging
+## Phase 11 — Cardio accessory logging — NEXT
 
 Cardio remains deliberately secondary.
 

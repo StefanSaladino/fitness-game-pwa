@@ -358,3 +358,5 @@
   .consistencyStats > div + div { padding-left: 0; border-left: 0; border-top: 1px solid rgba(205, 225, 242, 0.07); }
   .leaderboardRows li { grid-template-columns: 24px 32px minmax(0, 1fr) auto; padding-inline: 0; }
 }
+
+.leaderboardActions { display:flex; align-items:center; gap:10px; flex-wrap:wrap; justify-content:flex-end; }
