@@ -51,7 +51,7 @@ afterEach(() => {
 describe('WorkoutController local recovery', () => {
   it('renders the local workout, exercise, set, and unsaved draft before remote reads recover', async () => {
     Object.defineProperty(window.navigator, 'onLine', { configurable: true, value: false });
-    createWorkoutRecoveryStorage(window.localStorage).save(snapshot);
+    await createWorkoutRecoveryStorage(null, window.localStorage).save(snapshot);
 
     const service = { loadActiveWorkout: vi.fn(offlineError) } as unknown as WorkoutService;
     const exerciseService = { loadWorkoutExercises: vi.fn(offlineError) } as unknown as WorkoutExerciseService;
@@ -70,28 +70,31 @@ describe('WorkoutController local recovery', () => {
       />,
     );
 
-    expect(screen.getByRole('heading', { name: 'Workout in progress' })).toBeInTheDocument();
-    expect(screen.getByText('Barbell Bench Press')).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: 'Workout in progress' })).toBeInTheDocument();
+    expect(await screen.findByText('Barbell Bench Press')).toBeInTheDocument();
     expect(screen.getByRole('status')).toHaveTextContent('Offline workout copy');
-    expect(screen.getByLabelText('Set 1 weight in lb')).toHaveValue(225);
-    expect(screen.getByLabelText('Set 1 reps')).toHaveValue(6);
+    const recoveredWeightInput = await screen.findByLabelText('Set 1 weight in lb');
+    const recoveredRepsInput = await screen.findByLabelText('Set 1 reps');
+    expect(recoveredWeightInput).toHaveValue(225);
+    expect(recoveredRepsInput).toHaveValue(6);
     expect(screen.getByRole('button', { name: 'Add exercise' })).toBeDisabled();
 
-    fireEvent.change(screen.getByLabelText('Set 1 weight in lb'), { target: { value: '230' } });
-    fireEvent.blur(screen.getByLabelText('Set 1 weight in lb'));
+    fireEvent.change(recoveredWeightInput, { target: { value: '230' } });
+    fireEvent.blur(recoveredWeightInput);
 
     await waitFor(() => {
-      const saved = createWorkoutRecoveryStorage(window.localStorage).load('user-1');
-      expect(saved?.ui.setDrafts['set-1']?.weight).toBe('230');
+      return createWorkoutRecoveryStorage(null, window.localStorage).load('user-1').then((saved) => {
+        expect(saved?.ui.setDrafts['set-1']?.weight).toBe('230');
+      });
     });
     expect(setService.saveSet).not.toHaveBeenCalled();
-    const queued = createWorkoutMutationStorage(window.localStorage).load('user-1');
+    const queued = await createWorkoutMutationStorage(null, window.localStorage).load('user-1');
     expect(queued).toHaveLength(1);
     expect(queued[0]).toEqual(expect.objectContaining({ kind: 'SAVE_SET', workoutId: 'workout-1' }));
   });
   it('surfaces an explicit server-version choice when a recovered workout is no longer active', async () => {
-    createWorkoutRecoveryStorage(window.localStorage).save(snapshot);
-    const mutationStorage = createWorkoutMutationStorage(window.localStorage);
+    await createWorkoutRecoveryStorage(null, window.localStorage).save(snapshot);
+    const mutationStorage = createWorkoutMutationStorage(null, window.localStorage);
     const queued = createWorkoutMutationQueueItem(
       'user-1',
       'workout-1',
@@ -105,7 +108,7 @@ describe('WorkoutController local recovery', () => {
       '55555555-5555-4555-8555-555555555555',
       100,
     );
-    mutationStorage.save('user-1', [{ ...queued, status: 'conflict', lastError: 'WORKOUT_CONFLICT: Workout is no longer active on the server.' }]);
+    await mutationStorage.save('user-1', [{ ...queued, status: 'conflict', lastError: 'WORKOUT_CONFLICT: Workout is no longer active on the server.' }]);
 
     const onNavigate = vi.fn();
     const service = { loadActiveWorkout: vi.fn(async () => null) } as unknown as WorkoutService;
@@ -130,8 +133,8 @@ describe('WorkoutController local recovery', () => {
     expect(await screen.findByRole('heading', { name: 'Workout changed elsewhere' })).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'Use server version' }));
 
-    await waitFor(() => expect(mutationStorage.load('user-1')).toEqual([]));
-    expect(createWorkoutRecoveryStorage(window.localStorage).load('user-1')).toBeNull();
+    await waitFor(async () => expect(await mutationStorage.load('user-1')).toEqual([]));
+    expect(await createWorkoutRecoveryStorage(null, window.localStorage).load('user-1')).toBeNull();
     expect(onNavigate).toHaveBeenCalledWith('home');
   });
 

@@ -12,6 +12,7 @@ export function useWorkoutExercises(workoutId: string | null, injectedService?: 
 
   const requestSequence = useRef(0);
   const [status, setStatus] = useState<WorkoutExerciseStatus>(workoutId ? 'loading' : 'ready');
+  const [resolvedWorkoutId, setResolvedWorkoutId] = useState<string | null>(null);
   const [exercises, setExercises] = useState<WorkoutExercise[]>([]);
   const [busyAction, setBusyAction] = useState<WorkoutCompositionAction>(null);
   const [error, setError] = useState('');
@@ -20,6 +21,7 @@ export function useWorkoutExercises(workoutId: string | null, injectedService?: 
     const requestId = ++requestSequence.current;
     if (!workoutId) {
       setExercises([]);
+      setResolvedWorkoutId(null);
       setStatus('ready');
       setError('');
       return [] as WorkoutExercise[];
@@ -31,11 +33,13 @@ export function useWorkoutExercises(workoutId: string | null, injectedService?: 
       const loaded = await serviceRef.current!.loadWorkoutExercises(workoutId);
       if (requestId !== requestSequence.current) return [] as WorkoutExercise[];
       setExercises(loaded);
+      setResolvedWorkoutId(workoutId);
       setStatus('ready');
       return loaded;
     } catch (caught) {
       if (requestId !== requestSequence.current) return [] as WorkoutExercise[];
       setExercises([]);
+      setResolvedWorkoutId(workoutId);
       setStatus('error');
       setError(toUserFacingWorkoutError(caught));
       return [] as WorkoutExercise[];
@@ -96,5 +100,9 @@ export function useWorkoutExercises(workoutId: string | null, injectedService?: 
     );
   }, [exercises, runMutation]);
 
-  return { status, exercises, busyAction, error, retry: load, addExercise, removeExercise, moveExercise };
+  const resolvedForCurrentWorkout = workoutId === null || resolvedWorkoutId === workoutId;
+  const effectiveStatus: WorkoutExerciseStatus = resolvedForCurrentWorkout ? status : 'loading';
+  const effectiveExercises = resolvedForCurrentWorkout ? exercises : [];
+
+  return { status: effectiveStatus, exercises: effectiveExercises, busyAction, error, retry: load, addExercise, removeExercise, moveExercise };
 }

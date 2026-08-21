@@ -8,6 +8,8 @@ import type { ExercisePickerService } from '../../src/features/workout/exerciseP
 import type { ActiveWorkoutSession, WorkoutExercise, WorkoutSet } from '../../src/features/workout/model';
 import type { WorkoutExerciseService } from '../../src/features/workout/workoutExerciseService';
 import type { WorkoutMutationQueueItem } from '../../src/features/workout/mutations/workoutMutationModel';
+import { createWorkoutMutationStorage } from '../../src/features/workout/mutations/workoutMutationStorage';
+import { createWorkoutRecoveryStorage } from '../../src/features/workout/recovery/workoutRecoveryStorage';
 import type { WorkoutMutationService } from '../../src/features/workout/mutations/workoutMutationService';
 import type { WorkoutService } from '../../src/features/workout/workoutService';
 import type { WorkoutSetService } from '../../src/features/workout/workoutSetService';
@@ -279,11 +281,17 @@ function renderWorkout(backend: ReliabilityBackend) {
 
 async function waitForCanonicalWorkout() {
   expect(await screen.findByRole('heading', { name: 'Workout in progress' })).toBeInTheDocument();
-  await waitFor(() => expect(window.localStorage.length).toBeGreaterThan(0));
+  await waitFor(async () => {
+    const snapshot = await createWorkoutRecoveryStorage().load(USER_ID);
+    expect(snapshot?.exercises.map((exercise) => exercise.id)).toEqual([WORKOUT_EXERCISE_ID]);
+    expect(snapshot?.sets.map((set) => set.id)).toEqual([SET_ID]);
+  });
 }
 
-afterEach(() => {
+afterEach(async () => {
   cleanup();
+  await createWorkoutRecoveryStorage().clear(USER_ID);
+  await createWorkoutMutationStorage().clear(USER_ID);
   window.localStorage.clear();
   Object.defineProperty(window.navigator, 'onLine', { configurable: true, value: true });
 });
@@ -298,7 +306,7 @@ describe('workout reliability integration gate', () => {
     await act(async () => { setOnline(false); });
     expect(await screen.findByText('Offline workout copy')).toBeInTheDocument();
 
-    const weight = screen.getByRole('spinbutton', { name: 'Set 1 weight in kg' });
+    const weight = await screen.findByRole('spinbutton', { name: 'Set 1 weight in kg' });
     await user.clear(weight);
     await user.type(weight, '110');
     await user.tab();
@@ -310,7 +318,7 @@ describe('workout reliability integration gate', () => {
     renderWorkout(backend);
 
     expect(await screen.findByText('Offline workout copy')).toBeInTheDocument();
-    expect(screen.getByRole('spinbutton', { name: 'Set 1 weight in kg' })).toHaveValue(110);
+    expect(await screen.findByRole('spinbutton', { name: 'Set 1 weight in kg' })).toHaveValue(110);
     expect(screen.getByText('1 workout change queued')).toBeInTheDocument();
 
     await act(async () => { setOnline(true); });
@@ -318,7 +326,7 @@ describe('workout reliability integration gate', () => {
     await waitFor(() => expect(backend.sets[0]!.weightKg).toBe(110));
     await waitFor(() => expect(screen.queryByText('1 workout change queued')).not.toBeInTheDocument());
     await waitFor(() => expect(screen.queryByText('Offline workout copy')).not.toBeInTheDocument());
-    expect(screen.getByRole('spinbutton', { name: 'Set 1 weight in kg' })).toHaveValue(110);
+    await waitFor(() => expect(screen.getByRole('spinbutton', { name: 'Set 1 weight in kg' })).toHaveValue(110));
   });
 
   it('retries an ambiguous committed add with the same idempotency key without duplicating a set', async () => {
@@ -386,6 +394,9 @@ describe('workout reliability integration gate', () => {
     expect(await screen.findByRole('heading', { name: 'Start a lift' })).toBeInTheDocument();
     expect(backend.workoutStatus).toBe(terminalStatus);
     expect(screen.queryByRole('heading', { name: 'Workout in progress' })).not.toBeInTheDocument();
-    await waitFor(() => expect(window.localStorage.length).toBe(0));
+    await waitFor(async () => {
+      expect(await createWorkoutRecoveryStorage().load(USER_ID)).toBeNull();
+      expect(await createWorkoutMutationStorage().load(USER_ID)).toEqual([]);
+    });
   });
 });

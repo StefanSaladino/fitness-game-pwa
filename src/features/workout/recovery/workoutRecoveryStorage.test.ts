@@ -1,8 +1,9 @@
 import { describe, expect, it } from 'vitest';
+import { createMemoryAsyncStorage } from '../storage/workoutIndexedDb';
 import type { ActiveWorkoutRecoverySnapshot } from './workoutRecoveryModel';
 import { createWorkoutRecoveryStorage, type KeyValueStorage } from './workoutRecoveryStorage';
 
-class MemoryStorage implements KeyValueStorage {
+class MemoryLegacyStorage implements KeyValueStorage {
   values = new Map<string, string>();
   getItem(key: string) { return this.values.get(key) ?? null; }
   setItem(key: string, value: string) { this.values.set(key, value); }
@@ -23,24 +24,36 @@ const snapshot: ActiveWorkoutRecoverySnapshot = {
 };
 
 describe('workout recovery storage', () => {
-  it('stores recovery per user and clears it explicitly', () => {
-    const memory = new MemoryStorage();
-    const storage = createWorkoutRecoveryStorage(memory);
+  it('stores recovery per user in async durable storage and clears it explicitly', async () => {
+    const durable = createMemoryAsyncStorage();
+    const storage = createWorkoutRecoveryStorage(durable, null);
 
-    storage.save(snapshot);
-    expect(storage.load('user-1')).toEqual(snapshot);
-    expect(storage.load('other-user')).toBeNull();
+    await storage.save(snapshot);
+    expect(await storage.load('user-1')).toEqual(snapshot);
+    expect(await storage.load('other-user')).toBeNull();
 
-    storage.clear('user-1');
-    expect(storage.load('user-1')).toBeNull();
+    await storage.clear('user-1');
+    expect(await storage.load('user-1')).toBeNull();
   });
 
-  it('discards invalid JSON instead of breaking workout startup', () => {
-    const memory = new MemoryStorage();
-    memory.values.set('fitness-game:active-workout:v1:user-1', '{broken');
-    const storage = createWorkoutRecoveryStorage(memory);
+  it('migrates a valid v1 localStorage recovery snapshot into durable storage once', async () => {
+    const durable = createMemoryAsyncStorage();
+    const legacy = new MemoryLegacyStorage();
+    legacy.setItem('fitness-game:active-workout:v1:user-1', JSON.stringify(snapshot));
+    const storage = createWorkoutRecoveryStorage(durable, legacy);
 
-    expect(storage.load('user-1')).toBeNull();
-    expect(memory.values.size).toBe(0);
+    expect(await storage.load('user-1')).toEqual(snapshot);
+    expect(legacy.values.size).toBe(0);
+    expect(await storage.load('user-1')).toEqual(snapshot);
+  });
+
+  it('discards corrupt legacy data instead of breaking workout startup', async () => {
+    const durable = createMemoryAsyncStorage();
+    const legacy = new MemoryLegacyStorage();
+    legacy.setItem('fitness-game:active-workout:v1:user-1', '{broken');
+    const storage = createWorkoutRecoveryStorage(durable, legacy);
+
+    expect(await storage.load('user-1')).toBeNull();
+    expect(legacy.values.size).toBe(0);
   });
 });

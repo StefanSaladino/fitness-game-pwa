@@ -29,6 +29,27 @@ describe('useWorkoutExercises', () => {
     expect(result.current.exercises[0]?.canonicalName).toBe('Barbell Bench Press');
   });
 
+
+  it('reports loading immediately when the active workout identity changes', async () => {
+    let resolveLoad: ((value: WorkoutExercise[]) => void) | null = null;
+    const loadWorkoutExercises = vi.fn(() => new Promise<WorkoutExercise[]>((resolve) => { resolveLoad = resolve; }));
+    const api = service({ loadWorkoutExercises });
+    const { result, rerender } = renderHook(
+      ({ workoutId }: { workoutId: string | null }) => useWorkoutExercises(workoutId, api),
+      { initialProps: { workoutId: null as string | null } },
+    );
+
+    expect(result.current.status).toBe('ready');
+    rerender({ workoutId: 'workout-1' });
+
+    expect(result.current.status).toBe('loading');
+    expect(result.current.exercises).toEqual([]);
+
+    await act(async () => { resolveLoad?.([bench]); });
+    await waitFor(() => expect(result.current.status).toBe('ready'));
+    expect(result.current.exercises).toEqual([bench]);
+  });
+
   it('does not query composition when there is no active workout', async () => {
     const api = service();
     const { result } = renderHook(() => useWorkoutExercises(null, api));

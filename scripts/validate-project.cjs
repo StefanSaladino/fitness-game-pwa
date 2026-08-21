@@ -898,8 +898,68 @@ ok(/never counts as a lifting day/i.test(read('tests/integration/cardio-accessor
 ok(/does not add pace, distance, GPS routes, heart rate/i.test(phase11Doc), 'Phase 11 documentation keeps cardio scope deliberately lightweight');
 ok(/Cardio never creates `LIFTING_WORKOUT` events/.test(phase11Doc), 'Phase 11 documentation locks cardio outside lifting-day consistency');
 ok(/Phase 11 — Cardio accessory logging — DONE/.test(read('docs/ROADMAP.md')), 'roadmap records Phase 11 cardio accessory logging completion');
-ok(/Phase 12 — PWA\/offline hardening — NEXT/.test(read('docs/ROADMAP.md')), 'roadmap advances to Phase 12 PWA/offline hardening');
-ok(packageJson.version === '0.10.0' && packageLockJson.version === '0.10.0', 'project metadata records v0.10.0');
+ok(/Phase 12 — PWA\/offline hardening — (?:NEXT|IN PROGRESS)/.test(read('docs/ROADMAP.md')), 'roadmap retains Phase 12 PWA/offline hardening');
+ok(versionAtLeast(packageJson.version, '0.10.0') && versionAtLeast(packageLockJson.version, '0.10.0'), 'project metadata is at or beyond v0.10.0');
+
+
+// Phase 12A — IndexedDB workout durability
+for (const rel of [
+  'src/features/workout/storage/workoutIndexedDb.ts',
+  'src/features/workout/recovery/workoutRecoveryStorage.ts',
+  'src/features/workout/mutations/workoutMutationStorage.ts',
+  'src/features/workout/hooks/useWorkoutRecovery.ts',
+  'src/features/workout/hooks/useWorkoutMutationQueue.ts',
+  'docs/PHASE12A-INDEXEDDB-WORKOUT-DURABILITY.md',
+  'indexeddb.e2e.html',
+  'tests/e2e/indexedDbHarness.ts',
+  'tests/e2e/indexeddb-durability.spec.ts',
+]) ok(fs.existsSync(path.join(root, rel)), `${rel} exists`);
+const phase12IndexedDb = read('src/features/workout/storage/workoutIndexedDb.ts');
+const phase12RecoveryStorage = read('src/features/workout/recovery/workoutRecoveryStorage.ts');
+const phase12MutationStorage = read('src/features/workout/mutations/workoutMutationStorage.ts');
+const phase12RecoveryHook = read('src/features/workout/hooks/useWorkoutRecovery.ts');
+const phase12MutationHook = read('src/features/workout/hooks/useWorkoutMutationQueue.ts');
+const phase12Controller = read('src/features/workout/components/WorkoutController.tsx');
+const phase12Doc = read('docs/PHASE12A-INDEXEDDB-WORKOUT-DURABILITY.md');
+const phase12Roadmap = read('docs/ROADMAP.md');
+const phase12Vite = read('vite.config.ts');
+const phase12E2e = read('tests/e2e/indexeddb-durability.spec.ts');
+ok(/fitness-game-workout/.test(phase12IndexedDb) && /durable-state/.test(phase12IndexedDb), 'Phase 12A uses one versioned IndexedDB database/object store');
+ok(/indexedDB/.test(phase12IndexedDb) && /createObjectStore/.test(phase12IndexedDb), 'Phase 12A opens and upgrades native IndexedDB');
+ok(!/supabase/i.test(phase12IndexedDb), 'IndexedDB adapter has no Supabase dependency');
+ok(/Promise<ActiveWorkoutRecoverySnapshot \| null>/.test(phase12RecoveryStorage), 'recovery storage is explicitly asynchronous');
+ok(/Promise<WorkoutMutationQueueItem\[]>/.test(phase12MutationStorage), 'mutation queue storage is explicitly asynchronous');
+ok(/LEGACY_RECOVERY_KEY_PREFIX = 'fitness-game:active-workout:v1:'/.test(phase12RecoveryStorage), 'Phase 12A recognizes the historical recovery key for migration');
+ok(/LEGACY_MUTATION_QUEUE_KEY_PREFIX = 'fitness-game:workout-mutations:v1:'/.test(phase12MutationStorage), 'Phase 12A recognizes the historical mutation key for migration');
+ok(/await storage\.setItem[\s\S]*legacyStorage\.removeItem/.test(phase12RecoveryStorage), 'recovery legacy key is removed only after durable migration succeeds');
+ok(/await storage\.setItem[\s\S]*legacyStorage\.removeItem/.test(phase12MutationStorage), 'mutation legacy key is removed only after durable migration succeeds');
+ok(/const \[hydrated, setHydrated\]/.test(phase12RecoveryHook) && /const \[hydrated, setHydrated\]/.test(phase12MutationHook), 'both workout durable-state hooks expose explicit hydration');
+ok(/!recovery\.hydrated \|\| !mutationQueue\.hydrated/.test(phase12Controller) && /Recovering saved workout/.test(phase12Controller), 'workout controller gates empty/error decisions until IndexedDB hydration completes');
+ok(/await storageRef\.current!\.save\(userId, next\)/.test(phase12MutationHook), 'offline mutation enqueue awaits durable persistence before replay/result');
+ok(/Promise<boolean>/.test(phase12MutationStorage), 'mutation storage reports whether a queue write was durably accepted');
+ok(/could not save the workout change for safe retry/.test(phase12MutationHook), 'queue refuses network replay when durable persistence fails');
+ok(fs.existsSync(path.join(root, 'indexeddb.e2e.html')) && fs.existsSync(path.join(root, 'tests/e2e/indexedDbHarness.ts')), 'native IndexedDB fixture and production-module harness exist');
+ok(/indexeddb:\s*resolve\(process\.cwd\(\),\s*['\"]indexeddb\.e2e\.html['\"]\)/.test(phase12Vite), 'native IndexedDB fixture is part of the existing E2E build gate');
+ok(/await waitFor\(\(\) => expect\(memory\.read\(\)\?\.ui\.setDrafts/.test(read('src/features/workout/hooks/useWorkoutRecovery.test.tsx')), 'recovery hook test waits for queued durable persistence');
+ok(/findByText\(['\"]Barbell Bench Press['\"]\)/.test(read('src/features/workout/components/WorkoutController.test.tsx')), 'controller recovery test waits for asynchronously hydrated exercise content');
+ok(/findByLabelText\(['"]Set 1 weight in lb['"]\)/.test(read('src/features/workout/components/WorkoutController.test.tsx')) && /findByLabelText\(['"]Set 1 reps['"]\)/.test(read('src/features/workout/components/WorkoutController.test.tsx')), 'controller recovery test waits for asynchronously hydrated recovered set inputs');
+ok(/page\.reload\(\)/.test(phase12E2e) && /Legacy keys: cleared/.test(phase12E2e), 'Phase 12A E2E proves migration and page-reload durability');
+ok(/Queue: ADD_SET/.test(phase12E2e), 'Phase 12A E2E proves queued mutation persistence');
+const phase12ReliabilityIntegration = read('tests/integration/workout-reliability-journey.test.tsx');
+ok(/createWorkoutRecoveryStorage/.test(phase12ReliabilityIntegration) && /createWorkoutMutationStorage/.test(phase12ReliabilityIntegration), 'reliability integration gate inspects durable state through Phase 12A storage adapters');
+ok(!/expect\(window\.localStorage\.length\)/.test(phase12ReliabilityIntegration), 'reliability integration gate no longer treats localStorage as the durable workout contract');
+ok(/afterEach\(async \(\) =>[\s\S]*createWorkoutRecoveryStorage\(\)\.clear\(USER_ID\)[\s\S]*createWorkoutMutationStorage\(\)\.clear\(USER_ID\)/.test(phase12ReliabilityIntegration), 'reliability integration tests clear durable recovery and queue state between journeys');
+const phase12ExerciseHook = read('src/features/workout/hooks/useWorkoutExercises.ts');
+const phase12SetHook = read('src/features/workout/hooks/useWorkoutSets.ts');
+ok(/resolvedWorkoutId/.test(phase12ExerciseHook) && /resolvedForCurrentWorkout/.test(phase12ExerciseHook) && /effectiveStatus/.test(phase12ExerciseHook), 'exercise hook does not expose stale ready state when the active workout identity changes');
+ok(/resolvedExerciseKey/.test(phase12SetHook) && /resolvedForCurrentExercises/.test(phase12SetHook) && /effectiveStatus/.test(phase12SetHook), 'set hook does not expose stale ready state when exercise identities change');
+ok(/reports loading immediately when the active workout identity changes/.test(read('src/features/workout/hooks/useWorkoutExercises.test.tsx')), 'exercise hook regression covers the null-to-workout loading boundary');
+ok(/reports loading immediately when exercise identities change/.test(read('src/features/workout/hooks/useWorkoutSets.test.tsx')), 'set hook regression covers the empty-to-populated exercise loading boundary');
+ok(/snapshot\?\.exercises\.map[\s\S]*WORKOUT_EXERCISE_ID[\s\S]*snapshot\?\.sets\.map[\s\S]*SET_ID/.test(phase12ReliabilityIntegration), 'reliability integration waits for a complete canonical recovery snapshot before simulating offline loss');
+ok(/no Supabase migration/i.test(phase12Doc) && /no scoring\/XP changes/i.test(phase12Doc), 'Phase 12A documentation locks database and scoring non-goals');
+ok(/12A IndexedDB workout durability — DONE/.test(phase12Roadmap), 'roadmap records Phase 12A completion');
+ok(/12B Offline shell \+ install UX — NEXT/.test(phase12Roadmap), 'roadmap advances to Phase 12B');
+ok(packageJson.version === '0.11.0' && packageLockJson.version === '0.11.0', 'project metadata records v0.11.0');
 
 
 // Phase 5.6.1 — targeted user invitations

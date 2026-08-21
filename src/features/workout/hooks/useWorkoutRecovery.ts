@@ -18,13 +18,34 @@ export function useWorkoutRecovery(userId: string, injectedStorage?: WorkoutReco
   const storageRef = useRef<WorkoutRecoveryStorage | null>(null);
   if (!storageRef.current) storageRef.current = injectedStorage ?? createWorkoutRecoveryStorage();
 
-  const [snapshot, setSnapshot] = useState<ActiveWorkoutRecoverySnapshot | null>(() => storageRef.current!.load(userId));
+  const [snapshot, setSnapshot] = useState<ActiveWorkoutRecoverySnapshot | null>(null);
+  const snapshotRef = useRef<ActiveWorkoutRecoverySnapshot | null>(null);
+  const [hydrated, setHydrated] = useState(false);
+  const hydratedRef = useRef(false);
+  const persistChain = useRef<Promise<void>>(Promise.resolve());
   const [connectionState, setConnectionState] = useState<WorkoutConnectionState>(() => currentConnectionState());
   const [reconnectCount, setReconnectCount] = useState(0);
 
   useEffect(() => {
-    const storage = storageRef.current!;
-    setSnapshot(storage.load(userId));
+    let cancelled = false;
+    hydratedRef.current = false;
+    setHydrated(false);
+    snapshotRef.current = null;
+    setSnapshot(null);
+    void storageRef.current!.load(userId).then((loaded) => {
+      if (cancelled) return;
+      snapshotRef.current = loaded;
+      setSnapshot(loaded);
+      hydratedRef.current = true;
+      setHydrated(true);
+    }, () => {
+      if (cancelled) return;
+      snapshotRef.current = null;
+      setSnapshot(null);
+      hydratedRef.current = true;
+      setHydrated(true);
+    });
+    return () => { cancelled = true; };
   }, [userId]);
 
   useEffect(() => {
@@ -44,11 +65,16 @@ export function useWorkoutRecovery(userId: string, injectedStorage?: WorkoutReco
   }, []);
 
   const write = useCallback((update: (current: ActiveWorkoutRecoverySnapshot | null) => ActiveWorkoutRecoverySnapshot | null) => {
-    setSnapshot((current) => {
-      const next = update(current);
-      if (next) storageRef.current!.save(next);
-      else storageRef.current!.clear(userId);
-      return next;
+    if (!hydratedRef.current) return;
+    const next = update(snapshotRef.current);
+    snapshotRef.current = next;
+    setSnapshot(next);
+    persistChain.current = persistChain.current.then(async () => {
+      if (next) await storageRef.current!.save(next);
+      else await storageRef.current!.clear(userId);
+    }, async () => {
+      if (next) await storageRef.current!.save(next);
+      else await storageRef.current!.clear(userId);
     });
   }, [userId]);
 
@@ -72,7 +98,6 @@ export function useWorkoutRecovery(userId: string, injectedStorage?: WorkoutReco
       return { ...current, savedAtMs: Date.now(), ui: { ...current.ui, setDrafts } };
     });
   }, [write]);
-
 
   const clearDrafts = useCallback(() => {
     write((current) => current ? {
@@ -102,10 +127,17 @@ export function useWorkoutRecovery(userId: string, injectedStorage?: WorkoutReco
     } : current);
   }, [write]);
 
-  const clear = useCallback(() => write(() => null), [write]);
+  const clear = useCallback(async () => {
+    if (!hydratedRef.current) return;
+    snapshotRef.current = null;
+    setSnapshot(null);
+    await persistChain.current;
+    await storageRef.current!.clear(userId);
+  }, [userId]);
 
   return {
     snapshot,
+    hydrated,
     connectionState,
     reconnectCount,
     captureCanonical,

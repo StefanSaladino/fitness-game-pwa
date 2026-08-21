@@ -25,6 +25,7 @@ export function useWorkoutSets(
   const requestSequence = useRef(0);
   const revisionCursor = useRef<Map<string, number>>(new Map());
   const [status, setStatus] = useState<WorkoutSetStatus>(exerciseKey ? 'loading' : 'ready');
+  const [resolvedExerciseKey, setResolvedExerciseKey] = useState<string | null>(exerciseKey ? null : '');
   const [sets, setSets] = useState<WorkoutSet[]>([]);
   const [busy, setBusy] = useState<WorkoutSetBusyState | null>(null);
   const [error, setError] = useState('');
@@ -34,6 +35,7 @@ export function useWorkoutSets(
     const ids = exerciseKey ? exerciseKey.split('|') : [];
     if (ids.length === 0) {
       setSets([]);
+      setResolvedExerciseKey('');
       setStatus('ready');
       setError('');
       return [] as WorkoutSet[];
@@ -46,10 +48,12 @@ export function useWorkoutSets(
       if (requestId !== requestSequence.current) return [] as WorkoutSet[];
       revisionCursor.current = new Map(loaded.map((set) => [set.id, set.revision]));
       setSets(loaded);
+      setResolvedExerciseKey(exerciseKey);
       setStatus('ready');
       return loaded;
     } catch (caught) {
       if (requestId !== requestSequence.current) return [] as WorkoutSet[];
+      setResolvedExerciseKey(exerciseKey);
       setStatus('error');
       setError(toUserFacingWorkoutError(caught));
       return [] as WorkoutSet[];
@@ -153,5 +157,9 @@ export function useWorkoutSets(
     );
   }, [revisionSourceFor, runMutation]);
 
-  return { status, sets, busy, error, retry: load, addSet, copySet, saveSet, removeSet };
+  const resolvedForCurrentExercises = resolvedExerciseKey === exerciseKey;
+  const effectiveStatus: WorkoutSetStatus = resolvedForCurrentExercises ? status : 'loading';
+  const effectiveSets = resolvedForCurrentExercises ? sets : [];
+
+  return { status: effectiveStatus, sets: effectiveSets, busy, error, retry: load, addSet, copySet, saveSet, removeSet };
 }

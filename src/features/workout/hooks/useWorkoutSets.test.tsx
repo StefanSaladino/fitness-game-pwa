@@ -28,6 +28,29 @@ describe('useWorkoutSets', () => {
     expect(injected.loadWorkoutSets).toHaveBeenCalledWith(['we-1']);
   });
 
+
+  it('reports loading immediately when exercise identities change', async () => {
+    let resolveLoad: ((value: typeof setRow[]) => void) | null = null;
+    const injected = {
+      ...service(),
+      loadWorkoutSets: vi.fn(() => new Promise<typeof setRow[]>((resolve) => { resolveLoad = resolve; })),
+    };
+    const { result, rerender } = renderHook(
+      ({ ids }: { ids: string[] }) => useWorkoutSets(ids, injected),
+      { initialProps: { ids: [] as string[] } },
+    );
+
+    expect(result.current.status).toBe('ready');
+    rerender({ ids: ['we-1'] });
+
+    expect(result.current.status).toBe('loading');
+    expect(result.current.sets).toEqual([]);
+
+    await act(async () => { resolveLoad?.([setRow]); });
+    await waitFor(() => expect(result.current.status).toBe('ready'));
+    expect(result.current.sets).toEqual([setRow]);
+  });
+
   it('reloads after set mutations so independent row state remains authoritative', async () => {
     const injected = service();
     const { result } = renderHook(() => useWorkoutSets(['we-1'], injected));

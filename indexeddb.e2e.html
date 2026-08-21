@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>IndexedDB durability E2E fixture</title>
+  </head>
+  <body>
+    <main>
+      <h1>Workout durable state</h1>
+      <p id="recovery">Recovery: loading</p>
+      <p id="queue">Queue: loading</p>
+      <p id="legacy">Legacy keys: loading</p>
+      <button id="seed" type="button">Seed legacy state</button>
+      <button id="clear" type="button">Clear durable state</button>
+    </main>
+    <script type="module" src="/tests/e2e/indexedDbHarness.ts"></script>
+  </body>
+</html>

@@ -1,4 +1,4 @@
-import { act, renderHook } from '@testing-library/react';
+import { act, renderHook, waitFor } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { ActiveWorkoutSession, WorkoutExercise, WorkoutSet } from '../model';
 import type { ActiveWorkoutRecoverySnapshot } from '../recovery/workoutRecoveryModel';
@@ -8,9 +8,9 @@ import { useWorkoutRecovery } from './useWorkoutRecovery';
 function memoryRecovery(initial: ActiveWorkoutRecoverySnapshot | null = null) {
   let value = initial;
   const storage: WorkoutRecoveryStorage = {
-    load: vi.fn(() => value),
-    save: vi.fn((snapshot) => { value = snapshot; }),
-    clear: vi.fn(() => { value = null; }),
+    load: vi.fn(async () => value),
+    save: vi.fn(async (snapshot) => { value = snapshot; }),
+    clear: vi.fn(async () => { value = null; }),
   };
   return { storage, read: () => value };
 }
@@ -32,30 +32,35 @@ afterEach(() => {
 });
 
 describe('useWorkoutRecovery', () => {
-  it('hydrates synchronously and persists canonical workout plus unsaved set drafts', () => {
+  it('hydrates durable state before persisting canonical workout plus unsaved set drafts', async () => {
     const memory = memoryRecovery();
     const { result } = renderHook(() => useWorkoutRecovery('user-1', memory.storage));
+    await waitFor(() => expect(result.current.hydrated).toBe(true));
 
     act(() => result.current.captureCanonical(session, exercises, sets));
     expect(result.current.snapshot?.session.id).toBe('workout-1');
+    await waitFor(() => expect(memory.read()?.session.id).toBe('workout-1'));
 
     act(() => result.current.setDraft('set-1', { setType: 'WORKING', weight: '225', reps: '6', bodyweightMode: 'BODYWEIGHT' }));
-    expect(memory.read()?.ui.setDrafts['set-1']).toEqual({ setType: 'WORKING', weight: '225', reps: '6', bodyweightMode: 'BODYWEIGHT' });
+    await waitFor(() => expect(memory.read()?.ui.setDrafts['set-1']).toEqual({
+      setType: 'WORKING', weight: '225', reps: '6', bodyweightMode: 'BODYWEIGHT',
+    }));
 
     act(() => result.current.setWeightUnit('LB'));
-    expect(memory.read()?.ui.weightUnit).toBe('LB');
+    await waitFor(() => expect(memory.read()?.ui.weightUnit).toBe('LB'));
 
     act(() => result.current.setSetRevision('set-1', 3));
-    expect(memory.read()?.sets[0]?.revision).toBe(3);
+    await waitFor(() => expect(memory.read()?.sets[0]?.revision).toBe(3));
 
     act(() => result.current.clearDraft('set-1'));
-    expect(memory.read()?.ui.setDrafts['set-1']).toBeUndefined();
+    await waitFor(() => expect(memory.read()?.ui.setDrafts['set-1']).toBeUndefined());
   });
 
-  it('tracks offline state and emits one reconnect token when the browser comes back online', () => {
+  it('tracks offline state and emits one reconnect token when the browser comes back online', async () => {
     Object.defineProperty(window.navigator, 'onLine', { configurable: true, value: true });
     const memory = memoryRecovery();
     const { result } = renderHook(() => useWorkoutRecovery('user-1', memory.storage));
+    await waitFor(() => expect(result.current.hydrated).toBe(true));
     expect(result.current.connectionState).toBe('online');
 
     act(() => {

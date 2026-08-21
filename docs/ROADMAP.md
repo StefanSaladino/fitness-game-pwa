@@ -467,14 +467,44 @@ Cardio remains deliberately secondary.
 - history/analytics
 - no cardio contribution to lifting-day weekly target
 
-## Phase 12 — PWA/offline hardening — NEXT
+## Phase 12 — PWA/offline hardening — IN PROGRESS
 
-- IndexedDB active lift state
-- queued mutations
-- retry/idempotency
-- install UX
-- offline shell
-- iOS/Android behavior validation
+Phase 12 is split into reliability slices so durable storage, shell caching, retry behavior, and mobile-browser validation can be proven independently.
+
+### 12A IndexedDB workout durability — DONE
+
+Primary boundary: move active-lift recovery and the queued workout-mutation journal from synchronous localStorage persistence to IndexedDB without changing the v1 recovery/mutation contracts.
+
+- active workout snapshot persisted in IndexedDB;
+- queued workout mutations persisted in IndexedDB before replay;
+- one-time migration of existing v1 localStorage recovery/queue keys;
+- hydration gate prevents an offline refresh from deciding the workout is absent before IndexedDB loads;
+- idempotency keys and FIFO queue ordering are preserved across migration/reload;
+- localStorage is fallback-only when IndexedDB is unavailable or rejects a write;
+- no scoring, Supabase schema, or workout behavior changes.
+
+### 12B Offline shell + install UX — NEXT
+
+- production offline app shell;
+- service-worker cache/version lifecycle;
+- explicit install affordance where supported;
+- standalone/display-mode handling;
+- update/reload UX that does not interrupt an active workout.
+
+### 12C Reconnect + retry hardening — LATER
+
+- reconcile IndexedDB state with the authoritative server after reconnect;
+- preserve existing idempotency/conflict guarantees through app restart;
+- bounded retry/backoff for safe queued mutations;
+- no background mutation that bypasses explicit conflict policy.
+
+### 12D Mobile PWA validation — LATER
+
+- iOS Safari/installed-web-app lifecycle validation;
+- Android Chrome/installed-PWA lifecycle validation;
+- refresh/background/foreground/offline/reconnect scenarios;
+- storage persistence and eviction behavior documentation;
+- final Phase 12 reliability integration gate.
 
 ## Phase 13 — Lifting analytics
 
@@ -500,7 +530,72 @@ The PWA never requires a smartwatch. A future native watch companion may support
 
 Wearables never increase scoring simply because a device was used.
 
-## Phase 15 — Public/broader release hardening — LATER
+## Phase 15 — Platform administration, moderation + capacity dashboard — LATER
+
+Objective: give trusted platform administrators a secure operational console for capacity monitoring, account moderation, and direct user notices without granting those powers to ordinary group owners/admins.
+
+Apply the UI design gate before implementing the administrator console. This phase must be split into the following subphases rather than shipped as one large patch.
+
+### 15.1 Platform-admin authorization + audit foundation
+
+- define a platform-admin permission model that is completely separate from group OWNER / ADMIN roles;
+- no self-service admin elevation and no client-controlled admin claims;
+- privileged account operations run only through server-side / security-definer boundaries;
+- never expose the Supabase service-role key, Netlify access tokens, or comparable infrastructure credentials to the browser;
+- immutable admin audit log recording actor, target, action, reason, timestamp, and relevant before/after state;
+- protect against suspending/deleting the final platform administrator;
+- explicit authorization tests for admin, normal-user, suspended-user, and unauthenticated callers.
+
+### 15.2 Capacity + platform-health dashboard
+
+- current PostgreSQL database usage against the configured Supabase allowance;
+- Supabase Storage usage against the configured allowance;
+- monthly Supabase egress usage and reset date;
+- monthly active users against the configured allowance;
+- Realtime / other quota telemetry where it becomes materially relevant;
+- Netlify bandwidth, request/build usage, or credit consumption when obtainable through a secure server-side integration;
+- configurable warning thresholds (initial planning bands: 60%, 75%, and 85%);
+- historical usage snapshots so growth rate can be estimated before a hard limit is reached;
+- capacity data is operational only and never affects XP, badges, rankings, or user visibility.
+
+### 15.3 User account administration
+
+- searchable/paginated user directory with stable user ID, username, display name, account status, created date, and limited operational metadata;
+- ACTIVE / SUSPENDED / DELETION_PENDING (or equivalent) account states;
+- suspend an account with required reason, optional expiry/review date, and immediate enforcement across authenticated application RPCs;
+- revoke/expire active sessions when an account is suspended where supported safely;
+- restore a suspended account with an audited administrator action;
+- remove an account through a deliberate two-step destructive flow with clear cascade/data-retention behavior;
+- prevent accidental self-removal or removal of the final platform administrator;
+- never expose password hashes, auth secrets, raw tokens, or unrelated private user data in the admin UI;
+- suspension/removal must reconcile or exclude affected social/leaderboard visibility without corrupting authoritative historical scoring.
+
+### 15.4 Admin-to-user messaging
+
+- send a targeted in-app message to a specific user account;
+- support message types such as NOTICE, WARNING, ACTION_REQUIRED, and ACCOUNT_STATUS;
+- administrator-entered subject/body plus optional expiry or acknowledgement requirement;
+- user inbox/banner surface with delivered/read/acknowledged state;
+- warnings and moderation notices remain visible according to an explicit retention policy;
+- optional later broadcast/system notices may reuse the same message model but are not required for the first slice;
+- every message send/edit/withdraw action is audit logged;
+- admin messages never affect XP, badges, rankings, or progression.
+
+### 15.5 Admin integration + security gate
+
+- admin sign-in/authorization boundary cannot be reached by normal users through client-side navigation tricks;
+- suspension takes effect across dashboard, workouts, cardio, groups, progress, and social RPCs;
+- account removal behavior is validated against foreign-key cascades, Storage cleanup, and retained audit records;
+- admin messaging is covered by service, component, integration, and authorization tests;
+- capacity metrics degrade safely when an external provider metric is unavailable;
+- phone/desktop administrator UI is responsive, but the admin console is not exposed in ordinary user navigation;
+- destructive actions require explicit confirmation and produce an auditable result.
+
+Exit criterion: a trusted platform admin can see approaching free-tier limits, inspect account status, suspend/restore/remove users safely, and send auditable in-app policy/moderation notices without exposing privileged credentials or weakening scoring/privacy boundaries.
+
+## Phase 16 — Public/broader release hardening — LATER
+
+Phase 15 platform administration/moderation should be complete before a broader public launch.
 
 - abuse/rate limiting
 - production SMTP

@@ -1,5 +1,16 @@
 # Changelog
 
+## v0.11.0 — Phase 12A IndexedDB workout durability
+
+- Moved active-workout recovery persistence to asynchronous IndexedDB storage.
+- Moved the durable workout mutation queue to the same IndexedDB database while preserving v1 queue/idempotency contracts.
+- Added one-time migration from the existing per-user localStorage recovery and mutation keys; legacy keys are removed only after a successful IndexedDB write.
+- Added a hydration gate so remote read failures cannot win a race against local durable-state recovery during offline refresh/startup.
+- Queue writes are awaited before an offline mutation is reported as queued, preserving the existing "persist before replay" guarantee.
+- Added browser fallback to the historical localStorage keys only when IndexedDB is unavailable or rejects a write.
+- Added native-browser E2E coverage proving migration, reload persistence, queue ordering/idempotency identity, and explicit clearing.
+- No database migration, scoring, XP, progression, cardio, or social behavior changed.
+
 ## v0.5.2 — Phase 6.4B idempotent workout mutation queue
 
 - Added a durable per-user FIFO queue for workout-capture mutations.

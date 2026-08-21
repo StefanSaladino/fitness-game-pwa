@@ -63,13 +63,14 @@ export function WorkoutController({ profile, onNavigate, onSignOut, service, exe
   const workoutSets = useRecoveredSets ? recoveredSets : sets.sets;
 
   useEffect(() => {
-    if (workout.status === 'ready' && workout.activeWorkout === null && mutationQueue.pendingCount === 0) recovery.clear();
-  }, [mutationQueue.pendingCount, recovery.clear, workout.activeWorkout, workout.status]);
+    if (!recovery.hydrated || !mutationQueue.hydrated) return;
+    if (workout.status === 'ready' && workout.activeWorkout === null && mutationQueue.pendingCount === 0) void recovery.clear();
+  }, [mutationQueue.hydrated, mutationQueue.pendingCount, recovery.clear, recovery.hydrated, workout.activeWorkout, workout.status]);
 
   useEffect(() => {
-    if (!workout.activeWorkout || composition.status !== 'ready' || sets.status !== 'ready') return;
+    if (!recovery.hydrated || !workout.activeWorkout || composition.status !== 'ready' || sets.status !== 'ready') return;
     recovery.captureCanonical(workout.activeWorkout, composition.exercises, sets.sets);
-  }, [composition.exercises, composition.status, recovery.captureCanonical, sets.sets, sets.status, workout.activeWorkout]);
+  }, [composition.exercises, composition.status, recovery.captureCanonical, recovery.hydrated, sets.sets, sets.status, workout.activeWorkout]);
 
   const handledReconnect = useRef(0);
   useEffect(() => {
@@ -99,6 +100,14 @@ export function WorkoutController({ profile, onNavigate, onSignOut, service, exe
   if (recovery.connectionState === 'offline') recoveryState = 'offline';
   else if (usingAnyRecovery) recoveryState = hasRemoteReadError ? 'local-only' : 'recovering';
 
+  if (!recovery.hydrated || !mutationQueue.hydrated) {
+    return (
+      <AppShell activeItem="workouts" onNavigate={onNavigate} onSignOut={onSignOut} userLabel={profile.displayName} userMeta={`@${profile.username}`}>
+        <div className={styles.start} role="status">Recovering saved workout…</div>
+      </AppShell>
+    );
+  }
+
   if (workout.status === 'loading' && !useRecoveredWorkout) {
     return (
       <AppShell activeItem="workouts" onNavigate={onNavigate} onSignOut={onSignOut} userLabel={profile.displayName} userMeta={`@${profile.username}`}>
@@ -127,7 +136,7 @@ export function WorkoutController({ profile, onNavigate, onSignOut, service, exe
           onSignOut={onSignOut}
           onUseServerVersion={async () => {
             await mutationQueue.discardWorkout(recoveredWorkout.id);
-            recovery.clear();
+            await recovery.clear();
             onNavigate('home');
           }}
           profile={profile}
@@ -166,7 +175,7 @@ export function WorkoutController({ profile, onNavigate, onSignOut, service, exe
       onCancel={async () => {
         const id = await workout.cancel();
         if (id) {
-          recovery.clear();
+          await recovery.clear();
           onNavigate('home');
         }
         return id;
@@ -174,7 +183,7 @@ export function WorkoutController({ profile, onNavigate, onSignOut, service, exe
       onFinish={async () => {
         const id = await workout.finish();
         if (id) {
-          recovery.clear();
+          await recovery.clear();
           onNavigate('home');
         }
         return id;
