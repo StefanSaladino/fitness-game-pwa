@@ -165,15 +165,6 @@ index b181f4d..54b7f1e 100644
  for (const source of ['DATABASE_LOCAL', 'SUPABASE_MANAGEMENT', 'NETLIFY_API']) {
    if (!capacityModel.includes(`'${source}'`) || !capacityProvider.includes('CapacityTelemetryProvider')) {
      fail(`Phase 15.2A provider contract missing ${source}`);
-@@ -374,7 +466,7 @@ for (const command of [
-   'npx supabase start',
-   'npx supabase db reset',
-   'npm run db:test:local',
--  'npx supabase db lint --level warning --fail-on error',
-+  'npx supabase db lint --level warning',
- ]) {
-   if (!ciWorkflow.includes(command)) fail(`GitHub CI missing required gate command: ${command}`);
- }
 @@ -481,4 +573,4 @@ if (fs.existsSync(obsoleteRepairPath)) {
    fail('structural validation must not materialize the obsolete repair migration');
  }
