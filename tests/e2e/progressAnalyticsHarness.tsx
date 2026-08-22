@@ -1,8 +1,9 @@
 import { createRoot } from 'react-dom/client';
 import type { OnboardingProfile } from '../../src/features/onboarding';
 import { buildExerciseAnalytics } from '../../src/features/progress/exerciseAnalytics';
+import { buildLiftingCalendarAnalytics } from '../../src/features/progress/liftingCalendarAnalytics';
 import { ExerciseProgressScreen } from '../../src/features/progress/components/ExerciseProgressScreen';
-import type { ExerciseProgressHistoryEntry, ExerciseProgressSummary } from '../../src/features/progress/model';
+import type { ExerciseProgressHistoryEntry, ExerciseProgressSummary, LiftingCalendarSummary } from '../../src/features/progress/model';
 import '../../src/styles/global.css';
 
 const profile: OnboardingProfile = {
@@ -64,14 +65,29 @@ const history: ExerciseProgressHistoryEntry[] = [
   },
 ];
 
+
+const calendarSummaries: LiftingCalendarSummary[] = [
+  { periodKind: 'WEEK', periodStart: '2026-07-27', periodEnd: '2026-08-02', completedLiftingSessions: 2, exerciseCount: 5, completedWorkingSets: 20, volumeKgReps: 9800, prCount: 1 },
+  { periodKind: 'WEEK', periodStart: '2026-08-03', periodEnd: '2026-08-09', completedLiftingSessions: 3, exerciseCount: 6, completedWorkingSets: 27, volumeKgReps: 12100, prCount: 2 },
+  { periodKind: 'WEEK', periodStart: '2026-08-10', periodEnd: '2026-08-16', completedLiftingSessions: 2, exerciseCount: 6, completedWorkingSets: 24, volumeKgReps: 11400, prCount: 1 },
+  { periodKind: 'WEEK', periodStart: '2026-08-17', periodEnd: '2026-08-23', completedLiftingSessions: 4, exerciseCount: 8, completedWorkingSets: 36, volumeKgReps: 15100, prCount: 3 },
+  { periodKind: 'MONTH', periodStart: '2026-06-01', periodEnd: '2026-06-30', completedLiftingSessions: 8, exerciseCount: 9, completedWorkingSets: 82, volumeKgReps: 38600, prCount: 3 },
+  { periodKind: 'MONTH', periodStart: '2026-07-01', periodEnd: '2026-07-31', completedLiftingSessions: 10, exerciseCount: 10, completedWorkingSets: 96, volumeKgReps: 45100, prCount: 4 },
+  { periodKind: 'MONTH', periodStart: '2026-08-01', periodEnd: '2026-08-31', completedLiftingSessions: 11, exerciseCount: 12, completedWorkingSets: 111, volumeKgReps: 52750, prCount: 7 },
+];
+
 createRoot(document.getElementById('root')!).render(
   <ExerciseProgressScreen
     analytics={buildExerciseAnalytics(bench, history)}
+    calendarAnalytics={buildLiftingCalendarAnalytics(calendarSummaries)}
+    calendarError=""
+    calendarStatus="ready"
     exercises={[bench]}
     history={history}
     historyError=""
     historyStatus="ready"
     onNavigate={() => undefined}
+    onRetryCalendar={() => undefined}
     onRetryHistory={() => undefined}
     onSelectExercise={() => undefined}
     onSignOut={() => undefined}

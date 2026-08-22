@@ -3,7 +3,8 @@ import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import type { OnboardingProfile } from '../../onboarding';
 import { buildExerciseAnalytics } from '../exerciseAnalytics';
-import type { ExerciseProgressHistoryEntry, ExerciseProgressSummary } from '../model';
+import { buildLiftingCalendarAnalytics } from '../liftingCalendarAnalytics';
+import type { ExerciseProgressHistoryEntry, ExerciseProgressSummary, LiftingCalendarSummary } from '../model';
 import { ExerciseProgressScreen } from './ExerciseProgressScreen';
 
 const profile: OnboardingProfile = {
@@ -39,6 +40,14 @@ const bodyweightHistory: ExerciseProgressHistoryEntry[] = [
   },
 ];
 
+
+const calendarSummaries: LiftingCalendarSummary[] = [
+  { periodKind: 'WEEK', periodStart: '2026-08-10', periodEnd: '2026-08-16', completedLiftingSessions: 2, exerciseCount: 5, completedWorkingSets: 20, volumeKgReps: 10000, prCount: 1 },
+  { periodKind: 'WEEK', periodStart: '2026-08-17', periodEnd: '2026-08-23', completedLiftingSessions: 3, exerciseCount: 6, completedWorkingSets: 28, volumeKgReps: 13200, prCount: 2 },
+  { periodKind: 'MONTH', periodStart: '2026-07-01', periodEnd: '2026-07-31', completedLiftingSessions: 7, exerciseCount: 8, completedWorkingSets: 76, volumeKgReps: 38000, prCount: 2 },
+  { periodKind: 'MONTH', periodStart: '2026-08-01', periodEnd: '2026-08-31', completedLiftingSessions: 9, exerciseCount: 10, completedWorkingSets: 91, volumeKgReps: 45500, prCount: 4 },
+];
+
 describe('ExerciseProgressScreen', () => {
   it('renders personal PR context and keeps added-weight bodyweight work analytics-only', async () => {
     const user = userEvent.setup();
@@ -46,11 +55,15 @@ describe('ExerciseProgressScreen', () => {
     render(
       <ExerciseProgressScreen
         analytics={buildExerciseAnalytics(exercises[1]!, bodyweightHistory)}
+        calendarAnalytics={buildLiftingCalendarAnalytics(calendarSummaries)}
+        calendarError=""
+        calendarStatus="ready"
         exercises={exercises}
         history={bodyweightHistory}
         historyError=""
         historyStatus="ready"
         onNavigate={vi.fn()}
+        onRetryCalendar={vi.fn()}
         onRetryHistory={vi.fn()}
         onSelectExercise={onSelectExercise}
         onSignOut={vi.fn()}
@@ -61,6 +74,11 @@ describe('ExerciseProgressScreen', () => {
 
     expect(screen.getByRole('heading', { name: 'Know your trend. Beat your last.' })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Pull Up' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Weekly & monthly summary' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Weekly volume' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Monthly volume' })).toBeInTheDocument();
+    expect(screen.getByText('+3,200 kg·reps vs prior week')).toBeInTheDocument();
+    expect(screen.getByText('+7,500 kg·reps vs prior month')).toBeInTheDocument();
     const currentPr = screen.getByText('Current PR', { selector: 'dt' }).closest('div');
     const previousPr = screen.getByText('Previous PR', { selector: 'dt' }).closest('div');
     expect(currentPr).not.toBeNull();

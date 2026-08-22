@@ -1,5 +1,17 @@
 # Changelog
 
+## v0.12.1 — Phase 13B weekly/monthly lifting summaries
+
+- Added a focused authenticated calendar-summary RPC over completed strength sessions instead of N per-exercise history requests.
+- Added bounded weekly/monthly buckets with zero-activity periods so trend context remains calendar-accurate.
+- Added personal session, exercise, completed-working-set, analytics-only volume, and PR counts.
+- PR counts reuse authoritative progression observations and exclude baseline observations.
+- Calendar anchoring uses the signed-in user's profile timezone.
+- Added current-versus-previous week/month deltas plus weekly and monthly volume charts.
+- Kept calendar-summary failure isolated from existing per-exercise analytics.
+- Added pgTAP, service, pure analytics, hook, component, integration, and responsive E2E coverage.
+- No scoring/XP, workout-write, social-comparison, or per-exercise progression behavior changed.
+
 ## v0.12.0 — Phase 13A per-exercise lifting analytics
 
 - Added pure per-exercise analytics derivation over the existing authoritative progress history read model.

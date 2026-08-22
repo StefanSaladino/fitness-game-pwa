@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { buildExerciseAnalytics } from '../exerciseAnalytics';
-import type { ExerciseProgressHistoryEntry, ExerciseProgressSummary } from '../model';
+import { buildLiftingCalendarAnalytics } from '../liftingCalendarAnalytics';
+import type { ExerciseProgressHistoryEntry, ExerciseProgressSummary, LiftingCalendarSummary } from '../model';
 import { toUserFacingProgressError } from '../progressMessages';
 import { createExerciseProgressService, type ExerciseProgressService } from '../progressService';
 
@@ -12,11 +13,14 @@ export function useExerciseProgress(injectedService?: ExerciseProgressService) {
 
   const [status, setStatus] = useState<ExerciseProgressStatus>('loading');
   const [historyStatus, setHistoryStatus] = useState<ExerciseProgressStatus>('loading');
+  const [calendarStatus, setCalendarStatus] = useState<ExerciseProgressStatus>('loading');
   const [exercises, setExercises] = useState<ExerciseProgressSummary[]>([]);
   const [selectedExerciseId, setSelectedExerciseId] = useState<string | null>(null);
   const [history, setHistory] = useState<ExerciseProgressHistoryEntry[]>([]);
+  const [calendarSummaries, setCalendarSummaries] = useState<LiftingCalendarSummary[]>([]);
   const [error, setError] = useState('');
   const [historyError, setHistoryError] = useState('');
+  const [calendarError, setCalendarError] = useState('');
 
   const loadOverview = useCallback(async () => {
     setStatus('loading');
@@ -37,6 +41,22 @@ export function useExerciseProgress(injectedService?: ExerciseProgressService) {
     }
   }, []);
 
+  const loadCalendarSummaries = useCallback(async () => {
+    setCalendarStatus('loading');
+    setCalendarError('');
+    try {
+      const next = await serviceRef.current!.loadCalendarSummaries();
+      setCalendarSummaries(next);
+      setCalendarStatus('ready');
+      return next;
+    } catch (caught) {
+      setCalendarSummaries([]);
+      setCalendarError(toUserFacingProgressError(caught));
+      setCalendarStatus('error');
+      return null;
+    }
+  }, []);
+
   const loadHistory = useCallback(async (exerciseId: string) => {
     setHistoryStatus('loading');
     setHistoryError('');
@@ -53,7 +73,10 @@ export function useExerciseProgress(injectedService?: ExerciseProgressService) {
     }
   }, []);
 
-  useEffect(() => { void loadOverview(); }, [loadOverview]);
+  useEffect(() => {
+    void loadOverview();
+    void loadCalendarSummaries();
+  }, [loadCalendarSummaries, loadOverview]);
 
   useEffect(() => {
     if (!selectedExerciseId) {
@@ -90,19 +113,25 @@ export function useExerciseProgress(injectedService?: ExerciseProgressService) {
 
   const selectedExercise = exercises.find((exercise) => exercise.exerciseId === selectedExerciseId) ?? null;
   const analytics = useMemo(() => buildExerciseAnalytics(selectedExercise, history), [history, selectedExercise]);
+  const calendarAnalytics = useMemo(() => buildLiftingCalendarAnalytics(calendarSummaries), [calendarSummaries]);
 
   return {
     status,
     historyStatus,
+    calendarStatus,
     exercises,
     selectedExerciseId,
     selectedExercise,
     analytics,
+    calendarAnalytics,
     history,
+    calendarSummaries,
     error,
     historyError,
+    calendarError,
     selectExercise: setSelectedExerciseId,
     retry: loadOverview,
+    retryCalendar: loadCalendarSummaries,
     retryHistory,
   };
 }

@@ -42,3 +42,16 @@ export interface ExerciseProgressHistoryEntry {
   addedWeightSets: number;
   assistedSets: number;
 }
+
+export type LiftingCalendarPeriodKind = 'WEEK' | 'MONTH';
+
+export interface LiftingCalendarSummary {
+  periodKind: LiftingCalendarPeriodKind;
+  periodStart: string;
+  periodEnd: string;
+  completedLiftingSessions: number;
+  exerciseCount: number;
+  completedWorkingSets: number;
+  volumeKgReps: number;
+  prCount: number;
+}

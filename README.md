@@ -1,23 +1,33 @@
-# Fitness Game PWA — v0.12.0
+# Fitness Game PWA — v0.12.1
 
-Current checkpoint: **Phase 13A — Per-exercise lifting analytics**. The approved lifting-analytics visual direction is now implemented on top of the authoritative Phase 8 progress history. Phase 13 remains in progress; **13B weekly/monthly lifting summaries is next**.
+Current checkpoint: **Phase 13 — Lifting analytics is complete**. Phase 13A provides per-exercise progression analytics; Phase 13B adds personal weekly/monthly lifting summaries over authoritative completed strength history.
 
-## Phase 13A highlights
+## Phase 13B highlights
 
-- Added lift-by-lift comparable progression charts for e1RM and plain-bodyweight rep metrics.
-- Added per-session volume-history charts plus total exercise volume; volume remains analytics-only and never awards XP.
-- Added true best completed working-set weight and best reps derived across exercise history.
-- Added a dedicated baseline / PR / current-PR timeline.
-- Existing exercise frequency and last-performed context remain visible beside the new analytics.
-- Added-weight and assisted bodyweight work remains visible for analytics without being mixed into plain-bodyweight progression comparisons.
-- Added a responsive browser fixture across desktop Chromium, Android-class Chromium, and iPhone-class WebKit.
-- Analytics derivation is a pure feature layer over the existing authenticated progress read models.
+- Added a focused authenticated `get_my_lifting_calendar_summaries` RPC instead of issuing one history request per exercise.
+- Returns 12 weekly and 6 monthly calendar buckets by default, including zero-activity periods for honest trend context.
+- Summaries include completed lifting sessions, distinct exercises, completed working sets, analytics-only external-load volume, and true PR counts.
+- PR totals reuse the authoritative progression-observation stream and exclude first-observation baselines.
+- Calendar anchoring uses the signed-in profile timezone.
+- Added current-versus-previous week/month deltas plus weekly and monthly volume charts.
+- Calendar-summary loading/error state is isolated so Phase 13A per-exercise analytics still works if this aggregate read fails.
+- Added responsive browser coverage across desktop Chromium, Android-class Chromium, and iPhone-class WebKit.
 
-Next roadmap slice: **Phase 13B — Weekly/monthly lifting summaries**.
+## Supabase for v0.12.1
 
-## Supabase for v0.12.0
+Apply:
 
-No new Supabase migration is required for Phase 13A. The existing `get_my_exercise_progress_overview` and `get_my_exercise_progress_history` read models already expose the authoritative session metric, volume, frequency, and PR data required for this slice.
+```text
+supabase/migrations/20260822000100_lifting_calendar_summaries.sql
+```
+
+New database test:
+
+```text
+supabase/tests/027_lifting_calendar_summaries.test.sql
+```
+
+The RPC is read-only and authenticated-user scoped. There are **no scoring/XP changes**, no new workout write path, and no cross-user analytics.
 
 ## Validation
 
@@ -33,6 +43,4 @@ npm run test:e2e
 npm run test:internal
 ```
 
-Phase 13A changes analytics presentation only. There are **no scoring/XP changes**, no social comparison, and no new workout write path.
-
-See `docs/ROADMAP.md` and `docs/PHASE13A-PER-EXERCISE-LIFTING-ANALYTICS.md`.
+See `docs/ROADMAP.md`, `docs/PHASE13A-PER-EXERCISE-LIFTING-ANALYTICS.md`, and `docs/PHASE13B-WEEKLY-MONTHLY-LIFTING-SUMMARIES.md`.

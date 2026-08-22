@@ -506,7 +506,7 @@ Primary boundary: move active-lift recovery and the queued workout-mutation jour
 - storage persistence and eviction behavior documentation;
 - final Phase 12 reliability integration gate.
 
-## Phase 13 — Lifting analytics — IN PROGRESS
+## Phase 13 — Lifting analytics — DONE
 
 The product-wide UI design gate was completed before implementation. Phase 13 is split so per-exercise analytics and cross-session calendar summaries can be proven independently.
 
@@ -524,7 +524,7 @@ Primary boundary: turn the existing authoritative Phase 8 exercise-history read 
 - responsive desktop, Android-class Chromium, and iPhone-class WebKit browser fixture;
 - no Supabase migration and no scoring/XP changes.
 
-### 13B Weekly/monthly lifting summaries — NEXT
+### 13B Weekly/monthly lifting summaries — DONE
 
 Primary boundary: aggregate completed lifting history into calendar summaries without changing the per-exercise progression contract.
 

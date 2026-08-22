@@ -5,6 +5,7 @@ import type {
   ExerciseProgressMeasurementType,
   ExerciseProgressMetricType,
   ExerciseProgressSummary,
+  LiftingCalendarSummary,
 } from './model';
 
 type OverviewRow = {
@@ -26,6 +27,18 @@ type OverviewRow = {
   latest_weight_kg: number | string | null;
   latest_reps: number | null;
   latest_observed_at: string | null;
+};
+
+
+type CalendarSummaryRow = {
+  period_kind: 'WEEK' | 'MONTH';
+  period_start: string;
+  period_end: string;
+  completed_lifting_sessions: number | string;
+  exercise_count: number | string;
+  completed_working_sets: number | string;
+  volume_kg_reps: number | string;
+  pr_count: number | string;
 };
 
 type HistoryRow = {
@@ -51,6 +64,7 @@ type HistoryRow = {
 
 export interface ExerciseProgressService {
   listOverview(): Promise<ExerciseProgressSummary[]>;
+  loadCalendarSummaries(): Promise<LiftingCalendarSummary[]>;
   loadHistory(exerciseId: string): Promise<ExerciseProgressHistoryEntry[]>;
 }
 
@@ -87,6 +101,20 @@ function mapOverview(row: OverviewRow): ExerciseProgressSummary {
   };
 }
 
+
+function mapCalendarSummary(row: CalendarSummaryRow): LiftingCalendarSummary {
+  return {
+    periodKind: row.period_kind,
+    periodStart: row.period_start,
+    periodEnd: row.period_end,
+    completedLiftingSessions: requiredNumber(row.completed_lifting_sessions),
+    exerciseCount: requiredNumber(row.exercise_count),
+    completedWorkingSets: requiredNumber(row.completed_working_sets),
+    volumeKgReps: requiredNumber(row.volume_kg_reps),
+    prCount: requiredNumber(row.pr_count),
+  };
+}
+
 function mapHistory(row: HistoryRow): ExerciseProgressHistoryEntry {
   return {
     workoutId: row.workout_id,
@@ -116,6 +144,15 @@ export function createExerciseProgressService(client: SupabaseClient = getSupaba
       const { data, error } = await client.rpc('get_my_exercise_progress_overview');
       if (error) throw error;
       return ((data ?? []) as OverviewRow[]).map(mapOverview);
+    },
+
+    async loadCalendarSummaries() {
+      const { data, error } = await client.rpc('get_my_lifting_calendar_summaries', {
+        p_week_count: 12,
+        p_month_count: 6,
+      });
+      if (error) throw error;
+      return ((data ?? []) as CalendarSummaryRow[]).map(mapCalendarSummary);
     },
 
     async loadHistory(exerciseId) {

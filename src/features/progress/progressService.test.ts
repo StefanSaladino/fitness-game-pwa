@@ -15,6 +15,17 @@ function fakeClient(): SupabaseClient {
         error: null,
       };
     }
+    if (name === 'get_my_lifting_calendar_summaries') {
+      expect(args).toEqual({ p_week_count: 12, p_month_count: 6 });
+      return {
+        data: [{
+          period_kind: 'WEEK', period_start: '2026-08-17', period_end: '2026-08-23',
+          completed_lifting_sessions: '3', exercise_count: 7, completed_working_sets: '31',
+          volume_kg_reps: '13950', pr_count: '2',
+        }],
+        error: null,
+      };
+    }
     if (name === 'get_my_exercise_progress_history') {
       expect(args).toEqual({ p_exercise_id: 'bench' });
       return {
@@ -36,12 +47,17 @@ describe('exercise progress service', () => {
   it('maps authenticated progress read models into client-safe numbers', async () => {
     const service = createExerciseProgressService(fakeClient());
     const overview = await service.listOverview();
+    const calendar = await service.loadCalendarSummaries();
     const history = await service.loadHistory('bench');
 
     expect(overview[0]).toMatchObject({
       exerciseId: 'bench', canonicalName: 'Bench Press', metricType: 'E1RM', bestValue: 122.5,
       bestWeightKg: 105, sessionCount: 3, observationCount: 3, averageDaysBetweenSessions: 3.5,
       latestMetricValue: 116.6667,
+    });
+    expect(calendar[0]).toEqual({
+      periodKind: 'WEEK', periodStart: '2026-08-17', periodEnd: '2026-08-23', completedLiftingSessions: 3,
+      exerciseCount: 7, completedWorkingSets: 31, volumeKgReps: 13950, prCount: 2,
     });
     expect(history[0]).toMatchObject({
       workoutId: 'lift-1', metricValue: 122.5, previousPrValue: 116.6667,

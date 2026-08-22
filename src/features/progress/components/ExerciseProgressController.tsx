@@ -33,11 +33,15 @@ export function ExerciseProgressController({ profile, onNavigate, onSignOut, ser
   return (
     <ExerciseProgressScreen
       analytics={progress.analytics}
+      calendarAnalytics={progress.calendarAnalytics}
+      calendarError={progress.calendarError}
+      calendarStatus={progress.calendarStatus}
       exercises={progress.exercises}
       history={progress.history}
       historyError={progress.historyError}
       historyStatus={progress.historyStatus}
       onNavigate={onNavigate}
+      onRetryCalendar={() => void progress.retryCalendar()}
       onRetryHistory={() => void progress.retryHistory()}
       onSelectExercise={progress.selectExercise}
       onSignOut={onSignOut}

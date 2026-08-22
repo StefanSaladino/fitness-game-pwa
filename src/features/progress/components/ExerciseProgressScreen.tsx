@@ -3,9 +3,11 @@ import { AppShell, PageHeader } from '../../../components/layout';
 import { Button } from '../../../components/ui';
 import type { OnboardingProfile } from '../../onboarding';
 import type { ExerciseAnalyticsSnapshot, ExercisePrTimelineEntry } from '../exerciseAnalytics';
+import type { LiftingCalendarAnalytics } from '../liftingCalendarAnalytics';
 import type { ExerciseProgressHistoryEntry, ExerciseProgressMetricType, ExerciseProgressSummary } from '../model';
 import type { ExerciseProgressStatus } from '../hooks/useExerciseProgress';
 import { ExerciseTrendChart } from './ExerciseTrendChart';
+import { LiftingCalendarSummaryPanel } from './LiftingCalendarSummary';
 import styles from './ExerciseProgressScreen.module.css';
 
 interface ShellProps {
@@ -21,8 +23,12 @@ interface ExerciseProgressScreenProps extends ShellProps {
   history: ExerciseProgressHistoryEntry[];
   historyStatus: ExerciseProgressStatus;
   historyError: string;
+  calendarAnalytics: LiftingCalendarAnalytics;
+  calendarStatus: ExerciseProgressStatus;
+  calendarError: string;
   onSelectExercise: (exerciseId: string) => void;
   onRetryHistory: () => void;
+  onRetryCalendar: () => void;
 }
 
 function formatDate(value: string): string {
@@ -294,8 +300,12 @@ export function ExerciseProgressScreen({
   history,
   historyStatus,
   historyError,
+  calendarAnalytics,
+  calendarStatus,
+  calendarError,
   onSelectExercise,
   onRetryHistory,
+  onRetryCalendar,
   profile,
   onNavigate,
   onSignOut,
@@ -309,7 +319,7 @@ export function ExerciseProgressScreen({
         <PageHeader
           eyebrow="Lifting analytics"
           title="Know your trend. Beat your last."
-          description="Lift-by-lift strength, volume, frequency, and PR history from your own completed sessions. Analytics never changes XP."
+          description="Weekly/monthly training load plus lift-by-lift strength, volume, frequency, and PR history from your own completed sessions. Analytics never changes XP."
         />
 
         <section className={styles.summary} aria-label="Progress summary">
@@ -317,6 +327,13 @@ export function ExerciseProgressScreen({
           <div><span>Exercise sessions</span><strong>{totalExerciseSessions}</strong></div>
           <div><span>Comparable lifts</span><strong>{comparable}</strong></div>
         </section>
+
+        <LiftingCalendarSummaryPanel
+          analytics={calendarAnalytics}
+          error={calendarError}
+          onRetry={onRetryCalendar}
+          status={calendarStatus}
+        />
 
         {exercises.length === 0 ? (
           <section className={styles.emptyState}>

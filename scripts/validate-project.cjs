@@ -1131,9 +1131,60 @@ ok(/progress: resolve\(process\.cwd\(\), 'progress\.e2e\.html'\)/.test(phase13Vi
 ok(/Know your trend\. Beat your last\./.test(phase13E2e) && /e1RM trend/.test(phase13E2e) && /Volume history/.test(phase13E2e) && /scrollWidth - window\.innerWidth/.test(phase13E2e), 'Phase 13A browser gate covers analytics content and responsive overflow');
 ok(/findByRole\('heading',\{name:'Know your trend\. Beat your last\.'\}\)/.test(phase13Integration) && !/Your lift history/.test(phase13Integration), 'Phase 13A product integration journey follows the approved analytics heading');
 ok(/No Supabase migration/i.test(phase13Doc) && /No scoring\/XP changes/i.test(phase13Doc), 'Phase 13A documentation locks database and scoring non-goals');
-ok(/Phase 13 — Lifting analytics — IN PROGRESS/.test(phase13Roadmap) && /13A Per-exercise lifting analytics — DONE/.test(phase13Roadmap), 'roadmap records Phase 13A completion inside an in-progress Phase 13');
-ok(/13B Weekly\/monthly lifting summaries — NEXT/.test(phase13Roadmap), 'roadmap advances to Phase 13B weekly/monthly summaries');
-ok(packageJson.version === '0.12.0' && packageLockJson.version === '0.12.0', 'project metadata records v0.12.0');
+ok(/Phase 13 — Lifting analytics — (?:IN PROGRESS|DONE)/.test(phase13Roadmap) && /13A Per-exercise lifting analytics — DONE/.test(phase13Roadmap), 'roadmap preserves Phase 13A completion while Phase 13 advances');
+ok(/13B Weekly\/monthly lifting summaries — (?:NEXT|DONE)/.test(phase13Roadmap), 'roadmap preserves the Phase 13B weekly/monthly summary slice');
+ok(versionAtLeast(packageJson.version, '0.12.0') && versionAtLeast(packageLockJson.version, '0.12.0'), 'project metadata is at or beyond v0.12.0');
+
+
+// Phase 13B — weekly/monthly lifting summaries
+for (const rel of [
+  'supabase/migrations/20260822000100_lifting_calendar_summaries.sql',
+  'supabase/migrations/20260822000200_fix_lifting_calendar_summaries.sql',
+  'supabase/tests/027_lifting_calendar_summaries.test.sql',
+  'src/features/progress/liftingCalendarAnalytics.ts',
+  'src/features/progress/liftingCalendarAnalytics.test.ts',
+  'src/features/progress/components/LiftingCalendarSummary.tsx',
+  'src/features/progress/components/LiftingCalendarSummary.module.css',
+  'docs/PHASE13B-WEEKLY-MONTHLY-LIFTING-SUMMARIES.md',
+]) ok(fs.existsSync(path.join(root, rel)), `${rel} exists`);
+const phase13bMigration = read('supabase/migrations/20260822000100_lifting_calendar_summaries.sql');
+const phase13bRepairMigration = read('supabase/migrations/20260822000200_fix_lifting_calendar_summaries.sql');
+const phase13bDbTest = read('supabase/tests/027_lifting_calendar_summaries.test.sql');
+const phase13bAnalytics = read('src/features/progress/liftingCalendarAnalytics.ts');
+const phase13bAnalyticsTest = read('src/features/progress/liftingCalendarAnalytics.test.ts');
+const phase13bService = read('src/features/progress/progressService.ts');
+const phase13bHook = read('src/features/progress/hooks/useExerciseProgress.ts');
+const phase13bPanel = read('src/features/progress/components/LiftingCalendarSummary.tsx');
+const phase13bScreenTest = read('src/features/progress/components/ExerciseProgressScreen.test.tsx');
+const phase13bE2e = read('tests/e2e/progress-analytics.spec.ts');
+const phase13bIntegration = read('tests/integration/group-product-journey.test.tsx');
+const phase13bDoc = read('docs/PHASE13B-WEEKLY-MONTHLY-LIFTING-SUMMARIES.md');
+const phase13bPlan = Number((phase13bDbTest.match(/select\s+plan\((\d+)\)/i)||[])[1]);
+const phase13bCount=(phase13bDbTest.match(/select\s+(?:has_function|results_eq|throws_ok|cmp_ok|is)\s*\(/gi)||[]).length;
+ok(/get_my_lifting_calendar_summaries/.test(phase13bMigration) && /p_week_count integer default 12/.test(phase13bMigration) && /p_month_count integer default 6/.test(phase13bMigration), 'Phase 13B adds one bounded focused calendar-summary RPC');
+ok(/auth\.uid\(\)/.test(phase13bMigration) && /from public\.profiles/.test(phase13bMigration) && /at time zone v_timezone/.test(phase13bMigration), 'Phase 13B calendar anchoring is authenticated-user scoped and profile-timezone aware');
+ok(/source = 'IN_APP'/.test(phase13bMigration) && /status = 'COMPLETED'/.test(phase13bMigration) && /category = 'STRENGTH'/.test(phase13bMigration), 'Phase 13B aggregates only completed in-app strength sessions');
+ok(/set_type = 'WORKING'/.test(phase13bMigration) && /ws\.completed/.test(phase13bMigration) && /coalesce\(ws\.reps, 0\) >= 1/.test(phase13bMigration), 'Phase 13B counts only completed working sets with at least one rep');
+ok(/generate_series/.test(phase13bMigration) && /weekly_periods/.test(phase13bMigration) && /monthly_periods/.test(phase13bMigration), 'Phase 13B returns explicit calendar buckets including zero-activity periods');
+ok(/previous_pr_value is not null/.test(phase13bMigration) && /metric_value > o\.previous_pr_value/.test(phase13bMigration), 'Phase 13B PR counts exclude baselines and reuse authoritative improvement semantics');
+ok(/revoke all on function public\.get_my_lifting_calendar_summaries/.test(phase13bMigration) && /grant execute on function public\.get_my_lifting_calendar_summaries/.test(phase13bMigration), 'Phase 13B calendar RPC is authenticated-only');
+ok(/create or replace function public\.get_my_lifting_calendar_summaries/.test(phase13bRepairMigration) && /gs\.bucket_start/.test(phase13bRepairMigration) && !/\bperiod_start::date as period_start\b/.test(phase13bRepairMigration), 'Phase 13B repair migration removes PL/pgSQL output-variable ambiguity from generated calendar buckets');
+ok(/bucket_start/.test(phase13bRepairMigration) && /bucket_end/.test(phase13bRepairMigration) && /session_total/.test(phase13bRepairMigration) && /pr_total/.test(phase13bRepairMigration), 'Phase 13B repair keeps internal aggregate names distinct from RETURNS TABLE output variables');
+ok(Number.isInteger(phase13bPlan) && phase13bPlan===phase13bCount && phase13bPlan>=15, 'Phase 13B pgTAP plan covers authorization, privacy, aggregates, PRs, and validation');
+ok(!/insert into public\.exercise_progress_observations/i.test(phase13bDbTest) && /Source-row triggers reconcile authoritative progression automatically/.test(phase13bDbTest), 'Phase 13B pgTAP fixture uses authoritative source rows instead of manually fabricating derived progression observations');
+ok(/get_my_lifting_calendar_summaries/.test(phase13bService) && /p_week_count: 12/.test(phase13bService) && /p_month_count: 6/.test(phase13bService), 'Phase 13B service maps one bounded calendar-summary request instead of N exercise-history calls');
+ok(/buildLiftingCalendarAnalytics/.test(phase13bAnalytics) && /weekDelta/.test(phase13bAnalytics) && /monthDelta/.test(phase13bAnalytics), 'Phase 13B pure analytics derives current-versus-previous week/month trend context');
+ok(!/supabase/i.test(phase13bAnalytics) && !/from ['"]react['"]/.test(phase13bAnalytics) && !/scoring\//i.test(phase13bAnalytics), 'Phase 13B calendar analytics stays pure and independent of Supabase, React, and scoring');
+ok(/orders weekly\/monthly buckets/.test(phase13bAnalyticsTest) && /null deltas/.test(phase13bAnalyticsTest), 'Phase 13B unit coverage locks chronological ordering and missing-prior behavior');
+ok(/calendarStatus/.test(phase13bHook) && /calendarError/.test(phase13bHook) && /retryCalendar/.test(phase13bHook), 'Phase 13B summary loading and retry state is isolated from per-exercise analytics');
+ok(/Weekly &amp; monthly summary/.test(phase13bPanel) && /Sessions/.test(phase13bPanel) && /Exercises/.test(phase13bPanel) && /Working sets/.test(phase13bPanel) && /PRs/.test(phase13bPanel) && /Volume/.test(phase13bPanel), 'Phase 13B panel exposes all required weekly/monthly lifting metrics');
+ok(/Weekly volume/.test(phase13bPanel) && /Monthly volume/.test(phase13bPanel) && /never changes XP/.test(phase13bPanel), 'Phase 13B UI provides period trend context while keeping volume outside scoring');
+ok(/Weekly & monthly summary/.test(phase13bScreenTest) && /3,200 kg·reps vs prior week/.test(phase13bScreenTest), 'Phase 13B component coverage proves summary content and prior-period delta presentation');
+ok(/Weekly & monthly summary/.test(phase13bE2e) && /Weekly volume/.test(phase13bE2e) && /Monthly volume/.test(phase13bE2e) && /scrollWidth - window\.innerWidth/.test(phase13bE2e), 'Phase 13B browser gate covers weekly/monthly analytics and responsive overflow');
+ok(/findByRole\('heading',\{name:'Weekly & monthly summary'\}\)/.test(phase13bIntegration), 'Phase 13B product integration journey reaches calendar analytics through the real Progress navigation');
+ok(/no scoring\/XP changes/i.test(phase13bDoc) && /no cross-user comparison/i.test(phase13bDoc) && /baseline, not a PR/i.test(phase13bDoc), 'Phase 13B documentation locks scoring, privacy, and PR-baseline semantics');
+ok(/Phase 13 — Lifting analytics — DONE/.test(phase13Roadmap) && /13B Weekly\/monthly lifting summaries — DONE/.test(phase13Roadmap), 'roadmap records completion of Phase 13 and Phase 13B');
+ok(packageJson.version === '0.12.1' && packageLockJson.version === '0.12.1', 'project metadata records v0.12.1');
 
 
 // Phase 5.6.1 — targeted user invitations
