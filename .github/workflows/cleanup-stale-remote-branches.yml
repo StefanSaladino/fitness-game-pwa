@@ -1,0 +1,40 @@
+name: Cleanup confirmed stale remote branches
+
+on:
+  pull_request:
+    branches:
+      - master
+
+permissions:
+  contents: write
+
+jobs:
+  cleanup:
+    if: github.head_ref == 'chore/cleanup-stale-remote-branches'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Archive the untouched master source
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: git archive --format=zip --output=fitness-game-pwa-master.zip "$BASE_SHA"
+
+      - name: Upload source snapshot
+        uses: actions/upload-artifact@v4
+        with:
+          name: fitness-game-pwa-master-source
+          path: fitness-game-pwa-master.zip
+          if-no-files-found: error
+          retention-days: 1
+
+      - name: Delete only the confirmed stale refs
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh api --method DELETE "repos/${GITHUB_REPOSITORY}/git/refs/heads/ci-verify-no-docker-db"
+          gh api --method DELETE "repos/${GITHUB_REPOSITORY}/git/refs/heads/fix/no-docker-database-gate"
+          gh api --method DELETE "repos/${GITHUB_REPOSITORY}/git/refs/heads/chore/cleanup-stale-remote-branches"
