@@ -898,7 +898,7 @@ ok(/never counts as a lifting day/i.test(read('tests/integration/cardio-accessor
 ok(/does not add pace, distance, GPS routes, heart rate/i.test(phase11Doc), 'Phase 11 documentation keeps cardio scope deliberately lightweight');
 ok(/Cardio never creates `LIFTING_WORKOUT` events/.test(phase11Doc), 'Phase 11 documentation locks cardio outside lifting-day consistency');
 ok(/Phase 11 — Cardio accessory logging — DONE/.test(read('docs/ROADMAP.md')), 'roadmap records Phase 11 cardio accessory logging completion');
-ok(/Phase 12 — PWA\/offline hardening — (?:NEXT|IN PROGRESS)/.test(read('docs/ROADMAP.md')), 'roadmap retains Phase 12 PWA/offline hardening');
+ok(/Phase 12 — PWA\/offline hardening — (?:NEXT|IN PROGRESS|DONE)/.test(read('docs/ROADMAP.md')), 'roadmap retains Phase 12 PWA/offline hardening');
 ok(versionAtLeast(packageJson.version, '0.10.0') && versionAtLeast(packageLockJson.version, '0.10.0'), 'project metadata is at or beyond v0.10.0');
 
 
@@ -1053,8 +1053,45 @@ ok(/createWorkoutMutationStorage\(\)\.load\(USER_ID\)\)\.toEqual\(\[\]\)/.test(p
 ok(!/Background Sync/i.test(phase12cRetry) && !/supabase/i.test(phase12cRetry), 'Phase 12C retry policy is browser-local and does not introduce background-sync or Supabase coupling');
 ok(/No Supabase migration/i.test(phase12cDoc) && /no scoring\/XP changes/i.test(phase12cDoc), 'Phase 12C documentation locks database and scoring non-goals');
 ok(/12C Reconnect \+ retry hardening — DONE/.test(phase12Roadmap), 'roadmap records Phase 12C completion');
-ok(/12D Mobile PWA validation — NEXT/.test(phase12Roadmap), 'roadmap advances to Phase 12D');
-ok(packageJson.version === '0.11.2' && packageLockJson.version === '0.11.2', 'project metadata records v0.11.2');
+ok(/12D Mobile PWA validation — (?:NEXT|DONE)/.test(phase12Roadmap), 'roadmap advances to Phase 12D');
+ok(versionAtLeast(packageJson.version, '0.11.2') && versionAtLeast(packageLockJson.version, '0.11.2'), 'project metadata is at or beyond v0.11.2');
+
+
+// Phase 12D — mobile PWA validation
+for (const rel of [
+  'src/pwa/pwaService.test.ts',
+  'docs/PHASE12D-MOBILE-PWA-VALIDATION.md',
+  'tests/e2e/pwa-mobile-lifecycle.spec.ts',
+]) ok(fs.existsSync(path.join(root, rel)), `${rel} exists`);
+const phase12dService = read('src/pwa/pwaService.ts');
+const phase12dServiceTest = read('src/pwa/pwaService.test.ts');
+const phase12dStatus = read('src/pwa/PwaStatus.tsx');
+const phase12dStatusTest = read('src/pwa/PwaStatus.test.tsx');
+const phase12dQueue = read('src/features/workout/hooks/useWorkoutMutationQueue.ts');
+const phase12dQueueTest = read('src/features/workout/hooks/useWorkoutMutationQueue.test.tsx');
+const phase12dPlaywright = read('playwright.config.ts');
+const phase12dE2e = read('tests/e2e/pwa-mobile-lifecycle.spec.ts');
+const phase12dDoc = read('docs/PHASE12D-MOBILE-PWA-VALIDATION.md');
+ok(/PwaPlatform = 'ios' \| 'android' \| 'other'/.test(phase12dService), 'Phase 12D classifies iOS, Android, and other PWA runtimes without user-agent-specific product branching elsewhere');
+ok(/manualInstallAvailable/.test(phase12dService) && /platform === 'ios'/.test(phase12dService), 'iOS-class runtimes receive manual Home Screen install guidance rather than a fake native install prompt');
+ok(/navigator\.storage\.persisted\(\)/.test(phase12dService) && /storagePersistence: persistent \? 'persistent' : 'best-effort'/.test(phase12dService), 'PWA lifecycle reports browser-authoritative persistent versus best-effort storage');
+ok(/navigator\.storage\.persist\(\)/.test(phase12dService) && /requestPersistentStorage/.test(phase12dService), 'installed PWA can explicitly request persistent origin storage when supported');
+ok(/visibilitychange/.test(phase12dService) && /pageshow/.test(phase12dService), 'PWA lifecycle refreshes runtime/storage state after mobile foreground and page restoration');
+ok(/Share → Add to Home Screen/.test(phase12dStatus) && /Open as Web App/.test(phase12dStatus), 'iOS install guidance matches the Home Screen workflow without rendering an Install button');
+ok(/Protect offline workout data/.test(phase12dStatus) && /Protect data/.test(phase12dStatus), 'installed best-effort storage exposes an explicit persistence request instead of claiming local data cannot be evicted');
+ok(/manual Add to Home Screen guidance/.test(phase12dStatusTest) && /request persistent storage/.test(phase12dStatusTest), 'PWA status component covers iOS manual install and persistence-request UI');
+ok(/detects iOS/.test(phase12dServiceTest) && /reports best-effort storage/.test(phase12dServiceTest) && /returns visible/.test(phase12dServiceTest), 'PWA lifecycle unit coverage includes platform, storage persistence, and mobile resume refresh');
+ok(/window\.addEventListener\('pageshow'/.test(phase12dQueue) && /document\.addEventListener\('visibilitychange'/.test(phase12dQueue), 'workout mutation queue wakes its existing retry scheduler after mobile resume');
+ok(/mobile app returns to the foreground/.test(phase12dQueueTest), 'queue hook regression proves foreground wake replays an already-durable eligible mutation');
+ok(/chromium-android/.test(phase12dPlaywright) && /Pixel 7/.test(phase12dPlaywright) && /webkit-mobile/.test(phase12dPlaywright), 'Playwright matrix covers Android-class Chromium and iPhone-class WebKit');
+ok(/webkit-mobile/.test(phase12dE2e) && /Add Workout Game to Home Screen/.test(phase12dE2e), 'Phase 12D WebKit mobile gate validates iOS-specific Home Screen guidance');
+ok(/chromium-android/.test(phase12dE2e) && /display: 'standalone'/.test(phase12dE2e), 'Phase 12D Android mobile gate validates standalone manifest identity on Chromium mobile');
+ok(/physical-device release checklist/i.test(phase12dDoc) && /iPhone \/ iPad/.test(phase12dDoc) && /Android \/ Chrome/.test(phase12dDoc), 'Phase 12D documents explicit installed-device certification for iOS and Android');
+ok(/best-effort/i.test(phase12dDoc) && /evict/i.test(phase12dDoc) && /explicit user clearing/i.test(phase12dDoc), 'Phase 12D documentation does not overpromise browser storage durability');
+ok(/No Supabase migration/i.test(phase12dDoc) && /No scoring\/XP changes/i.test(phase12dDoc), 'Phase 12D documentation locks database and scoring non-goals');
+ok(/Phase 12 — PWA\/offline hardening — DONE/.test(phase12Roadmap) && /12D Mobile PWA validation — DONE/.test(phase12Roadmap), 'roadmap records completion of Phase 12 and 12D');
+ok(/Phase 13 — Lifting analytics — NEXT/.test(phase12Roadmap), 'roadmap advances to the Phase 13 UI-design-gated analytics slice');
+ok(packageJson.version === '0.11.3' && packageLockJson.version === '0.11.3', 'project metadata records v0.11.3');
 
 
 // Phase 5.6.1 — targeted user invitations

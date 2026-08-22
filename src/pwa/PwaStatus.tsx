@@ -9,12 +9,21 @@ interface PwaStatusProps {
 
 export function PwaStatus({ service }: PwaStatusProps) {
   const pwa = usePwaLifecycle(service);
-  const [busy, setBusy] = useState<'install' | 'update' | null>(null);
+  const [busy, setBusy] = useState<'install' | 'update' | 'storage' | null>(null);
 
   const install = async () => {
     setBusy('install');
     try {
       await pwa.install();
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  const protectStorage = async () => {
+    setBusy('storage');
+    try {
+      await pwa.protectStorage();
     } finally {
       setBusy(null);
     }
@@ -62,6 +71,31 @@ export function PwaStatus({ service }: PwaStatusProps) {
         </div>
         <button className={styles.action} disabled={busy !== null} onClick={() => void install()} type="button">
           {busy === 'install' ? 'Opening…' : 'Install'}
+        </button>
+      </section>
+    );
+  }
+
+  if (pwa.manualInstallAvailable && !pwa.standalone) {
+    return (
+      <section className={styles.notice} role="status" aria-live="polite" data-kind="ios-install">
+        <div>
+          <strong>Add Workout Game to Home Screen</strong>
+          <span>Use Share → Add to Home Screen. Keep Open as Web App enabled when that option is shown.</span>
+        </div>
+      </section>
+    );
+  }
+
+  if (pwa.standalone && pwa.storagePersistence === 'best-effort' && pwa.storagePersistenceRequestAvailable) {
+    return (
+      <section className={styles.notice} role="status" aria-live="polite" data-kind="storage">
+        <div>
+          <strong>Protect offline workout data</strong>
+          <span>Storage is currently best effort. Request persistent storage to reduce eviction risk for unsynced changes.</span>
+        </div>
+        <button className={styles.action} disabled={busy !== null} onClick={() => void protectStorage()} type="button">
+          {busy === 'storage' ? 'Checking…' : 'Protect data'}
         </button>
       </section>
     );

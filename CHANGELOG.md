@@ -1,5 +1,16 @@
 # Changelog
 
+## v0.11.3 — Phase 12D mobile PWA validation
+
+- Added Android-class Chromium to the Playwright matrix while retaining iPhone/WebKit coverage.
+- Mobile foreground and pageshow events now wake the persisted mutation retry scheduler without bypassing retry/conflict policy.
+- PWA lifecycle state refreshes connectivity, standalone mode, platform identity, and storage-persistence state after resume.
+- Added iOS Home Screen guidance without pretending `beforeinstallprompt` exists on iOS-class browsers.
+- Added best-effort versus persistent storage reporting and an explicit persistent-storage request for installed apps when supported.
+- Added mobile lifecycle/storage unit coverage and iOS/Android-specific browser assertions.
+- Documented storage eviction limits and a physical-device release checklist for installed iOS/Android PWAs.
+- No database migration, scoring, XP, progression, cardio, or social behavior changed.
+
 ## v0.11.2 — Phase 12C reconnect + retry hardening
 
 - Added bounded exponential automatic retry for retryable IndexedDB-backed workout mutations.

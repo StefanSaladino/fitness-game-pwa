@@ -7,6 +7,7 @@ import { useWorkoutMutationQueue } from './useWorkoutMutationQueue';
 afterEach(() => {
   window.localStorage.clear();
   Object.defineProperty(window.navigator, 'onLine', { configurable: true, value: true });
+  Object.defineProperty(document, 'visibilityState', { configurable: true, value: 'visible' });
 });
 
 const request = {
@@ -161,6 +162,29 @@ describe('useWorkoutMutationQueue', () => {
 
     expect(apply).not.toHaveBeenCalled();
     expect((await storage.load('user-1'))[0]).toEqual(expect.objectContaining({ attemptCount: 4, status: 'failed' }));
+  });
+
+
+  it('wakes an offline queue when the mobile app returns to the foreground after connectivity is restored', async () => {
+    Object.defineProperty(window.navigator, 'onLine', { configurable: true, value: false });
+    Object.defineProperty(document, 'visibilityState', { configurable: true, value: 'hidden' });
+    const apply = vi.fn(async () => undefined);
+    const storage = createWorkoutMutationStorage(null, window.localStorage);
+    const { result } = renderHook(() => useWorkoutMutationQueue('user-1', 'workout-1', { apply } as WorkoutMutationService, storage));
+    await waitFor(() => expect(result.current.hydrated).toBe(true));
+
+    await act(async () => {
+      const outcome = await result.current.executor.execute(request);
+      expect(outcome.state).toBe('queued');
+    });
+    expect(apply).not.toHaveBeenCalled();
+
+    Object.defineProperty(window.navigator, 'onLine', { configurable: true, value: true });
+    Object.defineProperty(document, 'visibilityState', { configurable: true, value: 'visible' });
+    await act(async () => { document.dispatchEvent(new Event('visibilitychange')); });
+
+    await waitFor(() => expect(result.current.pendingCount).toBe(0));
+    expect(apply).toHaveBeenCalledTimes(1);
   });
 
 });

@@ -467,7 +467,7 @@ Cardio remains deliberately secondary.
 - history/analytics
 - no cardio contribution to lifting-day weekly target
 
-## Phase 12 — PWA/offline hardening — IN PROGRESS
+## Phase 12 — PWA/offline hardening — DONE
 
 Phase 12 is split into reliability slices so durable storage, shell caching, retry behavior, and mobile-browser validation can be proven independently.
 
@@ -498,7 +498,7 @@ Primary boundary: move active-lift recovery and the queued workout-mutation jour
 - bounded retry/backoff for safe queued mutations;
 - no background mutation that bypasses explicit conflict policy.
 
-### 12D Mobile PWA validation — NEXT
+### 12D Mobile PWA validation — DONE
 
 - iOS Safari/installed-web-app lifecycle validation;
 - Android Chrome/installed-PWA lifecycle validation;
@@ -506,7 +506,7 @@ Primary boundary: move active-lift recovery and the queued workout-mutation jour
 - storage persistence and eviction behavior documentation;
 - final Phase 12 reliability integration gate.
 
-## Phase 13 — Lifting analytics
+## Phase 13 — Lifting analytics — NEXT
 
 Apply the UI design gate before analytics dashboards.
 

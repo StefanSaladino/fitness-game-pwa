@@ -122,9 +122,22 @@ export function useWorkoutMutationQueue(
 
   useEffect(() => {
     if (typeof window === 'undefined') return undefined;
-    const onOnline = () => setConnectivityRevision((value) => value + 1);
+    const wakeRetryScheduler = () => setConnectivityRevision((value) => value + 1);
+    const onOnline = () => wakeRetryScheduler();
+    const onVisibilityChange = () => {
+      if (document.visibilityState === 'visible' && browserIsOnline()) wakeRetryScheduler();
+    };
+    const onPageShow = () => {
+      if (browserIsOnline()) wakeRetryScheduler();
+    };
     window.addEventListener('online', onOnline);
-    return () => window.removeEventListener('online', onOnline);
+    window.addEventListener('pageshow', onPageShow);
+    document.addEventListener('visibilitychange', onVisibilityChange);
+    return () => {
+      window.removeEventListener('online', onOnline);
+      window.removeEventListener('pageshow', onPageShow);
+      document.removeEventListener('visibilitychange', onVisibilityChange);
+    };
   }, []);
 
   useEffect(() => {

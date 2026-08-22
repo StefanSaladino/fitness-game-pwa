@@ -7,10 +7,14 @@ function fakeService(initial: Partial<PwaSnapshot> = {}) {
   let snapshot: PwaSnapshot = {
     online: true,
     standalone: false,
+    platform: 'other',
     installAvailable: false,
+    manualInstallAvailable: false,
     updateAvailable: false,
     applyingUpdate: false,
     serviceWorkerError: false,
+    storagePersistence: 'persistent',
+    storagePersistenceRequestAvailable: false,
     ...initial,
   };
   const listeners = new Set<() => void>();
@@ -19,6 +23,7 @@ function fakeService(initial: Partial<PwaSnapshot> = {}) {
     subscribe: (listener) => { listeners.add(listener); return () => listeners.delete(listener); },
     start: vi.fn(() => () => undefined),
     requestInstall: vi.fn(async () => 'accepted' as const),
+    requestPersistentStorage: vi.fn(async () => 'persistent' as const),
     applyUpdate: vi.fn(() => true),
   };
   return {
@@ -60,5 +65,26 @@ describe('PwaStatus', () => {
     const fake = fakeService({ standalone: true, installAvailable: true });
     render(<PwaStatus service={fake.service} />);
     expect(screen.queryByRole('button', { name: 'Install' })).not.toBeInTheDocument();
+  });
+
+  it('gives iOS users manual Add to Home Screen guidance instead of a fake install button', () => {
+    const fake = fakeService({ platform: 'ios', manualInstallAvailable: true });
+    render(<PwaStatus service={fake.service} />);
+
+    expect(screen.getByText('Add Workout Game to Home Screen')).toBeInTheDocument();
+    expect(screen.getByText(/Share → Add to Home Screen/)).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Install' })).not.toBeInTheDocument();
+  });
+
+  it('allows an installed app to request persistent storage when browser data is still best effort', async () => {
+    const fake = fakeService({
+      standalone: true,
+      storagePersistence: 'best-effort',
+      storagePersistenceRequestAvailable: true,
+    });
+    render(<PwaStatus service={fake.service} />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Protect data' }));
+    await waitFor(() => expect(fake.service.requestPersistentStorage).toHaveBeenCalledTimes(1));
   });
 });

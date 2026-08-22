@@ -9,6 +9,7 @@ export function usePwaLifecycle(service: PwaService = browserPwaService) {
   return {
     ...snapshot,
     install: service.requestInstall,
+    protectStorage: service.requestPersistentStorage,
     applyUpdate: service.applyUpdate,
   };
 }
