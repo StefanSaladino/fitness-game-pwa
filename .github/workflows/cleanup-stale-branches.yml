@@ -1,0 +1,42 @@
+name: Cleanup stale branches
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - .github/workflows/cleanup-stale-branches.yml
+
+permissions:
+  contents: write
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Delete stale helper branches
+        shell: bash
+        run: |
+          set -euo pipefail
+          for branch in \
+            ci-diagnose-15-2e \
+            ci-verify-1b4d43e \
+            ci-verify-phase15-2b \
+            phase15-2b-finalize-trigger
+          do
+            git push origin --delete "$branch"
+          done
+
+      - name: Remove this one-shot workflow
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git rm .github/workflows/cleanup-stale-branches.yml
+          git commit -m "chore: remove stale branch cleanup workflow"
+          git push origin HEAD:master
