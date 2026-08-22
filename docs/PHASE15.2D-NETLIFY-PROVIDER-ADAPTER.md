@@ -68,7 +68,7 @@ Raw Netlify account/site payloads are not forwarded to the PWA.
 
 As of **2026-08-22**, Netlify documents bandwidth, web requests, builds/compute and credit consumption in its Usage & billing UI. Netlify also maintains separate credit-based and legacy billing models. The current public Netlify OpenAPI reference (2.57.0) documents account/site management but does not expose stable public endpoints for the authoritative Account usage insights totals.
 
-Accordingly this phase intentionally does **not**:
+Accordingly, we do not:
 
 - invent an undocumented Netlify billing/usage endpoint;
 - scrape the Netlify dashboard;
