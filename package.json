@@ -22,7 +22,7 @@
     "supabase:stop": "supabase stop",
     "supabase:status": "supabase status",
     "db:reset": "supabase db reset",
-    "db:test": "supabase test db",
+    "db:test:local": "node scripts/run-canonical-db-tests.cjs",
     "db:lint": "supabase db lint --level warning",
     "db:types": "supabase gen types typescript --local > src/types/database.generated.ts",
     "validate": "npm run typecheck && npm test && npm run build",

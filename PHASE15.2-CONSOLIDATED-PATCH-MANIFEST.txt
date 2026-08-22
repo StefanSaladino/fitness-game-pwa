@@ -1,0 +1,54 @@
+Fitness Game PWA — Phase 15.2 Consolidated Local Overlay
+Includes 15.2A + locked admin/settings architecture + GitHub CI/database repair
+
+PHASE 15.2A CAPACITY FOUNDATION
+NEW
+- docs/PHASE15.2A-CAPACITY-SEMANTICS.md
+- src/features/admin/index.ts
+- src/features/admin/capacity/index.ts
+- src/features/admin/capacity/model.ts
+- src/features/admin/capacity/capacityMath.ts
+- src/features/admin/capacity/capacityMath.test.ts
+- src/features/admin/capacity/provider.ts
+
+LOCKED ADMIN / SETTINGS ARCHITECTURE
+- docs/PHASE15.2-ADMIN-ROUTE-AUTHORIZATION.md
+- docs/PHASE15.6-PROFILE-SETTINGS-NOTIFICATIONS.md
+- /platform-admin and /platform-admin/capacity reserved
+- admin branch before GroupGate
+- unauthorized authenticated admin-route attempts replace-redirect to / exactly like unknown routes
+- no admin-specific denial disclosure
+- /settings is the ordinary authenticated Profile/Settings route
+- Admin entry appears only for positively confirmed ACTIVE platform admins
+- Notifications master ON/OFF + supported category preferences are server-persisted
+- browser/OS permission and device push subscriptions remain separate
+
+GITHUB / DATABASE CI FIX
+NEW
+- .github/workflows/ci.yml
+- docs/CI-VALIDATION.md
+- supabase/config.toml
+- scripts/run-canonical-db-tests.cjs
+
+UPDATED
+- README.md
+- CHANGELOG.md
+- docs/ROADMAP.md
+- package.json
+- scripts/validate-project-clean.cjs
+- supabase/README.md
+- supabase/tests/_all-hosted-tests.sql
+
+CI CONTRACT
+- Node 24 + npm ci
+- application: typecheck, unit, integration, build, structure, internal
+- browser: Playwright Chromium + WebKit, full E2E
+- database: isolated Supabase stack, reset from migration zero, canonical *.test.sql suites, lint errors fail
+- historical aggregate _all-hosted-tests.sql is no longer a multi-plan bundle
+- db:test:local is explicitly optional and requires Docker
+- hosted Supabase remains authoritative for the current developer database workflow
+
+NO NEW PHASE 15.2 DATABASE MIGRATION
+NO ADMIN UI YET
+NO PROVIDER CREDENTIALS
+NO SCORING / XP / BADGE-AWARD CHANGES

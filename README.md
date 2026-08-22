@@ -1,6 +1,6 @@
 # Fitness Game PWA — v0.13.0
 
-Current checkpoint: **Phase 15.1 — platform-admin authorization + audit foundation**. The release adds a secure operational authorization boundary for future platform administration and fixes the oversized production bundle without adding an administrator screen yet.
+Current checkpoint: **Phase 15.2 — capacity + platform-health foundation is in progress**. Phase 15.2A defines capacity semantics/provider contracts, and the administrator route, Profile/Settings discovery, notification-settings architecture, and CI validation boundaries are now locked before database telemetry/UI implementation.
 
 ## Phase 15.1 highlights
 
@@ -17,6 +17,20 @@ Current checkpoint: **Phase 15.1 — platform-admin authorization + audit founda
 - Vite 8 uses Rolldown code-splitting groups for React and Supabase vendor code.
 - Production builds now fail if any emitted JavaScript chunk exceeds 500 kB.
 - The build emits an asset manifest and the service worker precaches every emitted app asset, so feature-level lazy loading does not weaken the installed PWA offline shell.
+
+
+## Phase 15.2 foundation
+
+- Capacity states use 60% WATCH, 75% WARNING, 85% CRITICAL, and 100%+ EXCEEDED planning bands.
+- `/platform-admin` and `/platform-admin/capacity` are reserved for ACTIVE platform administrators and branch before the ordinary group gate.
+- Unauthorized authenticated callers hitting `/platform-admin/*` receive the same replace redirect to `/` as an unknown authenticated route, with no admin-specific denial UI.
+- `/settings` is the ordinary authenticated Profile/Settings surface; only positively confirmed ACTIVE platform administrators see the in-PWA Admin entry.
+- Profile/Settings reserves identity, training, notifications, account/security, groups, privacy/data, PWA status, and conditional Administration sections.
+- Notifications include a server-persisted master ON/OFF preference plus supported category toggles; device/browser notification permission remains separate.
+
+## GitHub CI
+
+GitHub now runs separate application, browser, and database gates. The database job reconstructs the project from migration zero on an isolated GitHub-hosted Docker/Supabase stack and explicitly selects only canonical `supabase/tests/*.test.sql` pgTAP suites. The normal developer workflow does **not** require Docker. See `docs/CI-VALIDATION.md`.
 
 ## Supabase for v0.13.0
 

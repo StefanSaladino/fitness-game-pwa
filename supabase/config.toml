@@ -1,0 +1,14 @@
+# Deterministic local/CI Supabase configuration.
+# This file contains no production credentials.
+project_id = "fitness-game-pwa"
+
+[db]
+# Hosted project verified on PostgreSQL 17.6 before this CI lock was created.
+major_version = 17
+
+[auth]
+site_url = "http://localhost:5173"
+additional_redirect_urls = [
+  "http://localhost:5173",
+  "http://localhost:5173/reset-password",
+]

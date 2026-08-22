@@ -1,5 +1,17 @@
 # Changelog
 
+## Unreleased — Phase 15.2 foundation + CI reliability
+
+- Added Phase 15.2A pure capacity semantics and provider-neutral telemetry contracts with 60% WATCH / 75% WARNING / 85% CRITICAL planning bands.
+- Locked `/platform-admin` and `/platform-admin/capacity`, ACTIVE-platform-admin authorization, generic unknown-route fallback for unauthorized authenticated callers, and database-side `private.require_active_platform_admin()` enforcement.
+- Reserved `/settings` as the ordinary authenticated Profile/Settings surface and the only discoverable in-PWA admin entry, shown only to positively confirmed ACTIVE platform administrators.
+- Locked the Profile/Settings information architecture and server-persisted notification master/category preferences, with browser permission and device push subscriptions treated separately.
+- Repaired GitHub CI so application, browser, and database gates run independently under Node 24 using `npm ci`.
+- Added a tracked non-secret `supabase/config.toml` with PostgreSQL major version 17 to match the hosted project.
+- Added a cross-platform canonical database-test runner that selects only `supabase/tests/*.test.sql`; the historical `_all-hosted-tests.sql` aggregate is replaced by a one-plan compatibility sentinel so it can no longer emit multiple TAP plans.
+- GitHub database CI still uses Docker on the hosted runner, while Docker remains optional and unnecessary for the normal developer workflow that validates database changes against hosted Supabase.
+- No scoring, XP, badge-award, ranking, workout, or ordinary-user behavior changed.
+
 ## v0.13.0 — Phase 15.1 platform-admin authorization + audit foundation
 
 - Added a platform-admin authorization model completely separate from group OWNER / ADMIN roles.
@@ -310,4 +322,3 @@ Not yet implemented:
 - Strengthened `.gitignore` to exclude all real environment files and common private-key formats while retaining sanitized `*.example` templates.
 - Updated `.env.example` for the hosted Supabase Dashboard workflow.
 - Added `docs/ENVIRONMENT.md` with exact local/deployment variables and secret-handling rules.
-- Clarified that Supabase secret/service-role keys, database URLs, and database passwords must never enter the React/Vite environment.

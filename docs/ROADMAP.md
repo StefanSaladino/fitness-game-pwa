@@ -581,17 +581,77 @@ This required engineering cleanup ships with the v0.13.0 checkpoint but does not
 
 Exit criterion: v0.13.0 has a tested platform-admin authorization/audit boundary and no production JavaScript chunk is allowed to exceed the configured 500 kB release budget.
 
-### 15.2 Capacity + platform-health dashboard — NEXT
+### 15.2 Capacity + platform-health dashboard — IN PROGRESS
 
-- current PostgreSQL database usage against the configured Supabase allowance;
-- Supabase Storage usage against the configured allowance;
-- monthly Supabase egress usage and reset date;
-- monthly active users against the configured allowance;
-- Realtime / other quota telemetry where it becomes materially relevant;
-- Netlify bandwidth, request/build usage, or credit consumption when obtainable through a secure server-side integration;
-- configurable warning thresholds (initial planning bands: 60%, 75%, and 85%);
-- historical usage snapshots so growth rate can be estimated before a hard limit is reached;
-- capacity data is operational only and never affects XP, badges, rankings, or user visibility.
+Phase 15.2 is deliberately split so local operational measurements, provider-authoritative quota data, historical persistence, and the eventual administrator UI can be proven independently without putting infrastructure credentials in the browser.
+
+#### 15.2A Capacity semantics + provider contract — DONE
+
+Primary boundary: define deterministic capacity states and provider-neutral telemetry contracts before persistence or UI.
+
+- distinguish database-local operational measurements from provider-authoritative billing/quota measurements;
+- never label a local recent-sign-in count as Supabase billable MAU;
+- default warning bands are 60% WATCH, 75% WARNING, and 85% CRITICAL, with 100%+ EXCEEDED;
+- represent missing limits as UNCONFIGURED and failed provider reads as UNAVAILABLE rather than zero usage;
+- validate custom threshold bands as finite, strictly increasing percentages between 0 and 100;
+- estimate positive growth and time-to-limit only from comparable metric/source/unit samples with valid elapsed time;
+- define DATABASE_LOCAL, SUPABASE_MANAGEMENT, and NETLIFY_API provider boundaries without storing credentials;
+- repair the repository CI gate so Node 24 application/browser validation and an isolated GitHub-hosted Supabase reconstruction run on every push/PR;
+- commit non-secret `supabase/config.toml` with PostgreSQL major version 17 and select only canonical `supabase/tests/*.test.sql` suites in database CI, preventing generated/aggregate SQL from becoming accidental pgTAP programs;
+- keep Docker optional for the developer workflow while GitHub CI may use Docker to prove clean migration-zero reconstruction;
+- no database migration, admin UI, scoring, XP, badge-award, ranking, or user-visibility change in this slice.
+
+#### 15.2B Database-local telemetry + historical snapshots — NEXT
+
+Locked route + authorization architecture:
+
+- reserve `/platform-admin` as the private administrator shell and `/platform-admin/capacity` as the capacity dashboard route;
+- route `/platform-admin/*` from the authenticated application boundary **before** ordinary onboarding / `GroupGate` / `ProductController`, so trusted platform administrators do not need fitness-group membership to operate the console;
+- protect the admin shell with a `PlatformAdminGate` that requires a valid authenticated Supabase session and calls `public.get_my_platform_access()`;
+- render admin content only when `account_status = ACTIVE` and `is_platform_admin = true`; unauthenticated callers return to sign-in, while every authenticated but unauthorized caller (normal user, group OWNER/ADMIN, or suspended platform admin) must be handled exactly like an unknown/non-existent authenticated route using a replace redirect to canonical home `/`, with no admin-specific denial state or route disclosure and no retained admin-route history entry;
+- ordinary group `OWNER` / `ADMIN` roles never satisfy platform-admin authorization and the admin routes stay out of ordinary primary product navigation; unauthorized authenticated callers must not be able to distinguish a reserved admin URL from any other invalid route based on visible app behavior;
+- reserve `/settings` as the ordinary authenticated Profile/Settings surface and use it as the in-PWA discovery point for trusted admins: render an `Admin` action to `/platform-admin` **only** after server-backed access resolves to `account_status = ACTIVE` and `is_platform_admin = true`; for normal users, group OWNER/ADMIN users, suspended admins, loading access, or failed access checks, render no admin heading, disabled item, placeholder, reserved gap, or admin-specific copy;
+- the conditional Profile/Settings Admin action is navigation convenience only and never replaces `PlatformAdminGate` or RPC authorization; its state must come from `public.get_my_platform_access()` (or a shared wrapper around that RPC), never group role, client storage, profile metadata, or a client-controlled claim;
+- treat the React route guard as UX only, **not** as the security boundary: every capacity read/capture/configuration RPC must independently call `private.require_active_platform_admin()` before returning or mutating operational data;
+- keep capacity allowance records, snapshots, and operational state in the non-exposed `private` schema with no direct browser-table grants;
+- platform-admin-only PostgreSQL database size and connection telemetry;
+- platform-admin-only Supabase Storage object/byte telemetry derived from trusted database metadata;
+- operational auth-user and recent-sign-in counts, clearly labeled as local operational signals rather than provider billable MAU;
+- configured allowance records kept in private operational storage rather than hard-coded in the client;
+- private historical snapshots so growth can be derived from retained measurements;
+- guarded snapshot capture/read RPCs using the Phase 15.1 active-platform-admin boundary;
+- authorization and rollback-safe pgTAP coverage for normal, group-owner/group-admin, suspended, unauthenticated, and active-platform-admin callers.
+
+#### 15.2C Supabase provider quota adapter — LATER
+
+- provider-authoritative monthly active users against the configured allowance;
+- monthly Supabase egress usage and provider reset/billing window when available;
+- Realtime / other quota telemetry when materially relevant;
+- call the Supabase management/billing surface only from a secure server-side integration;
+- management tokens, service-role keys, and equivalent secrets never enter Vite/browser code;
+- provider failures degrade to UNAVAILABLE without replacing the last trustworthy historical snapshot with fake zeroes.
+
+#### 15.2D Netlify provider usage adapter — LATER
+
+- bandwidth, request/build usage, or credit consumption when obtainable from the supported Netlify API;
+- secure server-side credential handling only;
+- explicit unavailable/stale provider states when a metric cannot be fetched;
+- no provider telemetry may affect XP, badges, rankings, or ordinary user visibility.
+
+#### 15.2E Capacity dashboard visual gate + implementation — LATER
+
+- apply the product-wide UI design gate before administrator dashboard code;
+- implement the locked `/platform-admin` shell and `/platform-admin/capacity` route without changing the authorization model established in 15.2B;
+- define real metrics, stale/unavailable states, refresh behavior, history/trend presentation, and warning hierarchy;
+- generate and approve phone-first and desktop administrator concepts;
+- display configured allowance, measured usage, utilization band, source identity, measured-at time, and available growth context;
+- keep the administrator surface out of ordinary primary navigation and lazy-load it only after `PlatformAdminGate` resolves an ACTIVE platform administrator; add the authorized in-PWA entry through `/settings`, where the `Admin` action is rendered only for a positively confirmed ACTIVE platform administrator and is completely absent otherwise;
+- `/settings` must remain an ordinary authenticated Profile/Settings surface; the admin entry must fail closed on access-loading/error without blocking ordinary settings, and selecting it must navigate within the PWA to `/platform-admin`;
+- preserve the locked Profile/Settings architecture in `docs/PHASE15.6-PROFILE-SETTINGS-NOTIFICATIONS.md`; the minimal `/settings` surface created for admin discovery must be structured so full identity, training-preference, notification, account/security, groups, privacy/data, and PWA sections can be implemented without changing the admin authorization boundary;
+- provider-authoritative Supabase/Netlify metrics must flow browser JWT -> secure server/Edge boundary -> active-platform-admin verification -> provider API; infrastructure credentials never enter the browser bundle;
+- validate direct-URL access, generic unknown-route fallback, normal user, group OWNER/ADMIN, suspended admin, unauthenticated, and active-platform-admin behavior; authenticated unauthorized admin-route attempts must replace-redirect to `/` identically to the ordinary authenticated unknown-route fallback and must never render admin-specific denial copy, shell markup, or navigation before Phase 15.2 is marked DONE.
+
+Capacity data is operational only and never affects XP, badge awards, rankings, workout qualification, or ordinary user visibility.
 
 ### 15.3 User account administration
 
@@ -626,7 +686,44 @@ Exit criterion: v0.13.0 has a tested platform-admin authorization/audit boundary
 - phone/desktop administrator UI is responsive, but the admin console is not exposed in ordinary user navigation;
 - destructive actions require explicit confirmation and produce an auditable result.
 
-Exit criterion: a trusted platform admin can see approaching free-tier limits, inspect account status, suspend/restore/remove users safely, and send auditable in-app policy/moderation notices without exposing privileged credentials or weakening scoring/privacy boundaries.
+### 15.6 Profile/Settings + notification preferences — LATER
+
+This is the ordinary authenticated PWA account surface defined in `docs/PHASE15.6-PROFILE-SETTINGS-NOTIFICATIONS.md`; it is not an administrator-only feature.
+
+#### 15.6A Profile/Settings foundation — LATER
+
+- implement `/settings` as the canonical authenticated Profile/Settings route, reachable once profile identity exists and not blocked by `GroupGate`;
+- provide Profile + identity, Training preferences, Account + security, Groups, Privacy + data, App/PWA, Notifications, and conditionally authorized Administration sections;
+- support profile picture, display name, username, email/account identity, timezone, weekly lifting target, and a persisted preferred `kg` / `lb` unit without rewriting historical scoring/workout data;
+- link to existing group administration rather than duplicating group-role controls;
+- do not expose fake data-export, account-delete, session-management, or unsupported notification controls.
+
+#### 15.6B Notification preference persistence — LATER
+
+- persist a user-owned master Notifications ON/OFF preference server-side;
+- persist individual optional categories for workout reminders, weekly goal reminders, badges + achievements, personal-record alerts, group activity, and group invitations;
+- master OFF suppresses optional delivery and disables child controls while preserving the individual category selections for a later master ON;
+- users may read/update only their own preferences through authenticated service/RPC/RLS boundaries;
+- required in-app account, security, moderation, suspension, and ACTION_REQUIRED notices remain visible regardless of optional notification settings.
+
+#### 15.6C PWA notification permission + delivery integration — LATER
+
+- account notification preferences and device/browser permission are distinct states;
+- request browser/OS notification permission only from an explicit user gesture, never automatically on Settings load;
+- support default/not-requested, granted, denied/blocked, and unsupported-device states;
+- a blocked device must not silently flip the server-side account master preference OFF;
+- push subscriptions are device-specific, support multiple devices per account, and can be revoked independently;
+- only expose category toggles as working when the associated delivery behavior actually exists;
+- push/provider credentials remain outside the browser bundle.
+
+#### 15.6D Settings integration gate — LATER
+
+- validate mobile/desktop Settings, no-group access, profile/training preference persistence, master notification ON/OFF, every supported category toggle, and preserved child selections across OFF -> ON;
+- validate default/granted/denied/unsupported notification-permission states, explicit permission prompting, multi-device subscription separation, and required in-app notices remaining visible;
+- validate conditional Admin discovery remains ACTIVE-platform-admin-only and direct `/platform-admin/*` authorization still re-checks independently;
+- no settings preference changes scoring, XP, badge awards, rankings, qualification, or historical workout data.
+
+Exit criterion: a trusted platform admin can see approaching free-tier limits, inspect account status, suspend/restore/remove users safely, and send auditable in-app policy/moderation notices; ordinary users also have a secure Profile/Settings foundation with explicit notification controls, without exposing privileged credentials or weakening scoring/privacy boundaries.
 
 ## Phase 16 — Mobile-first visual overhaul — LATER
 
@@ -671,6 +768,8 @@ Global rules for the overhaul:
 ### 16.1 App shell + primary navigation
 
 - mobile bottom/navigation treatment and page-header behavior;
+- authenticated Profile/Settings access and `/settings` shell treatment, preserving the Phase 15 rule that an Admin action appears only for positively authorized ACTIVE platform administrators and is otherwise absent;
+- preserve the Phase 15.6 Settings information architecture and notification semantics, including the master Notifications toggle, supported per-category toggles, and separate device-permission state; visual work must not collapse these into one misleading switch;
 - desktop/sidebar adaptation without making desktop dictate the mobile layout;
 - active-state clarity, safe-area padding, scroll behavior, and PWA install/offline/update surfaces;
 - reserve a stable identity/achievement slot where badge showcase content belongs without forcing badges into every page;

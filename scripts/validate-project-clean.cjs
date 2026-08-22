@@ -18,6 +18,16 @@ const phase15TestPath = path.join(
   root,
   'supabase/tests/028_platform_admin_authorization_audit.test.sql',
 );
+const phase152aFiles = [
+  'src/features/admin/capacity/model.ts',
+  'src/features/admin/capacity/capacityMath.ts',
+  'src/features/admin/capacity/capacityMath.test.ts',
+  'src/features/admin/capacity/provider.ts',
+  'docs/PHASE15.2A-CAPACITY-SEMANTICS.md',
+  'docs/PHASE15.2-ADMIN-ROUTE-AUTHORIZATION.md',
+  'docs/PHASE15.6-PROFILE-SETTINGS-NOTIFICATIONS.md',
+  'PHASE15.2A-PATCH-MANIFEST.txt',
+];
 
 function fail(message) {
   throw new Error(`Release validation failed: ${message}`);
@@ -159,6 +169,239 @@ if (!String(packageJson.scripts?.build || '').includes('check-bundle-size.cjs'))
 const roadmap = read('docs/ROADMAP.md');
 if (!/Phase 15 .*IN PROGRESS/.test(roadmap)) fail('roadmap must mark Phase 15 in progress');
 if (!/15\.1 Platform-admin authorization \+ audit foundation .*DONE/.test(roadmap)) fail('roadmap must mark Phase 15.1 done');
+if (!/15\.2 Capacity \+ platform-health dashboard .*IN PROGRESS/.test(roadmap)) {
+  fail('roadmap must mark Phase 15.2 in progress');
+}
+if (!/15\.2A Capacity semantics \+ provider contract .*DONE/.test(roadmap)) {
+  fail('roadmap must mark Phase 15.2A done');
+}
+if (!/15\.2B Database-local telemetry \+ historical snapshots .*NEXT/.test(roadmap)) {
+  fail('roadmap must keep Phase 15.2B as the next capacity slice');
+}
+for (const heading of [
+  '15.2C Supabase provider quota adapter — LATER',
+  '15.2D Netlify provider usage adapter — LATER',
+  '15.2E Capacity dashboard visual gate + implementation — LATER',
+]) {
+  if (!roadmap.includes(heading)) fail(`roadmap missing capacity slice: ${heading}`);
+}
+if (!/15\.6 Profile\/Settings \+ notification preferences .*LATER/.test(roadmap)) {
+  fail('roadmap must preserve the Profile/Settings + notification preferences phase');
+}
+for (const heading of [
+  '15.6A Profile/Settings foundation — LATER',
+  '15.6B Notification preference persistence — LATER',
+  '15.6C PWA notification permission + delivery integration — LATER',
+  '15.6D Settings integration gate — LATER',
+]) {
+  if (!roadmap.includes(heading)) fail(`roadmap missing settings/notification slice: ${heading}`);
+}
+for (const relativePath of phase152aFiles) {
+  if (!fs.existsSync(path.join(root, relativePath))) fail(`Phase 15.2A file missing: ${relativePath}`);
+}
+const adminRouteContract = read('docs/PHASE15.2-ADMIN-ROUTE-AUTHORIZATION.md');
+for (const requiredFragment of [
+  '/platform-admin',
+  '/platform-admin/capacity',
+  '/settings',
+  'Authorized in-PWA discovery through Profile/Settings',
+  'Admin** action',
+  'render no Admin button/link',
+  'loading or unavailable, fail closed',
+  'navigation convenience only',
+  'PlatformAdminGate',
+  'public.get_my_platform_access()',
+  'private.require_active_platform_admin()',
+  'normal onboarding and group gating',
+  'does **not** need to belong to a fitness group',
+  'Group OWNER',
+  'Group ADMIN',
+  'Suspended platform admin',
+  'unknown/non-existent authenticated route',
+  'ordinary authenticated home',
+  'replace redirect to `/`',
+  'no `403`',
+  'Secure server / Edge boundary',
+  'docs/PHASE15.6-PROFILE-SETTINGS-NOTIFICATIONS.md',
+  'before `GroupGate`',
+]) {
+  if (!adminRouteContract.includes(requiredFragment)) {
+    fail(`Phase 15.2 admin route/authorization contract missing: ${requiredFragment}`);
+  }
+}
+if (!/React route guard is \*\*UX defense only\*\*/.test(adminRouteContract)
+    || !/No later visual, routing, or provider-integration slice may replace server\/database authorization/.test(adminRouteContract)) {
+  fail('Phase 15.2 must keep client route checks subordinate to server/database authorization');
+}
+if (!/indistinguishable from an unknown route/.test(adminRouteContract)
+    || !/no `403`, `Access denied`, `Admin access required`/.test(adminRouteContract)
+    || !/ACTIVE platform admins still resolve the real administrator route/.test(adminRouteContract)) {
+  fail('Phase 15.2 must hide reserved admin-route existence from authenticated unauthorized callers');
+}
+if (!/Profile\/Settings must render an \*\*Admin\*\* action/.test(adminRouteContract)
+    || !/render no Administration heading, disabled control, placeholder row, reserved gap/.test(adminRouteContract)
+    || !/platform-access check is loading or unavailable, fail closed/.test(adminRouteContract)
+    || !/same server-backed platform-access result/.test(adminRouteContract)
+    || !/navigation convenience only/.test(adminRouteContract)) {
+  fail('Phase 15.2 must expose in-PWA admin discovery only to positively authorized ACTIVE platform administrators');
+}
+if (!roadmap.includes('`/platform-admin` as the private administrator shell')
+    || !roadmap.includes('`/platform-admin/capacity` as the capacity dashboard route')
+    || !roadmap.includes('reserve `/settings` as the ordinary authenticated Profile/Settings surface')
+    || !roadmap.includes('render an `Admin` action to `/platform-admin` **only** after server-backed access')
+    || !roadmap.includes('navigation convenience only and never replaces `PlatformAdminGate`')
+    || !roadmap.includes('private.require_active_platform_admin()')
+    || !roadmap.includes('unknown/non-existent authenticated route')
+    || !roadmap.includes('replace redirect to canonical home `/`')
+    || !roadmap.includes('no admin-specific denial state or route disclosure')) {
+  fail('Phase 15.2 roadmap must retain the locked admin route, non-disclosure fallback, and RPC authorization architecture');
+}
+const settingsContract = read('docs/PHASE15.6-PROFILE-SETTINGS-NOTIFICATIONS.md');
+for (const requiredFragment of [
+  '/settings',
+  'Profile + identity',
+  'Notifications',
+  'Notifications  [ON/OFF]',
+  'workout reminders',
+  'weekly goal reminders',
+  'badges + achievements',
+  'personal-record alerts',
+  'group activity',
+  'group invitations',
+  'account-level server-persisted preferences',
+  'master OFF suppresses all optional notification delivery',
+  'preserves the user\'s individual category selections',
+  'master ON does not automatically grant browser/OS notification permission',
+  'Device/browser permission is separate',
+  'permission not requested/default',
+  'permission granted',
+  'permission denied/blocked',
+  'notifications unsupported on this device/browser',
+  'never auto-prompt for notification permission',
+  'explicit user action',
+  'push subscriptions are device-specific',
+  'multiple authorized devices',
+  'Account + security',
+  'Training preferences',
+  'Groups',
+  'Privacy + data',
+  'App / PWA',
+  'Administration — conditional',
+  'private.require_active_platform_admin()',
+  'required in-app account/security/moderation notices',
+]) {
+  if (!settingsContract.includes(requiredFragment)) {
+    fail(`Profile/Settings notification contract missing: ${requiredFragment}`);
+  }
+}
+if (!/must not rely only on localStorage, IndexedDB, or a single browser installation/.test(settingsContract)
+    || !/request permission only after an explicit user action/.test(settingsContract)
+    || !/must not silently set the account-level master preference to OFF/.test(settingsContract)
+    || !/must not appear as a functioning control until their full backend lifecycle/.test(settingsContract)) {
+  fail('Profile/Settings contract must preserve server persistence, explicit notification permission, multi-device semantics, and no fake controls');
+}
+if (!roadmap.includes('master Notifications ON/OFF preference server-side')
+    || !roadmap.includes('workout reminders, weekly goal reminders, badges + achievements, personal-record alerts, group activity, and group invitations')
+    || !roadmap.includes('master OFF suppresses optional delivery and disables child controls while preserving the individual category selections')
+    || !roadmap.includes('request browser/OS notification permission only from an explicit user gesture')
+    || !roadmap.includes('push subscriptions are device-specific, support multiple devices per account')
+    || !roadmap.includes('required in-app account, security, moderation, suspension, and ACTION_REQUIRED notices remain visible')) {
+  fail('roadmap must retain the locked Profile/Settings notification behavior');
+}
+const capacityModel = read('src/features/admin/capacity/model.ts');
+const capacityMath = read('src/features/admin/capacity/capacityMath.ts');
+const capacityProvider = read('src/features/admin/capacity/provider.ts');
+const capacityTest = read('src/features/admin/capacity/capacityMath.test.ts');
+const capacityDoc = read('docs/PHASE15.2A-CAPACITY-SEMANTICS.md');
+if (!/watch:\s*60/.test(capacityModel) || !/warning:\s*75/.test(capacityModel) || !/critical:\s*85/.test(capacityModel)) {
+  fail('Phase 15.2A must retain the 60/75/85 default planning thresholds');
+}
+for (const status of ['UNAVAILABLE', 'UNCONFIGURED', 'NORMAL', 'WATCH', 'WARNING', 'CRITICAL', 'EXCEEDED']) {
+  if (!capacityModel.includes(`'${status}'`)) fail(`capacity model missing status ${status}`);
+}
+for (const source of ['DATABASE_LOCAL', 'SUPABASE_MANAGEMENT', 'NETLIFY_API']) {
+  if (!capacityModel.includes(`'${source}'`) || !capacityProvider.includes('CapacityTelemetryProvider')) {
+    fail(`Phase 15.2A provider contract missing ${source}`);
+  }
+}
+if (/react|supabase-js|getSupabaseClient/i.test(capacityMath)) {
+  fail('capacity math must stay pure and independent of React/Supabase clients');
+}
+if (!/utilizationPercent >= 100/.test(capacityMath)
+    || !/checkedThresholds\.critical/.test(capacityMath)
+    || !/checkedThresholds\.warning/.test(capacityMath)
+    || !/checkedThresholds\.watch/.test(capacityMath)) {
+  fail('capacity assessment must preserve ordered exceeded/critical/warning/watch semantics');
+}
+if (!/elapsedDays <= 0 \|\| growth <= 0/.test(capacityMath) || !/previous\.source !== current\.source/.test(capacityMath)) {
+  fail('capacity growth math must reject invalid time/growth and mismatched sources');
+}
+if (!/classifies %s%% as %s/.test(capacityTest)
+    || !/UNCONFIGURED/.test(capacityTest)
+    || !/UNAVAILABLE/.test(capacityTest)
+    || !/time to a configured limit/.test(capacityTest)) {
+  fail('Phase 15.2A unit tests must lock warning, unavailable, unconfigured, and projection semantics');
+}
+if (!/not.*Supabase billable MAU/is.test(capacityDoc)
+    || !/No provider management token, Supabase service-role\/secret key, or Netlify access token belongs in Vite\/browser code/.test(capacityDoc)) {
+  fail('Phase 15.2A documentation must distinguish billable MAU and prohibit browser infrastructure credentials');
+}
+if (/process\.env|import\.meta\.env|service[_-]?role|management[_-]?token|access[_-]?token/i.test(capacityProvider)) {
+  fail('provider contract must not embed or read infrastructure credentials');
+}
+const ciWorkflow = read('.github/workflows/ci.yml');
+const canonicalDbRunner = read('scripts/run-canonical-db-tests.cjs');
+const supabaseConfig = read('supabase/config.toml');
+const hostedAggregateSentinel = read('supabase/tests/_all-hosted-tests.sql');
+const ciDoc = read('docs/CI-VALIDATION.md');
+const currentPackageJson = JSON.parse(read('package.json'));
+if (currentPackageJson.scripts?.['db:test']) {
+  fail('ambiguous db:test script must stay removed; Docker-local database testing is explicitly db:test:local');
+}
+if (currentPackageJson.scripts?.['db:test:local'] !== 'node scripts/run-canonical-db-tests.cjs') {
+  fail('db:test:local must use the cross-platform canonical pgTAP runner');
+}
+for (const command of [
+  'npm ci',
+  'npm run typecheck',
+  'npm test',
+  'npm run test:integration',
+  'npm run build',
+  'npm run test:structure',
+  'npm run test:internal',
+  'npx playwright install --with-deps chromium webkit',
+  'npm run test:e2e',
+  'npx supabase start',
+  'npx supabase db reset',
+  'npm run db:test:local',
+  'npx supabase db lint --level warning --fail-on error',
+]) {
+  if (!ciWorkflow.includes(command)) fail(`GitHub CI missing required gate command: ${command}`);
+}
+if (!/node-version:\s*24/.test(ciWorkflow)) fail('GitHub CI must match the Node 24 release environment');
+if (/if \[ ! -f supabase\/config\.toml \]; then npx supabase init; fi/.test(ciWorkflow)) {
+  fail('GitHub CI must use the committed deterministic Supabase config instead of generating one ad hoc');
+}
+if (!/endsWith\('\.test\.sql'\)/.test(canonicalDbRunner)
+    || !/spawnSync/.test(canonicalDbRunner)
+    || !/supabase', 'test', 'db'/.test(canonicalDbRunner)) {
+  fail('canonical database runner must explicitly enumerate *.test.sql and invoke supabase test db with those paths');
+}
+if (!/project_id\s*=\s*"fitness-game-pwa"/.test(supabaseConfig)
+    || !/major_version\s*=\s*17/.test(supabaseConfig)
+    || !/site_url\s*=\s*"http:\/\/localhost:5173"/.test(supabaseConfig)) {
+  fail('Supabase local/CI config must remain committed, non-secret, Postgres-17 aligned, and Vite-auth compatible');
+}
+const sentinelPlans = (hostedAggregateSentinel.match(/select\s+plan\(/gi) || []).length;
+if (sentinelPlans !== 1 || /-- ={10,}\s*\n-- 00\d_/m.test(hostedAggregateSentinel)) {
+  fail('_all-hosted-tests.sql must remain a one-plan compatibility sentinel, never a concatenated pgTAP bundle');
+}
+if (!/Only files matching this convention are canonical database suites/.test(ciDoc)
+    || !/Docker remains optional|does not require Docker/.test(ciDoc)
+    || !/supabase\/tests\/\*\.test\.sql/.test(ciDoc)) {
+  fail('CI documentation must preserve canonical test discovery and the developer-vs-GitHub Docker distinction');
+}
+
 if (!/Phase 16 .*Mobile-first visual overhaul .*LATER/.test(roadmap)) fail('roadmap must include the mobile-first visual overhaul');
 if (!/^### Phase 16 execution contract — REQUIRED FOR EVERY VISUAL SLICE$/m.test(roadmap)) {
   fail('visual-overhaul roadmap must retain the per-surface design/approval execution contract');
@@ -238,4 +481,4 @@ if (fs.existsSync(obsoleteRepairPath)) {
   fail('structural validation must not materialize the obsolete repair migration');
 }
 
-console.log('Release validation passed: clean Phase 13B migration history, Phase 15.1 admin invariants, and production chunk budget guards are present.');
+console.log('Release validation passed: clean migration history, Phase 15.1 admin invariants, Phase 15.2A capacity semantics, admin/settings notification contracts, canonical GitHub CI/database discovery, visual-roadmap guards, and production chunk budget guards are present.');

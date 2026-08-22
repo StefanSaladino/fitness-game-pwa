@@ -4,33 +4,66 @@ on:
   push:
   pull_request:
 
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
-  frontend:
+  application:
+    name: Application gate
     runs-on: ubuntu-latest
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 24
           cache: npm
-      - run: npm install
+      - run: npm ci
       - run: npm run typecheck
       - run: npm test
+      - run: npm run test:integration
       - run: npm run build
+      - run: npm run test:structure
+      - run: npm run test:internal
 
-  database:
+  browser:
+    name: Browser gate
     runs-on: ubuntu-latest
+    timeout-minutes: 35
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 24
           cache: npm
-      - run: npm install
-      - run: if [ ! -f supabase/config.toml ]; then npx supabase init; fi
-      - run: npx supabase start
-      - run: npx supabase db reset
-      - run: npx supabase test db
-      - run: npx supabase db lint --level warning
+      - run: npm ci
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium webkit
+      - run: npm run test:e2e
+
+  database:
+    name: Database gate
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Start isolated Supabase stack
+        run: npx supabase start
+      - name: Rebuild database from migration zero
+        run: npx supabase db reset
+      - name: Run canonical pgTAP suites only
+        run: npm run db:test:local
+      - name: Lint rebuilt database
+        run: npx supabase db lint --level warning --fail-on error
       - if: always()
+        name: Stop isolated Supabase stack
         run: npx supabase stop --no-backup
