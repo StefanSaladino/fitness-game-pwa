@@ -376,10 +376,12 @@ describe('workout reliability integration gate', () => {
     expect(backend.sets).toHaveLength(2);
 
     firstRender.unmount();
+    const retryReady = { ...persistedBeforeRestart!, lastAttemptAtMs: Date.now() - 2_000 };
+    expect(await mutationStorage.save(USER_ID, [retryReady])).toBe(true);
     renderWorkout(backend);
 
     expect(await screen.findByText('1 workout change queued')).toBeInTheDocument();
-    await waitFor(() => expect(screen.queryByText('1 workout change queued')).not.toBeInTheDocument(), { timeout: 4_000 });
+    await waitFor(() => expect(screen.queryByText('1 workout change queued')).not.toBeInTheDocument());
     await waitFor(() => expect(screen.getAllByRole('spinbutton', { name: /Set \d+ weight in kg/ })).toHaveLength(2));
 
     expect(backend.sets).toHaveLength(2);

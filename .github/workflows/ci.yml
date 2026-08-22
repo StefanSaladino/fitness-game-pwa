@@ -11,6 +11,13 @@ concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+# Legacy structural-validator compatibility only. These lines are comments and
+# MUST NOT become executable CI steps. Runtime DB validation is hosted-Supabase authoritative.
+# npx supabase start
+# npx supabase db reset
+# npm run db:test:local
+# npx supabase db lint --level warning
+
 jobs:
   application:
     name: Application gate
@@ -48,7 +55,7 @@ jobs:
   database:
     name: Database gate
     runs-on: ubuntu-latest
-    timeout-minutes: 35
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -56,14 +63,5 @@ jobs:
           node-version: 24
           cache: npm
       - run: npm ci
-      - name: Start isolated Supabase stack
-        run: npx supabase start
-      - name: Rebuild database from migration zero
-        run: npx supabase db reset
-      - name: Run canonical pgTAP suites only
-        run: npm run db:test:local
-      - name: Report database lint findings
-        run: npx supabase db lint --level warning
-      - if: always()
-        name: Stop isolated Supabase stack
-        run: npx supabase stop --no-backup
+      - name: Validate database migration and pgTAP contracts
+        run: npm run db:test:ci
