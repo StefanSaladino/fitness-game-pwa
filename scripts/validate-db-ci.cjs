@@ -78,6 +78,10 @@ if (!/select\s+plan\s*\(\s*68\s*\)\s*;/i.test(test153a)) {
 }
 
 const ci = fs.readFileSync(ciPath, 'utf8');
+const executableCi = ci
+  .split(/\r?\n/)
+  .filter((line) => !line.trimStart().startsWith('#'))
+  .join('\n');
 const forbiddenCiPatterns = [
   [/\bsupabase\s+start\b/i, 'supabase start'],
   [/\bsupabase\s+stop\b/i, 'supabase stop'],
@@ -86,9 +90,9 @@ const forbiddenCiPatterns = [
   [/\bdocker\b/i, 'Docker'],
 ];
 for (const [pattern, label] of forbiddenCiPatterns) {
-  if (pattern.test(ci)) fail(`CI must not depend on ${label}`);
+  if (pattern.test(executableCi)) fail(`CI must not execute or depend on ${label}`);
 }
-if (!ci.includes('npm run db:test:ci')) {
+if (!executableCi.includes('npm run db:test:ci')) {
   fail('CI Database gate must run npm run db:test:ci');
 }
 
