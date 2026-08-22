@@ -2,7 +2,9 @@
 
 ## Purpose
 
-GitHub Actions is the clean-environment regression gate for the repository. It is intentionally broader than the normal Windows development workflow and may use Docker on the hosted GitHub runner. The normal developer workflow does not require Docker.
+GitHub Actions is the clean-environment regression gate for application, browser, and repository database contracts. The project does **not require Docker** for the normal developer workflow or for GitHub database validation.
+
+Runtime database migrations and pgTAP execution remain authoritative on the hosted Supabase project through the Dashboard SQL Editor workflow.
 
 ## Application gate
 
@@ -29,20 +31,26 @@ The configured projects cover desktop Chromium, Android-class Chromium, and iPho
 
 ## Database gate
 
-The repository commits `supabase/config.toml` so the CI stack is deterministic. The configured Postgres major version is 17, matching the hosted project major version verified when this contract was added.
+GitHub does not start a local Supabase stack and does not run Docker-backed database resets.
 
-CI performs:
+The blocking repository database gate is:
 
 ```text
-npx supabase start
-npx supabase db reset
-npm run db:test:local
-npx supabase db lint --level warning
+npm run db:test:ci
 ```
 
-The migration-zero rebuild and canonical pgTAP suites are blocking gates. `db lint` remains a reporting step rather than a `--fail-on error` gate because Supabase uses `plpgsql_check`, whose upstream documentation explicitly notes that it cannot verify queries over temporary tables created at runtime without external checker pragmas. The existing authoritative lifting reconciliation function intentionally uses runtime temporary tables such as `_lifting_v1_observations`; the clean rebuild and pgTAP coverage execute that behavior successfully, while static lint reports the temporary relation as missing. Do not rewrite scoring behavior or historical migrations merely to silence that checker limitation. A future isolated maintenance slice may adopt checker pragmas or refactor the implementation if that can be proven behavior-preserving.
+That gate validates:
 
-`db:test:local` is named explicitly because it requires a local Supabase/Docker stack. It is optional for the normal developer workflow; hosted Supabase remains the authoritative database validation path when Docker is not used locally.
+- canonical migration naming and unique migration timestamps;
+- non-empty migration artifacts;
+- canonical numbered pgTAP suite discovery;
+- explicit pgTAP plans;
+- rollback-safe test transactions;
+- required Phase 15.3A migration/test invariants;
+- the 68-assertion Phase 15.3A pgTAP contract;
+- and that executable GitHub CI contains no Docker, `supabase start`, `supabase db reset`, or `supabase test db` dependency.
+
+This repository gate is intentionally separate from runtime SQL execution. A migration or pgTAP suite is executed against hosted Supabase before its phase is considered database-validated.
 
 ## Canonical pgTAP discovery
 
@@ -52,17 +60,26 @@ Only files matching this convention are canonical database suites:
 supabase/tests/*.test.sql
 ```
 
-`scripts/run-canonical-db-tests.cjs` enumerates those files and passes their explicit paths to `supabase test db`.
+The historical `_all-hosted-tests.sql` path remains a compatibility sentinel and is not part of canonical `*.test.sql` discovery.
 
-Do not place generated aggregate SQL containing multiple pgTAP `plan(...)` blocks in the canonical test discovery set. The historical `_all-hosted-tests.sql` path is retained only as a one-plan compatibility sentinel and is not selected by the canonical runner.
+## Hosted Supabase workflow
 
-## Why the previous CI stayed red
+For database-bearing slices:
 
-The old workflow ran bare `supabase test db`. Supabase discovers every `.sql`/`.pg` file under `supabase/tests`, including the historical `_all-hosted-tests.sql` aggregate. That aggregate contained many independent pgTAP programs and therefore emitted multiple TAP plans inside one discovered file. The canonical suites could pass individually while the aggregate still made the GitHub database job fail.
+1. Apply the new migration in the Supabase Dashboard SQL Editor.
+2. Run the corresponding canonical pgTAP file in the SQL Editor.
+3. Confirm the transaction rolls back cleanly and all planned assertions pass.
+4. Run the GitHub Database gate to validate repository structure and prevent local-stack/Docker regression.
+
+No service-role secret, database password, or privileged Supabase credential belongs in GitHub workflow source merely to reproduce hosted validation.
+
+## Legacy local runner
+
+`scripts/run-canonical-db-tests.cjs` and the `db:test:local` package alias are retained only for historical structural compatibility. They are not part of the supported developer or GitHub CI workflow and must not be invoked by CI.
 
 ## Local Windows release gate
 
-The normal non-Docker application gate remains:
+The normal non-Docker application gate is:
 
 ```text
 npm install
@@ -75,4 +92,4 @@ npm run test:e2e
 npm run test:internal
 ```
 
-Do not treat `npm run db:test:local` as required on a machine that does not run Docker. Database migrations/pgTAP for that workflow are executed against the hosted Supabase project instead.
+Database migrations and pgTAP are executed against the hosted Supabase project instead of a local Docker stack.
