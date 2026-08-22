@@ -127,7 +127,7 @@ export function CapacityDashboard({ snapshot, error, capturing, onBackToApp, onR
       <div>
         <div className={styles.mobileBar}>
           <button className={styles.iconTextButton} onClick={onBackToApp} type="button">Back</button>
-          <h1 className={styles.mobileTitle}>Capacity</h1>
+          <span className={styles.mobileTitle}>Capacity</span>
           <span aria-hidden="true" />
         </div>
 
