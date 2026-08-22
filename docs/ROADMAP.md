@@ -700,7 +700,7 @@ Netlify billing/usage is team/account scoped. The public API calls a team an acc
 - phone layout uses a compact sticky admin header and one-column operational rows; desktop uses a narrow real-only admin rail and denser two-column telemetry rows without a KPI card wall;
 - no database migration, platform-admin bootstrap, scoring, XP, badge, ranking, workout, group, or ordinary-user domain behavior change in this slice.
 
-### 15.3 User account administration — NEXT
+### 15.3 User account administration — IN PROGRESS
 
 - searchable/paginated user directory with stable user ID, username, display name, account status, created date, and limited operational metadata;
 - ACTIVE / SUSPENDED / DELETION_PENDING account states;
@@ -711,6 +711,41 @@ Netlify billing/usage is team/account scoped. The public API calls a team an acc
 - prevent accidental self-removal or removal of the final platform administrator;
 - never expose password hashes, auth secrets, raw tokens, or unrelated private user data in the admin UI;
 - suspension/removal must reconcile or exclude affected social/leaderboard visibility without corrupting authoritative historical scoring.
+
+#### 15.3A Account directory + lifecycle foundation — DONE
+
+- extend the existing private account-state row with suspension-review and reversible deletion-request metadata;
+- add a reusable `private.require_active_account()` status guard for the next enforcement slice;
+- add ACTIVE-platform-admin-only searchable/paginated account directory and account-detail RPCs without exposing email/password/token/raw Auth metadata;
+- add audited suspend/restore boundaries with self-suspension prevention and existing final-admin protection;
+- add the first reversible deletion step: DELETION_PENDING request + cancellation, preserving the exact previous ACTIVE/SUSPENDED state;
+- refuse deletion requests for any account that is still a platform administrator;
+- keep irreversible Auth/profile deletion out of this slice until Storage/cascade/session behavior is reviewed;
+- no user-administration UI is added before the required visual gate.
+
+#### 15.3B Suspension enforcement + Auth session coordination — NEXT
+
+- apply the active-account boundary across authenticated application RPCs so SUSPENDED and DELETION_PENDING accounts cannot continue normal product mutations/reads;
+- add a secured server-side Supabase Auth Admin boundary using Edge Function secret credentials only;
+- coordinate Auth ban/unban behavior with the authoritative database state without exposing secret/service-role credentials to the PWA;
+- treat session revocation separately from ban state: do not claim that `ban_duration` invalidates already-issued access tokens;
+- validate sensitive RPC/session behavior against the current Supabase Auth session model.
+
+#### 15.3C Irreversible account removal — LATER
+
+- require an already-DELETION_PENDING target plus a second explicit administrator confirmation;
+- re-check self-removal and final-platform-admin protections at the destructive boundary;
+- define Storage ownership cleanup, foreign-key cascade/retention, scoring-history treatment, group/social visibility, and append-only audit retention before Auth user deletion;
+- perform Auth user deletion only from a secured server-side boundary;
+- never rely on client-side confirmation as authorization.
+
+#### 15.3D User-administration visual gate + UI — LATER
+
+- audit the real 15.3 account data/actions/states first;
+- generate phone-first and desktop user-directory/detail/action concepts using only implemented fields and actions;
+- obtain explicit product-owner approval before adding the Users admin destination;
+- implement searchable/paginated directory, detail, suspend/restore, and deliberate two-step deletion UX only after approval;
+- keep destructive actions reasoned, explicit, accessible, and non-color-only.
 
 ### 15.4 Admin-to-user messaging
 

@@ -202,7 +202,7 @@ for (const heading of [
   '15.2D1 Secure Netlify API boundary + capability adapter — DONE',
   '15.2D2 Provider-authoritative account usage feed — BLOCKED ON DOCUMENTED NETLIFY API/EXPORT',
   '15.2E Capacity dashboard visual gate + implementation — DONE',
-  '### 15.3 User account administration — NEXT',
+  '### 15.3 User account administration — IN PROGRESS',
 ]) {
   if (!roadmap.includes(heading)) fail(`roadmap missing capacity slice: ${heading}`);
 }
@@ -597,7 +597,7 @@ if (/api\.netlify\.com\/api\/v1\/accounts\/[^'`"]+\/(usage|bandwidth|billing)/i.
 for (const fragment of [
   'team/account scoped',
   'does not expose stable public endpoints',
-  'do not',
+  'invent an undocumented Netlify billing/usage endpoint',
   '15.2D2 — Provider-authoritative account usage feed — BLOCKED',
 ]) {
   if (!phase152dDoc.includes(fragment)) fail(`Phase 15.2D documentation missing provider-gap invariant: ${fragment}`);
@@ -713,9 +713,136 @@ if (!/\/\*\s+\/index\.html\s+200/.test(netlifyRedirects152e)) {
   fail('Phase 15.2E direct admin/settings routes require the Netlify SPA fallback');
 }
 if (!roadmap.includes('15.2E Capacity dashboard visual gate + implementation — DONE')
-    || !roadmap.includes('### 15.3 User account administration — NEXT')) {
+    || !roadmap.includes('### 15.3 User account administration — IN PROGRESS')) {
   fail('Phase 15.2E roadmap must be DONE and Phase 15.3 must become NEXT');
 }
+
+// Phase 15.3A account directory + lifecycle foundation.
+const phase153aMigrationPath = path.join(
+  root,
+  'supabase/migrations/20260822120300_platform_account_administration_foundation.sql',
+);
+const phase153aTestPath = path.join(
+  root,
+  'supabase/tests/030_platform_account_administration_foundation.test.sql',
+);
+for (const relativePath of [
+  'docs/PHASE15.3A-ACCOUNT-ADMINISTRATION-FOUNDATION.md',
+  'src/features/admin/accounts/model.ts',
+  'src/features/admin/accounts/platformAccountAdminService.ts',
+  'src/features/admin/accounts/platformAccountAdminService.test.ts',
+  'src/features/admin/accounts/index.ts',
+]) {
+  if (!fs.existsSync(path.join(root, relativePath))) fail('Phase 15.3A file missing: ' + relativePath);
+}
+if (!fs.existsSync(phase153aMigrationPath)) fail('Phase 15.3A account-administration migration exists');
+if (!fs.existsSync(phase153aTestPath)) fail('Phase 15.3A account-administration pgTAP test exists');
+
+const phase153aMigration = fs.readFileSync(phase153aMigrationPath, 'utf8');
+for (const fragment of [
+  'suspension_review_at',
+  'deletion_requested_at',
+  'deletion_previous_status',
+  'function private.require_active_account',
+  'function public.list_platform_accounts',
+  'function public.get_platform_account_detail',
+  'function public.suspend_platform_account',
+  'function public.restore_platform_account',
+  'function public.request_platform_account_deletion',
+  'function public.cancel_platform_account_deletion',
+  'ACCOUNT_SUSPENDED',
+  'ACCOUNT_RESTORED',
+  'ACCOUNT_DELETION_REQUESTED',
+  'ACCOUNT_DELETION_CANCELLED',
+  'Platform administrator cannot suspend own account',
+  'Platform administrator cannot request own account deletion',
+  'Platform administrator must be revoked before account deletion',
+  'private.require_active_platform_admin()',
+  "set search_path = ''",
+]) {
+  if (!phase153aMigration.includes(fragment)) fail('Phase 15.3A migration missing invariant: ' + fragment);
+}
+if (/email\b|encrypted_password|refresh_token|access_token|raw_user_meta_data|raw_app_meta_data/i.test(
+  phase153aMigration.match(/create or replace function public\.list_platform_accounts[\s\S]*?end;\n\$\$;/)?.[0] || '',
+)) {
+  fail('Phase 15.3A account directory must not expose email/password/token/raw Auth metadata');
+}
+if (/grant\s+[^;]*\bon\s+(?:table\s+|function\s+)?private\./i.test(phase153aMigration)) {
+  fail('Phase 15.3A must not grant browser roles direct access to private account-administration objects');
+}
+for (const rpc of [
+  'public.list_platform_accounts(text, public.platform_account_status, integer, integer)',
+  'public.get_platform_account_detail(uuid)',
+  'public.suspend_platform_account(uuid, text, timestamptz)',
+  'public.restore_platform_account(uuid, text)',
+  'public.request_platform_account_deletion(uuid, text)',
+  'public.cancel_platform_account_deletion(uuid, text)',
+]) {
+  if (!phase153aMigration.includes('grant execute on function ' + rpc)) {
+    fail('Phase 15.3A missing authenticated guarded RPC grant: ' + rpc);
+  }
+}
+
+const phase153aTest = fs.readFileSync(phase153aTestPath, 'utf8');
+const phase153aPlan = Number((phase153aTest.match(/select\s+plan\((\d+)\)/i) || [])[1]);
+const phase153aAssertions = (phase153aTest.match(
+  /select\s+(?:has_column|has_function|is|results_eq|throws_ok|lives_ok)\s*\(/gi,
+) || []).length;
+if (phase153aPlan !== phase153aAssertions) {
+  fail('Phase 15.3A pgTAP plan ' + phase153aPlan + ' must match ' + phase153aAssertions + ' assertions');
+}
+if (phase153aPlan < 60) fail('Phase 15.3A authorization/lifecycle suite must retain comprehensive coverage');
+for (const coverage of [
+  'administrator cannot suspend their own account',
+  'administrator cannot request deletion of their own account',
+  'platform administrator must be revoked before deletion can be requested',
+  'private active-account guard rejects suspended users',
+  'private active-account guard rejects deletion-pending users',
+  'deletion cancellation losslessly restores prior suspended state',
+  'group OWNER cannot read platform account directory',
+  'suspended platform administrator cannot read account directory',
+  '15.3A deletion flow never physically deletes Auth users',
+]) {
+  if (!phase153aTest.includes(coverage)) fail('Phase 15.3A pgTAP missing coverage: ' + coverage);
+}
+
+const phase153aService = read('src/features/admin/accounts/platformAccountAdminService.ts');
+for (const rpc of [
+  'list_platform_accounts',
+  'get_platform_account_detail',
+  'suspend_platform_account',
+  'restore_platform_account',
+  'request_platform_account_deletion',
+  'cancel_platform_account_deletion',
+]) {
+  if (!phase153aService.includes(rpc)) fail('Phase 15.3A browser-safe service missing RPC: ' + rpc);
+}
+if (/service[_-]?role|SUPABASE_SECRET|encrypted_password|refresh_token|access_token/i.test(phase153aService)) {
+  fail('Phase 15.3A browser account service must not contain privileged Auth credentials or token fields');
+}
+
+const phase153aDoc = read('docs/PHASE15.3A-ACCOUNT-ADMINISTRATION-FOUNDATION.md');
+for (const fragment of [
+  'does **not** return email addresses',
+  'first** destructive step',
+  'does **not** physically delete the Auth user or profile',
+  'does **not** pretend that merely defining the helper enforces every historical RPC',
+  'temporary bans block sign-in but do not revoke already-issued sessions/access tokens',
+  'no user-management UI yet',
+]) {
+  if (!phase153aDoc.includes(fragment)) fail('Phase 15.3A documentation missing invariant: ' + fragment);
+}
+
+for (const heading of [
+  '### 15.3 User account administration — IN PROGRESS',
+  '#### 15.3A Account directory + lifecycle foundation — DONE',
+  '#### 15.3B Suspension enforcement + Auth session coordination — NEXT',
+  '#### 15.3C Irreversible account removal — LATER',
+  '#### 15.3D User-administration visual gate + UI — LATER',
+]) {
+  if (!roadmap.includes(heading)) fail('Phase 15.3 roadmap missing slice: ' + heading);
+}
+
 const ciWorkflow = read('.github/workflows/ci.yml');
 const canonicalDbRunner = read('scripts/run-canonical-db-tests.cjs');
 const supabaseConfig = read('supabase/config.toml');
