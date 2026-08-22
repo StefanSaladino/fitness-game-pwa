@@ -1,0 +1,1 @@
+Temporary same-repository trigger for the Phase 15.2B exact-hash finalizer. This branch is never merged.
