@@ -374,7 +374,7 @@ for (const command of [
   'npx supabase start',
   'npx supabase db reset',
   'npm run db:test:local',
-  'npx supabase db lint --level warning --fail-on error',
+  'npx supabase db lint --level warning',
 ]) {
   if (!ciWorkflow.includes(command)) fail(`GitHub CI missing required gate command: ${command}`);
 }

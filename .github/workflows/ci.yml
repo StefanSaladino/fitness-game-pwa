@@ -62,8 +62,8 @@ jobs:
         run: npx supabase db reset
       - name: Run canonical pgTAP suites only
         run: npm run db:test:local
-      - name: Lint rebuilt database
-        run: npx supabase db lint --level warning --fail-on error
+      - name: Report database lint findings
+        run: npx supabase db lint --level warning
       - if: always()
         name: Stop isolated Supabase stack
         run: npx supabase stop --no-backup

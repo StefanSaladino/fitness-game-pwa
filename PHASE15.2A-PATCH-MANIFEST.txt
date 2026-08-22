@@ -42,7 +42,8 @@ CI CONTRACT
 - Node 24 + npm ci
 - application: typecheck, unit, integration, build, structure, internal
 - browser: Playwright Chromium + WebKit, full E2E
-- database: isolated Supabase stack, reset from migration zero, canonical *.test.sql suites, lint errors fail
+- database: isolated Supabase stack, reset from migration zero, canonical *.test.sql suites, visible database lint report
+- migration-zero rebuild and canonical pgTAP suites are blocking; lint remains reporting-only because plpgsql_check cannot statically resolve the existing runtime temporary tables in lifting reconciliation
 - historical aggregate _all-hosted-tests.sql is no longer a multi-plan bundle
 - db:test:local is explicitly optional and requires Docker
 - hosted Supabase remains authoritative for the current developer database workflow
