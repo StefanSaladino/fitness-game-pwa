@@ -13,12 +13,16 @@ export type CapacityMetricCode =
   | 'auth_users_30d'
   | 'supabase_monthly_active_users'
   | 'supabase_egress_bytes'
-  | 'supabase_realtime_usage'
+  | 'supabase_cached_egress_bytes'
+  | 'supabase_realtime_messages'
+  | 'supabase_realtime_peak_connections'
   | 'netlify_bandwidth_bytes'
   | 'netlify_requests'
   | 'netlify_build_usage';
 
 export type CapacityMetricUnit = 'bytes' | 'count' | 'credits';
+
+export type CapacityMetricScope = 'PROJECT' | 'ORGANIZATION';
 
 export type CapacityTelemetrySource =
   | 'DATABASE_LOCAL'
@@ -48,6 +52,7 @@ export interface CapacityMetricMeasurement {
   limit: number | null;
   measuredAt: string;
   available: boolean;
+  scope?: CapacityMetricScope;
   note?: string;
 }
 

@@ -26,6 +26,14 @@ const phase152bTestPath = path.join(
   root,
   'supabase/tests/029_platform_capacity_local_telemetry.test.sql',
 );
+const phase152cFiles = [
+  'src/features/admin/capacity/supabaseManagementProvider.ts',
+  'src/features/admin/capacity/supabaseManagementProvider.test.ts',
+  'supabase/functions/platform-capacity-supabase/index.ts',
+  'docs/PHASE15.2C-SUPABASE-PROVIDER-ADAPTER.md',
+  'PHASE15.2C-PATCH-MANIFEST.txt',
+];
+
 const phase152aFiles = [
   'src/features/admin/capacity/model.ts',
   'src/features/admin/capacity/capacityMath.ts',
@@ -187,8 +195,10 @@ if (!/15\.2B Database-local telemetry \+ historical snapshots .*DONE/.test(roadm
   fail('roadmap must mark Phase 15.2B database-local telemetry done');
 }
 for (const heading of [
-  '15.2C Supabase provider quota adapter — NEXT',
-  '15.2D Netlify provider usage adapter — LATER',
+  '15.2C Supabase provider quota adapter — IN PROGRESS (PROVIDER BILLING-USAGE API GAP)',
+  '15.2C1 Secure Management API boundary + capability adapter — DONE',
+  '15.2C2 Provider-authoritative billing-cycle usage feed — BLOCKED ON DOCUMENTED SUPABASE API/EXPORT',
+  '15.2D Netlify provider usage adapter — NEXT',
   '15.2E Capacity dashboard visual gate + implementation — LATER',
 ]) {
   if (!roadmap.includes(heading)) fail(`roadmap missing capacity slice: ${heading}`);
@@ -441,6 +451,89 @@ if (!/not.*Supabase billable MAU/is.test(capacityDoc)
 if (/process\.env|import\.meta\.env|service[_-]?role|management[_-]?token|access[_-]?token/i.test(capacityProvider)) {
   fail('provider contract must not embed or read infrastructure credentials');
 }
+
+for (const relativePath of phase152cFiles) {
+  if (!fs.existsSync(path.join(root, relativePath))) fail(`Phase 15.2C file missing: ${relativePath}`);
+}
+for (const metricCode of [
+  'supabase_monthly_active_users',
+  'supabase_egress_bytes',
+  'supabase_cached_egress_bytes',
+  'supabase_realtime_messages',
+  'supabase_realtime_peak_connections',
+]) {
+  if (!capacityModel.includes(`'${metricCode}'`)) fail(`Phase 15.2C provider metric missing: ${metricCode}`);
+}
+if (capacityModel.includes("'supabase_realtime_usage'")) {
+  fail('Phase 15.2C must not retain the ambiguous supabase_realtime_usage placeholder');
+}
+if (!/CapacityMetricScope = 'PROJECT' \| 'ORGANIZATION'/.test(capacityModel)) {
+  fail('Phase 15.2C must distinguish project and organization capacity scope');
+}
+const supabaseManagementProvider = read('src/features/admin/capacity/supabaseManagementProvider.ts');
+const supabaseManagementProviderTest = read('src/features/admin/capacity/supabaseManagementProvider.test.ts');
+const supabaseProviderFunction = read('supabase/functions/platform-capacity-supabase/index.ts');
+const phase152cDoc = read('docs/PHASE15.2C-SUPABASE-PROVIDER-ADAPTER.md');
+for (const fragment of [
+  'SUPABASE_MANAGEMENT_METRIC_CODES',
+  "scope: 'ORGANIZATION'",
+  "billingUsageApi: 'UNAVAILABLE'",
+  'createSupabaseManagementCapacityProvider',
+  'value: null',
+  'limit: null',
+]) {
+  if (!supabaseManagementProvider.includes(fragment)) fail(`Phase 15.2C client adapter missing invariant: ${fragment}`);
+}
+if (/process\.env|import\.meta\.env|SUPABASE_MANAGEMENT_ACCESS_TOKEN|SUPABASE_ORGANIZATION_SLUG|api\.supabase\.com/i.test(supabaseManagementProvider)) {
+  fail('Phase 15.2C browser adapter must not read or embed Management API credentials/endpoints');
+}
+for (const fragment of [
+  'does not turn provider failure into zero',
+  'fills a missing requested provider metric as unavailable rather than zero',
+  'fails closed when the Edge/provider invocation throws',
+  'rejects malformed or wrong-scope provider payloads',
+]) {
+  if (!supabaseManagementProviderTest.includes(fragment)) fail(`Phase 15.2C provider tests missing: ${fragment}`);
+}
+for (const fragment of [
+  'SUPABASE_MANAGEMENT_ACCESS_TOKEN',
+  'SUPABASE_ORGANIZATION_SLUG',
+  'https://api.supabase.com',
+  "rpc('get_my_platform_access')",
+  "access.account_status === 'ACTIVE'",
+  'access.is_platform_admin === true',
+  "{ error: 'Not found' }",
+  '/v1/organizations/${encodedSlug}',
+  '/v1/organizations/${encodedSlug}/entitlements',
+  "billingUsageApi: 'UNAVAILABLE'",
+  'value: null',
+  'limit: null',
+]) {
+  if (!supabaseProviderFunction.includes(fragment)) fail(`Phase 15.2C Edge boundary missing invariant: ${fragment}`);
+}
+if (/service[_-]?role/i.test(supabaseProviderFunction)) {
+  fail('Phase 15.2C Edge boundary must authorize the caller with their user JWT, not a service-role browser substitute');
+}
+if (/api\.supabase\.com\/v1\/organizations\/[^'`"]+\/usage/i.test(supabaseProviderFunction)) {
+  fail('Phase 15.2C must not invent an undocumented Supabase organization usage endpoint');
+}
+for (const fragment of [
+  'organization-scoped',
+  'does not expose a stable endpoint',
+  'do not invent or call an undocumented `/usage`',
+  'does not bootstrap one',
+  '15.2C2 — Provider-authoritative billing-cycle usage feed — BLOCKED',
+]) {
+  if (!phase152cDoc.includes(fragment)) fail(`Phase 15.2C documentation missing provider-gap invariant: ${fragment}`);
+}
+if (!/\[functions\.platform-capacity-supabase\][\s\S]*verify_jwt\s*=\s*true/.test(read('supabase/config.toml'))) {
+  fail('Phase 15.2C Edge Function must explicitly verify authenticated user JWTs');
+}
+if (!roadmap.includes('do not invent an undocumented `/usage` endpoint')
+    || !roadmap.includes('do not hard-code mutable Free/Pro/Team plan quotas into runtime application logic')
+    || !roadmap.includes('provider API gap does not block independent Netlify adapter work')) {
+  fail('Phase 15.2C roadmap must preserve honest provider-gap and fail-closed semantics');
+}
 const ciWorkflow = read('.github/workflows/ci.yml');
 const canonicalDbRunner = read('scripts/run-canonical-db-tests.cjs');
 const supabaseConfig = read('supabase/config.toml');
@@ -573,4 +666,4 @@ if (fs.existsSync(obsoleteRepairPath)) {
   fail('structural validation must not materialize the obsolete repair migration');
 }
 
-console.log('Release validation passed: clean migration history, Phase 15.1 admin invariants, Phase 15.2A capacity semantics, Phase 15.2B private telemetry/history authorization, admin/settings notification contracts, canonical GitHub CI/database discovery, visual-roadmap guards, and production chunk budget guards are present.');
+console.log('Release validation passed: clean migration history, Phase 15.1 admin invariants, Phase 15.2A capacity semantics, Phase 15.2B private telemetry/history authorization, Phase 15.2C secure Supabase provider boundary/provider-gap semantics, admin/settings notification contracts, canonical GitHub CI/database discovery, visual-roadmap guards, and production chunk budget guards are present.');

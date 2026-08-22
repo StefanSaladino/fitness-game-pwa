@@ -635,16 +635,30 @@ Locked route + authorization architecture:
 - guarded snapshot capture/read RPCs using the Phase 15.1 active-platform-admin boundary;
 - authorization and rollback-safe pgTAP coverage for normal, group-owner/group-admin, suspended, unauthenticated, and active-platform-admin callers.
 
-#### 15.2C Supabase provider quota adapter — NEXT
+#### 15.2C Supabase provider quota adapter — IN PROGRESS (PROVIDER BILLING-USAGE API GAP)
 
-- provider-authoritative monthly active users against the configured allowance;
-- monthly Supabase egress usage and provider reset/billing window when available;
-- Realtime / other quota telemetry when materially relevant;
-- call the Supabase management/billing surface only from a secure server-side integration;
-- management tokens, service-role keys, and equivalent secrets never enter Vite/browser code;
-- provider failures degrade to UNAVAILABLE without replacing the last trustworthy historical snapshot with fake zeroes.
+Provider billing is organization-scoped, so Supabase billing metrics must be identified as organization usage rather than mislabeled as a project-only quota.
 
-#### 15.2D Netlify provider usage adapter — LATER
+##### 15.2C1 Secure Management API boundary + capability adapter — DONE
+
+- add the authenticated `platform-capacity-supabase` Edge Function with `verify_jwt = true`;
+- authorize the caller with `public.get_my_platform_access()` and require `account_status = ACTIVE` plus `is_platform_admin = true` before touching Management API credentials;
+- return a generic 404 for unauthorized callers so the protected provider boundary does not disclose administrator functionality;
+- keep `SUPABASE_MANAGEMENT_ACCESS_TOKEN` and `SUPABASE_ORGANIZATION_SLUG` server-side only; no Management token, service-role/secret credential, or equivalent provider secret enters Vite/browser code;
+- call only documented `GET /v1/organizations/{slug}` and `GET /v1/organizations/{slug}/entitlements` Management API surfaces for provider/configuration capability checks;
+- never expose raw provider responses to the PWA and never accept a caller-controlled Management API origin;
+- reserve explicit organization-scoped metric identities for provider MAU, uncached egress, cached egress, Realtime message count, and Realtime peak connections;
+- validate the normalized Edge response in a provider adapter and degrade malformed/missing/provider-failed metrics to UNAVAILABLE with null values rather than zeroes.
+
+##### 15.2C2 Provider-authoritative billing-cycle usage feed — BLOCKED ON DOCUMENTED SUPABASE API/EXPORT
+
+- Supabase currently documents authoritative billing-cycle MAU/egress/Realtime usage on the organization Usage page but does not document a stable Management API endpoint for those organization billing-cycle totals;
+- do not invent an undocumented `/usage` endpoint, scrape the Dashboard, derive billable MAU from local 30-day sign-ins/Auth logs, or infer unified billing egress from partial project reports;
+- do not hard-code mutable Free/Pro/Team plan quotas into runtime application logic;
+- keep provider billing metrics UNAVAILABLE until a documented machine-readable billing-cycle source exists, then normalize it through the already-secured Edge boundary;
+- the provider API gap does not block independent Netlify adapter work.
+
+#### 15.2D Netlify provider usage adapter — NEXT
 
 - bandwidth, request/build usage, or credit consumption when obtainable from the supported Netlify API;
 - secure server-side credential handling only;

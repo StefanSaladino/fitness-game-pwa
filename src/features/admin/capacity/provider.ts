@@ -1,6 +1,7 @@
 import type {
   CapacityMetricCode,
   CapacityMetricMeasurement,
+  CapacityMetricScope,
   CapacityTelemetrySource,
 } from './model';
 
@@ -12,6 +13,7 @@ export interface CapacityTelemetryResult {
   source: CapacityTelemetrySource;
   fetchedAt: string;
   metrics: CapacityMetricMeasurement[];
+  scope?: CapacityMetricScope;
 }
 
 export interface CapacityTelemetryProvider {

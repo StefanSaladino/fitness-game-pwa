@@ -2,6 +2,14 @@
 
 ## Unreleased — Phase 15.2 foundation + CI reliability
 
+- Added Phase 15.2C1's authenticated `platform-capacity-supabase` Edge Function and browser-neutral Supabase Management capacity adapter.
+- Kept Supabase billing telemetry explicitly organization-scoped and split cached egress, Realtime messages, and Realtime peak connections into unambiguous metric identities before UI implementation.
+- Re-authorized Edge requests through `public.get_my_platform_access()` and preserved administrator non-disclosure with a generic 404 for unauthorized callers.
+- Locked the Management API PAT and organization slug to server-side Edge Function secrets; no provider credential is committed or exposed through Vite/browser code.
+- Used only documented Supabase organization/entitlements Management API surfaces for capability checks and never forwards raw provider payloads to the PWA.
+- Marked provider billing-cycle MAU/egress/Realtime totals UNAVAILABLE because Supabase does not currently document a stable machine-readable billing usage endpoint; no Dashboard scraping, Auth-log reconstruction, hard-coded plan quota, or fake zero is used.
+- Marked Phase 15.2C2 blocked on a documented provider billing-usage API/export and advanced independent Phase 15.2D Netlify provider work to NEXT.
+- No Edge Function was deployed, no Supabase migration was added, and no real platform administrator or provider secret was created by this patch.
 - Added Phase 15.2B private capacity allowance storage plus append-only normalized telemetry snapshots.
 - Added active-platform-admin-only current, snapshot-capture, and bounded history RPCs, each re-authorizing through `private.require_active_platform_admin()`.
 - Added six database-local operational metrics: database bytes, Storage bytes/object count, current Postgres connections, total Auth users, and 30-day recent sign-ins.
