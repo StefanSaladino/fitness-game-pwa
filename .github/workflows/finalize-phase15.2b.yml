@@ -1,0 +1,32 @@
+name: Finalize Phase 15.2B
+
+on:
+  push:
+    branches: [master]
+
+permissions:
+  contents: write
+
+jobs:
+  finalize:
+    if: github.event.head_commit.message == 'feat: add platform capacity telemetry history'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Apply roadmap and structural-validator finalization
+        shell: bash
+        run: |
+          set -euo pipefail
+          git apply --check .github/phase15.2b-finalize.patch
+          git apply .github/phase15.2b-finalize.patch
+          test "$(git hash-object docs/ROADMAP.md)" = "c0fd72ef0ad369dc124d1c1a8934787736da2cea"
+          test "$(git hash-object scripts/validate-project-clean.cjs)" = "54b7f1e7339393e4663ebf4162d3627e6cb92942"
+          rm .github/phase15.2b-finalize.patch
+          rm .github/workflows/finalize-phase15.2b.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/ROADMAP.md scripts/validate-project-clean.cjs .github/phase15.2b-finalize.patch .github/workflows/finalize-phase15.2b.yml
+          git commit -m "chore: finalize phase 15.2B roadmap validation"
+          git push origin HEAD:master

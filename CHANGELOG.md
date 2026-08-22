@@ -2,6 +2,13 @@
 
 ## Unreleased — Phase 15.2 foundation + CI reliability
 
+- Added Phase 15.2B private capacity allowance storage plus append-only normalized telemetry snapshots.
+- Added active-platform-admin-only current, snapshot-capture, and bounded history RPCs, each re-authorizing through `private.require_active_platform_admin()`.
+- Added six database-local operational metrics: database bytes, Storage bytes/object count, current Postgres connections, total Auth users, and 30-day recent sign-ins.
+- Kept local Auth counts explicitly separate from Supabase provider-authoritative billable MAU and left unknown allowances null rather than inventing quota values.
+- Applied hosted migration `20260822040727_platform_capacity_local_telemetry` and validated the Phase 15.2B authorization/history boundary with 42 rollback-safe pgTAP assertions.
+- Left production capacity history empty: no real platform administrator, allowance row, or snapshot was bootstrapped/seeded by the migration or test run.
+- Advanced Phase 15.2C Supabase provider quota adapter to NEXT.
 - Added Phase 15.2A pure capacity semantics and provider-neutral telemetry contracts with 60% WATCH / 75% WARNING / 85% CRITICAL planning bands.
 - Locked `/platform-admin` and `/platform-admin/capacity`, ACTIVE-platform-admin authorization, generic unknown-route fallback for unauthorized authenticated callers, and database-side `private.require_active_platform_admin()` enforcement.
 - Reserved `/settings` as the ordinary authenticated Profile/Settings surface and the only discoverable in-PWA admin entry, shown only to positively confirmed ACTIVE platform administrators.
@@ -322,3 +329,4 @@ Not yet implemented:
 - Strengthened `.gitignore` to exclude all real environment files and common private-key formats while retaining sanitized `*.example` templates.
 - Updated `.env.example` for the hosted Supabase Dashboard workflow.
 - Added `docs/ENVIRONMENT.md` with exact local/deployment variables and secret-handling rules.
+- Clarified that Supabase secret/service-role keys, database URLs, and database passwords must never enter the React/Vite environment.

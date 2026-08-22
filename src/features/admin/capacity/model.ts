@@ -7,7 +7,9 @@ export const CAPACITY_WARNING_THRESHOLDS = {
 export type CapacityMetricCode =
   | 'database_bytes'
   | 'storage_bytes'
+  | 'storage_objects'
   | 'postgres_connections'
+  | 'auth_users_total'
   | 'auth_users_30d'
   | 'supabase_monthly_active_users'
   | 'supabase_egress_bytes'
