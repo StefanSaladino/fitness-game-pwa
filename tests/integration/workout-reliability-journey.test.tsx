@@ -355,6 +355,7 @@ describe('workout reliability integration gate', () => {
   it('preserves the same idempotency key across an app restart and reconciles after automatic retry', async () => {
     const user = userEvent.setup();
     const backend = createReliabilityBackend();
+    const mutationStorage = createWorkoutMutationStorage();
     backend.failAfterCommitOnce('ADD_SET');
     const firstRender = renderWorkout(backend);
     await waitForCanonicalWorkout();
@@ -362,7 +363,15 @@ describe('workout reliability integration gate', () => {
     await user.click(screen.getByRole('button', { name: '+ Working set' }));
 
     expect(await screen.findByText('1 workout change queued')).toBeInTheDocument();
-    const [persistedBeforeRestart] = await createWorkoutMutationStorage().load(USER_ID);
+    await waitFor(async () => {
+      const [persisted] = await mutationStorage.load(USER_ID);
+      expect(persisted).toEqual(expect.objectContaining({
+        status: 'pending',
+        attemptCount: 1,
+        lastAttemptAtMs: expect.any(Number),
+      }));
+    });
+    const [persistedBeforeRestart] = await mutationStorage.load(USER_ID);
     expect(persistedBeforeRestart).toBeDefined();
     expect(backend.sets).toHaveLength(2);
 
@@ -377,7 +386,7 @@ describe('workout reliability integration gate', () => {
     expect(backend.addSetEffects).toBe(1);
     expect(backend.mutationCalls).toHaveLength(2);
     expect(new Set(backend.mutationCalls)).toEqual(new Set([persistedBeforeRestart!.idempotencyKey]));
-    expect(await createWorkoutMutationStorage().load(USER_ID)).toEqual([]);
+    expect(await mutationStorage.load(USER_ID)).toEqual([]);
   });
 
   it('blocks a stale offline edit and only accepts the explicit server-version recovery choice', async () => {
