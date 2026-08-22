@@ -534,6 +534,80 @@ if (!roadmap.includes('do not invent an undocumented `/usage` endpoint')
     || !roadmap.includes('provider API gap does not block independent Netlify adapter work')) {
   fail('Phase 15.2C roadmap must preserve honest provider-gap and fail-closed semantics');
 }
+for (const relativePath of [
+  'docs/PHASE15.2D-NETLIFY-PROVIDER-ADAPTER.md',
+  'src/features/admin/capacity/netlifyApiProvider.ts',
+  'src/features/admin/capacity/netlifyApiProvider.test.ts',
+  'supabase/functions/platform-capacity-netlify/index.ts',
+]) {
+  if (!fs.existsSync(path.join(root, relativePath))) fail(`Phase 15.2D file missing: ${relativePath}`);
+}
+if (!/CapacityMetricScope = 'PROJECT' \| 'ORGANIZATION' \| 'ACCOUNT'/.test(capacityModel)) {
+  fail('Phase 15.2D must model Netlify billing with explicit ACCOUNT scope');
+}
+const netlifyApiProvider = read('src/features/admin/capacity/netlifyApiProvider.ts');
+const netlifyApiProviderTest = read('src/features/admin/capacity/netlifyApiProvider.test.ts');
+const netlifyProviderFunction = read('supabase/functions/platform-capacity-netlify/index.ts');
+const phase152dDoc = read('docs/PHASE15.2D-NETLIFY-PROVIDER-ADAPTER.md');
+for (const fragment of [
+  'NETLIFY_API_METRIC_CODES',
+  "scope: 'ACCOUNT'",
+  "billingUsageApi: 'UNAVAILABLE'",
+  'createNetlifyApiCapacityProvider',
+  'value: null',
+  'limit: null',
+]) {
+  if (!netlifyApiProvider.includes(fragment)) fail(`Phase 15.2D client adapter missing invariant: ${fragment}`);
+}
+if (/process\.env|import\.meta\.env|NETLIFY_ACCESS_TOKEN|NETLIFY_ACCOUNT_ID|api\.netlify\.com/i.test(netlifyApiProvider)) {
+  fail('Phase 15.2D browser adapter must not read or embed Netlify credentials/endpoints');
+}
+for (const fragment of [
+  'without converting unavailable values to zero',
+  'fills a missing requested provider metric as unavailable rather than zero',
+  'fails closed when the Edge/provider invocation throws',
+  'rejects malformed or wrong-scope provider payloads',
+]) {
+  if (!netlifyApiProviderTest.includes(fragment)) fail(`Phase 15.2D provider tests missing: ${fragment}`);
+}
+for (const fragment of [
+  'NETLIFY_ACCESS_TOKEN',
+  'NETLIFY_ACCOUNT_ID',
+  'NETLIFY_SITE_ID',
+  'https://api.netlify.com/api/v1',
+  "rpc('get_my_platform_access')",
+  "access.account_status === 'ACTIVE'",
+  'access.is_platform_admin === true',
+  "{ error: 'Not found' }",
+  '/accounts/${encodeURIComponent(accountId)}',
+  '/sites/${encodeURIComponent(siteId)}',
+  "site.account_id === verifiedAccountId",
+  "billingUsageApi: 'UNAVAILABLE'",
+  'value: null',
+  'limit: null',
+]) {
+  if (!netlifyProviderFunction.includes(fragment)) fail(`Phase 15.2D Edge boundary missing invariant: ${fragment}`);
+}
+if (/api\.netlify\.com\/api\/v1\/accounts\/[^'`"]+\/(usage|bandwidth|billing)/i.test(netlifyProviderFunction)) {
+  fail('Phase 15.2D must not invent an undocumented Netlify account-usage endpoint');
+}
+for (const fragment of [
+  'team/account scoped',
+  'does not expose stable public endpoints',
+  'do not',
+  '15.2D2 — Provider-authoritative account usage feed — BLOCKED',
+]) {
+  if (!phase152dDoc.includes(fragment)) fail(`Phase 15.2D documentation missing provider-gap invariant: ${fragment}`);
+}
+if (!/\[functions\.platform-capacity-netlify\][\s\S]*verify_jwt\s*=\s*true/.test(read('supabase/config.toml'))) {
+  fail('Phase 15.2D Edge Function must explicitly verify authenticated user JWTs');
+}
+if (!roadmap.includes('15.2D1 Secure Netlify API boundary + capability adapter — DONE')
+    || !roadmap.includes('15.2D2 Provider-authoritative account usage feed — BLOCKED ON DOCUMENTED NETLIFY API/EXPORT')
+    || !roadmap.includes('15.2E Capacity dashboard visual gate + implementation — NEXT')) {
+  fail('Phase 15.2D roadmap must advance the dashboard visual gate while retaining the Netlify provider API gap');
+}
+
 const ciWorkflow = read('.github/workflows/ci.yml');
 const canonicalDbRunner = read('scripts/run-canonical-db-tests.cjs');
 const supabaseConfig = read('supabase/config.toml');
@@ -666,4 +740,4 @@ if (fs.existsSync(obsoleteRepairPath)) {
   fail('structural validation must not materialize the obsolete repair migration');
 }
 
-console.log('Release validation passed: clean migration history, Phase 15.1 admin invariants, Phase 15.2A capacity semantics, Phase 15.2B private telemetry/history authorization, Phase 15.2C secure Supabase provider boundary/provider-gap semantics, admin/settings notification contracts, canonical GitHub CI/database discovery, visual-roadmap guards, and production chunk budget guards are present.');
+console.log('Release validation passed: clean migration history, Phase 15.1 admin invariants, Phase 15.2A capacity semantics, Phase 15.2B private telemetry/history authorization, Phase 15.2C secure Supabase provider boundary/provider-gap semantics, Phase 15.2D secure Netlify provider boundary/provider-gap semantics, admin/settings notification contracts, canonical GitHub CI/database discovery, visual-roadmap guards, and production chunk budget guards are present.');

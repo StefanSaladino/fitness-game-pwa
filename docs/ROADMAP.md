@@ -658,14 +658,31 @@ Provider billing is organization-scoped, so Supabase billing metrics must be ide
 - keep provider billing metrics UNAVAILABLE until a documented machine-readable billing-cycle source exists, then normalize it through the already-secured Edge boundary;
 - the provider API gap does not block independent Netlify adapter work.
 
-#### 15.2D Netlify provider usage adapter — NEXT
+#### 15.2D Netlify provider usage adapter — IN PROGRESS (PROVIDER ACCOUNT-USAGE API GAP)
 
-- bandwidth, request/build usage, or credit consumption when obtainable from the supported Netlify API;
-- secure server-side credential handling only;
-- explicit unavailable/stale provider states when a metric cannot be fetched;
-- no provider telemetry may affect XP, badges, rankings, or ordinary user visibility.
+Netlify billing/usage is team/account scoped. The public API calls a team an account, so provider measurements use the explicit ACCOUNT scope rather than pretending the billing totals belong to one project.
 
-#### 15.2E Capacity dashboard visual gate + implementation — LATER
+##### 15.2D1 Secure Netlify API boundary + capability adapter — DONE
+
+- add the authenticated `platform-capacity-netlify` Edge Function with `verify_jwt = true`;
+- authorize the caller with `public.get_my_platform_access()` and require `account_status = ACTIVE` plus `is_platform_admin = true` before touching Netlify credentials;
+- return a generic 404 for unauthorized callers, preserving the locked administrator non-disclosure behavior;
+- keep `NETLIFY_ACCESS_TOKEN` and `NETLIFY_ACCOUNT_ID` server-side only, with optional `NETLIFY_SITE_ID` for target-project verification;
+- call only documented `GET /accounts/{account_id}` and `GET /sites/{site_id}` API surfaces for configuration/capability checks;
+- verify an optional configured site belongs to the configured account before reporting it as verified;
+- add ACCOUNT to the provider-neutral capacity scope model;
+- validate normalized Netlify provider responses in a browser-safe adapter and degrade failed/malformed/missing metrics to UNAVAILABLE/null rather than zero;
+- never expose raw account/site provider payloads or allow a caller-controlled Netlify API origin.
+
+##### 15.2D2 Provider-authoritative account usage feed — BLOCKED ON DOCUMENTED NETLIFY API/EXPORT
+
+- Netlify currently documents authoritative bandwidth, web-request, build/compute and credit consumption in Usage & billing / Account usage insights, but the public OpenAPI does not expose stable endpoints for those billing totals;
+- do not invent an undocumented usage endpoint, scrape the Dashboard, derive billable bandwidth/requests from logs, sum deploy durations into build usage, or calculate credits from public pricing tables;
+- do not infer credit-based versus legacy billing from undocumented account-type identifiers;
+- do not hard-code mutable plan allowances into runtime application logic;
+- keep Netlify billing metrics UNAVAILABLE until a documented machine-readable source exists, then normalize it through the already-secured Edge boundary.
+
+#### 15.2E Capacity dashboard visual gate + implementation — NEXT
 
 - apply the product-wide UI design gate before administrator dashboard code;
 - implement the locked `/platform-admin` shell and `/platform-admin/capacity` route without changing the authorization model established in 15.2B;

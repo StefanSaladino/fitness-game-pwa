@@ -22,7 +22,7 @@ export type CapacityMetricCode =
 
 export type CapacityMetricUnit = 'bytes' | 'count' | 'credits';
 
-export type CapacityMetricScope = 'PROJECT' | 'ORGANIZATION';
+export type CapacityMetricScope = 'PROJECT' | 'ORGANIZATION' | 'ACCOUNT';
 
 export type CapacityTelemetrySource =
   | 'DATABASE_LOCAL'
