@@ -18,17 +18,35 @@ test('production app shell boots from cache during an offline navigation', async
   });
 
   const cachedShellPaths = await page.evaluate(async () => {
+    const manifestResponse = await fetch('/asset-manifest.json', { cache: 'no-store' });
+    if (!manifestResponse.ok) throw new Error(`Asset manifest request failed: ${manifestResponse.status}`);
+    const manifest = await manifestResponse.json() as { assets?: unknown };
+    const emittedAssets = Array.isArray(manifest.assets)
+      ? manifest.assets.filter((value): value is string => typeof value === 'string')
+      : [];
+
     const cacheNames = (await caches.keys()).filter((name) => name.startsWith('workout-game-shell-'));
     const paths: string[] = [];
+    const missingEmittedAssets: string[] = [];
     for (const name of cacheNames) {
       const cache = await caches.open(name);
       for (const request of await cache.keys()) paths.push(new URL(request.url).pathname);
     }
-    return paths;
+
+    const activeCacheName = cacheNames.find((name) => name.endsWith('v13-1'));
+    if (!activeCacheName) throw new Error('Phase 15.1 shell cache was not installed.');
+    const activeCache = await caches.open(activeCacheName);
+    for (const asset of emittedAssets) {
+      if (!(await activeCache.match(asset, { ignoreVary: true }))) missingEmittedAssets.push(asset);
+    }
+
+    return { paths, emittedAssets, missingEmittedAssets };
   });
 
-  expect(cachedShellPaths.some((path) => /^\/assets\/.*\.js$/.test(path))).toBe(true);
-  expect(cachedShellPaths.some((path) => /^\/assets\/.*\.css$/.test(path))).toBe(true);
+  expect(cachedShellPaths.paths.some((path) => /^\/assets\/.*\.js$/.test(path))).toBe(true);
+  expect(cachedShellPaths.paths.some((path) => /^\/assets\/.*\.css$/.test(path))).toBe(true);
+  expect(cachedShellPaths.emittedAssets.length).toBeGreaterThan(1);
+  expect(cachedShellPaths.missingEmittedAssets).toEqual([]);
 
   await context.setOffline(true);
   try {

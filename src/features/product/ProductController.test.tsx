@@ -5,7 +5,7 @@ import type { AppSection } from '../../components/layout';
 import type { GroupSummary } from '../groups';
 import type { OnboardingProfile } from '../onboarding';
 
-vi.mock('../dashboard', () => ({
+vi.mock('../dashboard/components/DashboardController', () => ({
   DashboardController: ({ group, onNavigate }: { group: GroupSummary; onNavigate: (section: AppSection) => void }) => (
     <div>
       <p>Dashboard for {group.name}</p>
@@ -16,15 +16,15 @@ vi.mock('../dashboard', () => ({
   ),
 }));
 
-vi.mock('../groups', () => ({
+vi.mock('../groups/components/GroupAdministrationController', () => ({
   GroupAdministrationController: ({ selectedGroupId }: { selectedGroupId: string }) => <p>Admin for {selectedGroupId}</p>,
 }));
 
-vi.mock('../progress', () => ({
+vi.mock('../progress/components/ExerciseProgressController', () => ({
   ExerciseProgressController: () => <p>Progress screen</p>,
 }));
 
-vi.mock('../social', () => ({
+vi.mock('../social/components/GroupSocialController', () => ({
   GroupSocialController: ({ selectedGroupId }: { selectedGroupId: string }) => <p>Competition for {selectedGroupId}</p>,
 }));
 
@@ -44,24 +44,26 @@ describe('ProductController', () => {
     const user = userEvent.setup();
     render(<ProductController groups={groups} onGroupsChanged={vi.fn()} profile={profile} />);
 
-    expect(screen.getByText('Dashboard for Iron Crew')).toBeInTheDocument();
+    expect(await screen.findByText('Dashboard for Iron Crew')).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Open progress' }));
-    expect(screen.getByText('Progress screen')).toBeInTheDocument();
+    expect(await screen.findByText('Progress screen')).toBeInTheDocument();
   });
 
   it('still routes group administration through the same controller boundary', async () => {
     const user = userEvent.setup();
     render(<ProductController groups={groups} onGroupsChanged={vi.fn()} profile={profile} />);
 
+    await screen.findByText('Dashboard for Iron Crew');
     await user.click(screen.getByRole('button', { name: 'Open groups' }));
-    expect(screen.getByText('Admin for group-1')).toBeInTheDocument();
+    expect(await screen.findByText('Admin for group-1')).toBeInTheDocument();
   });
 
   it('routes group competition through the product controller boundary', async () => {
     const user = userEvent.setup();
     render(<ProductController groups={groups} onGroupsChanged={vi.fn()} profile={profile} />);
 
+    await screen.findByText('Dashboard for Iron Crew');
     await user.click(screen.getByRole('button', { name: 'Open competition' }));
-    expect(screen.getByText('Competition for group-1')).toBeInTheDocument();
+    expect(await screen.findByText('Competition for group-1')).toBeInTheDocument();
   });
 });

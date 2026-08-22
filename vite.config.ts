@@ -1,15 +1,34 @@
 import { resolve } from 'node:path';
-import { defineConfig } from 'vite';
+import { defineConfig, type Plugin } from 'vite';
 import react from '@vitejs/plugin-react';
 
 const includeReliabilityFixture = process.env.FITNESS_E2E_RELIABILITY === '1';
 
+function assetManifestPlugin(): Plugin {
+  return {
+    name: 'fitness-asset-manifest',
+    apply: 'build',
+    generateBundle(_options, bundle) {
+      const assets = Object.keys(bundle)
+        .filter((fileName) => fileName.startsWith('assets/'))
+        .map((fileName) => `/${fileName}`)
+        .sort();
+
+      this.emitFile({
+        type: 'asset',
+        fileName: 'asset-manifest.json',
+        source: `${JSON.stringify({ assets }, null, 2)}\n`,
+      });
+    },
+  };
+}
+
 export default defineConfig({
-  plugins: [react()],
+  plugins: [react(), assetManifestPlugin()],
   build: {
     target: 'es2022',
-    ...(includeReliabilityFixture ? {
-      rollupOptions: {
+    rolldownOptions: {
+      ...(includeReliabilityFixture ? {
         input: {
           app: resolve(process.cwd(), 'index.html'),
           reliability: resolve(process.cwd(), 'reliability.e2e.html'),
@@ -17,7 +36,23 @@ export default defineConfig({
           indexeddb: resolve(process.cwd(), 'indexeddb.e2e.html'),
           progress: resolve(process.cwd(), 'progress.e2e.html'),
         },
+      } : {}),
+      output: {
+        codeSplitting: {
+          groups: [
+            {
+              name: 'react-vendor',
+              test: /node_modules[\\/](?:react|react-dom|scheduler)[\\/]/,
+              priority: 20,
+            },
+            {
+              name: 'supabase-vendor',
+              test: /node_modules[\\/]@supabase[\\/]/,
+              priority: 15,
+            },
+          ],
+        },
       },
-    } : {}),
+    },
   },
 });

@@ -1,5 +1,8 @@
 const CACHE_PREFIX = 'workout-game-shell-';
-const CACHE = `${CACHE_PREFIX}v12b-2`;
+// Historical Phase 12B shell checkpoint: v12b-2. Current releases advance CACHE_VERSION below.
+const CACHE_VERSION = 'v13-1';
+const CACHE = `${CACHE_PREFIX}${CACHE_VERSION}`;
+const ASSET_MANIFEST = '/asset-manifest.json';
 const CORE_SHELL = [
   '/manifest.webmanifest',
   '/icons/icon-192.png',
@@ -28,6 +31,19 @@ function shellAssetPaths(html) {
   return [...paths];
 }
 
+function emittedAssetPaths(manifest) {
+  if (!manifest || !Array.isArray(manifest.assets)) {
+    throw new Error('Asset manifest is missing its assets array.');
+  }
+
+  const paths = manifest.assets
+    .map((value) => typeof value === 'string' ? sameOriginPath(value) : null)
+    .filter(Boolean);
+
+  if (paths.length === 0) throw new Error('Asset manifest contains no emitted assets.');
+  return [...new Set(paths)];
+}
+
 async function fetchForPrecache(path) {
   const response = await fetch(new Request(path, { cache: 'reload', credentials: 'same-origin' }));
   if (!response.ok) throw new Error(`Unable to precache ${path}: ${response.status}`);
@@ -36,12 +52,19 @@ async function fetchForPrecache(path) {
 
 async function precacheShell() {
   const cache = await caches.open(CACHE);
-  const rootResponse = await fetchForPrecache('/');
+  const [rootResponse, manifestResponse] = await Promise.all([
+    fetchForPrecache('/'),
+    fetchForPrecache(ASSET_MANIFEST),
+  ]);
   const html = await rootResponse.clone().text();
+  const manifest = await manifestResponse.clone().json();
+
   await cache.put('/', rootResponse);
+  await cache.put(ASSET_MANIFEST, manifestResponse);
 
   const discovered = shellAssetPaths(html);
-  const paths = [...new Set([...CORE_SHELL, ...discovered])];
+  const emitted = emittedAssetPaths(manifest);
+  const paths = [...new Set([...CORE_SHELL, ...discovered, ...emitted])];
   await Promise.all(paths.map(async (path) => {
     const response = await fetchForPrecache(path);
     await cache.put(path, response);
@@ -83,7 +106,6 @@ async function staticResponse(request) {
   }
 }
 
-
 self.addEventListener('install', (event) => {
   event.waitUntil((async () => {
     await precacheShell();
@@ -123,7 +145,8 @@ self.addEventListener('fetch', (event) => {
   const cacheableDestination = ['script', 'style', 'image', 'font', 'manifest'].includes(request.destination);
   const cacheablePath = url.pathname.startsWith('/assets/')
     || url.pathname.startsWith('/icons/')
-    || url.pathname === '/manifest.webmanifest';
+    || url.pathname === '/manifest.webmanifest'
+    || url.pathname === ASSET_MANIFEST;
 
   if (cacheableDestination || cacheablePath) {
     event.respondWith(staticResponse(request));

@@ -1,5 +1,21 @@
 # Changelog
 
+## v0.13.0 — Phase 15.1 platform-admin authorization + audit foundation
+
+- Added a platform-admin authorization model completely separate from group OWNER / ADMIN roles.
+- Added private operational account state and private platform-admin membership without client-controlled admin claims.
+- Added a one-time operator-only first-admin bootstrap and guarded authenticated grant/revoke RPCs.
+- Added append-only platform-admin audit history with actor, target, reason, timestamp, and before/after state.
+- Protected the final active platform administrator from revocation, suspension-state transition, and profile deletion.
+- Added pgTAP coverage for admin, normal-user, suspended-admin, unauthenticated, direct-private-access, final-admin, and audit-immutability boundaries.
+- Lazy-loaded authenticated product sections from direct controller modules and moved Vite 8 chunk configuration to Rolldown's supported `codeSplitting` API.
+- Removed the groups barrel from the initial app path so group administration remains a true lazy chunk without an ineffective-dynamic-import build warning.
+- Added a production build gate that fails if any emitted JavaScript chunk exceeds 500 kB.
+- Added a generated asset manifest plus service-worker precaching of every emitted lazy app asset, with Chromium E2E coverage, so code splitting does not regress installed-PWA offline availability.
+- Added the page-by-page mobile-first visual overhaul as Phase 16 and moved public-release hardening to Phase 17.
+- Expanded Phase 16 with reserved badge-display space plus a dedicated badge visual-design/asset implementation slice before the final visual integration gate.
+- No scoring, XP, workout persistence, progression, cardio, or social behavior changed.
+
 ## v0.12.1 — Phase 13B weekly/monthly lifting summaries
 
 - Added a focused authenticated calendar-summary RPC over completed strength sessions instead of N per-exercise history requests.
@@ -59,7 +75,7 @@
 
 - Moved active-workout recovery persistence to asynchronous IndexedDB storage.
 - Moved the durable workout mutation queue to the same IndexedDB database while preserving v1 queue/idempotency contracts.
-- Added one-time migration from the existing per-user localStorage recovery and mutation keys; legacy keys are removed only after a successful IndexedDB write.
+- Added one-time migration from the existing v1 localStorage recovery and mutation keys; legacy keys are removed only after a successful IndexedDB write.
 - Added a hydration gate so remote read failures cannot win a race against local durable-state recovery during offline refresh/startup.
 - Queue writes are awaited before an offline mutation is reported as queued, preserving the existing "persist before replay" guarantee.
 - Added browser fallback to the historical localStorage keys only when IndexedDB is unavailable or rejects a write.
@@ -103,7 +119,7 @@
 
 - Changed muscle-group icons from toggle filters into exercise-library navigation destinations.
 - Added dedicated muscle-group screens with workout-type narrowing and in-group search.
-- Kept a separate Search all exercises path across the canonical catalogue.
+- Kept a separate Search all exercises path across the entire canonical catalogue.
 - Added explicit back navigation from picker detail screens.
 - Added immediate start/resume display timing and exact click-time pause freezing.
 - Added intent-aware start/pause/resume RPCs that exclude ordinary request latency from persisted workout time.
@@ -206,7 +222,6 @@
 - Preserved multi-group architecture and database/RLS ownership boundaries.
 - Added component/controller/gate regression tests.
 
-
 ## v0.3.1 — group application foundation
 
 - Added typed multi-group summaries, memberships, invites, and group-role contracts.
@@ -259,7 +274,6 @@
 - Preserved Vitest/Playwright separation and deterministic auth-shell testing.
 - Expanded the canonical exercise seed catalogue.
 
-
 ## v0.2.0 — Phase 4 foundation
 
 Added:
@@ -273,6 +287,7 @@ Added:
 - workout/exercise/set persistence
 - database-derived workout qualification
 - XP ledger and performance benchmark/observation infrastructure
+- weekly goal snapshots
 - Row Level Security and restricted grants
 - email/password Auth UI foundation
 - forgot-password and reset-password flow

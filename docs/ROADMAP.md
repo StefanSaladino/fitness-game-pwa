@@ -546,23 +546,42 @@ The PWA never requires a smartwatch. A future native watch companion may support
 
 Wearables never increase scoring simply because a device was used.
 
-## Phase 15 — Platform administration, moderation + capacity dashboard — LATER
+## Phase 15 — Platform administration, moderation + capacity dashboard — IN PROGRESS
 
 Objective: give trusted platform administrators a secure operational console for capacity monitoring, account moderation, and direct user notices without granting those powers to ordinary group owners/admins.
 
 Apply the UI design gate before implementing the administrator console. This phase must be split into the following subphases rather than shipped as one large patch.
 
-### 15.1 Platform-admin authorization + audit foundation
+### 15.1 Platform-admin authorization + audit foundation — DONE
+
+Primary boundary: establish the non-visual security substrate before any administrator console is exposed.
 
 - define a platform-admin permission model that is completely separate from group OWNER / ADMIN roles;
 - no self-service admin elevation and no client-controlled admin claims;
-- privileged account operations run only through server-side / security-definer boundaries;
+- keep platform account state, platform-admin membership, and audit history in a non-exposed private schema;
+- bootstrap the first trusted platform administrator through an operator-only database function that browser roles cannot execute;
+- privileged account operations run only through guarded security-definer boundaries with explicit authenticated grants;
 - never expose the Supabase service-role key, Netlify access tokens, or comparable infrastructure credentials to the browser;
 - immutable admin audit log recording actor, target, action, reason, timestamp, and relevant before/after state;
-- protect against suspending/deleting the final platform administrator;
-- explicit authorization tests for admin, normal-user, suspended-user, and unauthenticated callers.
+- protect the final active platform administrator against revoke, suspension-state transition, and profile deletion;
+- explicit authorization tests for platform admin, normal user, suspended admin, and unauthenticated caller;
+- do not add the administrator console in this slice.
 
-### 15.2 Capacity + platform-health dashboard
+#### 15.1B Production bundle chunking/performance gate — DONE
+
+This required engineering cleanup ships with the v0.13.0 checkpoint but does not change product behavior.
+
+- lazy-load authenticated feature sections instead of pulling dashboard, workout, cardio, progress, groups, and social into the initial module graph;
+- use Vite 8 / Rolldown code-splitting configuration rather than hiding the warning by raising the chunk limit;
+- separate stable React and Supabase vendor code;
+- fail the production build when any emitted JavaScript chunk exceeds 500 kB;
+- emit a production asset manifest and precache every emitted lazy chunk so installed-PWA offline availability is preserved;
+- extend Chromium PWA E2E coverage to prove every emitted manifest asset is cached before offline navigation;
+- preserve the existing navigation, feature state, PWA, and E2E contracts.
+
+Exit criterion: v0.13.0 has a tested platform-admin authorization/audit boundary and no production JavaScript chunk is allowed to exceed the configured 500 kB release budget.
+
+### 15.2 Capacity + platform-health dashboard — NEXT
 
 - current PostgreSQL database usage against the configured Supabase allowance;
 - Supabase Storage usage against the configured allowance;
@@ -577,7 +596,7 @@ Apply the UI design gate before implementing the administrator console. This pha
 ### 15.3 User account administration
 
 - searchable/paginated user directory with stable user ID, username, display name, account status, created date, and limited operational metadata;
-- ACTIVE / SUSPENDED / DELETION_PENDING (or equivalent) account states;
+- ACTIVE / SUSPENDED / DELETION_PENDING account states;
 - suspend an account with required reason, optional expiry/review date, and immediate enforcement across authenticated application RPCs;
 - revoke/expire active sessions when an account is suspended where supported safely;
 - restore a suspended account with an audited administrator action;
@@ -609,9 +628,197 @@ Apply the UI design gate before implementing the administrator console. This pha
 
 Exit criterion: a trusted platform admin can see approaching free-tier limits, inspect account status, suspend/restore/remove users safely, and send auditable in-app policy/moderation notices without exposing privileged credentials or weakening scoring/privacy boundaries.
 
-## Phase 16 — Public/broader release hardening — LATER
+## Phase 16 — Mobile-first visual overhaul — LATER
 
-Phase 15 platform administration/moderation should be complete before a broader public launch.
+Objective: redesign the existing user-facing product **page by page** so it feels purpose-built as a polished mobile application while preserving authoritative behavior, accessibility, reliability, and responsive desktop support.
+
+This is not a one-shot reskin. Each page/surface is its own approved slice. Do not implement the next slice until the current slice has completed the visual gate and has been validated in the real app.
+
+### Phase 16 execution contract — REQUIRED FOR EVERY VISUAL SLICE
+
+For each page or major surface:
+
+1. audit the current screen, real data, user actions, loading/error/empty/offline states, and known usability problems;
+2. define the mobile information hierarchy and interaction model before styling;
+3. generate one or more phone-first concept views using the actual product requirements rather than generic dashboard patterns;
+4. review/revise the concepts with the product owner and explicitly approve one direction;
+5. document tablet/desktop adaptation, safe-area behavior, scrolling, keyboard behavior, and component boundaries;
+6. implement only that approved surface using existing services/controllers unless behavior changes are explicitly part of the slice;
+7. validate 320px-class phones, modern iPhone/Android sizes, desktop, accessibility, loading/error/empty/offline states, and the existing test suite;
+8. compare the implemented screen against the approved concept before marking the slice DONE.
+
+Global rules for the overhaul:
+
+- mobile is the primary composition, not a compressed desktop dashboard;
+- preserve real product data and flows; do not add decorative fake metrics;
+- favor clear hierarchy, comfortable touch targets, native-feeling controls, and restrained visual depth;
+- avoid repetitive AI-style icon cards, unnecessary gradients/glows, excessive rounded containers, and decoration without function;
+- retain brand consistency across pages without forcing every surface into the same card template;
+- motion must communicate state/navigation and respect `prefers-reduced-motion`;
+- no scoring, authorization, persistence, or offline contract may change merely for visual reasons;
+- shared components/tokens are promoted only after at least two approved pages demonstrate the same need.
+
+### 16.0 Visual inventory + mobile design-system direction
+
+- capture every current user-facing route/surface and its states;
+- identify global navigation, spacing, typography, surface, iconography, motion, and safe-area inconsistencies;
+- define the proposed mobile app shell and page anatomy without yet rewriting every page;
+- establish a restrained token direction for typography scale, spacing, radii, elevation, borders, status colors, and interactive states;
+- identify the recurring identity/achievement surfaces that need reserved badge-display space before badge artwork is designed;
+- decide what remains global versus feature-local before implementation begins;
+- produce baseline before/after references so later slices can be judged consistently.
+
+### 16.1 App shell + primary navigation
+
+- mobile bottom/navigation treatment and page-header behavior;
+- desktop/sidebar adaptation without making desktop dictate the mobile layout;
+- active-state clarity, safe-area padding, scroll behavior, and PWA install/offline/update surfaces;
+- reserve a stable identity/achievement slot where badge showcase content belongs without forcing badges into every page;
+- global loading transition for lazy feature chunks;
+- no page-specific content redesign yet.
+
+### 16.2 Authentication + password recovery
+
+- sign in;
+- create account;
+- forgot password;
+- reset password;
+- verification/confirmation states;
+- error and configuration-help states.
+
+### 16.3 Onboarding + group-entry flow
+
+- profile onboarding;
+- weekly lifting target;
+- create/join group;
+- pending invitation acceptance/decline;
+- first-run empty/error/loading states.
+
+### 16.4 Home / lifting dashboard
+
+- weekly lifting goal and XP hierarchy;
+- recent lifts;
+- PR context;
+- group rank;
+- cardio as secondary information;
+- reserve a compact badge/achievement showcase area that can surface earned badges without competing with Start Lift;
+- Start Lift as the primary action without turning the page into a collection of equal-weight cards.
+
+### 16.5 Active workout + set logging
+
+- workout timer and lifecycle controls;
+- exercise sections;
+- dense set entry optimized for thumbs and one-handed use;
+- add/copy/complete/delete interactions;
+- offline/recovering/conflict states;
+- finish/cancel flows and destructive confirmation.
+
+### 16.6 Exercise picker + exercise library
+
+- selector shell;
+- muscle-group navigation;
+- workout/equipment narrowing;
+- search-all flow;
+- recents and eventual favorites;
+- exercise-result density and selected/duplicate states;
+- keep anatomy artwork purposeful rather than decorative.
+
+### 16.7 Progress + lifting analytics
+
+- exercise selection and overview;
+- e1RM/bodyweight trend presentation;
+- volume and PR timelines;
+- weekly/monthly summaries;
+- charts optimized for narrow touch screens without sacrificing readable desktop analysis.
+
+### 16.8 Groups + invitations + member administration
+
+- group switcher;
+- member roster and roles;
+- invite flow;
+- promote/demote/remove/leave/transfer controls;
+- make destructive/privileged actions clear without overwhelming ordinary group members.
+
+### 16.9 Competition + social activity
+
+- leaderboard hierarchy and period switching;
+- activity feed;
+- lightweight reactions;
+- profile identity and badge display using the shared badge presentation contract from 16.13;
+- preserve privacy-safe summaries and avoid turning the feed into raw workout logs.
+
+### 16.10 Cardio accessory surface
+
+- quick logging;
+- duration/tier context;
+- history and summary;
+- maintain its deliberate secondary relationship to lifting.
+
+### 16.11 Platform-administration console visual overhaul
+
+Start only after Phase 15 has delivered the real admin data/actions.
+
+- capacity/platform-health dashboard;
+- user directory and account status;
+- suspend/restore/delete flows;
+- admin audit history;
+- targeted notices/messages;
+- phone usability where reasonable while retaining an efficient desktop operational view.
+
+### 16.12 System states + cross-feature polish
+
+- empty states;
+- loading/skeleton strategy;
+- error/retry states;
+- offline/reconnecting/conflict states;
+- success/confirmation feedback;
+- toast/banner hierarchy;
+- keyboard/focus behavior and reduced-motion handling;
+- remove visual inconsistencies left after page migrations.
+
+### 16.13 Badge display + badge visual-design system
+
+Primary boundary: turn the existing Phase 9 badge achievements into a deliberate, reusable visual system without changing how badges are earned.
+
+- inventory the real implemented badge catalogue and the exact metadata available for each badge before drawing new artwork;
+- confirm the reserved badge-display locations created in earlier slices, including the dashboard/identity surfaces and social/competition identity where appropriate;
+- design a coherent badge family with consistent silhouette, iconography, typography, spacing, and small-size legibility rather than one-off decorative stickers;
+- define earned, newly-earned/highlighted, and any intentionally exposed locked/unearned presentation states without inventing new badge eligibility rules;
+- create responsive badge presentation variants for compact mobile showcase, list/grid views, and larger detail/celebration treatment where justified;
+- create or generate final badge artwork only after the badge concepts and dimensions are approved; prefer SVG when the artwork remains crisp and maintainable at multiple sizes;
+- implement one shared accessible badge component/presentation contract with readable labels, non-color-only state communication, and appropriate decorative-image handling;
+- ensure badge collections wrap/scroll intentionally on narrow phones and never force horizontal page overflow;
+- badge artwork and display changes must remain cosmetic: no scoring, XP, qualification, streak, or badge-award logic changes in this slice.
+
+### 16.14 Brand imagery, banners + illustration assets
+
+Create imagery **only when an approved page has a real communication need**. Do not add banners merely to fill space.
+
+- identify pages that benefit from a hero/banner, onboarding illustration, empty-state artwork, achievement visual, or campaign/system notice graphic;
+- generate concepts after the page layout is approved so the asset fits real dimensions and hierarchy;
+- review/revise each asset with the product owner before shipping;
+- provide responsive crops/variants where necessary;
+- prefer SVG for simple illustration/iconography and optimized AVIF/WebP/PNG for raster artwork where browser support/quality warrants it;
+- define alt text or mark purely decorative images appropriately;
+- keep asset sizes inside the production performance budget and lazy-load non-critical artwork;
+- do not use generated imagery for data, permissions, instructions, or controls that should be real UI.
+
+### 16.15 Visual-overhaul integration gate
+
+- all user-facing pages have an approved and implemented mobile-first view;
+- no page still depends on the pre-overhaul visual system by accident;
+- navigation, typography, spacing, surfaces, status feedback, motion, and badge presentation are coherent across the app;
+- accessibility and touch-target audits pass;
+- responsive Chromium/WebKit E2E coverage remains green;
+- bundle-size and image-performance budgets remain green;
+- offline/recovery/conflict behavior remains functionally unchanged;
+- final product-owner visual review is complete before Phase 17.
+
+Exit criterion: the application presents a coherent, polished, mobile-native visual experience page by page, with deliberate desktop adaptations and only purposeful approved imagery.
+
+## Phase 17 — Public/broader release hardening — LATER
+
+Phase 15 platform administration/moderation and the Phase 16 visual-overhaul integration gate should be complete before a broader public launch.
 
 - abuse/rate limiting
 - production SMTP
@@ -619,4 +826,3 @@ Phase 15 platform administration/moderation should be complete before a broader 
 - privacy/data export/delete
 - backup/restore drills
 - larger-group query/performance testing
-

@@ -1,39 +1,47 @@
-# Fitness Game PWA — v0.12.1
+# Fitness Game PWA — v0.13.0
 
-Current checkpoint: **Phase 13 — Lifting analytics is complete**. Phase 13A provides per-exercise progression analytics; Phase 13B adds personal weekly/monthly lifting summaries over authoritative completed strength history.
+Current checkpoint: **Phase 15.1 — platform-admin authorization + audit foundation**. The release adds a secure operational authorization boundary for future platform administration and fixes the oversized production bundle without adding an administrator screen yet.
 
-## Phase 13B highlights
+## Phase 15.1 highlights
 
-- Added a focused authenticated `get_my_lifting_calendar_summaries` RPC instead of issuing one history request per exercise.
-- Returns 12 weekly and 6 monthly calendar buckets by default, including zero-activity periods for honest trend context.
-- Summaries include completed lifting sessions, distinct exercises, completed working sets, analytics-only external-load volume, and true PR counts.
-- PR totals reuse the authoritative progression-observation stream and exclude first-observation baselines.
-- Calendar anchoring uses the signed-in profile timezone.
-- Added current-versus-previous week/month deltas plus weekly and monthly volume charts.
-- Calendar-summary loading/error state is isolated so Phase 13A per-exercise analytics still works if this aggregate read fails.
-- Added responsive browser coverage across desktop Chromium, Android-class Chromium, and iPhone-class WebKit.
+- Platform administrators are completely separate from group OWNER / ADMIN roles.
+- Operational account state, platform-admin membership, and audit history live in a non-exposed `private` schema.
+- The browser never receives a service-role key or direct access to private admin tables.
+- A one-time operator-only bootstrap creates the first trusted platform administrator.
+- Subsequent grant/revoke operations are authenticated RPCs that authorize the actor inside security-definer boundaries.
+- Suspended platform admins lose active administrative access.
+- The final active platform administrator cannot be revoked, suspended, or deleted through the protected data boundary.
+- Platform-admin bootstrap/grant/revoke actions append actor/target/reason/before/after audit records; audit rows reject UPDATE and DELETE.
+- Authenticated product sections now load lazily from direct controller modules so workout, progress, social, cardio, group administration, and dashboard code do not all enter the initial app chunk.
+- The initial app imports `GroupGate` directly rather than through the groups barrel, preserving a real group-administration lazy boundary.
+- Vite 8 uses Rolldown code-splitting groups for React and Supabase vendor code.
+- Production builds now fail if any emitted JavaScript chunk exceeds 500 kB.
+- The build emits an asset manifest and the service worker precaches every emitted app asset, so feature-level lazy loading does not weaken the installed PWA offline shell.
 
-## Supabase for v0.12.1
+## Supabase for v0.13.0
 
 Apply:
 
 ```text
-supabase/migrations/20260822000100_lifting_calendar_summaries.sql
+supabase/migrations/20260822000300_platform_admin_authorization_audit.sql
 ```
 
-New database test:
+Then run:
 
 ```text
-supabase/tests/027_lifting_calendar_summaries.test.sql
+supabase/tests/028_platform_admin_authorization_audit.test.sql
 ```
 
-The RPC is read-only and authenticated-user scoped. There are **no scoring/XP changes**, no new workout write path, and no cross-user analytics.
+After the migration succeeds, bootstrap the first platform administrator once from the Supabase SQL Editor. See `docs/PHASE15.1-PLATFORM-ADMIN-AUTH-AUDIT.md` for the exact query and verification steps.
+
+No Phase 15.2 capacity dashboard, user suspension UI, account deletion UI, or admin messaging UI is included yet.
 
 ## Validation
 
 Run the complete checkpoint gate before committing:
 
 ```powershell
+npm install
 npm run typecheck
 npm test
 npm run test:integration
@@ -43,4 +51,6 @@ npm run test:e2e
 npm run test:internal
 ```
 
-See `docs/ROADMAP.md`, `docs/PHASE13A-PER-EXERCISE-LIFTING-ANALYTICS.md`, and `docs/PHASE13B-WEEKLY-MONTHLY-LIFTING-SUMMARIES.md`.
+`npm install` also synchronizes the root `package-lock.json` version to `0.13.0`; include that generated lockfile change in the commit.
+
+See `docs/ROADMAP.md` and `docs/PHASE15.1-PLATFORM-ADMIN-AUTH-AUDIT.md`.

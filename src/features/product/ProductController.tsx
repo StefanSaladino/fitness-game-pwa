@@ -1,13 +1,45 @@
-import { useEffect, useMemo, useState } from 'react';
+import { lazy, Suspense, useEffect, useMemo, useState } from 'react';
+import type { ReactNode } from 'react';
 import type { AppSection } from '../../components/layout';
 import { signOut } from '../auth/authService';
-import { DashboardController, type DashboardService } from '../dashboard';
-import { CardioController, type CardioService } from '../cardio';
-import { GroupAdministrationController, type GroupService, type GroupSummary } from '../groups';
+import type { DashboardService } from '../dashboard';
+import type { CardioService } from '../cardio';
+import type { GroupService, GroupSummary } from '../groups';
 import type { OnboardingProfile } from '../onboarding';
-import { ExerciseProgressController, type ExerciseProgressService } from '../progress';
-import { GroupSocialController, type GroupSocialService } from '../social';
-import { WorkoutController, type ExercisePickerService, type WorkoutExerciseService, type WorkoutMutationService, type WorkoutService, type WorkoutSetService } from '../workout';
+import type { ExerciseProgressService } from '../progress';
+import type { GroupSocialService } from '../social';
+import type {
+  ExercisePickerService,
+  WorkoutExerciseService,
+  WorkoutMutationService,
+  WorkoutService,
+  WorkoutSetService,
+} from '../workout';
+
+const DashboardController = lazy(async () => {
+  const module = await import('../dashboard/components/DashboardController');
+  return { default: module.DashboardController };
+});
+const CardioController = lazy(async () => {
+  const module = await import('../cardio/components/CardioController');
+  return { default: module.CardioController };
+});
+const GroupAdministrationController = lazy(async () => {
+  const module = await import('../groups/components/GroupAdministrationController');
+  return { default: module.GroupAdministrationController };
+});
+const ExerciseProgressController = lazy(async () => {
+  const module = await import('../progress/components/ExerciseProgressController');
+  return { default: module.ExerciseProgressController };
+});
+const GroupSocialController = lazy(async () => {
+  const module = await import('../social/components/GroupSocialController');
+  return { default: module.GroupSocialController };
+});
+const WorkoutController = lazy(async () => {
+  const module = await import('../workout/components/WorkoutController');
+  return { default: module.WorkoutController };
+});
 
 interface ProductControllerProps {
   profile: OnboardingProfile;
@@ -23,6 +55,10 @@ interface ProductControllerProps {
   progressService?: ExerciseProgressService;
   socialService?: GroupSocialService;
   cardioService?: CardioService;
+}
+
+function ProductSectionFallback() {
+  return <div aria-live="polite" role="status">Loading…</div>;
 }
 
 export function ProductController({ profile, groups, onGroupsChanged, groupService, dashboardService, workoutService, workoutExerciseService, exercisePickerService, workoutSetService, workoutMutationService, progressService, socialService, cardioService }: ProductControllerProps) {
@@ -45,8 +81,10 @@ export function ProductController({ profile, groups, onGroupsChanged, groupServi
 
   if (!selectedGroup) return null;
 
+  let section: ReactNode;
+
   if (activeSection === 'workouts') {
-    return (
+    section = (
       <WorkoutController
         onNavigate={onNavigate}
         onSignOut={onSignOut}
@@ -58,15 +96,10 @@ export function ProductController({ profile, groups, onGroupsChanged, groupServi
         mutationService={workoutMutationService}
       />
     );
-  }
-
-
-  if (activeSection === 'cardio') {
-    return <CardioController onNavigate={onNavigate} onSignOut={onSignOut} profile={profile} service={cardioService} />;
-  }
-
-  if (activeSection === 'progress') {
-    return (
+  } else if (activeSection === 'cardio') {
+    section = <CardioController onNavigate={onNavigate} onSignOut={onSignOut} profile={profile} service={cardioService} />;
+  } else if (activeSection === 'progress') {
+    section = (
       <ExerciseProgressController
         onNavigate={onNavigate}
         onSignOut={onSignOut}
@@ -74,10 +107,8 @@ export function ProductController({ profile, groups, onGroupsChanged, groupServi
         service={progressService}
       />
     );
-  }
-
-  if (activeSection === 'compete') {
-    return (
+  } else if (activeSection === 'compete') {
+    section = (
       <GroupSocialController
         key={selectedGroup.id}
         groups={groups}
@@ -89,10 +120,8 @@ export function ProductController({ profile, groups, onGroupsChanged, groupServi
         service={socialService}
       />
     );
-  }
-
-  if (activeSection === 'groups') {
-    return (
+  } else if (activeSection === 'groups') {
+    section = (
       <GroupAdministrationController
         groups={groups}
         onGroupsChanged={onGroupsChanged}
@@ -105,15 +134,17 @@ export function ProductController({ profile, groups, onGroupsChanged, groupServi
         service={groupService}
       />
     );
+  } else {
+    section = (
+      <DashboardController
+        group={selectedGroup}
+        onNavigate={onNavigate}
+        onSignOut={onSignOut}
+        profile={profile}
+        service={dashboardService}
+      />
+    );
   }
 
-  return (
-    <DashboardController
-      group={selectedGroup}
-      onNavigate={onNavigate}
-      onSignOut={onSignOut}
-      profile={profile}
-      service={dashboardService}
-    />
-  );
+  return <Suspense fallback={<ProductSectionFallback />}>{section}</Suspense>;
 }

@@ -2,7 +2,7 @@ import { Button } from '../components/ui';
 import { AuthProvider, useAuth } from '../features/auth/AuthProvider';
 import { AuthScreen } from '../features/auth/AuthScreen';
 import { ResetPasswordScreen } from '../features/auth/ResetPasswordScreen';
-import { GroupGate } from '../features/groups';
+import { GroupGate } from '../features/groups/components/GroupGate';
 import { OnboardingScreen, useOnboarding } from '../features/onboarding';
 import { ProductController } from '../features/product';
 import { isSupabaseConfigured } from '../lib/supabase';
