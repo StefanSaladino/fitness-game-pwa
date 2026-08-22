@@ -2,7 +2,7 @@
 
 ## Purpose
 
-GitHub Actions is the clean-environment regression gate for application, browser, and repository database contracts. The project does **not require Docker** for the normal developer workflow or for GitHub database validation.
+GitHub Actions is the clean-environment regression gate for application, browser, and repository database contracts. The project does not require Docker for the normal developer workflow or for GitHub database validation.
 
 Runtime database migrations and pgTAP execution remain authoritative on the hosted Supabase project through the Dashboard SQL Editor workflow.
 
