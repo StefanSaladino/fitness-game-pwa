@@ -1,3 +1,4 @@
+import { lazy, Suspense, useEffect } from 'react';
 import { Button } from '../components/ui';
 import { AuthProvider, useAuth } from '../features/auth/AuthProvider';
 import { AuthScreen } from '../features/auth/AuthScreen';
@@ -6,8 +7,28 @@ import { GroupGate } from '../features/groups/components/GroupGate';
 import { OnboardingScreen, useOnboarding } from '../features/onboarding';
 import { ProductController } from '../features/product';
 import { isSupabaseConfigured } from '../lib/supabase';
+import { replacePath, usePathname } from '../lib/appNavigation';
 
-function ProfileGate({ userId }: { userId: string }) {
+const PlatformAdminRoute = lazy(async () => {
+  const module = await import('../features/admin/PlatformAdminRoute');
+  return { default: module.PlatformAdminRoute };
+});
+
+const SettingsScreen = lazy(async () => {
+  const module = await import('../features/settings/SettingsScreen');
+  return { default: module.SettingsScreen };
+});
+
+function RouteLoading() {
+  return <main className="auth-shell"><p>Loading…</p></main>;
+}
+
+function UnknownAuthenticatedRoute() {
+  useEffect(() => { replacePath('/'); }, []);
+  return <RouteLoading />;
+}
+
+function ProfileGate({ userId, pathname }: { userId: string; pathname: string }) {
   const onboarding = useOnboarding(userId);
 
   if (onboarding.status === 'loading') {
@@ -38,6 +59,16 @@ function ProfileGate({ userId }: { userId: string }) {
     );
   }
 
+  if (pathname === '/settings') {
+    return (
+      <Suspense fallback={<RouteLoading />}>
+        <SettingsScreen profile={onboarding.profile} />
+      </Suspense>
+    );
+  }
+
+  if (pathname !== '/') return <UnknownAuthenticatedRoute />;
+
   return (
     <GroupGate profileCode={onboarding.profile.profileCode} userId={userId}>
       {(groups, refreshGroups) => <ProductController groups={groups} onGroupsChanged={refreshGroups} profile={onboarding.profile!} />}
@@ -45,11 +76,20 @@ function ProfileGate({ userId }: { userId: string }) {
   );
 }
 
-function AuthenticatedApp() {
+function AuthenticatedApp({ pathname }: { pathname: string }) {
   const { session, loading } = useAuth();
   if (loading) return <main className="auth-shell"><p>Loading session…</p></main>;
   if (!session) return <AuthScreen />;
-  return <ProfileGate userId={session.user.id} />;
+
+  if (pathname === '/platform-admin' || pathname.startsWith('/platform-admin/')) {
+    return (
+      <Suspense fallback={<RouteLoading />}>
+        <PlatformAdminRoute pathname={pathname} />
+      </Suspense>
+    );
+  }
+
+  return <ProfileGate pathname={pathname} userId={session.user.id} />;
 }
 
 function ConfigurationHelp() {
@@ -64,13 +104,17 @@ function ConfigurationHelp() {
   );
 }
 
+function RoutedApp() {
+  const pathname = usePathname();
+  if (pathname === '/reset-password') return <ResetPasswordScreen />;
+  return <AuthenticatedApp pathname={pathname} />;
+}
+
 export function App() {
   if (!isSupabaseConfigured()) return <ConfigurationHelp />;
-  const resetRoute = typeof window !== 'undefined' && window.location.pathname === '/reset-password';
-
   return (
     <AuthProvider>
-      {resetRoute ? <ResetPasswordScreen /> : <AuthenticatedApp />}
+      <RoutedApp />
     </AuthProvider>
   );
 }

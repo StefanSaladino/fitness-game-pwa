@@ -682,22 +682,25 @@ Netlify billing/usage is team/account scoped. The public API calls a team an acc
 - do not hard-code mutable plan allowances into runtime application logic;
 - keep Netlify billing metrics UNAVAILABLE until a documented machine-readable source exists, then normalize it through the already-secured Edge boundary.
 
-#### 15.2E Capacity dashboard visual gate + implementation — NEXT
+#### 15.2E Capacity dashboard visual gate + implementation — DONE
 
-- apply the product-wide UI design gate before administrator dashboard code;
-- implement the locked `/platform-admin` shell and `/platform-admin/capacity` route without changing the authorization model established in 15.2B;
-- define real metrics, stale/unavailable states, refresh behavior, history/trend presentation, and warning hierarchy;
-- generate and approve phone-first and desktop administrator concepts;
-- display configured allowance, measured usage, utilization band, source identity, measured-at time, and available growth context;
-- keep the administrator surface out of ordinary primary navigation and lazy-load it only after `PlatformAdminGate` resolves an ACTIVE platform administrator; add the authorized in-PWA entry through `/settings`, where the `Admin` action is rendered only for a positively confirmed ACTIVE platform administrator and is completely absent otherwise;
-- `/settings` must remain an ordinary authenticated Profile/Settings surface; the admin entry must fail closed on access-loading/error without blocking ordinary settings, and selecting it must navigate within the PWA to `/platform-admin`;
-- preserve the locked Profile/Settings architecture in `docs/PHASE15.6-PROFILE-SETTINGS-NOTIFICATIONS.md`; the minimal `/settings` surface created for admin discovery must be structured so full identity, training-preference, notification, account/security, groups, privacy/data, and PWA sections can be implemented without changing the admin authorization boundary;
-- provider-authoritative Supabase/Netlify metrics must flow browser JWT -> secure server/Edge boundary -> active-platform-admin verification -> provider API; infrastructure credentials never enter the browser bundle;
-- validate direct-URL access, generic unknown-route fallback, normal user, group OWNER/ADMIN, suspended admin, unauthenticated, and active-platform-admin behavior; authenticated unauthorized admin-route attempts must replace-redirect to `/` identically to the ordinary authenticated unknown-route fallback and must never render admin-specific denial copy, shell markup, or navigation before Phase 15.2 is marked DONE.
+- completed the required phone-first + desktop visual gate and locked the approved cleaner operational direction before implementation;
+- added project-wide anti-AI layout rules in `docs/UI-ANTI-AI-LAYOUT-RULES.md` so future concepts cannot invent routes, metrics, quotas, history, provider success, or generic dashboard chrome;
+- implemented real `/platform-admin` -> `/platform-admin/capacity` routing before ordinary onboarding / `GroupGate` / `ProductController`;
+- kept authenticated unauthorized/suspended callers non-disclosed with the same replace redirect to `/` used for ordinary unknown authenticated routes;
+- implemented `/settings` as the ordinary authenticated Profile/Settings entry point after onboarding and before group gating; the existing Profile navigation now opens that route;
+- Settings shows an Administration action only after `public.get_my_platform_access()` positively resolves ACTIVE + platform admin, and leaves no admin heading/placeholder/gap while access is loading, unavailable, errored, suspended, or false;
+- added a responsive platform-admin shell with only the real Capacity destination plus Back to app; no future admin sections are fabricated in the navigation;
+- wired the capacity dashboard to `public.get_platform_capacity_current()`, `public.get_platform_capacity_history(30)`, and `public.capture_platform_capacity_snapshot()`;
+- show database size, Storage bytes/object count, Postgres connections, total Auth users, and 30-day recent sign-ins using real database-local values only; local Auth figures remain explicitly non-billing signals;
+- render utilization only when a trustworthy positive denominator exists; Postgres connections can use live `max_connections`, while absent allowances remain Unconfigured without fake progress bars;
+- snapshot history is honest: zero snapshots show an empty state, one snapshot asks for another comparable sample, and 2+ snapshots can show real rows/positive-growth context; no chart data or automatic snapshot schedule is invented;
+- consume the secured Supabase and Netlify provider adapters and present unavailable provider billing feeds as unavailable/null rather than Connected, Healthy, zero, or reconstructed billing usage;
+- the only capacity actions in this slice are Refresh, Record snapshot, and Back to app; no Export, provider settings, quota editor, auto-refresh schedule, or fake detail actions;
+- phone layout uses a compact sticky admin header and one-column operational rows; desktop uses a narrow real-only admin rail and denser two-column telemetry rows without a KPI card wall;
+- no database migration, platform-admin bootstrap, scoring, XP, badge, ranking, workout, group, or ordinary-user domain behavior change in this slice.
 
-Capacity data is operational only and never affects XP, badge awards, rankings, workout qualification, or ordinary user visibility.
-
-### 15.3 User account administration
+### 15.3 User account administration — NEXT
 
 - searchable/paginated user directory with stable user ID, username, display name, account status, created date, and limited operational metadata;
 - ACTIVE / SUSPENDED / DELETION_PENDING account states;

@@ -1,6 +1,7 @@
 import { lazy, Suspense, useEffect, useMemo, useState } from 'react';
 import type { ReactNode } from 'react';
 import type { AppSection } from '../../components/layout';
+import { navigateToPath } from '../../lib/appNavigation';
 import { signOut } from '../auth/authService';
 import type { DashboardService } from '../dashboard';
 import type { CardioService } from '../cardio';
@@ -75,6 +76,10 @@ export function ProductController({ profile, groups, onGroupsChanged, groupServi
   );
 
   const onNavigate = (section: AppSection) => {
+    if (section === 'profile') {
+      navigateToPath('/settings');
+      return;
+    }
     if (section === 'home' || section === 'groups' || section === 'workouts' || section === 'cardio' || section === 'progress' || section === 'compete') setActiveSection(section);
   };
   const onSignOut = () => { void signOut(); };

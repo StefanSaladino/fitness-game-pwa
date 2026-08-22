@@ -604,10 +604,115 @@ if (!/\[functions\.platform-capacity-netlify\][\s\S]*verify_jwt\s*=\s*true/.test
 }
 if (!roadmap.includes('15.2D1 Secure Netlify API boundary + capability adapter — DONE')
     || !roadmap.includes('15.2D2 Provider-authoritative account usage feed — BLOCKED ON DOCUMENTED NETLIFY API/EXPORT')
-    || !roadmap.includes('15.2E Capacity dashboard visual gate + implementation — NEXT')) {
-  fail('Phase 15.2D roadmap must advance the dashboard visual gate while retaining the Netlify provider API gap');
+    || !roadmap.includes('15.2E Capacity dashboard visual gate + implementation — DONE')) {
+  fail('Phase 15.2D roadmap must retain the Netlify provider API gap after the dashboard visual gate completes');
 }
 
+// Phase 15.2E dashboard anti-AI and real-data UI contract.
+for (const relativePath of [
+  'docs/UI-ANTI-AI-LAYOUT-RULES.md',
+  'docs/PHASE15.2E-CAPACITY-DASHBOARD.md',
+  'public/_redirects',
+  'src/lib/appNavigation.ts',
+  'src/features/admin/platformAccessService.ts',
+  'src/features/admin/hooks/usePlatformAccess.ts',
+  'src/features/admin/PlatformAdminRoute.tsx',
+  'src/features/admin/capacity/dashboardModel.ts',
+  'src/features/admin/capacity/capacityDashboardService.ts',
+  'src/features/admin/capacity/hooks/useCapacityDashboard.ts',
+  'src/features/admin/capacity/formatCapacity.ts',
+  'src/features/admin/capacity/components/CapacityDashboard.tsx',
+  'src/features/admin/capacity/components/CapacityDashboard.module.css',
+  'src/features/admin/capacity/components/CapacityDashboardController.tsx',
+  'src/features/settings/SettingsScreen.tsx',
+  'src/features/settings/SettingsScreen.module.css',
+] ) {
+  if (!fs.existsSync(path.join(root, relativePath))) fail('Phase 15.2E file missing: ' + relativePath);
+}
+const phase152eDoc = read('docs/PHASE15.2E-CAPACITY-DASHBOARD.md');
+const antiAiRules = read('docs/UI-ANTI-AI-LAYOUT-RULES.md');
+const appRouter = read('src/app/App.tsx');
+const productController152e = read('src/features/product/ProductController.tsx');
+const adminRoute152e = read('src/features/admin/PlatformAdminRoute.tsx');
+const settings152e = read('src/features/settings/SettingsScreen.tsx');
+const capacityService152e = read('src/features/admin/capacity/capacityDashboardService.ts');
+const capacityScreen152e = read('src/features/admin/capacity/components/CapacityDashboard.tsx');
+const capacityCss152e = read('src/features/admin/capacity/components/CapacityDashboard.module.css');
+const netlifyRedirects152e = read('public/_redirects');
+for (const fragment of [
+  'Do not build card walls',
+  'Never invent product structure in a concept',
+  'Never fabricate telemetry or quota data',
+  'No progress visualization without a real denominator',
+  'No fake charts',
+  'Do not manufacture an overall score',
+  'Mobile is not a shrunken desktop',
+  'Do not claim provider success when only the adapter exists',
+]) {
+  if (!antiAiRules.includes(fragment)) fail('Phase 15.2E anti-AI contract missing: ' + fragment);
+}
+if (!appRouter.includes("pathname === '/platform-admin'")
+    || !appRouter.includes("pathname.startsWith('/platform-admin/')")
+    || appRouter.indexOf('PlatformAdminRoute') > appRouter.indexOf('<GroupGate')) {
+  fail('Phase 15.2E must route platform administration before ordinary group gating');
+}
+for (const fragment of [
+  "accountStatus === 'ACTIVE'",
+  'isPlatformAdmin',
+  "replacePath('/')",
+  "replacePath('/platform-admin/capacity')",
+  'CapacityDashboardController',
+]) {
+  if (!adminRoute152e.includes(fragment)) fail('Phase 15.2E admin route missing invariant: ' + fragment);
+}
+if (/Access denied|Admin access required|Platform administrator required/.test(adminRoute152e)) {
+  fail('Phase 15.2E admin route must not expose admin-specific denial copy');
+}
+if (!productController152e.includes("section === 'profile'") || !productController152e.includes("navigateToPath('/settings')")) {
+  fail('Phase 15.2E must wire the existing Profile navigation to canonical /settings');
+}
+if (!settings152e.includes("accountStatus === 'ACTIVE'")
+    || !settings152e.includes('isPlatformAdmin')
+    || !settings152e.includes("navigateToPath('/platform-admin')")) {
+  fail('Phase 15.2E Settings must fail closed and discover platform administration only for ACTIVE admins');
+}
+for (const rpc of ['get_platform_capacity_current', 'get_platform_capacity_history', 'capture_platform_capacity_snapshot']) {
+  if (!capacityService152e.includes(rpc)) fail('Phase 15.2E capacity service missing RPC: ' + rpc);
+}
+for (const providerFunction of ['platform-capacity-supabase', 'platform-capacity-netlify']) {
+  if (!capacityService152e.includes(providerFunction)) fail('Phase 15.2E capacity service missing provider boundary: ' + providerFunction);
+}
+for (const realMetric of ['Database size', 'Storage objects', 'Postgres connections', 'Auth users', 'Recent sign-ins (30d)']) {
+  if (!capacityScreen152e.includes(realMetric)) fail('Phase 15.2E UI missing real metric: ' + realMetric);
+}
+for (const honestState of ['No snapshots yet', 'Billing usage unavailable', 'Record snapshot', 'Refresh']) {
+  if (!capacityScreen152e.includes(honestState)) fail('Phase 15.2E UI missing honest state/action: ' + honestState);
+}
+if (/Overall status|Healthy|Next snapshot|Every 60 minutes|500 MB|10 GB|100,000|Export|View details/.test(capacityScreen152e)) {
+  fail('Phase 15.2E must not ship fabricated concept-art telemetry, schedules, quotas, or controls');
+}
+if (/linear-gradient|radial-gradient|box-shadow|filter:\s*blur|backdrop-filter/i.test(capacityCss152e)) {
+  fail('Phase 15.2E admin surface must preserve the approved restrained non-glow/non-gradient visual contract');
+}
+if (!/min-width:\s*940px/.test(capacityCss152e) || !/\.mobileBar/.test(capacityCss152e)) {
+  fail('Phase 15.2E must retain distinct mobile and desktop admin layouts');
+}
+for (const fragment of [
+  '0 snapshots',
+  'metrics without allowances are explicitly **Unconfigured**',
+  'Postgres connections can therefore use live `max_connections`',
+  'No Export, View details, quota editor',
+  'no database migration',
+]) {
+  if (!phase152eDoc.includes(fragment)) fail('Phase 15.2E documentation missing invariant: ' + fragment);
+}
+if (!/\/\*\s+\/index\.html\s+200/.test(netlifyRedirects152e)) {
+  fail('Phase 15.2E direct admin/settings routes require the Netlify SPA fallback');
+}
+if (!roadmap.includes('15.2E Capacity dashboard visual gate + implementation — DONE')
+    || !roadmap.includes('### 15.3 User account administration — NEXT')) {
+  fail('Phase 15.2E roadmap must be DONE and Phase 15.3 must become NEXT');
+}
 const ciWorkflow = read('.github/workflows/ci.yml');
 const canonicalDbRunner = read('scripts/run-canonical-db-tests.cjs');
 const supabaseConfig = read('supabase/config.toml');
@@ -740,4 +845,4 @@ if (fs.existsSync(obsoleteRepairPath)) {
   fail('structural validation must not materialize the obsolete repair migration');
 }
 
-console.log('Release validation passed: clean migration history, Phase 15.1 admin invariants, Phase 15.2A capacity semantics, Phase 15.2B private telemetry/history authorization, Phase 15.2C secure Supabase provider boundary/provider-gap semantics, Phase 15.2D secure Netlify provider boundary/provider-gap semantics, admin/settings notification contracts, canonical GitHub CI/database discovery, visual-roadmap guards, and production chunk budget guards are present.');
+console.log('Release validation passed: clean migration history, Phase 15.1 admin invariants, Phase 15.2A capacity semantics, Phase 15.2B private telemetry/history authorization, Phase 15.2C secure Supabase provider boundary/provider-gap semantics, Phase 15.2D secure Netlify provider boundary/provider-gap semantics, Phase 15.2E real-data capacity UI/route/settings contracts, admin/settings notification contracts, canonical GitHub CI/database discovery, visual-roadmap guards, and production chunk budget guards are present.');

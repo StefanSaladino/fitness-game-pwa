@@ -1,0 +1,379 @@
+.shell {
+  min-height: 100dvh;
+  background: #071019;
+  color: var(--color-text);
+}
+
+.rail {
+  display: none;
+}
+
+.mobileBar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  min-height: 58px;
+  padding: max(10px, env(safe-area-inset-top)) 16px 10px;
+  border-bottom: 1px solid var(--color-border);
+  background: #071019;
+}
+
+.mobileTitle {
+  margin: 0;
+  text-align: center;
+  font-size: 1rem;
+}
+
+.iconTextButton,
+.secondaryButton,
+.primaryButton,
+.railButton {
+  min-height: 42px;
+  border: 1px solid var(--color-border-strong);
+  border-radius: 10px;
+  padding: 0 14px;
+  color: var(--color-text);
+  background: #0c1722;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 700;
+}
+
+.primaryButton {
+  border-color: #52d878;
+  color: #071019;
+  background: #52d878;
+}
+
+.iconTextButton {
+  min-height: 38px;
+  padding: 0 10px;
+  border-color: transparent;
+  background: transparent;
+  color: var(--color-text-soft);
+}
+
+.iconTextButton:focus-visible,
+.secondaryButton:focus-visible,
+.primaryButton:focus-visible,
+.railButton:focus-visible {
+  outline: 3px solid rgba(61, 134, 255, 0.42);
+  outline-offset: 2px;
+}
+
+.iconTextButton:disabled,
+.secondaryButton:disabled,
+.primaryButton:disabled,
+.railButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.main {
+  width: min(100%, 1120px);
+  margin: 0 auto;
+  padding: 24px 16px calc(32px + env(safe-area-inset-bottom));
+}
+
+.header {
+  display: grid;
+  gap: 18px;
+  margin-bottom: 26px;
+}
+
+.header h1 {
+  margin: 0;
+  font-size: clamp(1.8rem, 5vw, 2.45rem);
+  line-height: 1.08;
+}
+
+.header p {
+  max-width: 62ch;
+  margin: 7px 0 0;
+  color: var(--color-text-muted);
+  line-height: 1.55;
+}
+
+.actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.message {
+  margin: -8px 0 20px;
+  padding: 11px 0;
+  border-top: 1px solid rgba(255, 156, 156, 0.35);
+  border-bottom: 1px solid rgba(255, 156, 156, 0.35);
+  color: var(--color-danger);
+  font-size: 0.9rem;
+}
+
+.section {
+  margin-top: 26px;
+  border-top: 1px solid var(--color-border-strong);
+  padding-top: 18px;
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 10px;
+}
+
+.sectionHeader h2 {
+  margin: 0;
+  font-size: 1.08rem;
+}
+
+.sectionHeader span,
+.sourceLine,
+.note,
+.historyMeta {
+  color: var(--color-text-muted);
+  font-size: 0.82rem;
+}
+
+.metrics {
+  display: grid;
+  border-top: 1px solid var(--color-border);
+}
+
+.metric {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 5px 16px;
+  padding: 16px 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.metricName {
+  min-width: 0;
+  font-weight: 700;
+}
+
+.metricValue {
+  font-size: 1.12rem;
+  font-weight: 800;
+  text-align: right;
+}
+
+.metricDetail {
+  color: var(--color-text-muted);
+  font-size: 0.84rem;
+}
+
+.metricStatus {
+  align-self: start;
+  color: var(--color-text-soft);
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-align: right;
+}
+
+.metricStatus[data-status='WARNING'],
+.metricStatus[data-status='CRITICAL'],
+.metricStatus[data-status='EXCEEDED'] {
+  color: var(--color-danger);
+}
+
+.metricStatus[data-status='WATCH'] {
+  color: #e7c675;
+}
+
+.utilization {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 10px;
+  align-items: center;
+  margin-top: 5px;
+}
+
+.track {
+  height: 5px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.fill {
+  display: block;
+  height: 100%;
+  max-width: 100%;
+  background: #52d878;
+}
+
+.utilization strong {
+  color: var(--color-text-soft);
+  font-size: 0.78rem;
+}
+
+.historyEmpty,
+.historySummary {
+  padding: 18px 0;
+  border-top: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.historyEmpty strong,
+.historySummary strong {
+  display: block;
+  margin-bottom: 4px;
+}
+
+.historyEmpty p,
+.historySummary p {
+  margin: 0;
+  color: var(--color-text-muted);
+  line-height: 1.5;
+}
+
+.historyRows {
+  margin-top: 14px;
+  border-top: 1px solid var(--color-border);
+}
+
+.historyRow {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 10px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.historyValue {
+  font-weight: 750;
+  text-align: right;
+}
+
+.providerRows {
+  border-top: 1px solid var(--color-border);
+}
+
+.providerRow {
+  display: grid;
+  gap: 5px;
+  padding: 16px 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.providerTop {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.providerTop strong:last-child {
+  color: var(--color-text-soft);
+  font-size: 0.82rem;
+}
+
+.providerRow p {
+  margin: 0;
+  color: var(--color-text-muted);
+  line-height: 1.5;
+  font-size: 0.88rem;
+}
+
+.state {
+  display: grid;
+  min-height: 50dvh;
+  place-items: center;
+  padding: 24px;
+  color: var(--color-text-muted);
+  text-align: center;
+}
+
+@media (min-width: 720px) {
+  .metrics {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .metric:nth-child(odd) {
+    padding-right: 24px;
+    border-right: 1px solid var(--color-border);
+  }
+
+  .metric:nth-child(even) {
+    padding-left: 24px;
+  }
+
+  .header {
+    grid-template-columns: 1fr auto;
+    align-items: end;
+  }
+
+  .actions {
+    display: flex;
+  }
+}
+
+@media (min-width: 940px) {
+  .shell {
+    display: grid;
+    grid-template-columns: 218px minmax(0, 1fr);
+  }
+
+  .rail {
+    position: sticky;
+    top: 0;
+    display: flex;
+    height: 100dvh;
+    flex-direction: column;
+    border-right: 1px solid var(--color-border);
+    padding: 24px 18px;
+    background: #08131d;
+  }
+
+  .railBrand {
+    margin-bottom: 30px;
+  }
+
+  .railBrand strong,
+  .railBrand span {
+    display: block;
+  }
+
+  .railBrand span {
+    margin-top: 4px;
+    color: var(--color-text-muted);
+    font-size: 0.78rem;
+  }
+
+  .railLabel {
+    margin: 0 0 8px;
+    color: var(--color-text-muted);
+    font-size: 0.7rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .railCurrent {
+    padding: 11px 12px;
+    border-left: 2px solid #52d878;
+    color: var(--color-text);
+    background: #0c1722;
+    font-weight: 750;
+  }
+
+  .railButton {
+    margin-top: auto;
+    width: 100%;
+    text-align: left;
+  }
+
+  .mobileBar {
+    display: none;
+  }
+
+  .main {
+    padding: 44px 42px 56px;
+  }
+}
