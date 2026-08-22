@@ -8,6 +8,7 @@ on:
 permissions:
   contents: write
 
+# One-shot branch helper. It removes itself after applying the deterministic fixture patch.
 jobs:
   patch:
     runs-on: ubuntu-latest
