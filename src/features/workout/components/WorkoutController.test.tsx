@@ -57,10 +57,12 @@ describe('WorkoutController local recovery', () => {
     const exerciseService = { loadWorkoutExercises: vi.fn(offlineError) } as unknown as WorkoutExerciseService;
     const pickerService = { loadCatalog: vi.fn(offlineError) } as unknown as ExercisePickerService;
     const setService = { loadWorkoutSets: vi.fn(offlineError), saveSet: vi.fn() } as unknown as WorkoutSetService;
+    const mutationService = { apply: vi.fn(async () => undefined) } as WorkoutMutationService;
 
     render(
       <WorkoutController
         exerciseService={exerciseService}
+        mutationService={mutationService}
         onNavigate={() => undefined}
         onSignOut={() => undefined}
         pickerService={pickerService}
