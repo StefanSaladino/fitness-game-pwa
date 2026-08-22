@@ -18,6 +18,14 @@ const phase15TestPath = path.join(
   root,
   'supabase/tests/028_platform_admin_authorization_audit.test.sql',
 );
+const phase152bMigrationPath = path.join(
+  root,
+  'supabase/migrations/20260822040727_platform_capacity_local_telemetry.sql',
+);
+const phase152bTestPath = path.join(
+  root,
+  'supabase/tests/029_platform_capacity_local_telemetry.test.sql',
+);
 const phase152aFiles = [
   'src/features/admin/capacity/model.ts',
   'src/features/admin/capacity/capacityMath.ts',
@@ -175,11 +183,11 @@ if (!/15\.2 Capacity \+ platform-health dashboard .*IN PROGRESS/.test(roadmap)) 
 if (!/15\.2A Capacity semantics \+ provider contract .*DONE/.test(roadmap)) {
   fail('roadmap must mark Phase 15.2A done');
 }
-if (!/15\.2B Database-local telemetry \+ historical snapshots .*NEXT/.test(roadmap)) {
-  fail('roadmap must keep Phase 15.2B as the next capacity slice');
+if (!/15\.2B Database-local telemetry \+ historical snapshots .*DONE/.test(roadmap)) {
+  fail('roadmap must mark Phase 15.2B database-local telemetry done');
 }
 for (const heading of [
-  '15.2C Supabase provider quota adapter — LATER',
+  '15.2C Supabase provider quota adapter — NEXT',
   '15.2D Netlify provider usage adapter — LATER',
   '15.2E Capacity dashboard visual gate + implementation — LATER',
 ]) {
@@ -198,6 +206,80 @@ for (const heading of [
 }
 for (const relativePath of phase152aFiles) {
   if (!fs.existsSync(path.join(root, relativePath))) fail(`Phase 15.2A file missing: ${relativePath}`);
+}
+
+if (!fs.existsSync(phase152bMigrationPath)) fail('Phase 15.2B capacity telemetry migration exists');
+if (!fs.existsSync(phase152bTestPath)) fail('Phase 15.2B capacity telemetry pgTAP test exists');
+if (!fs.existsSync(path.join(root, 'docs/PHASE15.2B-DATABASE-LOCAL-TELEMETRY.md'))) {
+  fail('Phase 15.2B database-local telemetry architecture document exists');
+}
+if (!fs.existsSync(path.join(root, 'PHASE15.2B-PATCH-MANIFEST.txt'))) {
+  fail('Phase 15.2B patch manifest exists');
+}
+
+const phase152bMigration = fs.readFileSync(phase152bMigrationPath, 'utf8');
+for (const requiredFragment of [
+  'create table private.platform_capacity_allowances',
+  'create table private.platform_capacity_snapshots',
+  'create table private.platform_capacity_snapshot_metrics',
+  'function private.read_database_local_capacity_metrics',
+  'function public.get_platform_capacity_current',
+  'function public.capture_platform_capacity_snapshot',
+  'function public.get_platform_capacity_history',
+  'private.require_active_platform_admin()',
+  'database_bytes',
+  'storage_bytes',
+  'storage_objects',
+  'postgres_connections',
+  'auth_users_total',
+  'auth_users_30d',
+  'not Supabase billable monthly active users',
+  'Platform capacity snapshots are immutable',
+  "set search_path = ''",
+]) {
+  if (!phase152bMigration.includes(requiredFragment)) {
+    fail(`Phase 15.2B migration missing required invariant: ${requiredFragment}`);
+  }
+}
+if (/grant\s+[^;]*\bon\s+(?:table\s+|function\s+)?private\./i.test(phase152bMigration)) {
+  fail('Phase 15.2B must not grant browser roles direct access to private capacity objects');
+}
+for (const rpc of [
+  'public.get_platform_capacity_current()',
+  'public.capture_platform_capacity_snapshot()',
+  'public.get_platform_capacity_history(integer)',
+]) {
+  if (!phase152bMigration.includes(`grant execute on function ${rpc} to authenticated`)) {
+    fail(`Phase 15.2B must grant authenticated callers only the guarded RPC boundary: ${rpc}`);
+  }
+}
+
+const phase152bTest = fs.readFileSync(phase152bTestPath, 'utf8');
+const phase152bPlan = Number((phase152bTest.match(/select\s+plan\((\d+)\)/i) || [])[1]);
+const phase152bAssertions = (phase152bTest.match(/select\s+(?:has_table|has_function|is|results_eq|throws_ok|lives_ok)\s*\(/gi) || []).length;
+if (phase152bPlan !== phase152bAssertions) {
+  fail(`Phase 15.2B pgTAP plan ${phase152bPlan} must match ${phase152bAssertions} assertions`);
+}
+if (phase152bPlan < 40) fail('Phase 15.2B capacity authorization/history suite must retain comprehensive coverage');
+for (const requiredCoverage of [
+  'group OWNER cannot read platform capacity telemetry',
+  'group ADMIN cannot read platform capacity history',
+  'suspended platform administrator cannot read current capacity telemetry',
+  'unauthenticated caller cannot read capacity telemetry',
+  'snapshot headers cannot be updated',
+  'snapshot metric history cannot be deleted',
+]) {
+  if (!phase152bTest.includes(requiredCoverage)) {
+    fail(`Phase 15.2B pgTAP missing authorization/history coverage: ${requiredCoverage}`);
+  }
+}
+
+const phase152bDoc = read('docs/PHASE15.2B-DATABASE-LOCAL-TELEMETRY.md');
+if (!/not Supabase billable monthly active users/i.test(phase152bDoc)
+    || !/private\.require_active_platform_admin\(\)/.test(phase152bDoc)
+    || !/No real administrator was bootstrapped/.test(phase152bDoc)
+    || !/20260822040727_platform_capacity_local_telemetry/.test(phase152bDoc)) {
+  fail('Phase 15.2B documentation must preserve local-vs-provider semantics, authorization, clean test state, and hosted migration identity');
 }
 const adminRouteContract = read('docs/PHASE15.2-ADMIN-ROUTE-AUTHORIZATION.md');
 for (const requiredFragment of [
@@ -318,6 +400,16 @@ if (!/watch:\s*60/.test(capacityModel) || !/warning:\s*75/.test(capacityModel) |
 }
 for (const status of ['UNAVAILABLE', 'UNCONFIGURED', 'NORMAL', 'WATCH', 'WARNING', 'CRITICAL', 'EXCEEDED']) {
   if (!capacityModel.includes(`'${status}'`)) fail(`capacity model missing status ${status}`);
+}
+for (const metricCode of [
+  'database_bytes',
+  'storage_bytes',
+  'storage_objects',
+  'postgres_connections',
+  'auth_users_total',
+  'auth_users_30d',
+]) {
+  if (!capacityModel.includes(`'${metricCode}'`)) fail(`capacity model missing database-local metric ${metricCode}`);
 }
 for (const source of ['DATABASE_LOCAL', 'SUPABASE_MANAGEMENT', 'NETLIFY_API']) {
   if (!capacityModel.includes(`'${source}'`) || !capacityProvider.includes('CapacityTelemetryProvider')) {
@@ -481,4 +573,4 @@ if (fs.existsSync(obsoleteRepairPath)) {
   fail('structural validation must not materialize the obsolete repair migration');
 }
 
-console.log('Release validation passed: clean migration history, Phase 15.1 admin invariants, Phase 15.2A capacity semantics, admin/settings notification contracts, canonical GitHub CI/database discovery, visual-roadmap guards, and production chunk budget guards are present.');
+console.log('Release validation passed: clean migration history, Phase 15.1 admin invariants, Phase 15.2A capacity semantics, Phase 15.2B private telemetry/history authorization, admin/settings notification contracts, canonical GitHub CI/database discovery, visual-roadmap guards, and production chunk budget guards are present.');

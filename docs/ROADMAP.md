@@ -601,7 +601,20 @@ Primary boundary: define deterministic capacity states and provider-neutral tele
 - keep Docker optional for the developer workflow while GitHub CI may use Docker to prove clean migration-zero reconstruction;
 - no database migration, admin UI, scoring, XP, badge-award, ranking, or user-visibility change in this slice.
 
-#### 15.2B Database-local telemetry + historical snapshots — NEXT
+#### 15.2B Database-local telemetry + historical snapshots — DONE
+
+Delivered non-visual persistence/read boundary:
+
+- added `private.platform_capacity_allowances`, `private.platform_capacity_snapshots`, and `private.platform_capacity_snapshot_metrics` with browser access revoked;
+- added append-only snapshot history with immutable snapshot headers and normalized metric rows;
+- added `private.read_database_local_capacity_metrics()` for trusted database-local collection;
+- added active-platform-admin-only `public.get_platform_capacity_current()`, `public.capture_platform_capacity_snapshot()`, and `public.get_platform_capacity_history(integer)` boundaries;
+- database-local telemetry now measures PostgreSQL database bytes, Storage bytes/object count, current Postgres connections against live `max_connections`, total Auth users, and 30-day recent sign-ins;
+- Auth counts remain explicitly operational and must never be presented as provider-authoritative billable MAU;
+- absent configured allowances remain null/UNCONFIGURED rather than being invented in client code;
+- history reads are bounded to 1..365 snapshots and each snapshot freezes the allowance that applied when it was captured;
+- hosted migration `20260822040727_platform_capacity_local_telemetry` is applied and the 42-assertion rollback-safe pgTAP authorization/snapshot suite passes;
+- no real platform administrator, capacity allowance, or capacity snapshot was seeded by this slice.
 
 Locked route + authorization architecture:
 
@@ -622,7 +635,7 @@ Locked route + authorization architecture:
 - guarded snapshot capture/read RPCs using the Phase 15.1 active-platform-admin boundary;
 - authorization and rollback-safe pgTAP coverage for normal, group-owner/group-admin, suspended, unauthenticated, and active-platform-admin callers.
 
-#### 15.2C Supabase provider quota adapter — LATER
+#### 15.2C Supabase provider quota adapter — NEXT
 
 - provider-authoritative monthly active users against the configured allowance;
 - monthly Supabase egress usage and provider reset/billing window when available;
