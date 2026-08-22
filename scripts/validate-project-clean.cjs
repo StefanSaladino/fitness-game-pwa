@@ -198,8 +198,11 @@ for (const heading of [
   '15.2C Supabase provider quota adapter — IN PROGRESS (PROVIDER BILLING-USAGE API GAP)',
   '15.2C1 Secure Management API boundary + capability adapter — DONE',
   '15.2C2 Provider-authoritative billing-cycle usage feed — BLOCKED ON DOCUMENTED SUPABASE API/EXPORT',
-  '15.2D Netlify provider usage adapter — NEXT',
-  '15.2E Capacity dashboard visual gate + implementation — LATER',
+  '15.2D Netlify provider usage adapter — IN PROGRESS (PROVIDER ACCOUNT-USAGE API GAP)',
+  '15.2D1 Secure Netlify API boundary + capability adapter — DONE',
+  '15.2D2 Provider-authoritative account usage feed — BLOCKED ON DOCUMENTED NETLIFY API/EXPORT',
+  '15.2E Capacity dashboard visual gate + implementation — DONE',
+  '### 15.3 User account administration — NEXT',
 ]) {
   if (!roadmap.includes(heading)) fail(`roadmap missing capacity slice: ${heading}`);
 }
