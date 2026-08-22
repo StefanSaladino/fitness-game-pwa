@@ -37,10 +37,13 @@ describe('useExerciseProgress', () => {
     await waitFor(() => expect(result.current.historyStatus).toBe('ready'));
     expect(result.current.selectedExercise?.exerciseId).toBe('bench');
     expect(loadHistory).toHaveBeenCalledWith('bench');
+    expect(result.current.analytics?.metricTrend[0]?.value).toBe(122.5);
+    expect(result.current.analytics?.totalVolumeKgReps).toBe(2100);
 
     act(() => result.current.selectExercise('pullup'));
     await waitFor(() => expect(result.current.selectedExercise?.exerciseId).toBe('pullup'));
     await waitFor(() => expect(result.current.history[0]?.workoutId).toBe('pullup-workout'));
     expect(loadHistory).toHaveBeenCalledWith('pullup');
+    expect(result.current.analytics?.metricType).toBe('BODYWEIGHT_REPS');
   });
 });

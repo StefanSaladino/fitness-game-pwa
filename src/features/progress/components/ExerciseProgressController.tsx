@@ -32,6 +32,7 @@ export function ExerciseProgressController({ profile, onNavigate, onSignOut, ser
 
   return (
     <ExerciseProgressScreen
+      analytics={progress.analytics}
       exercises={progress.exercises}
       history={progress.history}
       historyError={progress.historyError}

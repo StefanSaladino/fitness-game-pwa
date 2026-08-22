@@ -1,5 +1,15 @@
 # Changelog
 
+## v0.12.0 — Phase 13A per-exercise lifting analytics
+
+- Added pure per-exercise analytics derivation over the existing authoritative progress history read model.
+- Added lift-by-lift e1RM/bodyweight-rep trend charts without changing progression calculations.
+- Added per-session and total volume analytics while keeping volume completely outside XP/scoring.
+- Added best working-set weight, best reps, exercise-frequency context, and a dedicated PR timeline.
+- Preserved added-weight/assisted bodyweight work as analytics-only rather than mixing it into plain-bodyweight progression.
+- Added responsive Progress-screen browser coverage across desktop Chromium, Android Chromium, and iPhone-class WebKit.
+- No Supabase migration, scoring, XP, cardio, social, or workout-write behavior changed.
+
 ## v0.11.3 — Phase 12D mobile PWA validation
 
 - Added Android-class Chromium to the Playwright matrix while retaining iPhone/WebKit coverage.

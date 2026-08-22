@@ -1,22 +1,23 @@
-# Fitness Game PWA — v0.11.3
+# Fitness Game PWA — v0.12.0
 
-Current checkpoint: **Phase 12D — Mobile PWA validation**. Phase 12 PWA/offline hardening is complete at the automated gate; the physical-device checklist in `docs/PHASE12D-MOBILE-PWA-VALIDATION.md` remains the release-certification procedure for real installed iOS/Android devices.
+Current checkpoint: **Phase 13A — Per-exercise lifting analytics**. The approved lifting-analytics visual direction is now implemented on top of the authoritative Phase 8 progress history. Phase 13 remains in progress; **13B weekly/monthly lifting summaries is next**.
 
-## Phase 12D highlights
+## Phase 13A highlights
 
-- Added an Android Chromium mobile Playwright project alongside the existing iPhone/WebKit project.
-- Mobile foreground / `pageshow` wakes the persisted workout retry scheduler without bypassing Phase 12C backoff or conflict rules.
-- PWA lifecycle state refreshes connectivity, standalone mode, platform, and storage-persistence status after mobile resume.
-- iOS-class browsers receive truthful **Share → Add to Home Screen** guidance instead of a Chromium-only install prompt.
-- Installed apps can request persistent origin storage when the browser exposes `navigator.storage.persist()`; success is reported only when the browser grants it.
-- Storage eviction limits and real-device iOS/Android release checks are documented explicitly.
-- Phase 12A–12C durability, idempotency, conflict, and retry contracts remain unchanged.
+- Added lift-by-lift comparable progression charts for e1RM and plain-bodyweight rep metrics.
+- Added per-session volume-history charts plus total exercise volume; volume remains analytics-only and never awards XP.
+- Added true best completed working-set weight and best reps derived across exercise history.
+- Added a dedicated baseline / PR / current-PR timeline.
+- Existing exercise frequency and last-performed context remain visible beside the new analytics.
+- Added-weight and assisted bodyweight work remains visible for analytics without being mixed into plain-bodyweight progression comparisons.
+- Added a responsive browser fixture across desktop Chromium, Android-class Chromium, and iPhone-class WebKit.
+- Analytics derivation is a pure feature layer over the existing authenticated progress read models.
 
-Next roadmap slice: **Phase 13 — Lifting analytics**. Apply the UI design gate before analytics implementation.
+Next roadmap slice: **Phase 13B — Weekly/monthly lifting summaries**.
 
-## Supabase for v0.11.3
+## Supabase for v0.12.0
 
-No new Supabase migration is required for Phase 12D. Continue using the database schema already established through Phase 11.
+No new Supabase migration is required for Phase 13A. The existing `get_my_exercise_progress_overview` and `get_my_exercise_progress_history` read models already expose the authoritative session metric, volume, frequency, and PR data required for this slice.
 
 ## Validation
 
@@ -32,6 +33,6 @@ npm run test:e2e
 npm run test:internal
 ```
 
-The Playwright matrix intentionally skips the service-worker-specific shell assertion under WebKit; Playwright does not provide equivalent WebKit service-worker certification. The iOS-class project still runs the rest of the mobile product journeys plus Phase 12D Home Screen guidance coverage. Real installed-device sign-off is documented separately.
+Phase 13A changes analytics presentation only. There are **no scoring/XP changes**, no social comparison, and no new workout write path.
 
-See `docs/ROADMAP.md`, `docs/PHASE12A-INDEXEDDB-WORKOUT-DURABILITY.md`, `docs/PHASE12B-OFFLINE-SHELL-INSTALL-UX.md`, `docs/PHASE12C-RECONNECT-RETRY-HARDENING.md`, and `docs/PHASE12D-MOBILE-PWA-VALIDATION.md`.
+See `docs/ROADMAP.md` and `docs/PHASE13A-PER-EXERCISE-LIFTING-ANALYTICS.md`.

@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { buildExerciseAnalytics } from '../exerciseAnalytics';
 import type { ExerciseProgressHistoryEntry, ExerciseProgressSummary } from '../model';
 import { toUserFacingProgressError } from '../progressMessages';
 import { createExerciseProgressService, type ExerciseProgressService } from '../progressService';
@@ -63,6 +64,7 @@ export function useExerciseProgress(injectedService?: ExerciseProgressService) {
     }
 
     let active = true;
+    setHistory([]);
     setHistoryStatus('loading');
     setHistoryError('');
     serviceRef.current!.loadHistory(selectedExerciseId)
@@ -86,12 +88,16 @@ export function useExerciseProgress(injectedService?: ExerciseProgressService) {
     return loadHistory(selectedExerciseId);
   }, [loadHistory, selectedExerciseId]);
 
+  const selectedExercise = exercises.find((exercise) => exercise.exerciseId === selectedExerciseId) ?? null;
+  const analytics = useMemo(() => buildExerciseAnalytics(selectedExercise, history), [history, selectedExercise]);
+
   return {
     status,
     historyStatus,
     exercises,
     selectedExerciseId,
-    selectedExercise: exercises.find((exercise) => exercise.exerciseId === selectedExerciseId) ?? null,
+    selectedExercise,
+    analytics,
     history,
     error,
     historyError,

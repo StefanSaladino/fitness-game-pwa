@@ -2,6 +2,7 @@ import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import type { OnboardingProfile } from '../../onboarding';
+import { buildExerciseAnalytics } from '../exerciseAnalytics';
 import type { ExerciseProgressHistoryEntry, ExerciseProgressSummary } from '../model';
 import { ExerciseProgressScreen } from './ExerciseProgressScreen';
 
@@ -44,6 +45,7 @@ describe('ExerciseProgressScreen', () => {
     const onSelectExercise = vi.fn();
     render(
       <ExerciseProgressScreen
+        analytics={buildExerciseAnalytics(exercises[1]!, bodyweightHistory)}
         exercises={exercises}
         history={bodyweightHistory}
         historyError=""
@@ -57,7 +59,7 @@ describe('ExerciseProgressScreen', () => {
       />,
     );
 
-    expect(screen.getByRole('heading', { name: 'Your lift history' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Know your trend. Beat your last.' })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Pull Up' })).toBeInTheDocument();
     const currentPr = screen.getByText('Current PR', { selector: 'dt' }).closest('div');
     const previousPr = screen.getByText('Previous PR', { selector: 'dt' }).closest('div');
@@ -67,7 +69,16 @@ describe('ExerciseProgressScreen', () => {
     expect(within(previousPr!).getByText('10 reps', { selector: 'dd' })).toBeInTheDocument();
     expect(screen.getByText(/Added-weight and assisted sets stay visible as analytics/i)).toBeInTheDocument();
     expect(screen.getByText('Analytics only')).toBeInTheDocument();
-    expect(screen.getByText(/400 kg·reps volume/)).toBeInTheDocument();
+    expect(screen.getAllByText(/400 kg·reps/).length).toBeGreaterThan(0);
+    expect(screen.getByRole('heading', { name: 'Rep trend' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Volume history' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'PR timeline' })).toBeInTheDocument();
+    const bestWeight = screen.getByText('Best weight', { selector: 'dt' }).closest('div');
+    const bestReps = screen.getByText('Best reps', { selector: 'dt' }).closest('div');
+    expect(bestWeight).not.toBeNull();
+    expect(bestReps).not.toBeNull();
+    expect(within(bestWeight!).getByText('10 kg', { selector: 'dd' })).toBeInTheDocument();
+    expect(within(bestReps!).getByText('12', { selector: 'dd' })).toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: /Bench Press/i }));
     expect(onSelectExercise).toHaveBeenCalledWith('bench');

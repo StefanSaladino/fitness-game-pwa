@@ -15,6 +15,7 @@ export default defineConfig({
           reliability: resolve(process.cwd(), 'reliability.e2e.html'),
           competition: resolve(process.cwd(), 'competition.e2e.html'),
           indexeddb: resolve(process.cwd(), 'indexeddb.e2e.html'),
+          progress: resolve(process.cwd(), 'progress.e2e.html'),
         },
       },
     } : {}),

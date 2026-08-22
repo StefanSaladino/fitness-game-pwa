@@ -2,8 +2,10 @@ import type { AppSection } from '../../../components/layout';
 import { AppShell, PageHeader } from '../../../components/layout';
 import { Button } from '../../../components/ui';
 import type { OnboardingProfile } from '../../onboarding';
+import type { ExerciseAnalyticsSnapshot, ExercisePrTimelineEntry } from '../exerciseAnalytics';
 import type { ExerciseProgressHistoryEntry, ExerciseProgressMetricType, ExerciseProgressSummary } from '../model';
 import type { ExerciseProgressStatus } from '../hooks/useExerciseProgress';
+import { ExerciseTrendChart } from './ExerciseTrendChart';
 import styles from './ExerciseProgressScreen.module.css';
 
 interface ShellProps {
@@ -15,6 +17,7 @@ interface ShellProps {
 interface ExerciseProgressScreenProps extends ShellProps {
   exercises: ExerciseProgressSummary[];
   selectedExercise: ExerciseProgressSummary | null;
+  analytics: ExerciseAnalyticsSnapshot | null;
   history: ExerciseProgressHistoryEntry[];
   historyStatus: ExerciseProgressStatus;
   historyError: string;
@@ -34,6 +37,12 @@ function metricLabel(metric: ExerciseProgressMetricType | null): string {
   if (metric === 'E1RM') return 'Epley e1RM';
   if (metric === 'BODYWEIGHT_REPS') return 'Bodyweight reps';
   return 'No comparable PR yet';
+}
+
+function metricTrendTitle(metric: ExerciseProgressMetricType | null): string {
+  if (metric === 'E1RM') return 'e1RM trend';
+  if (metric === 'BODYWEIGHT_REPS') return 'Rep trend';
+  return 'Progress trend';
 }
 
 function formatMetric(metric: ExerciseProgressMetricType | null, value: number | null): string {
@@ -75,6 +84,12 @@ function historyPerformance(entry: ExerciseProgressHistoryEntry): string {
   return `${entry.maxCompletedReps ?? 0} reps max`;
 }
 
+function prKindLabel(entry: ExercisePrTimelineEntry): string {
+  if (entry.kind === 'current-pr') return 'Current PR';
+  if (entry.kind === 'pr') return 'PR';
+  return 'Baseline';
+}
+
 function ExerciseList({ exercises, selectedExerciseId, onSelectExercise }: {
   exercises: ExerciseProgressSummary[];
   selectedExerciseId: string | null;
@@ -110,8 +125,96 @@ function ExerciseList({ exercises, selectedExerciseId, onSelectExercise }: {
   );
 }
 
-function ExerciseDetail({ exercise, history, historyStatusValue, historyError, onRetryHistory }: {
+function AnalyticsSummary({ exercise, analytics }: { exercise: ExerciseProgressSummary; analytics: ExerciseAnalyticsSnapshot }) {
+  return (
+    <dl className={styles.prGrid}>
+      <div>
+        <dt>Current PR</dt>
+        <dd>{formatMetric(exercise.metricType, exercise.bestValue)}</dd>
+        <small>{bestSetDetail(exercise.metricType, exercise.bestWeightKg, exercise.bestReps)}</small>
+      </div>
+      <div>
+        <dt>Previous PR</dt>
+        <dd>{formatMetric(exercise.metricType, exercise.previousPrValue)}</dd>
+        <small>{exercise.previousPrValue === null ? 'First baseline is still the best' : 'PR immediately before current best'}</small>
+      </div>
+      <div>
+        <dt>Best weight</dt>
+        <dd>{analytics.bestWeightKg === null ? '—' : `${formatNumber(analytics.bestWeightKg)} kg`}</dd>
+        <small>{exercise.measurementType === 'BODYWEIGHT_REPS' ? 'External load is analytics-only for bodyweight progression' : 'Heaviest completed working-set load'}</small>
+      </div>
+      <div>
+        <dt>Best reps</dt>
+        <dd>{analytics.bestReps === null ? '—' : analytics.bestReps}</dd>
+        <small>Highest completed working-set rep count</small>
+      </div>
+      <div>
+        <dt>Frequency</dt>
+        <dd>{exercise.sessionCount}</dd>
+        <small>{exercise.averageDaysBetweenSessions === null ? 'One completed session' : `Every ${formatNumber(exercise.averageDaysBetweenSessions)} days on average`}</small>
+      </div>
+      <div>
+        <dt>Total volume</dt>
+        <dd>{analytics.totalVolumeKgReps > 0 ? `${formatNumber(analytics.totalVolumeKgReps, 0)} kg·reps` : '—'}</dd>
+        <small>Analytics only. Volume never awards XP.</small>
+      </div>
+    </dl>
+  );
+}
+
+function ExerciseCharts({ exercise, analytics }: { exercise: ExerciseProgressSummary; analytics: ExerciseAnalyticsSnapshot }) {
+  const metricPoints = analytics.metricTrend.map((point) => ({ id: point.workoutId, observedAt: point.observedAt, value: point.value }));
+  const volumePoints = analytics.volumeTrend.map((point) => ({ id: point.workoutId, observedAt: point.observedAt, value: point.value }));
+  return (
+    <div className={styles.chartGrid} aria-label="Exercise analytics charts">
+      <ExerciseTrendChart
+        description={`${metricPoints.length} comparable session${metricPoints.length === 1 ? '' : 's'}`}
+        formatValue={(value) => formatMetric(exercise.metricType, value)}
+        points={metricPoints}
+        title={metricTrendTitle(exercise.metricType)}
+      />
+      <ExerciseTrendChart
+        description={`${volumePoints.length} completed session${volumePoints.length === 1 ? '' : 's'} · analytics only`}
+        formatValue={(value) => `${formatNumber(value, 0)} kg·reps`}
+        points={volumePoints}
+        title="Volume history"
+        variant="bars"
+      />
+    </div>
+  );
+}
+
+function PrTimeline({ entries }: { entries: ExercisePrTimelineEntry[] }) {
+  return (
+    <section className={styles.prTimeline} aria-labelledby="pr-timeline-heading">
+      <div className={styles.historyHeading}>
+        <div>
+          <p>Milestones</p>
+          <h3 id="pr-timeline-heading">PR timeline</h3>
+        </div>
+        <span>Only your own comparable progression observations appear here.</span>
+      </div>
+      {entries.length === 0 ? (
+        <p className={styles.stateText}>No comparable baseline or PR has been recorded yet.</p>
+      ) : (
+        <ol className={styles.prTimelineList}>
+          {entries.map((entry) => (
+            <li key={entry.workoutId}>
+              <time dateTime={entry.observedAt}>{formatDate(entry.observedAt)}</time>
+              <span className={entry.kind === 'baseline' ? styles.statusBadge : styles.prBadge}>{prKindLabel(entry)}</span>
+              <strong>{formatMetric(entry.metricType, entry.metricValue)}</strong>
+              <small>{bestSetDetail(entry.metricType, entry.weightKg, entry.reps)}</small>
+            </li>
+          ))}
+        </ol>
+      )}
+    </section>
+  );
+}
+
+function ExerciseDetail({ exercise, analytics, history, historyStatusValue, historyError, onRetryHistory }: {
   exercise: ExerciseProgressSummary;
+  analytics: ExerciseAnalyticsSnapshot | null;
   history: ExerciseProgressHistoryEntry[];
   historyStatusValue: ExerciseProgressStatus;
   historyError: string;
@@ -127,72 +230,58 @@ function ExerciseDetail({ exercise, history, historyStatusValue, historyError, o
         </div>
       </header>
 
-      <dl className={styles.prGrid}>
-        <div>
-          <dt>Current PR</dt>
-          <dd>{formatMetric(exercise.metricType, exercise.bestValue)}</dd>
-          <small>{bestSetDetail(exercise.metricType, exercise.bestWeightKg, exercise.bestReps)}</small>
-        </div>
-        <div>
-          <dt>Previous PR</dt>
-          <dd>{formatMetric(exercise.metricType, exercise.previousPrValue)}</dd>
-          <small>{exercise.previousPrValue === null ? 'First baseline is still the best' : 'PR immediately before current best'}</small>
-        </div>
-        <div>
-          <dt>Frequency</dt>
-          <dd>{exercise.sessionCount}</dd>
-          <small>{exercise.averageDaysBetweenSessions === null ? 'One completed session' : `Every ${formatNumber(exercise.averageDaysBetweenSessions)} days on average`}</small>
-        </div>
-        <div>
-          <dt>Comparable observations</dt>
-          <dd>{exercise.observationCount}</dd>
-          <small>{exercise.observationCount === exercise.sessionCount ? 'All tracked sessions comparable' : `${exercise.sessionCount - exercise.observationCount} session(s) analytics-only`}</small>
-        </div>
-      </dl>
-
-      {exercise.measurementType === 'BODYWEIGHT_REPS' && (
-        <p className={styles.ruleNote}>
-          Added-weight and assisted sets stay visible as analytics, but they are not compared with plain bodyweight reps for PR or XP calculations.
-        </p>
-      )}
-
-      <div className={styles.historyHeading}>
-        <div>
-          <p>Progression timeline</p>
-          <h3>Session history</h3>
-        </div>
-        <span>Volume is analytics-only and never awards XP.</span>
-      </div>
-
-      {historyStatusValue === 'loading' && <p className={styles.stateText}>Loading exercise history…</p>}
+      {historyStatusValue === 'loading' && <p className={styles.stateText}>Loading exercise analytics…</p>}
       {historyStatusValue === 'error' && (
         <div className={styles.inlineError} role="alert">
           <p>{historyError}</p>
           <Button onClick={onRetryHistory} variant="secondary">Retry history</Button>
         </div>
       )}
-      {historyStatusValue === 'ready' && history.length === 0 && <p className={styles.stateText}>No completed session history is available yet.</p>}
-      {historyStatusValue === 'ready' && history.length > 0 && (
-        <ol className={styles.historyList}>
-          {history.map((entry) => (
-            <li key={entry.workoutId}>
-              <div className={styles.historyPrimary}>
-                <div className={styles.historyTopline}>
-                  <time dateTime={entry.observedAt}>{formatDate(entry.observedAt)}</time>
-                  <span className={entry.isCurrentPr || entry.isPr ? styles.prBadge : styles.statusBadge}>{historyStatus(entry)}</span>
-                </div>
-                <strong>{historyPerformance(entry)}</strong>
-                {entry.previousPrValue !== null && entry.metricValue !== null && (
-                  <small>Previous best: {formatMetric(entry.metricType, entry.previousPrValue)}</small>
-                )}
-              </div>
-              <div className={styles.historyAnalytics}>
-                <span>{entry.completedWorkingSets} working sets</span>
-                <span>{entry.sessionVolumeKgReps > 0 ? `${formatNumber(entry.sessionVolumeKgReps, 0)} kg·reps volume` : 'No weighted volume'}</span>
-              </div>
-            </li>
-          ))}
-        </ol>
+
+      {historyStatusValue === 'ready' && analytics && (
+        <>
+          <AnalyticsSummary analytics={analytics} exercise={exercise} />
+
+          {exercise.measurementType === 'BODYWEIGHT_REPS' && (
+            <p className={styles.ruleNote}>
+              Added-weight and assisted sets stay visible as analytics, but they are not compared with plain bodyweight reps for PR or XP calculations.
+            </p>
+          )}
+
+          <ExerciseCharts analytics={analytics} exercise={exercise} />
+          <PrTimeline entries={analytics.prTimeline} />
+
+          <div className={styles.historyHeading}>
+            <div>
+              <p>Lift by lift</p>
+              <h3>Session history</h3>
+            </div>
+            <span>{exercise.observationCount} comparable observation{exercise.observationCount === 1 ? '' : 's'} · volume is analytics-only.</span>
+          </div>
+
+          {history.length === 0 ? <p className={styles.stateText}>No completed session history is available yet.</p> : (
+            <ol className={styles.historyList}>
+              {history.map((entry) => (
+                <li key={entry.workoutId}>
+                  <div className={styles.historyPrimary}>
+                    <div className={styles.historyTopline}>
+                      <time dateTime={entry.observedAt}>{formatDate(entry.observedAt)}</time>
+                      <span className={entry.isCurrentPr || entry.isPr ? styles.prBadge : styles.statusBadge}>{historyStatus(entry)}</span>
+                    </div>
+                    <strong>{historyPerformance(entry)}</strong>
+                    {entry.previousPrValue !== null && entry.metricValue !== null && (
+                      <small>Previous best: {formatMetric(entry.metricType, entry.previousPrValue)}</small>
+                    )}
+                  </div>
+                  <div className={styles.historyAnalytics}>
+                    <span>{entry.completedWorkingSets} working sets</span>
+                    <span>{entry.sessionVolumeKgReps > 0 ? `${formatNumber(entry.sessionVolumeKgReps, 0)} kg·reps volume` : 'No weighted volume'}</span>
+                  </div>
+                </li>
+              ))}
+            </ol>
+          )}
+        </>
       )}
     </section>
   );
@@ -201,6 +290,7 @@ function ExerciseDetail({ exercise, history, historyStatusValue, historyError, o
 export function ExerciseProgressScreen({
   exercises,
   selectedExercise,
+  analytics,
   history,
   historyStatus,
   historyError,
@@ -217,9 +307,9 @@ export function ExerciseProgressScreen({
     <AppShell activeItem="progress" onNavigate={onNavigate} onSignOut={onSignOut} userLabel={profile.displayName} userMeta={`@${profile.username}`}>
       <div className={styles.progressPage}>
         <PageHeader
-          eyebrow="Progress"
-          title="Your lift history"
-          description="Track your own best performances over time. Progression is always personal—never compared against another lifter."
+          eyebrow="Lifting analytics"
+          title="Know your trend. Beat your last."
+          description="Lift-by-lift strength, volume, frequency, and PR history from your own completed sessions. Analytics never changes XP."
         />
 
         <section className={styles.summary} aria-label="Progress summary">
@@ -231,7 +321,7 @@ export function ExerciseProgressScreen({
         {exercises.length === 0 ? (
           <section className={styles.emptyState}>
             <h2>No lift history yet</h2>
-            <p>Complete a strength session with working sets and your exercise progression will appear here automatically.</p>
+            <p>Complete a strength session with working sets and your exercise analytics will appear here automatically.</p>
             <Button onClick={() => onNavigate('workouts')}>Start Lift</Button>
           </section>
         ) : (
@@ -239,6 +329,7 @@ export function ExerciseProgressScreen({
             <ExerciseList exercises={exercises} onSelectExercise={onSelectExercise} selectedExerciseId={selectedExercise?.exerciseId ?? null} />
             {selectedExercise && (
               <ExerciseDetail
+                analytics={analytics}
                 exercise={selectedExercise}
                 history={history}
                 historyError={historyError}
@@ -257,7 +348,7 @@ export function ExerciseProgressLoading({ profile, onNavigate, onSignOut }: Shel
   return (
     <AppShell activeItem="progress" onNavigate={onNavigate} onSignOut={onSignOut} userLabel={profile.displayName} userMeta={`@${profile.username}`}>
       <div className={styles.statePage}>
-        <p>Loading your exercise progression…</p>
+        <p>Loading your lifting analytics…</p>
       </div>
     </AppShell>
   );

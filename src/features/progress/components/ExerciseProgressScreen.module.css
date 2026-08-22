@@ -248,6 +248,59 @@
   font-size: 0.72rem;
 }
 
+.chartGrid {
+  display: grid;
+  gap: 22px;
+  margin-top: 24px;
+}
+
+.prTimeline {
+  margin-top: 26px;
+}
+
+.prTimelineList {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0 18px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.prTimelineList li {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 5px 8px;
+  min-width: 0;
+  padding: 14px 0;
+  border-bottom: 1px solid rgba(205, 225, 242, 0.07);
+}
+
+.prTimelineList time {
+  color: var(--color-text-muted);
+  font-size: 0.72rem;
+}
+
+.prTimelineList .statusBadge,
+.prTimelineList .prBadge {
+  justify-self: end;
+}
+
+.prTimelineList strong {
+  color: var(--color-text);
+  font-size: 0.92rem;
+}
+
+.prTimelineList small {
+  overflow: hidden;
+  color: var(--color-text-muted);
+  font-size: 0.72rem;
+  text-align: right;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .stateText,
 .inlineError p,
 .emptyState p,
@@ -279,6 +332,7 @@
 }
 
 @media (min-width: 940px) {
+  .chartGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .progressGrid { grid-template-columns: minmax(260px, 0.72fr) minmax(0, 1.8fr); gap: 36px; align-items: start; }
   .exercisePanel { position: sticky; top: 24px; max-height: calc(100vh - 48px); overflow-y: auto; padding-right: 8px; }
 }
@@ -291,5 +345,6 @@
   .prGrid > div:nth-child(odd),
   .prGrid > div:nth-child(even) { padding-inline: 0; border-left: 0; }
   .historyHeading { align-items: flex-start; flex-direction: column; }
+  .prTimelineList { grid-template-columns: 1fr; }
   .historyHeading > span { max-width: none; text-align: left; }
 }

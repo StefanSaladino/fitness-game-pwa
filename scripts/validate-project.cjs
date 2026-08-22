@@ -714,7 +714,7 @@ ok(/get_my_exercise_progress_overview/.test(progressHistoryService) && /get_my_e
 ok(/createExerciseProgressService/.test(progressHistoryHook) && /loadHistory/.test(progressHistoryHook), 'progress hook owns the progression service and selected-exercise history loading');
 ok(!/supabase/i.test(progressHistoryScreen), 'progress presentation has no Supabase dependency');
 ok(/Current PR/.test(progressHistoryScreen) && /Previous PR/.test(progressHistoryScreen), 'progress screen separates current and previous personal records');
-ok(/Volume is analytics-only and never awards XP/.test(progressHistoryScreen), 'progress screen labels volume as non-scoring analytics');
+ok(/(?:Volume is analytics-only and never awards XP|Volume never awards XP|Analytics never changes XP)/.test(progressHistoryScreen), 'progress screen labels volume as non-scoring analytics');
 ok(/Added-weight and assisted sets stay visible as analytics/.test(progressHistoryScreen), 'progress screen explains conservative bodyweight comparison rules');
 ok(/activeItem="progress"/.test(progressHistoryScreen), 'Progress destination is represented as the active primary navigation section');
 ok(/progressService\?: ExerciseProgressService/.test(progressProductController) && /activeSection === 'progress'/.test(progressProductController), 'ProductController composes the Progress section with injectable service boundary');
@@ -1090,8 +1090,50 @@ ok(/physical-device release checklist/i.test(phase12dDoc) && /iPhone \/ iPad/.te
 ok(/best-effort/i.test(phase12dDoc) && /evict/i.test(phase12dDoc) && /explicit user clearing/i.test(phase12dDoc), 'Phase 12D documentation does not overpromise browser storage durability');
 ok(/No Supabase migration/i.test(phase12dDoc) && /No scoring\/XP changes/i.test(phase12dDoc), 'Phase 12D documentation locks database and scoring non-goals');
 ok(/Phase 12 — PWA\/offline hardening — DONE/.test(phase12Roadmap) && /12D Mobile PWA validation — DONE/.test(phase12Roadmap), 'roadmap records completion of Phase 12 and 12D');
-ok(/Phase 13 — Lifting analytics — NEXT/.test(phase12Roadmap), 'roadmap advances to the Phase 13 UI-design-gated analytics slice');
-ok(packageJson.version === '0.11.3' && packageLockJson.version === '0.11.3', 'project metadata records v0.11.3');
+ok(/Phase 13 — Lifting analytics — (?:NEXT|IN PROGRESS|DONE)/.test(phase12Roadmap), 'roadmap retains the Phase 13 UI-design-gated analytics slice');
+ok(versionAtLeast(packageJson.version, '0.11.3') && versionAtLeast(packageLockJson.version, '0.11.3'), 'project metadata is at or beyond v0.11.3');
+
+
+// Phase 13A — per-exercise lifting analytics
+for (const rel of [
+  'src/features/progress/exerciseAnalytics.ts',
+  'src/features/progress/exerciseAnalytics.test.ts',
+  'src/features/progress/components/ExerciseTrendChart.tsx',
+  'src/features/progress/components/ExerciseTrendChart.module.css',
+  'docs/PHASE13A-PER-EXERCISE-LIFTING-ANALYTICS.md',
+  'progress.e2e.html',
+  'tests/e2e/progressAnalyticsHarness.tsx',
+  'tests/e2e/progress-analytics.spec.ts',
+]) ok(fs.existsSync(path.join(root, rel)), `${rel} exists`);
+const phase13Analytics = read('src/features/progress/exerciseAnalytics.ts');
+const phase13AnalyticsTest = read('src/features/progress/exerciseAnalytics.test.ts');
+const phase13Hook = read('src/features/progress/hooks/useExerciseProgress.ts');
+const phase13Screen = read('src/features/progress/components/ExerciseProgressScreen.tsx');
+const phase13Chart = read('src/features/progress/components/ExerciseTrendChart.tsx');
+const phase13Vite = read('vite.config.ts');
+const phase13E2e = read('tests/e2e/progress-analytics.spec.ts');
+const phase13Integration = read('tests/integration/group-product-journey.test.tsx');
+const phase13Doc = read('docs/PHASE13A-PER-EXERCISE-LIFTING-ANALYTICS.md');
+const phase13Roadmap = read('docs/ROADMAP.md');
+ok(/buildExerciseAnalytics/.test(phase13Analytics) && /ExerciseProgressHistoryEntry/.test(phase13Analytics), 'Phase 13A derives analytics from the existing authoritative exercise-history contract');
+ok(/sort\(byObservedAt\)/.test(phase13Analytics), 'Phase 13A normalizes lift history into chronological chart order');
+ok(/sessionVolumeKgReps/.test(phase13Analytics) && /totalVolumeKgReps/.test(phase13Analytics), 'Phase 13A derives per-session and total volume analytics');
+ok(/heaviestWeightKg/.test(phase13Analytics) && /maxCompletedReps/.test(phase13Analytics), 'Phase 13A derives true best completed working-set weight and reps');
+ok(/isBaseline \|\| entry\.isPr \|\| entry\.isCurrentPr/.test(phase13Analytics) && /prTimeline/.test(phase13Analytics), 'Phase 13A exposes baseline and PR milestones without inventing new progression events');
+ok(!/supabase/i.test(phase13Analytics) && !/from ['"](?:.*\/)?(?:scoring|domain)/i.test(phase13Analytics) && !/from ['"]react['"]/.test(phase13Analytics), 'Phase 13A analytics mapper stays pure and independent of Supabase, React, and scoring');
+ok(/keeps added-weight bodyweight work out of the comparable rep trend/.test(phase13AnalyticsTest), 'Phase 13A unit coverage locks bodyweight comparison safety');
+ok(/workoutId: 'plain'[\s\S]*heaviestWeightKg: null[\s\S]*plainBodyweightSets: 4/.test(phase13AnalyticsTest), 'Phase 13A bodyweight analytics fixture matches authoritative null-load plain bodyweight history');
+ok(/buildExerciseAnalytics/.test(phase13Hook) && /setHistory\(\[\]\);[\s\S]*setHistoryStatus\('loading'\)/.test(phase13Hook), 'progress hook derives analytics and clears stale history during exercise switches');
+ok(/Best weight/.test(phase13Screen) && /Best reps/.test(phase13Screen) && /Volume history/.test(phase13Screen) && /PR timeline/.test(phase13Screen), 'Phase 13A screen exposes the required personal lifting analytics');
+ok(/Analytics never changes XP/.test(phase13Screen) && /Volume never awards XP/.test(phase13Screen), 'Phase 13A presentation keeps analytics outside scoring');
+ok(/<svg/.test(phase13Chart) && /role="img"/.test(phase13Chart) && /<polyline/.test(phase13Chart) && /<rect/.test(phase13Chart), 'Phase 13A uses accessible dependency-free SVG line and volume charts');
+ok(/progress: resolve\(process\.cwd\(\), 'progress\.e2e\.html'\)/.test(phase13Vite), 'Phase 13A production E2E build includes the analytics fixture only in reliability mode');
+ok(/Know your trend\. Beat your last\./.test(phase13E2e) && /e1RM trend/.test(phase13E2e) && /Volume history/.test(phase13E2e) && /scrollWidth - window\.innerWidth/.test(phase13E2e), 'Phase 13A browser gate covers analytics content and responsive overflow');
+ok(/findByRole\('heading',\{name:'Know your trend\. Beat your last\.'\}\)/.test(phase13Integration) && !/Your lift history/.test(phase13Integration), 'Phase 13A product integration journey follows the approved analytics heading');
+ok(/No Supabase migration/i.test(phase13Doc) && /No scoring\/XP changes/i.test(phase13Doc), 'Phase 13A documentation locks database and scoring non-goals');
+ok(/Phase 13 — Lifting analytics — IN PROGRESS/.test(phase13Roadmap) && /13A Per-exercise lifting analytics — DONE/.test(phase13Roadmap), 'roadmap records Phase 13A completion inside an in-progress Phase 13');
+ok(/13B Weekly\/monthly lifting summaries — NEXT/.test(phase13Roadmap), 'roadmap advances to Phase 13B weekly/monthly summaries');
+ok(packageJson.version === '0.12.0' && packageLockJson.version === '0.12.0', 'project metadata records v0.12.0');
 
 
 // Phase 5.6.1 — targeted user invitations

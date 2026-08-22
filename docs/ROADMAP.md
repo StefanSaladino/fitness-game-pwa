@@ -506,17 +506,33 @@ Primary boundary: move active-lift recovery and the queued workout-mutation jour
 - storage persistence and eviction behavior documentation;
 - final Phase 12 reliability integration gate.
 
-## Phase 13 — Lifting analytics — NEXT
+## Phase 13 — Lifting analytics — IN PROGRESS
 
-Apply the UI design gate before analytics dashboards.
+The product-wide UI design gate was completed before implementation. Phase 13 is split so per-exercise analytics and cross-session calendar summaries can be proven independently.
 
-- lift-by-lift progression charts
-- e1RM history
-- best weight / best reps
-- volume history (analytics only)
-- exercise frequency
-- PR timeline
-- weekly/monthly lifting summaries
+### 13A Per-exercise lifting analytics — DONE
+
+Primary boundary: turn the existing authoritative Phase 8 exercise-history read model into useful personal lifting analytics without changing scoring or persistence.
+
+- lift-by-lift progression chart for comparable e1RM or bodyweight-rep observations;
+- e1RM / comparable-rep history stays personal and uses the existing progression metric;
+- best completed working-set weight and best reps across the selected exercise history;
+- per-session volume history plus total volume, explicitly analytics-only;
+- exercise frequency and last-performed context from the existing overview read model;
+- dedicated baseline/PR/current-PR timeline;
+- added-weight and assisted bodyweight work remains analytics-visible but does not become comparable plain-bodyweight progression;
+- responsive desktop, Android-class Chromium, and iPhone-class WebKit browser fixture;
+- no Supabase migration and no scoring/XP changes.
+
+### 13B Weekly/monthly lifting summaries — NEXT
+
+Primary boundary: aggregate completed lifting history into calendar summaries without changing the per-exercise progression contract.
+
+- weekly completed lifting sessions, exercises, working sets, volume, and PR counts;
+- monthly equivalents and trend context;
+- use a focused read model/RPC only if existing read models cannot provide the aggregate efficiently;
+- volume remains analytics-only;
+- no cross-user comparison and no scoring changes.
 
 ## Phase 14 — Wearables / native companion — LATER
 
