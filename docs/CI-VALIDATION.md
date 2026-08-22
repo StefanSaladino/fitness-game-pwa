@@ -46,8 +46,8 @@ That gate validates:
 - canonical numbered pgTAP suite discovery;
 - explicit pgTAP plans;
 - rollback-safe test transactions;
-- required Phase 15.3A migration/test invariants;
-- the 68-assertion Phase 15.3A pgTAP contract;
+- required Phase 15.3A and 15.3B migration/test invariants;
+- the 68-assertion Phase 15.3A and 52-assertion Phase 15.3B pgTAP contracts;
 - and that executable GitHub CI contains no Docker, `supabase start`, `supabase db reset`, or `supabase test db` dependency.
 
 This repository gate is intentionally separate from runtime SQL execution. A migration or pgTAP suite is executed against hosted Supabase before its phase is considered database-validated.
@@ -66,10 +66,12 @@ The historical `_all-hosted-tests.sql` path remains a compatibility sentinel and
 
 For database-bearing slices:
 
-1. Apply the new migration in the Supabase Dashboard SQL Editor.
-2. Run the corresponding canonical pgTAP file in the SQL Editor.
+1. Apply the new migration to the hosted Supabase project.
+2. Run the corresponding canonical pgTAP file against the hosted database.
 3. Confirm the transaction rolls back cleanly and all planned assertions pass.
-4. Run the GitHub Database gate to validate repository structure and prevent local-stack/Docker regression.
+4. Deploy any phase Edge Function with JWT verification enabled.
+5. Run hosted security/performance advisors after DDL changes.
+6. Run the GitHub Database gate to validate repository structure and prevent local-stack/Docker regression.
 
 No service-role secret, database password, or privileged Supabase credential belongs in GitHub workflow source merely to reproduce hosted validation.
 

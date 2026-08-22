@@ -55,8 +55,12 @@ for (const name of tests) {
 
 const phase153aMigration = 'supabase/migrations/20260822120300_platform_account_administration_foundation.sql';
 const phase153aTest = 'supabase/tests/030_platform_account_administration_foundation.test.sql';
-for (const relativePath of [phase153aMigration, phase153aTest]) {
-  if (!fs.existsSync(path.join(root, relativePath))) fail(`Phase 15.3A database artifact missing: ${relativePath}`);
+const phase153bMigration = 'supabase/migrations/20260822161454_platform_account_suspension_enforcement.sql';
+const phase153bHardeningMigration = 'supabase/migrations/20260822161801_harden_active_account_pre_request.sql';
+const phase153bHookSchemaMigration = 'supabase/migrations/20260822162155_move_account_hooks_out_of_data_api.sql';
+const phase153bTest = 'supabase/tests/031_platform_account_suspension_enforcement.test.sql';
+for (const relativePath of [phase153aMigration, phase153aTest, phase153bMigration, phase153bHardeningMigration, phase153bHookSchemaMigration, phase153bTest]) {
+  if (!fs.existsSync(path.join(root, relativePath))) fail(`Phase 15.3 database artifact missing: ${relativePath}`);
 }
 
 const migration153a = read(phase153aMigration);
@@ -75,6 +79,49 @@ for (const invariant of [
 const test153a = read(phase153aTest);
 if (!/select\s+plan\s*\(\s*68\s*\)\s*;/i.test(test153a)) {
   fail('Phase 15.3A pgTAP suite must retain its 68-assertion plan');
+}
+
+const migration153b = read(phase153bMigration);
+for (const invariant of [
+  'private.platform_auth_coordination',
+  'public.is_current_account_session_active',
+  'public.enforce_active_account_request',
+  'public.prepare_platform_account_auth_transition',
+  'public.complete_platform_account_auth_transition',
+  'pgrst.db_pre_request',
+  'join auth.sessions',
+  'profile_pictures_insert_own',
+]) {
+  if (!migration153b.includes(invariant)) fail(`Phase 15.3B migration missing invariant: ${invariant}`);
+}
+
+const test153b = read(phase153bTest);
+if (!/select\s+plan\s*\(\s*52\s*\)\s*;/i.test(test153b)) {
+  fail('Phase 15.3B pgTAP suite must retain its 52-assertion plan');
+}
+
+const hardening153b = read(phase153bHardeningMigration);
+for (const invariant of [
+  'security invoker',
+  'public.is_current_account_session_active()',
+  'Account or session is not active',
+  'to authenticator',
+]) {
+  if (!hardening153b.toLowerCase().includes(invariant.toLowerCase())) {
+    fail(`Phase 15.3B pre-request hardening missing invariant: ${invariant}`);
+  }
+}
+
+const hookSchema153b = read(phase153bHookSchemaMigration);
+for (const invariant of [
+  'create schema if not exists api_hooks',
+  'set schema api_hooks',
+  "pgrst.db_pre_request = 'api_hooks.enforce_active_account_request'",
+  'grant usage on schema api_hooks',
+]) {
+  if (!hookSchema153b.includes(invariant)) {
+    fail(`Phase 15.3B non-exposed hook schema missing invariant: ${invariant}`);
+  }
 }
 
 const ci = fs.readFileSync(ciPath, 'utf8');

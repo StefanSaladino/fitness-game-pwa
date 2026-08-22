@@ -23,3 +23,9 @@ verify_jwt = true
 # Same authorization boundary as the Supabase provider adapter: a real signed-in
 # user JWT reaches the function, then platform-admin access is re-checked inside.
 verify_jwt = true
+
+[functions.platform-account-auth]
+# Suspension/restore reaches Supabase Auth Admin only after the caller JWT and
+# ACTIVE platform-admin state are verified inside the function. The service-role
+# key is a hosted Edge Function secret and is never exposed to the PWA.
+verify_jwt = true

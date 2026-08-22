@@ -23,8 +23,15 @@ select is(has_table_privilege('authenticated', 'private.platform_admin_audit_log
 select is(has_function_privilege('authenticated', 'private.require_active_account()', 'execute'), false, 'browser role cannot execute private active-account guard directly');
 select is(has_function_privilege('authenticated', 'public.list_platform_accounts(text, public.platform_account_status, integer, integer)', 'execute'), true, 'authenticated role can reach guarded directory RPC');
 select is(has_function_privilege('anon', 'public.list_platform_accounts(text, public.platform_account_status, integer, integer)', 'execute'), false, 'anonymous role cannot execute directory RPC');
-select is(has_function_privilege('authenticated', 'public.suspend_platform_account(uuid, text, timestamp with time zone)', 'execute'), true, 'authenticated role can reach guarded suspension RPC');
+select is(has_function_privilege('authenticated', 'public.suspend_platform_account(uuid, text, timestamp with time zone)', 'execute'), false, 'authenticated role cannot bypass server-coordinated suspension');
 select is(has_function_privilege('anon', 'public.suspend_platform_account(uuid, text, timestamp with time zone)', 'execute'), false, 'anonymous role cannot execute suspension RPC');
+
+-- Phase 15.3B removes browser execution from the historical state-only
+-- suspension/restore functions. Grant them only inside this rollback-safe test
+-- so the original 15.3A lifecycle behavior remains covered without reopening
+-- the production bypass.
+grant execute on function public.suspend_platform_account(uuid, text, timestamptz) to authenticated;
+grant execute on function public.restore_platform_account(uuid, text) to authenticated;
 
 select results_eq(
   $$select (pg_get_constraintdef(oid) like '%ACCOUNT_SUSPENDED%'

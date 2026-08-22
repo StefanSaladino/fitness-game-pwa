@@ -810,8 +810,6 @@ const phase153aService = read('src/features/admin/accounts/platformAccountAdminS
 for (const rpc of [
   'list_platform_accounts',
   'get_platform_account_detail',
-  'suspend_platform_account',
-  'restore_platform_account',
   'request_platform_account_deletion',
   'cancel_platform_account_deletion',
 ]) {
@@ -836,11 +834,168 @@ for (const fragment of [
 for (const heading of [
   '### 15.3 User account administration — IN PROGRESS',
   '#### 15.3A Account directory + lifecycle foundation — DONE',
-  '#### 15.3B Suspension enforcement + Auth session coordination — NEXT',
-  '#### 15.3C Irreversible account removal — LATER',
+  '#### 15.3B Suspension enforcement + Auth session coordination — DONE',
+  '#### 15.3C Irreversible account removal — NEXT',
   '#### 15.3D User-administration visual gate + UI — LATER',
 ]) {
   if (!roadmap.includes(heading)) fail('Phase 15.3 roadmap missing slice: ' + heading);
+}
+
+// Phase 15.3B Data API/session enforcement + server-only Auth coordination.
+const phase153bMigrationPath = path.join(
+  root,
+  'supabase/migrations/20260822161454_platform_account_suspension_enforcement.sql',
+);
+const phase153bTestPath = path.join(
+  root,
+  'supabase/tests/031_platform_account_suspension_enforcement.test.sql',
+);
+const phase153bHardeningPath = path.join(
+  root,
+  'supabase/migrations/20260822161801_harden_active_account_pre_request.sql',
+);
+const phase153bHookSchemaPath = path.join(
+  root,
+  'supabase/migrations/20260822162155_move_account_hooks_out_of_data_api.sql',
+);
+for (const relativePath of [
+  'docs/PHASE15.3B-SUSPENSION-ENFORCEMENT.md',
+  'PHASE15.3B-PATCH-MANIFEST.txt',
+  'supabase/functions/platform-account-auth/index.ts',
+]) {
+  if (!fs.existsSync(path.join(root, relativePath))) fail('Phase 15.3B file missing: ' + relativePath);
+}
+if (!fs.existsSync(phase153bMigrationPath)) fail('Phase 15.3B suspension-enforcement migration exists');
+if (!fs.existsSync(phase153bHardeningPath)) fail('Phase 15.3B pre-request hardening migration exists');
+if (!fs.existsSync(phase153bHookSchemaPath)) fail('Phase 15.3B non-exposed hook-schema migration exists');
+if (!fs.existsSync(phase153bTestPath)) fail('Phase 15.3B suspension-enforcement pgTAP test exists');
+
+const phase153bMigration = fs.readFileSync(phase153bMigrationPath, 'utf8');
+for (const fragment of [
+  'private.platform_auth_coordination',
+  'function public.is_current_account_session_active',
+  'function public.enforce_active_account_request',
+  'function public.prepare_platform_account_auth_transition',
+  'function public.complete_platform_account_auth_transition',
+  "pgrst.db_pre_request = 'public.enforce_active_account_request'",
+  "notify pgrst, 'reload config'",
+  'join auth.sessions',
+  "pas.status = 'ACTIVE'::public.platform_account_status",
+  'Stale Auth coordination revision',
+  'AUTH_ADMIN_UPDATE_FAILED',
+  'profile_pictures_insert_own',
+  '(select public.is_current_account_session_active())',
+  "set search_path = ''",
+]) {
+  if (!phase153bMigration.includes(fragment)) fail('Phase 15.3B migration missing invariant: ' + fragment);
+}
+for (const signature of [
+  'public.suspend_platform_account(uuid, text, timestamptz)',
+  'public.restore_platform_account(uuid, text)',
+]) {
+  if (!phase153bMigration.includes('revoke all on function ' + signature)) {
+    fail('Phase 15.3B must revoke the browser-bypass RPC: ' + signature);
+  }
+}
+for (const signature of [
+  'public.prepare_platform_account_auth_transition(uuid, uuid, text, text, timestamptz)',
+  'public.complete_platform_account_auth_transition(uuid, uuid, bigint, boolean, text)',
+]) {
+  if (!phase153bMigration.includes('grant execute on function ' + signature + '\nto service_role')) {
+    fail('Phase 15.3B missing service-role-only coordination grant: ' + signature);
+  }
+}
+if (/grant\s+execute\s+on\s+function\s+public\.(?:prepare|complete)_platform_account_auth_transition[^;]*\bto\s+authenticated/i.test(phase153bMigration)) {
+  fail('Phase 15.3B Auth coordination RPCs must never be executable by the browser role');
+}
+
+const phase153bHardening = fs.readFileSync(phase153bHardeningPath, 'utf8');
+for (const fragment of [
+  'security invoker',
+  'public.is_current_account_session_active()',
+  'Account or session is not active',
+  'to authenticator',
+]) {
+  if (!phase153bHardening.toLowerCase().includes(fragment.toLowerCase())) {
+    fail('Phase 15.3B pre-request hardening missing invariant: ' + fragment);
+  }
+}
+
+const phase153bHookSchema = fs.readFileSync(phase153bHookSchemaPath, 'utf8');
+for (const fragment of [
+  'create schema if not exists api_hooks',
+  'set schema api_hooks',
+  "pgrst.db_pre_request = 'api_hooks.enforce_active_account_request'",
+  'grant usage on schema api_hooks',
+]) {
+  if (!phase153bHookSchema.includes(fragment)) {
+    fail('Phase 15.3B non-exposed hook schema missing invariant: ' + fragment);
+  }
+}
+
+const phase153bTest = fs.readFileSync(phase153bTestPath, 'utf8');
+const phase153bPlan = Number((phase153bTest.match(/select\s+plan\((\d+)\)/i) || [])[1]);
+const phase153bAssertions = (phase153bTest.match(
+  /select\s+(?:has_table|has_column|has_function|is|results_eq|throws_ok|lives_ok)\s*\(/gi,
+) || []).length;
+if (phase153bPlan !== phase153bAssertions) {
+  fail('Phase 15.3B pgTAP plan ' + phase153bPlan + ' must match ' + phase153bAssertions + ' assertions');
+}
+if (phase153bPlan < 50) fail('Phase 15.3B enforcement/session suite must retain comprehensive coverage');
+for (const coverage of [
+  'issued JWT without a matching auth.sessions row is rejected immediately',
+  'session past not_after is rejected',
+  'suspended account is rejected even when its previously issued session row still exists',
+  'Auth ban failure leaves database suspension authoritative',
+  'restore remains fail-closed until Auth unban completes',
+  'stale Edge Function completion cannot overwrite a newer transition',
+  'DELETION_PENDING account is rejected across the Data API boundary',
+  '15.3B enforcement and coordination never physically delete user profiles',
+]) {
+  if (!phase153bTest.includes(coverage)) fail('Phase 15.3B pgTAP missing coverage: ' + coverage);
+}
+
+const phase153bFunction = read('supabase/functions/platform-account-auth/index.ts');
+for (const fragment of [
+  'auth.getUser(token)',
+  "rpc('get_my_platform_access')",
+  'SUPABASE_SERVICE_ROLE_KEY',
+  "'prepare_platform_account_auth_transition'",
+  "rpc('complete_platform_account_auth_transition'",
+  'ban_duration: banDuration',
+  "'876000h'",
+  "'none'",
+  'AUTH_COORDINATION_FAILED',
+]) {
+  if (!phase153bFunction.includes(fragment)) fail('Phase 15.3B Edge Function missing invariant: ' + fragment);
+}
+if (/VITE_|serviceRoleKey.*jsonResponse|SUPABASE_SERVICE_ROLE_KEY.*body/i.test(phase153bFunction)) {
+  fail('Phase 15.3B Edge Function must never expose the service-role credential');
+}
+if (!/\[functions\.platform-account-auth\][\s\S]*?verify_jwt\s*=\s*true/.test(read('supabase/config.toml'))) {
+  fail('Phase 15.3B Edge Function must require JWT verification');
+}
+for (const fragment of [
+  "functions.invoke('platform-account-auth'",
+  "action: 'SUSPEND'",
+  "action: 'RESTORE'",
+]) {
+  if (!phase153aService.includes(fragment)) fail('Phase 15.3B browser service missing server boundary: ' + fragment);
+}
+if (/client\.rpc\(['"](?:suspend_platform_account|restore_platform_account)/.test(phase153aService)) {
+  fail('Phase 15.3B browser service must not retain direct state-only suspension/restore calls');
+}
+
+const phase153bDoc = read('docs/PHASE15.3B-SUSPENSION-ENFORCEMENT.md');
+for (const fragment of [
+  'pgrst.db_pre_request',
+  'matching `auth.sessions` row',
+  "`ban_duration: 'none'`",
+  'does **not** invalidate already-issued access JWTs',
+  'does not directly mutate Supabase-managed `auth.sessions` rows',
+  'no Docker or local Supabase stack',
+]) {
+  if (!phase153bDoc.includes(fragment)) fail('Phase 15.3B documentation missing invariant: ' + fragment);
 }
 
 const ciWorkflow = read('.github/workflows/ci.yml');
@@ -975,4 +1130,4 @@ if (fs.existsSync(obsoleteRepairPath)) {
   fail('structural validation must not materialize the obsolete repair migration');
 }
 
-console.log('Release validation passed: clean migration history, Phase 15.1 admin invariants, Phase 15.2A capacity semantics, Phase 15.2B private telemetry/history authorization, Phase 15.2C secure Supabase provider boundary/provider-gap semantics, Phase 15.2D secure Netlify provider boundary/provider-gap semantics, Phase 15.2E real-data capacity UI/route/settings contracts, admin/settings notification contracts, canonical GitHub CI/database discovery, visual-roadmap guards, and production chunk budget guards are present.');
+console.log('Release validation passed: clean migration history, Phase 15.1 admin invariants, Phase 15.2A capacity semantics, Phase 15.2B private telemetry/history authorization, Phase 15.2C secure Supabase provider boundary/provider-gap semantics, Phase 15.2D secure Netlify provider boundary/provider-gap semantics, Phase 15.2E real-data capacity UI/route/settings contracts, Phase 15.3A account lifecycle foundation, Phase 15.3B Data API/session enforcement and server-only Auth coordination, canonical GitHub CI/database discovery, visual-roadmap guards, and production chunk budget guards are present.');

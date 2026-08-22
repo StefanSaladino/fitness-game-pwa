@@ -1,0 +1,35 @@
+Fitness Game PWA — Phase 15.3B Suspension Enforcement + Auth Coordination
+
+Baseline:
+  master after Phase 15.3A hosted schema/history reconciliation and 68 passing pgTAP assertions
+
+New files:
+  docs/PHASE15.3B-SUSPENSION-ENFORCEMENT.md
+  supabase/functions/platform-account-auth/index.ts
+  supabase/migrations/20260822161454_platform_account_suspension_enforcement.sql
+  supabase/migrations/20260822161801_harden_active_account_pre_request.sql
+  supabase/migrations/20260822162155_move_account_hooks_out_of_data_api.sql
+  supabase/tests/031_platform_account_suspension_enforcement.test.sql
+
+Updated files:
+  docs/CI-VALIDATION.md
+  docs/ROADMAP.md
+  scripts/validate-db-ci.cjs
+  scripts/validate-project-clean.cjs
+  src/features/admin/accounts/platformAccountAdminService.ts
+  src/features/admin/accounts/platformAccountAdminService.test.ts
+  supabase/config.toml
+  supabase/tests/030_platform_account_administration_foundation.test.sql
+
+Hosted-only execution:
+  apply the 15.3B migration
+  run canonical pgTAP 030 and 031
+  deploy platform-account-auth with verify_jwt=true
+  run Supabase security and performance advisors
+
+No Docker or local Supabase stack.
+No user-administration UI.
+No irreversible user deletion.
+No direct Auth-session table mutation.
+No scoring changes.
+No CHANGELOG update.

@@ -128,18 +128,24 @@ export function createPlatformAccountAdminService(
     },
 
     async suspend(userId, reason, reviewAt = null) {
-      const { error } = await client.rpc('suspend_platform_account', {
-        p_target_user_id: nonEmptyUserId(userId),
-        p_reason: reason,
-        p_review_at: reviewAt,
+      const { error } = await client.functions.invoke('platform-account-auth', {
+        body: {
+          action: 'SUSPEND',
+          userId: nonEmptyUserId(userId),
+          reason,
+          reviewAt,
+        },
       });
       if (error) throw error;
     },
 
     async restore(userId, reason) {
-      const { error } = await client.rpc('restore_platform_account', {
-        p_target_user_id: nonEmptyUserId(userId),
-        p_reason: reason,
+      const { error } = await client.functions.invoke('platform-account-auth', {
+        body: {
+          action: 'RESTORE',
+          userId: nonEmptyUserId(userId),
+          reason,
+        },
       });
       if (error) throw error;
     },

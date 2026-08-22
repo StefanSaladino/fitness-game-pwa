@@ -15,8 +15,8 @@ const BASE_ROW = {
   total_count: '1',
 };
 
-function clientWithRpc(rpc: ReturnType<typeof vi.fn>) {
-  return { rpc } as unknown as SupabaseClient;
+function clientWithRpc(rpc: ReturnType<typeof vi.fn>, invoke = vi.fn()) {
+  return { rpc, functions: { invoke } } as unknown as SupabaseClient;
 }
 
 describe('platform account admin service', () => {
@@ -85,29 +85,36 @@ describe('platform account admin service', () => {
     expect(detail.suspensionReviewAt).toBe('2026-08-25T12:00:00.000Z');
   });
 
-  it('routes every lifecycle mutation through the intended RPC', async () => {
+  it('routes Auth lifecycle changes through the server boundary and deletion state through RPCs', async () => {
     const rpc = vi.fn().mockResolvedValue({ data: null, error: null });
-    const service = createPlatformAccountAdminService(clientWithRpc(rpc));
+    const invoke = vi.fn().mockResolvedValue({ data: null, error: null });
+    const service = createPlatformAccountAdminService(clientWithRpc(rpc, invoke));
 
     await service.suspend(BASE_ROW.user_id, 'Policy review', '2026-08-25T12:00:00.000Z');
     await service.restore(BASE_ROW.user_id, 'Review completed');
     await service.requestDeletion(BASE_ROW.user_id, 'Confirmed destructive request');
     await service.cancelDeletion(BASE_ROW.user_id, 'Deletion request cancelled');
 
-    expect(rpc).toHaveBeenNthCalledWith(1, 'suspend_platform_account', {
-      p_target_user_id: BASE_ROW.user_id,
-      p_reason: 'Policy review',
-      p_review_at: '2026-08-25T12:00:00.000Z',
+    expect(invoke).toHaveBeenNthCalledWith(1, 'platform-account-auth', {
+      body: {
+        action: 'SUSPEND',
+        userId: BASE_ROW.user_id,
+        reason: 'Policy review',
+        reviewAt: '2026-08-25T12:00:00.000Z',
+      },
     });
-    expect(rpc).toHaveBeenNthCalledWith(2, 'restore_platform_account', {
-      p_target_user_id: BASE_ROW.user_id,
-      p_reason: 'Review completed',
+    expect(invoke).toHaveBeenNthCalledWith(2, 'platform-account-auth', {
+      body: {
+        action: 'RESTORE',
+        userId: BASE_ROW.user_id,
+        reason: 'Review completed',
+      },
     });
-    expect(rpc).toHaveBeenNthCalledWith(3, 'request_platform_account_deletion', {
+    expect(rpc).toHaveBeenNthCalledWith(1, 'request_platform_account_deletion', {
       p_target_user_id: BASE_ROW.user_id,
       p_reason: 'Confirmed destructive request',
     });
-    expect(rpc).toHaveBeenNthCalledWith(4, 'cancel_platform_account_deletion', {
+    expect(rpc).toHaveBeenNthCalledWith(2, 'cancel_platform_account_deletion', {
       p_target_user_id: BASE_ROW.user_id,
       p_reason: 'Deletion request cancelled',
     });

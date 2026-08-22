@@ -723,15 +723,17 @@ Netlify billing/usage is team/account scoped. The public API calls a team an acc
 - keep irreversible Auth/profile deletion out of this slice until Storage/cascade/session behavior is reviewed;
 - no user-administration UI is added before the required visual gate.
 
-#### 15.3B Suspension enforcement + Auth session coordination — NEXT
+#### 15.3B Suspension enforcement + Auth session coordination — DONE
 
-- apply the active-account boundary across authenticated application RPCs so SUSPENDED and DELETION_PENDING accounts cannot continue normal product mutations/reads;
-- add a secured server-side Supabase Auth Admin boundary using Edge Function secret credentials only;
-- coordinate Auth ban/unban behavior with the authoritative database state without exposing secret/service-role credentials to the PWA;
-- treat session revocation separately from ban state: do not claim that `ban_duration` invalidates already-issued access tokens;
-- validate sensitive RPC/session behavior against the current Supabase Auth session model.
+- installed an authenticated PostgREST pre-request boundary so every Data API table/view/RPC request requires ACTIVE account state and a live `auth.sessions` row matching the JWT `session_id` claim;
+- applied the same active-session helper to authenticated profile-picture Storage policies; the PWA has no Realtime subscriptions in this slice;
+- added a JWT-verified `platform-account-auth` Edge Function that re-validates the caller token and ACTIVE platform-admin authorization before any service-role operation;
+- revoked browser execution of historical state-only suspend/restore RPCs and moved those actions behind revisioned service-only preparation/completion RPCs;
+- made suspension database-authoritative before Auth ban, while restoration remains SUSPENDED until Auth unban succeeds; failures are retryable and stale completions are rejected;
+- kept Auth ban separate from session semantics: no claim that `ban_duration` invalidates an issued JWT and no direct mutation of Supabase-managed Auth session rows;
+- added hosted pgTAP coverage for ACTIVE/SUSPENDED/DELETION_PENDING state, live/missing/expired sessions, Storage policies, retries, revision races, and non-deletion.
 
-#### 15.3C Irreversible account removal — LATER
+#### 15.3C Irreversible account removal — NEXT
 
 - require an already-DELETION_PENDING target plus a second explicit administrator confirmation;
 - re-check self-removal and final-platform-admin protections at the destructive boundary;
