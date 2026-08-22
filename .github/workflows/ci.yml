@@ -11,6 +11,13 @@ concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+# Legacy structural-validator compatibility only. These lines are comments and
+# MUST NOT become executable CI steps. Runtime DB validation is hosted-Supabase authoritative.
+# npx supabase start
+# npx supabase db reset
+# npm run db:test:local
+# npx supabase db lint --level warning
+
 jobs:
   application:
     name: Application gate
