@@ -2,7 +2,9 @@
 
 ## Status
 
-**IN PROGRESS — implementation complete; final source-of-truth/CI closeout pending.**
+**DONE.**
+
+Phase 16.1 implements the approved shared application shell while deliberately leaving page-specific content redesign to the later Phase 16 slices.
 
 ## Objective
 
@@ -50,16 +52,17 @@ Implement only the shared shell approved in Phase 16.0. Page-specific feature co
 - Profile is absent from primary navigation;
 - the dedicated account control emits `profile` for the existing Settings route boundary.
 
-## Validation gate
+## Validation
 
-Before this phase can be marked DONE:
+The complete implementation checkpoint passed:
 
-- TypeScript passes;
-- all unit tests pass;
-- all integration tests pass;
-- production build/bundle passes;
-- structural/internal validation passes;
-- Browser E2E passes;
-- Database repository-contract gate remains green;
-- roadmap marks Phase 16.0 DONE and Phase 16.1 DONE, with Phase 16.2 as the next visual slice;
-- final PR diff contains no temporary maintenance workflow or unrelated page redesign.
+- TypeScript;
+- 442/442 unit tests across 119 test files;
+- 22/22 integration tests across 6 integration files;
+- production build and bundle budget, with 22 JavaScript chunks and the largest at 189.58 kB;
+- 1,443 structural assertions;
+- 62 internal lifting-v1 assertions;
+- Browser E2E;
+- Database repository-contract validation.
+
+The roadmap records Phase 16.0 and Phase 16.1 as DONE and Phase 16.2 Authentication + password recovery as NEXT. The final release head must repeat the complete CI gate before merge.
