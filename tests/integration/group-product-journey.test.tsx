@@ -346,6 +346,7 @@ describe('group-to-product integration journey', () => {
     await screen.findByRole('heading', { name: 'Your lifting week' });
     await user.click(screen.getAllByRole('button', { name: 'Compete' })[0]!);
     expect(await screen.findByRole('heading', { name: 'Crew standings' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Highlights, not surveillance' })).toBeInTheDocument();
     await user.click(screen.getAllByRole('button', { name: 'Progress' })[0]!);
     expect(await screen.findByRole('heading', { name: 'Know your trend. Beat your last.' })).toBeInTheDocument();
   });
