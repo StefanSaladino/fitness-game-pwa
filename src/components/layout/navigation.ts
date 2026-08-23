@@ -10,9 +10,8 @@ export interface NavigationItem {
 
 export const primaryNavigation: NavigationItem[] = [
   { id: 'home', label: 'Home', icon: 'home' },
-  { id: 'workouts', label: 'Workouts', icon: 'workout' },
+  { id: 'workouts', label: 'Lift', icon: 'workout' },
   { id: 'groups', label: 'Groups', icon: 'groups' },
   { id: 'progress', label: 'Progress', icon: 'progress' },
   { id: 'compete', label: 'Compete', icon: 'trophy' },
-  { id: 'profile', label: 'Profile', icon: 'profile' },
 ];
