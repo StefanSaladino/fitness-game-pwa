@@ -56,9 +56,9 @@ select results_eq(
   array['Barbell Bench Press'::text, 'Barbell Row'::text, 'Back Squat'::text],
   'preset exercises persist atomically in requested order'
 );
-select results_eq(
-  $$select array_agg(order_index order by order_index) from public.workout_exercises where workout_id=(select workout_id from phase158_ids)$$,
-  array[array[0,1,2]::integer[]],
+select is(
+  (select array_agg(order_index order by order_index) from public.workout_exercises where workout_id=(select workout_id from phase158_ids)),
+  array[0,1,2]::integer[],
   'preset exercise ordering starts at zero and remains contiguous'
 );
 
