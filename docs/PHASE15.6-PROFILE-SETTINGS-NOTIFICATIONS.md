@@ -2,7 +2,7 @@
 
 ## Status
 
-**LOCKED before implementation.**
+**LOCKED; 15.6A IMPLEMENTED.**
 
 This document defines the functional architecture for the authenticated `/settings` surface. It is an ordinary user-facing PWA area, not an administrator console, and later visual work must preserve these behaviors.
 
@@ -123,7 +123,7 @@ Reserve a clear section for:
 - future data export;
 - self-service account deletion backed by the completed Phase 15.3C lifecycle.
 
-Data export must not appear as a functioning control until its backend exists. The account-deletion backend, retention rules, audit behavior, Storage cleanup, and social/scoring consequences are implemented by Phase 15.3C; its Settings control remains deferred until the Phase 15.6 visual gate approves the deliberate request/cancel/exact-confirmation UX.
+Data export must not appear as a functioning control until its backend exists. The account-deletion backend, retention rules, audit behavior, Storage cleanup, and social/scoring consequences are implemented by Phase 15.3C. The product owner approved the 15.6A implementation slice with a deliberate request/cancel/exact-confirmation Settings control; it uses the exact server-derived phrase and retains the group-ownership transfer requirement.
 
 ### 7. App / PWA
 

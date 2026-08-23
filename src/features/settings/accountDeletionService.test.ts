@@ -2,8 +2,8 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import { describe, expect, it, vi } from 'vitest';
 import { createAccountDeletionService } from './accountDeletionService';
 
-function clientWith(rpc: ReturnType<typeof vi.fn>, invoke = vi.fn()) {
-  return { rpc, functions: { invoke } } as unknown as SupabaseClient;
+function clientWith(rpc: ReturnType<typeof vi.fn>, invoke = vi.fn(), signOut = vi.fn(async () => ({ error: null }))) {
+  return { rpc, functions: { invoke }, auth: { signOut } } as unknown as SupabaseClient;
 }
 
 describe('account deletion service', () => {
@@ -28,7 +28,8 @@ describe('account deletion service', () => {
 
   it('sends only the exact confirmation to the self-deletion server action', async () => {
     const invoke = vi.fn().mockResolvedValue({ data: null, error: null });
-    const service = createAccountDeletionService(clientWith(vi.fn(), invoke));
+    const signOut = vi.fn(async () => ({ error: null }));
+    const service = createAccountDeletionService(clientWith(vi.fn(), invoke, signOut));
 
     await service.confirm('DELETE alpha');
 
@@ -38,6 +39,7 @@ describe('account deletion service', () => {
         confirmation: 'DELETE alpha',
       },
     });
+    expect(signOut).toHaveBeenCalledWith({ scope: 'local' });
   });
 
   it('fails closed when the request RPC does not return a confirmation phrase', async () => {

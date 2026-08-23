@@ -29,7 +29,7 @@ function UnknownAuthenticatedRoute() {
   return <RouteLoading />;
 }
 
-function ProfileGate({ userId, pathname }: { userId: string; pathname: string }) {
+function ProfileGate({ userId, userEmail, memberSince, pathname }: { userId: string; userEmail: string; memberSince: string | null; pathname: string }) {
   const onboarding = useOnboarding(userId);
 
   if (onboarding.status === 'loading') {
@@ -64,7 +64,12 @@ function ProfileGate({ userId, pathname }: { userId: string; pathname: string })
     return (
       <>
         <Suspense fallback={<RouteLoading />}>
-          <SettingsScreen profile={onboarding.profile} />
+          <SettingsScreen
+            memberSince={memberSince}
+            onProfileChanged={onboarding.retry}
+            profile={onboarding.profile}
+            userEmail={userEmail}
+          />
         </Suspense>
         <UserMessageCenter />
       </>
@@ -96,7 +101,14 @@ function AuthenticatedApp({ pathname }: { pathname: string }) {
     );
   }
 
-  return <ProfileGate pathname={pathname} userId={session.user.id} />;
+  return (
+    <ProfileGate
+      memberSince={session.user.created_at ?? null}
+      pathname={pathname}
+      userEmail={session.user.email ?? ''}
+      userId={session.user.id}
+    />
+  );
 }
 
 function ConfigurationHelp() {

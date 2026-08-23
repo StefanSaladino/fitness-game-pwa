@@ -799,17 +799,17 @@ Netlify billing/usage is team/account scoped. The public API calls a team an acc
 - phone/desktop administrator UI is responsive, but the admin console is not exposed in ordinary user navigation;
 - destructive actions require explicit confirmation and produce an auditable result.
 
-### 15.6 Profile/Settings + notification preferences — LATER
+### 15.6 Profile/Settings + notification preferences — IN PROGRESS
 
 This is the ordinary authenticated PWA account surface defined in `docs/PHASE15.6-PROFILE-SETTINGS-NOTIFICATIONS.md`; it is not an administrator-only feature.
 
-#### 15.6A Profile/Settings foundation — LATER
+#### 15.6A Profile/Settings foundation — DONE
 
 - implement `/settings` as the canonical authenticated Profile/Settings route, reachable once profile identity exists and not blocked by `GroupGate`;
 - provide Profile + identity, Training preferences, Account + security, Groups, Privacy + data, App/PWA, Notifications, and conditionally authorized Administration sections;
 - support profile picture, display name, username, email/account identity, timezone, weekly lifting target, and a persisted preferred `kg` / `lb` unit without rewriting historical scoring/workout data;
 - link to existing group administration rather than duplicating group-role controls;
-- add a deliberate two-step self-service account-deletion control only after visual approval, using the Phase 15.3C request/cancel/confirm service contract and its group-transfer requirement;
+- provide the approved deliberate two-step self-service account-deletion control, using the Phase 15.3C request/cancel/confirm service contract, exact server phrase, immediate local sign-out after deletion, and group-transfer requirement;
 - do not expose fake data-export, session-management, or unsupported notification controls.
 
 #### 15.6B Notification preference persistence — LATER

@@ -48,8 +48,8 @@ That gate validates:
 - canonical numbered pgTAP suite discovery;
 - explicit pgTAP plans;
 - rollback-safe test transactions;
-- required Phase 15.3A through Phase 15.4 migration/test invariants;
-- the 68-assertion Phase 15.3A, 52-assertion Phase 15.3B, 68-assertion Phase 15.3C, 88-assertion Phase 15.3E, 45-assertion Phase 15.3F, and 96-assertion Phase 15.4 pgTAP contracts;
+- required Phase 15.3A through Phase 15.6A migration/test invariants;
+- the 68-assertion Phase 15.3A, 52-assertion Phase 15.3B, 68-assertion Phase 15.3C, 88-assertion Phase 15.3E, 45-assertion Phase 15.3F, 96-assertion Phase 15.4, 27-assertion Phase 15.5, and 31-assertion Phase 15.6A pgTAP contracts;
 - and that executable GitHub CI contains no Docker, `supabase start`, `supabase db reset`, or `supabase test db` dependency.
 
 This repository gate is intentionally separate from runtime SQL execution. A migration or pgTAP suite is executed against hosted Supabase before its phase is considered database-validated.
@@ -104,3 +104,5 @@ Phase 15.3E hosted validation uses only rollback-safe fake reports/cases. It mus
 Phase 15.3F hosted validation applies its migration and pgTAP fixtures in one rollback-safe transaction. It proves private immutable access audit, active-admin-only 15-minute review grants, actor/case/subject binding, selected-source enforcement, cursor/page bounds, workout-note redaction, originating-case links, two-year audit retention, and deletion-safe identity snapshots. Communication history remains absent until Phase 15.4 creates a durable source.
 
 Phase 15.4 hosted validation proves server-resolved audience previews, set-based and idempotent fan-out, immutable revisions and deliveries, recipient isolation, delivery/read/acknowledged state, edit/withdraw audit, two-year retention, suspension enforcement, moderation-timeline communication context, and zero scoring effects. Full-app delivery is additionally constrained to NOTICE messages that cannot require acknowledgement and that the PWA presents once as a dismissible “What’s new” popup.
+
+Phase 15.6A hosted validation proves authenticated self-only profile updates, deny-by-default RPC execution, removal of direct identity/preference column writes, persisted kg/lb display preference, next-Monday weekly-target scheduling, suspended-account rejection, and zero scoring/history rewrites. The ordinary application gate and hosted Supabase workflow remain non-Docker.

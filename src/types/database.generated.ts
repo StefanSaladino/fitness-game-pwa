@@ -471,6 +471,7 @@ export type Database = {
           pending_weekly_workout_target_week_start: string | null
           profile_code: string
           profile_picture_path: string | null
+          preferred_weight_unit: string
           timezone: string
           updated_at: string
           username: string
@@ -485,6 +486,7 @@ export type Database = {
           pending_weekly_workout_target_week_start?: string | null
           profile_code?: string
           profile_picture_path?: string | null
+          preferred_weight_unit?: string
           timezone?: string
           updated_at?: string
           username: string
@@ -499,6 +501,7 @@ export type Database = {
           pending_weekly_workout_target_week_start?: string | null
           profile_code?: string
           profile_picture_path?: string | null
+          preferred_weight_unit?: string
           timezone?: string
           updated_at?: string
           username?: string
@@ -1281,6 +1284,16 @@ export type Database = {
       transfer_group_ownership: {
         Args: { p_group_id: string; p_target_user_id: string }
         Returns: undefined
+      }
+      update_my_profile_settings: {
+        Args: {
+          p_display_name: string
+          p_preferred_weight_unit: string
+          p_timezone: string
+          p_username: string
+          p_weekly_target: number
+        }
+        Returns: Database["public"]["Tables"]["profiles"]["Row"]
       }
       users_share_active_group: {
         Args: { p_other_user_id: string }

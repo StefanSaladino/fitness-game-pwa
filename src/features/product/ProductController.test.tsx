@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { AppSection } from '../../components/layout';
 import type { GroupSummary } from '../groups';
 import type { OnboardingProfile } from '../onboarding';
@@ -33,11 +33,14 @@ import { ProductController } from './ProductController';
 const profile: OnboardingProfile = {
   id: 'user-1', username: 'stefan', displayName: 'Stefan', timezone: 'America/Toronto',
   weeklyWorkoutTarget: 4, pendingWeeklyWorkoutTarget: null, onboardingCompletedAt: '2026-08-18T00:00:00Z',
+  preferredWeightUnit: 'KG',
 };
 const groups: GroupSummary[] = [
   { id: 'group-1', name: 'Iron Crew', memberCount: 3, role: 'OWNER', joinedAt: '2026-08-18T00:00:00Z', createdAt: '2026-08-18T00:00:00Z' },
   { id: 'group-2', name: 'Friday Crew', memberCount: 4, role: 'MEMBER', joinedAt: '2026-08-19T00:00:00Z', createdAt: '2026-08-19T00:00:00Z' },
 ];
+
+afterEach(() => window.history.replaceState({}, '', '/'));
 
 describe('ProductController', () => {
   it('owns product-section navigation instead of putting routing into presentation components', async () => {
@@ -55,6 +58,13 @@ describe('ProductController', () => {
 
     await screen.findByText('Dashboard for Iron Crew');
     await user.click(screen.getByRole('button', { name: 'Open groups' }));
+    expect(await screen.findByText('Admin for group-1')).toBeInTheDocument();
+  });
+
+  it('honors the bounded Settings deep link into the existing Groups controller', async () => {
+    window.history.replaceState({}, '', '/?section=groups');
+    render(<ProductController groups={groups} onGroupsChanged={vi.fn()} profile={profile} />);
+
     expect(await screen.findByText('Admin for group-1')).toBeInTheDocument();
   });
 

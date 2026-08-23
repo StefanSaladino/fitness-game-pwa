@@ -70,6 +70,8 @@ const phase154Migration = 'supabase/migrations/20260823151630_platform_admin_mes
 const phase154Test = 'supabase/tests/035_platform_admin_messaging.test.sql';
 const phase155Migration = 'supabase/migrations/20260823160157_phase15_5_admin_security_gate.sql';
 const phase155Test = 'supabase/tests/036_admin_integration_security_gate.test.sql';
+const phase156aMigration = 'supabase/migrations/20260823162857_phase15_6a_profile_settings_foundation.sql';
+const phase156aTest = 'supabase/tests/037_phase15_6a_profile_settings_foundation.test.sql';
 for (const relativePath of [
   phase153aMigration,
   phase153aTest,
@@ -88,6 +90,8 @@ for (const relativePath of [
   phase154Test,
   phase155Migration,
   phase155Test,
+  phase156aMigration,
+  phase156aTest,
 ]) {
   if (!fs.existsSync(path.join(root, relativePath))) fail(`Phase 15 database artifact missing: ${relativePath}`);
 }
@@ -359,6 +363,35 @@ for (const coverage of [
   'active platform administrator retains the integrated messaging boundary',
 ]) {
   if (!test155.includes(coverage)) fail(`Phase 15.5 pgTAP missing coverage: ${coverage}`);
+}
+
+const migration156a = read(phase156aMigration);
+for (const invariant of [
+  'preferred_weight_unit',
+  'public.update_my_profile_settings',
+  'private.require_active_account()',
+  "set search_path = ''",
+  'revoke update (username, display_name, timezone)',
+  'grant execute on function public.update_my_profile_settings',
+  'pending_weekly_workout_target_week_start',
+  'Authoritative workout weights remain stored in kilograms',
+]) {
+  if (!migration156a.includes(invariant)) fail(`Phase 15.6A migration missing invariant: ${invariant}`);
+}
+
+const test156a = read(phase156aTest);
+if (!/select\s+plan\s*\(\s*31\s*\)\s*;/i.test(test156a)) {
+  fail('Phase 15.6A pgTAP suite must retain its 31-assertion plan');
+}
+for (const coverage of [
+  'username cannot be updated directly',
+  'self-profile RPC cannot alter another user',
+  'scheduled weekly targets begin on a future Monday in the updated timezone',
+  'suspended users cannot update profile settings',
+  'profile preferences do not create or alter scoring events',
+  'all settings updates leave authoritative weekly-goal history unchanged',
+]) {
+  if (!test156a.includes(coverage)) fail(`Phase 15.6A pgTAP missing coverage: ${coverage}`);
 }
 
 const ci = fs.readFileSync(ciPath, 'utf8');

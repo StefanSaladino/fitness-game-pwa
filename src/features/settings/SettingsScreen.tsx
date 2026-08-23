@@ -1,17 +1,59 @@
-import { signOut } from '../auth/authService';
-import type { OnboardingProfile } from '../onboarding';
+import { useRef } from 'react';
+import { Button } from '../../components/ui';
+import { navigateToPath } from '../../lib/appNavigation';
+import type { PwaService } from '../../pwa/pwaService';
 import { usePlatformAccess } from '../admin/hooks/usePlatformAccess';
 import type { PlatformAccessService } from '../admin/platformAccessService';
-import { navigateToPath } from '../../lib/appNavigation';
+import { signOut } from '../auth/authService';
+import { createGroupService, type GroupService } from '../groups/groupService';
+import { useGroups } from '../groups/hooks/useGroups';
+import { usePendingGroupInvites } from '../groups/hooks/usePendingGroupInvites';
+import type { OnboardingProfile } from '../onboarding';
+import type { ProfilePictureService } from '../profile-picture/profilePictureService';
+import { ProfilePictureManager } from '../profile-picture/components/ProfilePictureManager';
+import { AccountDeletionPanel } from './AccountDeletionPanel';
+import type { AccountDeletionService } from './accountDeletionService';
+import { AccountSecuritySection } from './AccountSecuritySection';
+import type { AccountSecurityService } from './accountSecurityService';
+import { AppStatusSection } from './AppStatusSection';
+import { ProfileSettingsForm } from './ProfileSettingsForm';
+import { useProfileSettings } from './hooks/useProfileSettings';
+import type { SettingsService } from './settingsService';
 import styles from './SettingsScreen.module.css';
 
 interface SettingsScreenProps {
   profile: OnboardingProfile;
+  userEmail?: string;
+  memberSince?: string | null;
   accessService?: PlatformAccessService;
+  settingsService?: SettingsService;
+  accountSecurityService?: AccountSecurityService;
+  deletionService?: AccountDeletionService;
+  groupService?: GroupService;
+  profilePictureService?: ProfilePictureService;
+  pwaService?: PwaService;
+  onProfileChanged?: () => Promise<unknown> | unknown;
 }
 
-export function SettingsScreen({ profile, accessService }: SettingsScreenProps) {
+export function SettingsScreen({
+  profile,
+  userEmail = '',
+  memberSince = null,
+  accessService,
+  settingsService,
+  accountSecurityService,
+  deletionService,
+  groupService: injectedGroupService,
+  profilePictureService,
+  pwaService,
+  onProfileChanged,
+}: SettingsScreenProps) {
   const platformAccess = usePlatformAccess(accessService);
+  const profileSettings = useProfileSettings(profile, settingsService, onProfileChanged);
+  const groupServiceRef = useRef<GroupService | null>(null);
+  if (!groupServiceRef.current) groupServiceRef.current = injectedGroupService ?? createGroupService();
+  const groups = useGroups(profile.id, groupServiceRef.current);
+  const pendingInvites = usePendingGroupInvites(groupServiceRef.current);
   const showAdministration = platformAccess.state === 'ready'
     && platformAccess.access?.accountStatus === 'ACTIVE'
     && platformAccess.access.isPlatformAdmin;
@@ -21,33 +63,108 @@ export function SettingsScreen({ profile, accessService }: SettingsScreenProps) 
       <main className={styles.main}>
         <header className={styles.header}>
           <button className={styles.back} onClick={() => navigateToPath('/')} type="button">Back</button>
-          <h1>Profile & settings</h1>
+          <div>
+            <p className={styles.eyebrow}>YOUR ACCOUNT</p>
+            <h1>Profile & settings</h1>
+          </div>
           <span aria-hidden="true" />
         </header>
 
-        <section className={styles.section} aria-labelledby="settings-profile-heading">
-          <h2 id="settings-profile-heading">Profile</h2>
-          <div className={styles.rows}>
-            <div className={styles.row}><span>Display name</span><strong>{profile.displayName}</strong></div>
-            <div className={styles.row}><span>Username</span><strong>@{profile.username}</strong></div>
-            <div className={styles.row}><span>Time zone</span><strong>{profile.timezone}</strong></div>
-            <div className={styles.row}><span>Weekly lifting target</span><strong>{profile.weeklyWorkoutTarget} days</strong></div>
+        <section className={styles.section} aria-labelledby="settings-picture-heading">
+          <div className={styles.sectionHeading}>
+            <div>
+              <p className={styles.eyebrow}>PHOTO</p>
+              <h2 id="settings-picture-heading">Profile picture</h2>
+            </div>
           </div>
+          <ProfilePictureManager
+            displayName={profileSettings.profile.displayName}
+            service={profilePictureService}
+            userId={profile.id}
+          />
         </section>
 
-        {showAdministration && (
-          <section className={styles.section} aria-labelledby="settings-admin-heading">
-            <h2 id="settings-admin-heading">Administration</h2>
-            <p className={styles.adminCopy}>Platform administration is available for this account.</p>
-            <button className={styles.adminLink} onClick={() => navigateToPath('/platform-admin')} type="button">
-              Platform administration
-            </button>
-          </section>
-        )}
+        <ProfileSettingsForm
+          busy={profileSettings.busy}
+          error={profileSettings.error}
+          notice={profileSettings.notice}
+          onSave={profileSettings.save}
+          profile={profileSettings.profile}
+        />
 
-        <footer className={styles.footer}>
-          <button className={styles.signOut} onClick={() => void signOut()} type="button">Sign out</button>
-        </footer>
+        <section className={styles.section} aria-labelledby="settings-notifications-heading">
+          <div className={styles.sectionHeading}>
+            <div>
+              <p className={styles.eyebrow}>MESSAGES</p>
+              <h2 id="settings-notifications-heading">Notifications</h2>
+            </div>
+            <span className={styles.statusBadge}>Next step</span>
+          </div>
+          <p className={styles.supportCopy}>Account-level notification preferences arrive in Phase 15.6B. No decorative switches are shown before reminder delivery exists.</p>
+          <p className={styles.supportCopy}>Required account, security, moderation, and administrator notices continue to appear in the in-app message center.</p>
+        </section>
+
+        <AccountSecuritySection
+          email={userEmail}
+          memberSince={memberSince}
+          onSignOut={() => void signOut()}
+          service={accountSecurityService}
+        />
+
+        <section className={styles.section} aria-labelledby="settings-groups-heading">
+          <div className={styles.sectionHeading}>
+            <div>
+              <p className={styles.eyebrow}>CREWS</p>
+              <h2 id="settings-groups-heading">Groups</h2>
+            </div>
+            <Button onClick={() => navigateToPath('/?section=groups')} variant="secondary">Manage groups</Button>
+          </div>
+          {groups.status === 'loading' || pendingInvites.status === 'loading' ? <p className={styles.supportCopy}>Loading group status…</p> : null}
+          {groups.status === 'error' ? <p className={styles.error} role="status">{groups.error}</p> : null}
+          {pendingInvites.status === 'error' ? <p className={styles.error} role="status">{pendingInvites.error}</p> : null}
+          {groups.status === 'ready' ? (
+            groups.groups.length > 0 ? (
+              <ul className={styles.groupList}>
+                {groups.groups.map((group) => (
+                  <li key={group.id}>
+                    <span><strong>{group.name}</strong><small>{group.memberCount} {group.memberCount === 1 ? 'member' : 'members'}</small></span>
+                    <span className={styles.role}>{group.role}</span>
+                  </li>
+                ))}
+              </ul>
+            ) : <p className={styles.supportCopy}>You are not currently in a group. Open Groups to create one or respond to invitations.</p>
+          ) : null}
+          {pendingInvites.status === 'ready' ? (
+            <p className={styles.inviteCount}>{pendingInvites.invites.length} pending {pendingInvites.invites.length === 1 ? 'invitation' : 'invitations'}</p>
+          ) : null}
+        </section>
+
+        <section className={styles.section} aria-labelledby="settings-privacy-heading">
+          <div className={styles.sectionHeading}>
+            <div>
+              <p className={styles.eyebrow}>CONTROL</p>
+              <h2 id="settings-privacy-heading">Privacy & data</h2>
+            </div>
+          </div>
+          <p className={styles.supportCopy}>Your private workout details remain account-owned. Group competition and activity surfaces expose only the bounded data defined by their existing privacy rules.</p>
+          <p className={styles.supportCopy}>Data export will appear only after its server lifecycle exists.</p>
+          <AccountDeletionPanel service={deletionService} />
+        </section>
+
+        <AppStatusSection service={pwaService} />
+
+        {showAdministration ? (
+          <section className={styles.section} aria-labelledby="settings-admin-heading">
+            <div className={styles.sectionHeading}>
+              <div>
+                <p className={styles.eyebrow}>AUTHORIZED</p>
+                <h2 id="settings-admin-heading">Administration</h2>
+              </div>
+            </div>
+            <p className={styles.supportCopy}>Platform administration is available for this active account. The destination re-checks authorization independently.</p>
+            <Button onClick={() => navigateToPath('/platform-admin')}>Platform administration</Button>
+          </section>
+        ) : null}
       </main>
     </div>
   );

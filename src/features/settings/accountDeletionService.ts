@@ -35,6 +35,10 @@ export function createAccountDeletionService(
         },
       });
       if (error) throw error;
+      // The Auth user no longer exists after a successful irreversible delete.
+      // Clear the browser's local session immediately rather than waiting for a
+      // failed token refresh to return the user to the signed-out boundary.
+      await client.auth.signOut({ scope: 'local' }).catch(() => undefined);
     },
   };
 }

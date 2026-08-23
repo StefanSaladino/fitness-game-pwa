@@ -12,6 +12,7 @@ const profile: OnboardingProfile = {
   weeklyWorkoutTarget: 3,
   pendingWeeklyWorkoutTarget: null,
   onboardingCompletedAt: null,
+  preferredWeightUnit: 'KG',
 };
 
 describe('OnboardingForm', () => {

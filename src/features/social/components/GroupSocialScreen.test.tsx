@@ -10,6 +10,7 @@ import { GroupSocialScreen } from './GroupSocialScreen';
 const profile: OnboardingProfile = {
   id: 'user-1', username: 'stefan', displayName: 'Stefan', timezone: 'America/Toronto', weeklyWorkoutTarget: 4,
   pendingWeeklyWorkoutTarget: null, onboardingCompletedAt: '2026-08-18T00:00:00Z',
+  preferredWeightUnit: 'KG',
 };
 const group: GroupSummary = { id: 'group-1', name: 'Iron Crew', memberCount: 2, role: 'OWNER', joinedAt: '2026-08-18T00:00:00Z', createdAt: '2026-08-18T00:00:00Z' };
 const weekly: GroupCompetitionLeaderboard = { period: 'WEEK', periodStart: '2026-08-17', periodEnd: '2026-08-23', entries: [

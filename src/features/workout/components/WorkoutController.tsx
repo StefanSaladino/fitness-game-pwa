@@ -147,7 +147,9 @@ export function WorkoutController({ profile, onNavigate, onSignOut, service, exe
   }
 
   const recoveryDrafts = recoveryMatchesWorkout ? recovery.snapshot?.ui.setDrafts : undefined;
-  const initialWeightUnit = recoveryMatchesWorkout ? recovery.snapshot?.ui.weightUnit : undefined;
+  const initialWeightUnit = recoveryMatchesWorkout
+    ? recovery.snapshot?.ui.weightUnit ?? profile.preferredWeightUnit
+    : profile.preferredWeightUnit;
 
   return (
     <ActiveWorkoutScreen

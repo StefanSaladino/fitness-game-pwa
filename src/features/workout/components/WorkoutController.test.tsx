@@ -15,6 +15,7 @@ import { WorkoutController } from './WorkoutController';
 const profile: OnboardingProfile = {
   id: 'user-1', username: 'stefan', displayName: 'Stefan', timezone: 'America/Toronto', weeklyWorkoutTarget: 4,
   pendingWeeklyWorkoutTarget: null, onboardingCompletedAt: '2026-08-18T00:00:00.000Z',
+  preferredWeightUnit: 'KG',
 };
 
 const snapshot: ActiveWorkoutRecoverySnapshot = {

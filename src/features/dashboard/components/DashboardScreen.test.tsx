@@ -13,6 +13,7 @@ const profile: OnboardingProfile = {
   weeklyWorkoutTarget: 4,
   pendingWeeklyWorkoutTarget: null,
   onboardingCompletedAt: '2026-08-18T00:00:00.000Z',
+  preferredWeightUnit: 'KG',
 };
 
 const group: GroupSummary = {

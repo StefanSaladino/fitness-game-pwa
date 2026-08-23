@@ -13,6 +13,7 @@ function makeProfile(complete = false): OnboardingProfile {
     weeklyWorkoutTarget: 3,
     pendingWeeklyWorkoutTarget: null,
     onboardingCompletedAt: complete ? '2026-08-19T20:00:00Z' : null,
+    preferredWeightUnit: 'KG',
   };
 }
 

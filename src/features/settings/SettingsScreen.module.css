@@ -5,28 +5,29 @@
 }
 
 .main {
-  width: min(100%, 760px);
+  width: min(100%, 820px);
   margin: 0 auto;
-  padding: max(22px, env(safe-area-inset-top)) 18px calc(34px + env(safe-area-inset-bottom));
+  padding: max(20px, env(safe-area-inset-top)) 18px calc(40px + env(safe-area-inset-bottom));
 }
 
 .header {
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(64px, 1fr) auto minmax(64px, 1fr);
   align-items: center;
-  justify-content: space-between;
   gap: 12px;
-  padding-bottom: 20px;
+  padding-bottom: 22px;
   border-bottom: 1px solid var(--color-border-strong);
+  text-align: center;
 }
 
-.header h1 {
-  margin: 0;
-  font-size: 1.65rem;
-}
+.header h1,
+.section h2,
+.confirmDeletion h3 { margin: 0; }
 
-.back,
-.signOut,
-.adminLink {
+.header h1 { font-size: clamp(1.45rem, 5vw, 1.85rem); }
+
+.back {
+  justify-self: start;
   min-height: 42px;
   border: 1px solid var(--color-border-strong);
   border-radius: 10px;
@@ -39,47 +40,176 @@
 }
 
 .back:focus-visible,
-.signOut:focus-visible,
-.adminLink:focus-visible {
+.deleteButton:focus-visible {
   outline: 3px solid rgba(61, 134, 255, 0.42);
   outline-offset: 2px;
 }
 
 .section {
-  padding: 22px 0;
+  padding: 24px 0;
   border-bottom: 1px solid var(--color-border);
 }
 
-.section h2 {
+.sectionHeading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.eyebrow {
+  margin: 0 0 5px;
+  color: var(--color-text-muted);
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+}
+
+.profileCode,
+.statusBadge,
+.role {
+  border: 1px solid var(--color-border-strong);
+  border-radius: 999px;
+  padding: 5px 9px;
+  color: var(--color-text-muted);
+  font-size: 0.72rem;
+  font-weight: 750;
+  white-space: nowrap;
+}
+
+.profileForm { display: contents; }
+.formGrid { display: grid; gap: 16px; }
+.weeklyTarget { margin: 20px 0; }
+.passwordForm { display: grid; gap: 14px; margin-top: 18px; }
+
+.supportCopy,
+.dangerZone p,
+.confirmDeletion p {
+  margin: 0 0 13px;
+  color: var(--color-text-muted);
+  line-height: 1.55;
+}
+
+.detailList {
+  display: grid;
+  gap: 0;
   margin: 0 0 14px;
-  font-size: 1.03rem;
 }
 
-.rows {
+.detailList div {
   display: grid;
-}
-
-.row {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: 14px;
+  grid-template-columns: minmax(0, 1fr) minmax(0, auto);
+  gap: 16px;
   padding: 10px 0;
+  border-bottom: 1px solid var(--color-border);
 }
 
-.row span:first-child {
-  color: var(--color-text-muted);
+.detailList dt { color: var(--color-text-muted); }
+.detailList dd { margin: 0; text-align: right; overflow-wrap: anywhere; }
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
 }
 
-.row strong {
-  text-align: right;
+.error,
+.success,
+.inviteCount {
+  margin: 13px 0;
+  line-height: 1.45;
 }
 
-.adminCopy {
-  margin: 0 0 14px;
-  color: var(--color-text-muted);
-  line-height: 1.5;
+.error { color: var(--color-danger); }
+.success { color: var(--color-success); }
+.inviteCount { color: var(--color-text-muted); }
+
+.groupList {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
 
-.footer {
-  padding-top: 24px;
+.groupList li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  padding: 12px 13px;
+  background: #0b1722;
+}
+
+.groupList strong,
+.groupList small { display: block; }
+.groupList small { margin-top: 4px; color: var(--color-text-muted); }
+
+.dangerZone,
+.confirmDeletion {
+  display: grid;
+  gap: 13px;
+  margin-top: 20px;
+  border: 1px solid rgba(255, 125, 140, 0.42);
+  border-radius: 14px;
+  padding: 16px;
+  background: rgba(255, 125, 140, 0.045);
+}
+
+.dangerZone p:last-child,
+.confirmDeletion p:last-of-type { margin-bottom: 0; }
+
+.dangerZone > button { justify-self: start; }
+
+.confirmationPhrase {
+  width: fit-content;
+  border: 1px solid var(--color-border-strong);
+  border-radius: 9px;
+  padding: 8px 10px;
+  color: var(--color-text);
+  background: #071019;
+  font-size: 0.95rem;
+}
+
+.deleteButton {
+  min-height: 46px;
+  border: 1px solid #ff7d8c;
+  border-radius: 14px;
+  padding: 0 18px;
+  color: white;
+  background: #9e2635;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 750;
+}
+
+.deleteButton:disabled { cursor: not-allowed; opacity: 0.5; }
+
+@media (min-width: 680px) {
+  .main { padding-right: 24px; padding-left: 24px; }
+  .formGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .passwordForm { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .passwordForm .actions,
+  .passwordForm .error,
+  .passwordForm .success { grid-column: 1 / -1; }
+}
+
+@media (max-width: 520px) {
+  .header { grid-template-columns: auto 1fr auto; text-align: left; }
+  .header > span { display: none; }
+  .sectionHeading { align-items: flex-start; }
+  .sectionHeading > button { flex: 0 0 auto; }
+  .profileCode { max-width: 42%; overflow: hidden; text-overflow: ellipsis; }
+  .detailList div { grid-template-columns: 1fr; gap: 4px; }
+  .detailList dd { text-align: left; }
+  .actions > button { flex: 1 1 12rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .back,
+  .deleteButton { scroll-behavior: auto; }
 }

@@ -8,7 +8,7 @@ import { GroupAdministrationScreen } from './GroupAdministrationScreen';
 
 const profile: OnboardingProfile = {
   id: 'owner-1', username: 'stefan', displayName: 'Stefan', timezone: 'America/Toronto', weeklyWorkoutTarget: 4,
-  pendingWeeklyWorkoutTarget: null, onboardingCompletedAt: '2026-08-18T00:00:00Z', profileCode: 'FG-1A2B3C4D5E',
+  pendingWeeklyWorkoutTarget: null, onboardingCompletedAt: '2026-08-18T00:00:00Z', profileCode: 'FG-1A2B3C4D5E', preferredWeightUnit: 'KG',
 };
 const ownerGroup: GroupSummary = { id:'group-1', name:'Iron Crew', memberCount:3, role:'OWNER', joinedAt:'2026-08-18T00:00:00Z', createdAt:'2026-08-18T00:00:00Z' };
 const members: GroupMember[] = [

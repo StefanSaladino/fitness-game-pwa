@@ -17,6 +17,7 @@ function createClient(overrides?: {
       pending_weekly_workout_target: null,
       onboarding_completed_at: null,
       profile_code: 'FG-1A2B3C4D5E',
+      preferred_weight_unit: 'KG',
     },
     error: overrides?.profileError ?? null,
   });
@@ -43,10 +44,12 @@ describe('onboarding service', () => {
       pendingWeeklyWorkoutTarget: null,
       onboardingCompletedAt: null,
       profileCode: 'FG-1A2B3C4D5E',
+      preferredWeightUnit: 'KG',
     });
 
     expect(fake.from).toHaveBeenCalledWith('profiles');
     expect(fake.eq).toHaveBeenCalledWith('id', 'user-1');
+    expect(fake.select).toHaveBeenCalledWith(expect.stringContaining('preferred_weight_unit'));
   });
 
   it('normalizes and sends one authoritative onboarding RPC', async () => {

@@ -87,6 +87,7 @@ class BrowserPwaService implements PwaService {
   private installPrompt: BeforeInstallPromptEvent | null = null;
   private serviceWorker: RegisteredServiceWorker | null = null;
   private started = false;
+  private startConsumers = 0;
   private cleanup: (() => void) | null = null;
   private storageRefreshSequence = 0;
 
@@ -138,7 +139,15 @@ class BrowserPwaService implements PwaService {
   };
 
   start = () => {
-    if (this.started) return () => undefined;
+    this.startConsumers += 1;
+    let released = false;
+    const release = () => {
+      if (released) return;
+      released = true;
+      this.startConsumers = Math.max(0, this.startConsumers - 1);
+      if (this.startConsumers === 0) this.cleanup?.();
+    };
+    if (this.started) return release;
     this.started = true;
 
     const mediaQuery = typeof window.matchMedia === 'function'
@@ -214,7 +223,7 @@ class BrowserPwaService implements PwaService {
       this.cleanup = null;
     };
 
-    return this.cleanup;
+    return release;
   };
 
   requestInstall = async (): Promise<InstallChoice> => {

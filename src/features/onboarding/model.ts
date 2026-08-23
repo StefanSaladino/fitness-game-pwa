@@ -2,7 +2,7 @@ export interface OnboardingInput { username:string;displayName:string;timezone:s
 export interface NormalizedOnboardingInput extends OnboardingInput {}
 export interface OnboardingProfile {
  id:string;username:string;displayName:string;timezone:string;weeklyWorkoutTarget:number;pendingWeeklyWorkoutTarget:number|null;onboardingCompletedAt:string|null;
- profileCode?:string;
+ profileCode?:string;preferredWeightUnit:'KG'|'LB';
 }
 export type OnboardingField='username'|'displayName'|'timezone'|'weeklyTarget';
 export interface OnboardingValidationIssue{field:OnboardingField;message:string}

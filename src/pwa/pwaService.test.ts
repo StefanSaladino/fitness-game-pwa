@@ -78,6 +78,19 @@ describe('pwaService mobile lifecycle', () => {
     stop();
   });
 
+  it('keeps shared lifecycle listeners active until the final mounted consumer releases them', () => {
+    const remove = vi.spyOn(window, 'removeEventListener');
+    const service = createPwaService();
+    const releaseSettings = service.start();
+    const releaseGlobalStatus = service.start();
+
+    releaseSettings();
+    expect(remove).not.toHaveBeenCalledWith('online', expect.any(Function));
+
+    releaseGlobalStatus();
+    expect(remove).toHaveBeenCalledWith('online', expect.any(Function));
+  });
+
   it('refreshes connectivity and storage status when a suspended mobile app returns visible', async () => {
     const persisted = vi.fn(async () => false);
     setNavigatorProperty('storage', { persisted, persist: vi.fn(async () => false) });

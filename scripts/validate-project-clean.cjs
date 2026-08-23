@@ -206,11 +206,11 @@ for (const heading of [
 ]) {
   if (!roadmap.includes(heading)) fail(`roadmap missing capacity slice: ${heading}`);
 }
-if (!/15\.6 Profile\/Settings \+ notification preferences .*LATER/.test(roadmap)) {
-  fail('roadmap must preserve the Profile/Settings + notification preferences phase');
+if (!/15\.6 Profile\/Settings \+ notification preferences .*IN PROGRESS/.test(roadmap)) {
+  fail('roadmap must mark the Profile/Settings + notification preferences phase in progress');
 }
 for (const heading of [
-  '15.6A Profile/Settings foundation — LATER',
+  '15.6A Profile/Settings foundation — DONE',
   '15.6B Notification preference persistence — LATER',
   '15.6C PWA notification permission + delivery integration — LATER',
   '15.6D Settings integration gate — LATER',
@@ -394,7 +394,7 @@ if (!/must not rely only on localStorage, IndexedDB, or a single browser install
     || !/must not silently set the account-level master preference to OFF/.test(settingsContract)
     || !/Data export must not appear as a functioning control until its backend exists/.test(settingsContract)
     || !/account-deletion backend[\s\S]*implemented by Phase 15\.3C/.test(settingsContract)
-    || !/Settings control remains deferred until the Phase 15\.6 visual gate/.test(settingsContract)) {
+    || !/product owner approved the 15\.6A implementation slice/.test(settingsContract)) {
   fail('Profile/Settings contract must preserve server persistence, explicit notification permission, multi-device semantics, and no fake controls');
 }
 if (!roadmap.includes('master Notifications ON/OFF preference server-side')
@@ -1573,6 +1573,82 @@ for (const fragment of [
   if (!phase155Doc.includes(fragment)) fail('Phase 15.5 documentation missing invariant: ' + fragment);
 }
 
+// Phase 15.6A ordinary Profile/Settings foundation.
+for (const relativePath of [
+  'PHASE15.6A-PATCH-MANIFEST.txt',
+  'docs/PHASE15.6A-PROFILE-SETTINGS-FOUNDATION.md',
+  'supabase/migrations/20260823162857_phase15_6a_profile_settings_foundation.sql',
+  'supabase/tests/037_phase15_6a_profile_settings_foundation.test.sql',
+  'src/features/settings/ProfileSettingsForm.tsx',
+  'src/features/settings/AccountSecuritySection.tsx',
+  'src/features/settings/AccountDeletionPanel.tsx',
+  'src/features/settings/AppStatusSection.tsx',
+  'src/features/settings/settingsService.ts',
+  'src/features/settings/settingsService.test.ts',
+  'src/features/settings/accountSecurityService.ts',
+  'src/features/settings/hooks/useProfileSettings.ts',
+]) {
+  if (!fs.existsSync(path.join(root, relativePath))) fail('Phase 15.6A file missing: ' + relativePath);
+}
+const phase156aMigration = read('supabase/migrations/20260823162857_phase15_6a_profile_settings_foundation.sql');
+const phase156aTest = read('supabase/tests/037_phase15_6a_profile_settings_foundation.test.sql');
+const phase156aScreen = read('src/features/settings/SettingsScreen.tsx');
+const phase156aProfileForm = read('src/features/settings/ProfileSettingsForm.tsx');
+const phase156aDeletion = read('src/features/settings/AccountDeletionPanel.tsx');
+const phase156aService = read('src/features/settings/settingsService.ts');
+const phase156aWorkout = read('src/features/workout/components/WorkoutController.tsx');
+const phase156aApp = read('src/app/App.tsx');
+const phase156aDoc = read('docs/PHASE15.6A-PROFILE-SETTINGS-FOUNDATION.md');
+for (const fragment of [
+  'preferred_weight_unit',
+  'public.update_my_profile_settings',
+  'private.require_active_account()',
+  "set search_path = ''",
+  'revoke update (username, display_name, timezone)',
+  'pending_weekly_workout_target_week_start',
+]) {
+  if (!phase156aMigration.includes(fragment)) fail('Phase 15.6A migration missing invariant: ' + fragment);
+}
+const phase156aPlan = Number((phase156aTest.match(/select\s+plan\((\d+)\)/i) || [])[1]);
+const phase156aAssertions = (phase156aTest.match(
+  /select\s+(?:has_column|has_function|is|results_eq|throws_ok|lives_ok)\s*\(/gi,
+) || []).length;
+if (phase156aPlan !== 31 || phase156aPlan !== phase156aAssertions) {
+  fail(`Phase 15.6A pgTAP plan ${phase156aPlan} must match its ${phase156aAssertions} assertions`);
+}
+for (const fragment of [
+  "rpc('update_my_profile_settings'",
+  'p_preferred_weight_unit',
+  'assertValidOnboardingInput',
+]) {
+  if (!phase156aService.includes(fragment)) fail('Phase 15.6A settings service missing boundary: ' + fragment);
+}
+for (const heading of ['Profile picture', 'Notifications', 'Security', 'Groups', 'Privacy & data']) {
+  if (!phase156aScreen.includes(heading)) fail('Phase 15.6A Settings surface missing section: ' + heading);
+}
+if (/type=["']checkbox["']|role=["']switch["']/.test(phase156aScreen + phase156aProfileForm)) {
+  fail('Phase 15.6A must not expose notification toggles before persistence and delivery exist');
+}
+if (/from\s+['"][^'"]*supabase|\.rpc\(|functions\.invoke/.test(
+  phase156aScreen + phase156aProfileForm + phase156aDeletion,
+)) {
+  fail('Phase 15.6A presentation must remain behind typed services and hooks');
+}
+for (const fragment of ['serviceRef.current!.request()', 'typed !== phrase', 'Cancel deletion request']) {
+  if (!phase156aDeletion.includes(fragment)) fail('Phase 15.6A deletion UI missing deliberate confirmation boundary: ' + fragment);
+}
+if (!phase156aWorkout.includes('profile.preferredWeightUnit')
+    || !phase156aProfileForm.includes('Workout history stays stored in canonical kilograms')) {
+  fail('Phase 15.6A preferred unit must affect display/input only, never canonical workout storage');
+}
+if (!phase156aApp.includes('onProfileChanged={onboarding.retry}')
+    || phase156aApp.indexOf("pathname === '/settings'") > phase156aApp.indexOf('<GroupGate')) {
+  fail('Phase 15.6A Settings must refresh profile state and remain reachable before GroupGate');
+}
+for (const fragment of ['Status: **DONE**', 'does not require Docker', '31-assertion pgTAP', 'exact server-derived `DELETE <username>` phrase']) {
+  if (!phase156aDoc.includes(fragment)) fail('Phase 15.6A documentation missing invariant: ' + fragment);
+}
+
 const ciWorkflow = read('.github/workflows/ci.yml');
 const canonicalDbRunner = read('scripts/run-canonical-db-tests.cjs');
 const supabaseConfig = read('supabase/config.toml');
@@ -1705,4 +1781,4 @@ if (fs.existsSync(obsoleteRepairPath)) {
   fail('structural validation must not materialize the obsolete repair migration');
 }
 
-console.log('Release validation passed: clean migration history, Phase 15.1 admin invariants, Phase 15.2 capacity contracts, Phase 15.3 account lifecycle/reporting/moderation contracts, Phase 15.4 auditable administrator messaging, Phase 15.5 deny-by-default integration security, canonical GitHub CI/database discovery, visual-roadmap guards, and production chunk budget guards are present.');
+console.log('Release validation passed: clean migration history, Phase 15.1 admin invariants, Phase 15.2 capacity contracts, Phase 15.3 account lifecycle/reporting/moderation contracts, Phase 15.4 auditable administrator messaging, Phase 15.5 deny-by-default integration security, Phase 15.6A Profile/Settings foundation, canonical GitHub CI/database discovery, visual-roadmap guards, and production chunk budget guards are present.');

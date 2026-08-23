@@ -1,0 +1,41 @@
+Fitness Game PWA — Phase 15.6A Profile/Settings foundation
+
+Database
+- supabase/migrations/20260823162857_phase15_6a_profile_settings_foundation.sql
+- supabase/tests/037_phase15_6a_profile_settings_foundation.test.sql
+- src/types/database.generated.ts
+
+Profile, preferences, security, deletion, groups, and PWA surface
+- src/app/App.tsx
+- src/features/settings/SettingsScreen.tsx
+- src/features/settings/SettingsScreen.module.css
+- src/features/settings/ProfileSettingsForm.tsx
+- src/features/settings/AccountSecuritySection.tsx
+- src/features/settings/AccountDeletionPanel.tsx
+- src/features/settings/AppStatusSection.tsx
+- src/features/settings/settingsService.ts
+- src/features/settings/settingsMessages.ts
+- src/features/settings/accountSecurityService.ts
+- src/features/settings/accountDeletionService.ts
+- src/features/settings/hooks/useProfileSettings.ts
+- src/features/settings/index.ts
+- src/features/onboarding/model.ts
+- src/features/onboarding/onboardingService.ts
+- src/features/product/ProductController.tsx
+- src/features/workout/components/WorkoutController.tsx
+- src/pwa/pwaService.ts
+
+Tests, contracts, and release validation
+- src/features/settings/SettingsScreen.test.tsx
+- src/features/settings/settingsService.test.ts
+- src/features/settings/accountSecurityService.test.ts
+- src/features/settings/accountDeletionService.test.ts
+- src/features/settings/hooks/useProfileSettings.test.tsx
+- src/pwa/pwaService.test.ts
+- existing OnboardingProfile fixtures updated for preferredWeightUnit
+- docs/PHASE15.6A-PROFILE-SETTINGS-FOUNDATION.md
+- docs/PHASE15.6-PROFILE-SETTINGS-NOTIFICATIONS.md
+- docs/CI-VALIDATION.md
+- docs/ROADMAP.md
+- scripts/validate-db-ci.cjs
+- scripts/validate-project-clean.cjs

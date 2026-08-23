@@ -64,8 +64,15 @@ function ProductSectionFallback() {
   return <div aria-live="polite" role="status">Loading…</div>;
 }
 
+function initialProductSection(): AppSection {
+  if (typeof window === 'undefined') return 'home';
+  const requested = new URLSearchParams(window.location.search).get('section');
+  return requested === 'groups' || requested === 'workouts' || requested === 'cardio'
+    || requested === 'progress' || requested === 'compete' ? requested : 'home';
+}
+
 export function ProductController({ profile, groups, onGroupsChanged, groupService, dashboardService, workoutService, workoutExerciseService, exercisePickerService, workoutSetService, workoutMutationService, progressService, socialService, reportService, cardioService }: ProductControllerProps) {
-  const [activeSection, setActiveSection] = useState<AppSection>('home');
+  const [activeSection, setActiveSection] = useState<AppSection>(initialProductSection);
   const [selectedGroupId, setSelectedGroupId] = useState(groups[0]?.id ?? '');
 
   useEffect(() => {
