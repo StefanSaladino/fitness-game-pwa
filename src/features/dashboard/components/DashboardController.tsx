@@ -7,7 +7,7 @@ import { DashboardError, DashboardLoading, DashboardScreen } from './DashboardSc
 
 interface DashboardControllerProps {
   profile: OnboardingProfile;
-  group: GroupSummary;
+  group?: GroupSummary;
   onNavigate: (section: AppSection) => void;
   onSignOut: () => void;
   service?: DashboardService;
@@ -18,9 +18,8 @@ export function DashboardController({ profile, group, onNavigate, onSignOut, ser
     userId: profile.id,
     timezone: profile.timezone,
     weeklyTarget: profile.weeklyWorkoutTarget,
-    groupId: group.id,
+    groupId: group?.id ?? null,
   }, service);
-
 
   if (dashboard.status === 'loading' || !dashboard.snapshot) {
     if (dashboard.status === 'error') {
