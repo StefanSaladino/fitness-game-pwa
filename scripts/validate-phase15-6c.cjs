@@ -162,13 +162,14 @@ if (/dispatchToken.*jsonResponse|privateKey.*jsonResponse/.test(edge)) {
 
 const pushService = read(pushServicePath);
 for (const invariant of [
+  "export type PushDeviceCapability = 'available' | 'requires-install' | 'unsupported'",
+  'if (isIosLike() && !isStandalone()) return \'requires-install\';',
   'Notification.requestPermission()',
   "functions.invoke('push-notifications'",
   "rpc('register_my_push_subscription'",
   "rpc('revoke_my_push_subscription'",
   "rpc('enqueue_my_push_test'",
   'userVisibleOnly: true',
-  "capability: 'requires-install'",
 ]) {
   if (!pushService.includes(invariant)) fail(`push device service missing behavior: ${invariant}`);
 }
