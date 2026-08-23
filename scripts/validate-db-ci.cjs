@@ -61,6 +61,8 @@ const phase153bHookSchemaMigration = 'supabase/migrations/20260822162155_move_ac
 const phase153bTest = 'supabase/tests/031_platform_account_suspension_enforcement.test.sql';
 const phase153cMigration = 'supabase/migrations/20260822172823_platform_account_irreversible_deletion.sql';
 const phase153cTest = 'supabase/tests/032_platform_account_irreversible_deletion.test.sql';
+const phase153eMigration = 'supabase/migrations/20260823140206_user_reports_moderation_foundation.sql';
+const phase153eTest = 'supabase/tests/033_user_reports_moderation_foundation.test.sql';
 for (const relativePath of [
   phase153aMigration,
   phase153aTest,
@@ -70,6 +72,8 @@ for (const relativePath of [
   phase153bTest,
   phase153cMigration,
   phase153cTest,
+  phase153eMigration,
+  phase153eTest,
 ]) {
   if (!fs.existsSync(path.join(root, relativePath))) fail(`Phase 15.3 database artifact missing: ${relativePath}`);
 }
@@ -165,6 +169,54 @@ for (const coverage of [
   'direct hard Auth deletion cannot bypass pending-state and preparation checks',
 ]) {
   if (!test153c.includes(coverage)) fail(`Phase 15.3C pgTAP missing coverage: ${coverage}`);
+}
+
+const migration153e = read(phase153eMigration);
+for (const invariant of [
+  'private.user_reports',
+  'private.moderation_cases',
+  'private.moderation_case_notes',
+  'private.moderation_case_events',
+  'public.submit_user_report',
+  'public.list_moderation_cases',
+  'public.get_moderation_case_detail',
+  'public.assign_moderation_case',
+  'public.add_moderation_case_note',
+  'public.update_moderation_case_status',
+  'private.require_active_account()',
+  'private.require_active_platform_admin()',
+  'Users cannot report themselves',
+  'Report submission limit reached; try again later',
+  'This incident was already reported recently',
+  "interval '2 years'",
+  'Moderation evidence and history are immutable',
+  "set search_path = ''",
+]) {
+  if (!migration153e.includes(invariant)) fail(`Phase 15.3E migration missing invariant: ${invariant}`);
+}
+if (/grant\s+[^;]*\bon\s+(?:table\s+|function\s+)?private\./i.test(migration153e)) {
+  fail('Phase 15.3E must not grant browser roles direct access to private moderation objects');
+}
+if (/['"]MESSAGE['"]/.test(
+  migration153e.match(/create type public\.user_report_reference_type[\s\S]*?\);/)?.[0] || '',
+)) {
+  fail('Phase 15.3E must not invent message evidence before a durable message source exists');
+}
+
+const test153e = read(phase153eTest);
+if (!/select\s+plan\s*\(\s*88\s*\)\s*;/i.test(test153e)) {
+  fail('Phase 15.3E pgTAP suite must retain its 88-assertion plan');
+}
+for (const coverage of [
+  'users cannot report themselves',
+  'reported users cannot read case detail or reporter identity',
+  'normalized duplicate incidents are rejected for 24 hours',
+  'a reporter is limited to ten submissions in a rolling 24-hour window',
+  'closed cases retain report, evidence, notes, and history for at least two years',
+  'submission, assignment, note, review, and resolution remain in append-only history',
+  'message evidence is not fabricated before a message source exists',
+]) {
+  if (!test153e.includes(coverage)) fail(`Phase 15.3E pgTAP missing coverage: ${coverage}`);
 }
 
 const ci = fs.readFileSync(ciPath, 'utf8');

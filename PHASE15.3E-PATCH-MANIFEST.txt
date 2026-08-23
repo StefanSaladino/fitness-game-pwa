@@ -1,0 +1,48 @@
+Fitness Game PWA — Phase 15.3E patch manifest
+
+Baseline
+- Remote master Phase 15.3D commit: 8cce464fefac25869cb75fbb962bcafb676102bf
+- No tag is created in this phase; tags remain deferred until the local checkout is reconciled.
+
+Database
+- supabase/migrations/20260823140206_user_reports_moderation_foundation.sql
+- supabase/tests/033_user_reports_moderation_foundation.test.sql
+- scripts/validate-db-ci.cjs
+
+Ordinary-user report service
+- src/features/moderation/model.ts
+- src/features/moderation/userReportService.ts
+- src/features/moderation/userReportService.test.ts
+- src/features/moderation/index.ts
+
+Moderator service
+- src/features/admin/moderation/model.ts
+- src/features/admin/moderation/moderationCaseService.ts
+- src/features/admin/moderation/moderationCaseService.test.ts
+- src/features/admin/moderation/index.ts
+- src/features/admin/index.ts
+
+Documentation and release contracts
+- docs/PHASE15.3E-USER-REPORTS-MODERATION-FOUNDATION.md
+- docs/ROADMAP.md
+- docs/DATABASE.md
+- docs/SUPABASE-SETUP.md
+- docs/CI-VALIDATION.md
+- CHANGELOG.md
+- scripts/validate-project-clean.cjs
+- PHASE15.3E-PATCH-MANIFEST.txt
+
+Behavioral boundary
+- Adds private durable reports/cases, active-account submission, validated current evidence references, abuse controls, admin-only reads/mutations, immutable history, and minimum two-year closed-case retention.
+- Does not add report or moderation UI, unrestricted activity access, admin-to-user messages, a message evidence source, an Edge Function, provider secret, scoring/XP changes, or Docker requirements.
+
+Validation gate
+- npm run typecheck
+- npm test
+- npm run test:integration
+- npm run build
+- npm run test:structure
+- npm run test:internal
+- npm run db:test:ci
+- hosted migration plus rollback-safe 88-assertion pgTAP suite
+- hosted Supabase security and performance advisors

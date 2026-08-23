@@ -839,8 +839,8 @@ for (const heading of [
   '#### 15.3B Suspension enforcement + Auth session coordination — DONE',
   '#### 15.3C Irreversible account removal — DONE',
   '#### 15.3D User-administration visual gate + UI — DONE',
-  '#### 15.3E User reports + moderation case foundation — LATER',
-  '#### 15.3F Privacy-bounded user activity review + moderation UI — LATER',
+  '#### 15.3E User reports + moderation case foundation — DONE',
+  '#### 15.3F Privacy-bounded user activity review + moderation UI — NEXT',
 ]) {
   if (!roadmap.includes(heading)) fail('Phase 15.3 roadmap missing slice: ' + heading);
 }
@@ -1218,6 +1218,111 @@ for (const futureRequirement of [
   if (!roadmap.includes(futureRequirement)) fail('Phase 15 future moderation/messaging requirement missing: ' + futureRequirement);
 }
 
+// Phase 15.3E private reports + moderation-case foundation.
+for (const relativePath of [
+  'PHASE15.3E-PATCH-MANIFEST.txt',
+  'docs/PHASE15.3E-USER-REPORTS-MODERATION-FOUNDATION.md',
+  'supabase/migrations/20260823140206_user_reports_moderation_foundation.sql',
+  'supabase/tests/033_user_reports_moderation_foundation.test.sql',
+  'src/features/moderation/model.ts',
+  'src/features/moderation/userReportService.ts',
+  'src/features/moderation/userReportService.test.ts',
+  'src/features/admin/moderation/model.ts',
+  'src/features/admin/moderation/moderationCaseService.ts',
+  'src/features/admin/moderation/moderationCaseService.test.ts',
+]) {
+  if (!fs.existsSync(path.join(root, relativePath))) fail('Phase 15.3E file missing: ' + relativePath);
+}
+
+const phase153eMigration = read('supabase/migrations/20260823140206_user_reports_moderation_foundation.sql');
+const phase153eTest = read('supabase/tests/033_user_reports_moderation_foundation.test.sql');
+const phase153eUserService = read('src/features/moderation/userReportService.ts');
+const phase153eAdminService = read('src/features/admin/moderation/moderationCaseService.ts');
+const phase153eDoc = read('docs/PHASE15.3E-USER-REPORTS-MODERATION-FOUNDATION.md');
+
+for (const fragment of [
+  'create table private.user_reports',
+  'create table private.moderation_cases',
+  'create table private.moderation_case_notes',
+  'create table private.moderation_case_events',
+  'function public.submit_user_report',
+  'function public.list_moderation_cases',
+  'function public.get_moderation_case_detail',
+  'function public.assign_moderation_case',
+  'function public.add_moderation_case_note',
+  'function public.update_moderation_case_status',
+  'private.require_active_account()',
+  'private.require_active_platform_admin()',
+  'Users cannot report themselves',
+  'Report submission limit reached; try again later',
+  'This incident was already reported recently',
+  "interval '2 years'",
+  'Moderation evidence and history are immutable',
+  "set search_path = ''",
+]) {
+  if (!phase153eMigration.includes(fragment)) fail('Phase 15.3E migration missing invariant: ' + fragment);
+}
+if (/grant\s+[^;]*\bon\s+(?:table\s+|function\s+)?private\./i.test(phase153eMigration)) {
+  fail('Phase 15.3E must not grant browser roles direct access to private moderation objects');
+}
+if (/['"]MESSAGE['"]/.test(
+  phase153eMigration.match(/create type public\.user_report_reference_type[\s\S]*?\);/)?.[0] || '',
+)) {
+  fail('Phase 15.3E must not invent message evidence before a durable message source exists');
+}
+
+const phase153ePlan = Number((phase153eTest.match(/select\s+plan\((\d+)\)/i) || [])[1]);
+const phase153eAssertions = (phase153eTest.match(
+  /select\s+(?:has_type|has_table|has_column|has_function|is|results_eq|throws_ok|lives_ok)\s*\(/gi,
+) || []).length;
+if (phase153ePlan !== phase153eAssertions) {
+  fail('Phase 15.3E pgTAP plan ' + phase153ePlan + ' must match ' + phase153eAssertions + ' assertions');
+}
+if (phase153ePlan < 80) fail('Phase 15.3E privacy/moderation suite must retain comprehensive coverage');
+for (const coverage of [
+  'users cannot report themselves',
+  'reported users cannot read case detail or reporter identity',
+  'normalized duplicate incidents are rejected for 24 hours',
+  'a reporter is limited to ten submissions in a rolling 24-hour window',
+  'closed cases retain report, evidence, notes, and history for at least two years',
+  'submission, assignment, note, review, and resolution remain in append-only history',
+]) {
+  if (!phase153eTest.includes(coverage)) fail('Phase 15.3E pgTAP missing coverage: ' + coverage);
+}
+
+for (const rpc of ['submit_user_report']) {
+  if (!phase153eUserService.includes(rpc)) fail('Phase 15.3E user report service missing RPC: ' + rpc);
+}
+for (const rpc of [
+  'list_moderation_cases',
+  'get_moderation_case_detail',
+  'list_moderation_case_notes',
+  'list_moderation_case_events',
+  'assign_moderation_case',
+  'add_moderation_case_note',
+  'update_moderation_case_status',
+]) {
+  if (!phase153eAdminService.includes(rpc)) fail('Phase 15.3E moderator service missing RPC: ' + rpc);
+}
+if (/service[_-]?role|SUPABASE_SECRET|from\(['"](?:user_reports|moderation_cases|moderation_case_notes|moderation_case_events)/i.test(
+  phase153eUserService + phase153eAdminService,
+)) {
+  fail('Phase 15.3E browser services must not contain privileged credentials or direct private-table access');
+}
+for (const fragment of [
+  'Reporter identity is available only through active-platform-admin RPCs',
+  'MESSAGE reference is intentionally absent',
+  'at least two years after `closed_at`',
+  'purpose-built, audited activity-review read models',
+  'does not require Docker or a local Supabase stack',
+]) {
+  if (!phase153eDoc.includes(fragment)) fail('Phase 15.3E documentation missing invariant: ' + fragment);
+}
+if (!roadmap.includes('#### 15.3E User reports + moderation case foundation — DONE')
+    || !roadmap.includes('#### 15.3F Privacy-bounded user activity review + moderation UI — NEXT')) {
+  fail('Phase 15.3E roadmap must be DONE and Phase 15.3F must be NEXT');
+}
+
 const ciWorkflow = read('.github/workflows/ci.yml');
 const canonicalDbRunner = read('scripts/run-canonical-db-tests.cjs');
 const supabaseConfig = read('supabase/config.toml');
@@ -1350,4 +1455,4 @@ if (fs.existsSync(obsoleteRepairPath)) {
   fail('structural validation must not materialize the obsolete repair migration');
 }
 
-console.log('Release validation passed: clean migration history, Phase 15.1 admin invariants, Phase 15.2A capacity semantics, Phase 15.2B private telemetry/history authorization, Phase 15.2C secure Supabase provider boundary/provider-gap semantics, Phase 15.2D secure Netlify provider boundary/provider-gap semantics, Phase 15.2E real-data capacity UI/route/settings contracts, Phase 15.3A account lifecycle foundation, Phase 15.3B Data API/session enforcement and server-only Auth coordination, Phase 15.3C irreversible administrator/self-service deletion coordination, Phase 15.3D approved responsive account-administration UI, canonical GitHub CI/database discovery, visual-roadmap guards, and production chunk budget guards are present.');
+console.log('Release validation passed: clean migration history, Phase 15.1 admin invariants, Phase 15.2A capacity semantics, Phase 15.2B private telemetry/history authorization, Phase 15.2C secure Supabase provider boundary/provider-gap semantics, Phase 15.2D secure Netlify provider boundary/provider-gap semantics, Phase 15.2E real-data capacity UI/route/settings contracts, Phase 15.3A account lifecycle foundation, Phase 15.3B Data API/session enforcement and server-only Auth coordination, Phase 15.3C irreversible administrator/self-service deletion coordination, Phase 15.3D approved responsive account-administration UI, Phase 15.3E private user reports and moderation-case lifecycle contracts, canonical GitHub CI/database discovery, visual-roadmap guards, and production chunk budget guards are present.');

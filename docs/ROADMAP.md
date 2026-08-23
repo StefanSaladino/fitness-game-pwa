@@ -752,9 +752,9 @@ Netlify billing/usage is team/account scoped. The public API calls a team an acc
 - implemented the searchable/paginated directory, detail, suspend/restore, and deliberate two-step deletion UX after approval;
 - keep destructive actions reasoned, explicit, accessible, and non-color-only.
 
-#### 15.3E User reports + moderation case foundation — LATER
+#### 15.3E User reports + moderation case foundation — DONE
 
-- let an authenticated user report another user, never themselves, with a required category/reason and optional reference to a supported group, message, workout, or other reviewable product object;
+- let an authenticated user report another user, never themselves, with a required category/reason and optional validated reference to a supported group, completed workout, or group social activity; message references remain deferred until a real message source exists;
 - deliver reports into a private moderation queue for moderation-capable platform administrators; the first operational moderator is the existing platform administrator, without inventing a browser-only moderator role;
 - keep the reporter identity visible to authorized moderators for abuse review but hidden from the reported user unless an explicit later disclosure policy requires otherwise;
 - support NEW, IN_REVIEW, RESOLVED, and DISMISSED case states, moderator notes, assignment, timestamps, and append-only action history;
@@ -762,7 +762,7 @@ Netlify billing/usage is team/account scoped. The public API calls a team an acc
 - define report, evidence-reference, moderator-note, and resolution retention before exposing the reporting control;
 - alerts must be durable in-app moderation work, not a best-effort toast; later email/push delivery may supplement but never replace the queue.
 
-#### 15.3F Privacy-bounded user activity review + moderation UI — LATER
+#### 15.3F Privacy-bounded user activity review + moderation UI — NEXT
 
 - let an authorized moderator open a reported or directory-selected account’s review timeline using purpose-built read models rather than unrestricted table access;
 - include relevant account lifecycle events, workouts recorded, group membership/activity, reports, and communication history once each source exists;

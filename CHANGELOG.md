@@ -1,6 +1,16 @@
 # Changelog
 
-## Unreleased — Phase 15.3D user administration
+## Unreleased — Phase 15.3E user reports + moderation foundation
+
+- Added a private, durable user-report and moderation-case queue without inventing a browser-only moderator role.
+- Added active-account report submission with self-report protection, required category/reason, rolling rate limits, normalized duplicate protection, and current group/workout/social-activity reference validation.
+- Added ACTIVE-platform-admin-only paginated queue/detail reads, assignment, append-only notes/events, and terminal RESOLVED/DISMISSED transitions.
+- Kept reporter identity private from the target while retaining bounded identity snapshots across later account deletion.
+- Defined a minimum two-year closed-case retention boundary and deferred any operator purge/legal-hold workflow.
+- Added 88 rollback-safe pgTAP assertions plus ordinary-user and moderator TypeScript service coverage.
+- Added no report UI, activity-review UI, message source, Edge Function, secret, scoring/XP change, or Docker requirement.
+
+### Phase 15.3D user administration
 
 - Added the approved ACTIVE-platform-admin-only `/platform-admin/users` directory and account-detail workflow.
 - Added search, explicit account-state filters, pagination, bounded account metadata, and shared Capacity/Users administration navigation.
@@ -32,7 +42,7 @@
 - Repaired GitHub CI so application, browser, and database gates run independently under Node 24 using `npm ci`.
 - Added a tracked non-secret `supabase/config.toml` with PostgreSQL major version 17 to match the hosted project.
 - Added a cross-platform canonical database-test runner that selects only `supabase/tests/*.test.sql`; the historical `_all-hosted-tests.sql` aggregate is replaced by a one-plan compatibility sentinel so it can no longer emit multiple TAP plans.
-- GitHub database CI still uses Docker on the hosted runner, while Docker remains optional and unnecessary for the normal developer workflow that validates database changes against hosted Supabase.
+- GitHub database CI uses the non-Docker repository contract gate; runtime migration and pgTAP validation remain hosted-Supabase authoritative.
 - No scoring, XP, badge-award, ranking, workout, or ordinary-user behavior changed.
 
 ## v0.13.0 — Phase 15.1 platform-admin authorization + audit foundation

@@ -81,6 +81,17 @@ Authoritative scoring writes will be performed through controlled server/databas
 
 Phase 15.3C account deletion removes every object under the user's UUID folder through the Storage API before hard Auth deletion. It never deletes Storage metadata with SQL. The Auth/profile cascade deletes profile-owned workouts, scoring/progression, badges, memberships/invites/reactions, and preferences. Group ownership is `ON DELETE RESTRICT`, so ownership must be transferred first. UUID-only deletion coordination and append-only platform audit records intentionally survive without profile foreign keys.
 
+## User reports and moderation cases — Phase 15.3E
+
+Report evidence and moderation workflow state live only in the `private` schema:
+
+- `user_reports`: immutable reporter/target identity snapshots, category/reason, optional validated GROUP/WORKOUT/SOCIAL_ACTIVITY reference, and duplicate fingerprint;
+- `moderation_cases`: NEW/IN_REVIEW/RESOLVED/DISMISSED queue state, assignment, resolution, closure, and minimum retention boundary;
+- `moderation_case_notes`: append-only private moderator notes;
+- `moderation_case_events`: append-only submission/assignment/note/status history.
+
+Browser roles receive no table access. Active users may only call `submit_user_report`; ACTIVE platform administrators may call the bounded queue/detail/mutation RPCs. Reporter/target UUIDs intentionally do not reference `profiles`, so retained cases survive account deletion. Closed-case data is retained for at least two years; a later operator-only purge must honor legal/safety holds.
+
 
 ## Dashboard read model
 

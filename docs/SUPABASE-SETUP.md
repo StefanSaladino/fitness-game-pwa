@@ -308,6 +308,12 @@ Apply `supabase/migrations/20260822172823_platform_account_irreversible_deletion
 
 This workflow does not use Docker. The pgTAP suite is rollback-safe and uses only transaction-scoped fake users. Do not validate deletion by calling the Edge Function against a real account. The current Storage cleanup contract covers the `profile-pictures/<user-id>` prefix; any future user-owned bucket must be added to the server cleanup contract before it accepts user uploads.
 
+## Phase 15.3E user reports + moderation cases
+
+Apply `supabase/migrations/20260823140206_user_reports_moderation_foundation.sql` to hosted Supabase, then run `supabase/tests/033_user_reports_moderation_foundation.test.sql` and require 88/88 assertions. The test creates only transaction-scoped fake Auth/profile/group/workout/badge/report/case rows and finishes with `ROLLBACK`.
+
+After the migration, run hosted security and performance advisors. No Edge Function or new secret is required. Do not add a MESSAGE evidence type manually: Phase 15.4 must first create the durable message source, authorization, and retention contract. This workflow does not use Docker or a local Supabase stack.
+
 
 ## Phase 5.4 / v0.3 lifting-first migration
 
