@@ -64,7 +64,12 @@ ok(/prefers-reduced-motion/.test(doc), 'motion direction must preserve reduced-m
 for (const ownership of ['### Remains global', '### Shared component-owned', '### Feature-local']) {
   ok(doc.includes(ownership), `CSS ownership direction missing ${ownership}`);
 }
-ok(/migrate shared primitives\/layout into colocated modules/.test(doc), 'legacy global CSS migration direction must be incremental and colocated');
+ok(
+  /shared primitives\/layout into colocated modules/.test(doc)
+    && /when each shared component is touched/.test(doc)
+    && /rather than performing a risky global CSS rewrite/.test(doc),
+  'legacy global CSS migration direction must be incremental, colocated, and component-touch driven',
+);
 ok(/Do not create a speculative design-system API/.test(doc), 'token promotion must remain demonstrated-use only');
 
 ok(/### Current baseline/.test(doc) && /### Target direction/.test(doc), 'before/after baseline references must exist');
