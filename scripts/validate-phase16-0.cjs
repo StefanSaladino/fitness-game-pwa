@@ -85,7 +85,7 @@ ok(navigation.includes("{ id: 'profile', label: 'Profile'"), 'baseline still exp
 ok(shell.includes('DesktopSidebar') && shell.includes('MobileNav'), 'baseline must still match the current dual shell');
 ok(/groups\[0\]\?\.id \?\? ''/.test(product), 'ProductController must still model nullable selected group context');
 ok(/groups\.find\([\s\S]*\?\? groups\[0\] \?\? null/.test(product), 'selected group must remain nullable rather than globally required');
-ok(/groups\.length === 0/.test(groupGate) && /children\(\[\]\)/.test(groupGate), 'zero groups must remain a valid product path');
+ok(/groups\.length === 0/.test(groupGate) && /children\(\[\],\s*groupState\.retry\)/.test(groupGate), 'zero groups must remain a valid product path');
 ok(/Groups are optional\./.test(dashboardGroups), 'dashboard must retain the solo-group explanation');
 ok(/does not replace any group you already belong to/.test(dashboardGroups), 'dashboard invite copy must preserve additive membership semantics');
 
