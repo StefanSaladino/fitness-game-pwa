@@ -41,7 +41,10 @@ export function WorkoutPresetStartScreen(props: WorkoutPresetStartScreenProps) {
   const startingSeconds = useStartingClock(startingAtMs);
   const tip = useMemo(() => trainingTipForDate(new Date(), props.profile.id, 'WORKOUT'), [props.profile.id]);
   const starting = props.busyAction === 'start' || startingAtMs !== null;
-  const presetsReady = props.exercisePickerStatus === 'ready' && props.exerciseCatalog.length > 0;
+  const catalogNames = useMemo(
+    () => new Set(props.exerciseCatalog.map((exercise) => exercise.canonicalName.toLocaleLowerCase('en-CA'))),
+    [props.exerciseCatalog],
+  );
 
   useEffect(() => {
     if (startingAtMs !== null && props.busyAction !== 'start' && props.error) {
@@ -114,22 +117,27 @@ export function WorkoutPresetStartScreen(props: WorkoutPresetStartScreenProps) {
           )}
 
           <ul className={styles.presetList}>
-            {presetWorkouts.map((preset) => (
-              <li key={preset.id}>
-                <div className={styles.presetCopy}>
-                  <strong>{preset.name}</strong>
-                  <p>{preset.description}</p>
-                  <span>{preset.exerciseNames.length} exercises · {preset.exerciseNames.join(' · ')}</span>
-                </div>
-                <Button
-                  disabled={starting || !presetsReady}
-                  variant="secondary"
-                  onClick={() => startPreset(preset.id)}
-                >
-                  {starting && selectedPresetId === preset.id ? 'Starting…' : 'Start preset'}
-                </Button>
-              </li>
-            ))}
+            {presetWorkouts.map((preset) => {
+              const available = props.exercisePickerStatus === 'ready'
+                && preset.exerciseNames.every((name) => catalogNames.has(name.toLocaleLowerCase('en-CA')));
+              return (
+                <li key={preset.id}>
+                  <div className={styles.presetCopy}>
+                    <strong>{preset.name}</strong>
+                    <p>{preset.description}</p>
+                    <span>{preset.exerciseNames.length} exercises · {preset.exerciseNames.join(' · ')}</span>
+                    {props.exercisePickerStatus === 'ready' && !available && <em>Unavailable because one or more catalogue exercises are inactive.</em>}
+                  </div>
+                  <Button
+                    disabled={starting || !available}
+                    variant="secondary"
+                    onClick={() => startPreset(preset.id)}
+                  >
+                    {starting && selectedPresetId === preset.id ? 'Starting…' : 'Start preset'}
+                  </Button>
+                </li>
+              );
+            })}
           </ul>
         </section>
 
