@@ -1,0 +1,55 @@
+.tip {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.9rem;
+  align-items: start;
+  padding: 1rem 1.1rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: rgba(61, 134, 255, 0.06);
+}
+
+.icon {
+  display: grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 999px;
+  background: rgba(61, 134, 255, 0.13);
+  color: var(--color-blue);
+  font-weight: 800;
+}
+
+.copy {
+  min-width: 0;
+}
+
+.copy span {
+  display: block;
+  margin-bottom: 0.18rem;
+  color: var(--color-blue);
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.copy strong {
+  display: block;
+  color: var(--color-text);
+  font-size: 1rem;
+}
+
+.copy p {
+  margin: 0.35rem 0 0;
+  color: var(--color-text-soft);
+  line-height: 1.5;
+}
+
+.compact {
+  padding: 0.85rem 0.95rem;
+}
+
+.compact .copy p {
+  font-size: 0.92rem;
+}
