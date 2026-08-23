@@ -2,7 +2,7 @@
 
 ## Status
 
-**LOCKED; 15.6A + 15.6B IMPLEMENTED.**
+**LOCKED; 15.6A–15.6C IMPLEMENTED.**
 
 This document defines the functional architecture for the authenticated `/settings` surface. It is an ordinary user-facing PWA area, not an administrator console, and later visual work must preserve these behaviors.
 
@@ -16,11 +16,11 @@ This document defines the functional architecture for the authenticated `/settin
 - group membership problems must not prevent a signed-in user from reaching their own account/settings surface;
 - administrator discovery inside Settings follows the separate Phase 15.2 authorization contract.
 
-The eventual implementation should branch `/settings` from the authenticated/profile boundary before `GroupGate`, while incomplete profile onboarding may continue to use the existing onboarding flow.
+The implementation branches `/settings` from the authenticated/profile boundary before `GroupGate`, while incomplete profile onboarding continues to use the existing onboarding flow.
 
 ## Settings information architecture
 
-The mobile-first Profile/Settings surface must provide these sections.
+The mobile-first Profile/Settings surface provides these sections.
 
 ### 1. Profile + identity
 
@@ -30,22 +30,22 @@ The mobile-first Profile/Settings surface must provide these sections.
 - email/account identity;
 - timezone;
 - weekly lifting target;
-- preferred lifting weight unit (`kg` / `lb`) once persisted as an account preference;
+- preferred lifting weight unit (`kg` / `lb`) as a persisted account preference;
 - account/member-since context when trustworthy source data is available.
 
-Editable identity fields must use authoritative service/RPC boundaries rather than writing arbitrary profile columns directly from presentation components.
+Editable identity fields use authoritative service/RPC boundaries rather than writing arbitrary profile columns directly from presentation components.
 
 ### 2. Notifications
 
 Notifications are a first-class account setting, not a hidden browser-only preference.
 
-The section must expose a master control:
+The section exposes a master control:
 
 ```text
 Notifications  [ON/OFF]
 ```
 
-When the master switch is ON, the user may independently toggle supported optional categories:
+The account persists independent optional category preferences for:
 
 - workout reminders;
 - weekly goal reminders;
@@ -54,40 +54,57 @@ When the master switch is ON, the user may independently toggle supported option
 - group activity;
 - group invitations.
 
-The category list may grow later, but implemented controls must map to real supported delivery behavior rather than decorative/fake toggles.
+A category appears as a working switch only when a real supported delivery behavior exists. Phase 15.6C implements real Web Push delivery for **badges + achievements**, **personal-record alerts**, and **group invitations**. Workout reminders, weekly goal reminders, and generic group activity remain persisted for future explicitly defined behavior, but are shown as unavailable rather than as decorative/fake switches because no reminder timing or generic group-activity push contract has been approved.
 
 ### Notification preference semantics
 
-Notification preferences are **account-level server-persisted preferences**. They must not rely only on localStorage, IndexedDB, or a single browser installation.
+Notification preferences are **account-level server-persisted preferences**. They do not rely only on localStorage, IndexedDB, or a single browser installation.
 
 The master switch is authoritative for optional notification delivery:
 
 - master OFF suppresses all optional notification delivery for the account;
-- child category controls are disabled while master OFF;
+- supported child category controls are disabled while master OFF;
 - turning master OFF preserves the user's individual category selections so re-enabling notifications can restore the prior choices;
 - master ON does not automatically grant browser/OS notification permission.
 
-Required in-app account, security, moderation, suspension, or ACTION_REQUIRED notices are not optional push/reminder preferences. Disabling optional notifications must not hide mandatory in-app account-state or policy messages.
+Required in-app account, security, moderation, suspension, or ACTION_REQUIRED notices are not optional push/reminder preferences. Disabling optional notifications never hides mandatory in-app account-state or policy messages.
 
 ### Device/browser permission is separate
 
-PWA/browser notification capability is device-specific and must be represented separately from the account preference.
+PWA/browser notification capability is device-specific and is represented separately from the account preference.
 
 Supported device states include:
 
 - permission not requested/default;
 - permission granted;
 - permission denied/blocked;
-- notifications unsupported on this device/browser.
+- notifications unsupported on this device/browser;
+- iPhone/iPad browser session that must first be installed to the Home Screen before Web Push permission can be requested.
 
 Rules:
 
 - never auto-prompt for notification permission merely because `/settings` loads;
-- request permission only after an explicit user action such as `Enable notifications on this device`;
+- request permission only after an explicit user action such as `Enable on this device`;
 - denying permission on one device must not silently set the account-level master preference to OFF;
-- if account notifications are ON but device permission is blocked, Settings must explain that this device cannot currently deliver notifications without implying the account preference changed;
-- push subscriptions are device-specific and must be registered/revoked independently of the account-level preference;
-- multiple authorized devices may each have their own subscription while sharing the same account preferences.
+- if account notifications are ON but device permission is blocked, Settings explains that this device cannot currently deliver notifications without implying the account preference changed;
+- push subscriptions are device-specific and are registered/revoked independently of the account-level preference;
+- multiple authorized devices may each have their own subscription while sharing the same account preferences;
+- a browser subscription is re-associated with the currently authenticated account when that same endpoint is presented after an account switch, preventing delivery to a previously signed-in account;
+- disabling one device does not disable the account preference or another registered device.
+
+### Push delivery boundary
+
+Phase 15.6C adds a durable server delivery path for supported categories.
+
+- subscription endpoint/key capability data stays in private database state with no direct browser-table access;
+- browser callers can only use authenticated self-service registration/revocation/device-summary/test boundaries;
+- VAPID private material and the background dispatch credential remain server-side and never enter Vite/browser code;
+- the `push-notifications` Edge Function manually verifies ACTIVE user JWTs before returning the public subscription key;
+- background queue draining uses a separate server-only dispatch credential because hosted `pg_net`/cron calls do not carry an end-user JWT;
+- every actual send re-checks ACTIVE account state plus the current master/category preference so queued optional delivery can still be suppressed before provider dispatch;
+- one queued event fans out to independent active devices, with per-device success/expiry/retry state;
+- expired provider endpoints are revoked and transient provider failures remain retryable through the hosted queue/cron path;
+- service-worker notification clicks accept only same-origin application paths.
 
 ### 3. Account + security
 
@@ -104,7 +121,7 @@ Email-change functionality, when added, must use the provider's verified email-c
 - weekly lifting target;
 - preferred `kg` / `lb` display/input unit.
 
-Changing preferences must not rewrite historical authoritative workout/scoring data.
+Changing preferences does not rewrite historical authoritative workout/scoring data.
 
 ### 5. Groups
 
@@ -112,7 +129,7 @@ Changing preferences must not rewrite historical authoritative workout/scoring d
 - pending invitations;
 - navigation to the existing group-management surface.
 
-Settings must link to group administration rather than duplicating group OWNER/ADMIN controls.
+Settings links to group administration rather than duplicating group OWNER/ADMIN controls.
 
 ### 6. Privacy + data
 
@@ -123,7 +140,7 @@ Reserve a clear section for:
 - future data export;
 - self-service account deletion backed by the completed Phase 15.3C lifecycle.
 
-Data export must not appear as a functioning control until its backend exists. The account-deletion backend, retention rules, audit behavior, Storage cleanup, and social/scoring consequences are implemented by Phase 15.3C. The product owner approved the 15.6A implementation slice with a deliberate request/cancel/exact-confirmation Settings control; it uses the exact server-derived phrase and retains the group-ownership transfer requirement.
+Data export must not appear as a functioning control until its backend exists. The account-deletion backend, retention rules, audit behavior, Storage cleanup, and social/scoring consequences are implemented by Phase 15.3C. The approved 15.6A implementation uses a deliberate request/cancel/exact-confirmation Settings control, the exact server-derived phrase, and the group-ownership transfer requirement.
 
 ### 7. App / PWA
 
@@ -135,7 +152,7 @@ Expose useful application status where supported:
 - update availability / update action;
 - relevant storage-persistence status.
 
-This section should reuse the existing PWA lifecycle state rather than inventing duplicate status logic.
+This section reuses the existing PWA lifecycle state rather than inventing duplicate status logic.
 
 ### 8. Administration — conditional
 
@@ -147,13 +164,14 @@ The Admin action is navigation convenience only. `/platform-admin/*` re-authoriz
 
 ## Persistence and separation of concerns
 
-Profile/Settings presentation components must not call Supabase directly.
+Profile/Settings presentation components do not call Supabase directly.
 
-Use dedicated settings/profile services and hooks so:
+Dedicated settings/profile/notification services and hooks ensure:
 
 - account/profile preferences have typed read/update contracts;
 - notification preference persistence is separate from browser push-subscription management;
 - device permission/subscription code remains PWA/device infrastructure;
+- server push dispatch remains separate from browser subscription orchestration;
 - group management stays in the Groups feature;
 - platform-admin authorization stays in the admin feature;
 - scoring, badges, rankings, and workout qualification remain unaffected by settings changes unless a future product rule explicitly says otherwise.
@@ -175,16 +193,19 @@ Use dedicated settings/profile services and hooks so:
 - master-off semantics that preserve category selections;
 - authorization/RLS tests proving users can manage only their own preferences.
 
-### 15.6C PWA notification permission + delivery integration — NEXT
+### 15.6C PWA notification permission + delivery integration — DONE
 
 - explicit user-gesture permission request;
+- default/granted/denied/unsupported/install-required device states;
 - device-specific push subscription lifecycle;
-- supported-category delivery only;
-- multi-device behavior;
-- blocked/unsupported-device states;
-- no infrastructure push credentials in the browser.
+- supported delivery for badge awards, authoritative personal records, and targeted group invitations;
+- multi-device behavior and independent device revocation;
+- durable server queue with immediate dispatch plus retry path;
+- blocked/unsupported-device states do not rewrite account preferences;
+- no infrastructure push credentials in the browser;
+- persisted unsupported categories remain unavailable rather than becoming fake controls.
 
-### 15.6D Settings integration gate — LATER
+### 15.6D Settings integration gate — NEXT
 
 Validate:
 
@@ -194,20 +215,22 @@ Validate:
 - master notifications ON/OFF behavior;
 - every supported category toggle;
 - preserved child selections across master OFF -> ON;
-- denied/default/granted/unsupported device permission states;
+- denied/default/granted/unsupported/install-required device permission states;
 - no automatic permission prompt on page load;
 - multi-device subscription separation;
+- explicit per-device test delivery;
 - required in-app account/moderation notices remain visible;
 - conditional platform-admin discovery;
-- no scoring/XP/badge-award regressions.
+- no scoring/XP/badge-award regressions from settings changes;
 - self-deletion request, cancellation before confirmation, exact confirmation, group-owner blocking, and signed-out/deleted completion behavior.
 
 ## Non-negotiable rules
 
-- Notifications must have a real user-controlled master ON/OFF switch in Profile/Settings.
-- Optional notification category toggles must be independently controllable when the master switch is ON.
+- Notifications have a real user-controlled master ON/OFF switch in Profile/Settings.
+- Optional category toggles are independently controllable only when their delivery behavior is real and the master switch is ON.
 - Account preferences and device/browser permission are separate states.
 - A notification control must not claim to work until the associated delivery behavior exists.
 - Disabling optional notifications must never suppress required in-app account/security/moderation notices.
+- Push subscription capability data and private server delivery credentials must remain outside direct browser access.
 - Profile/Settings changes must not weaken platform-admin authorization or alter scoring rules.
 - Self-service deletion UI must reuse the Phase 15.3C server boundary and must never treat a client-only confirmation as authorization.

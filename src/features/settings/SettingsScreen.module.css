@@ -40,7 +40,8 @@
 }
 
 .back:focus-visible,
-.deleteButton:focus-visible {
+.deleteButton:focus-visible,
+.switch:focus-visible {
   outline: 3px solid rgba(61, 134, 255, 0.42);
   outline-offset: 2px;
 }
@@ -68,7 +69,8 @@
 
 .profileCode,
 .statusBadge,
-.role {
+.role,
+.comingSoon {
   border: 1px solid var(--color-border-strong);
   border-radius: 999px;
   padding: 5px 9px;
@@ -125,6 +127,70 @@
 .error { color: var(--color-danger); }
 .success { color: var(--color-success); }
 .inviteCount { color: var(--color-text-muted); }
+
+.notificationRows {
+  display: grid;
+  border-top: 1px solid var(--color-border);
+}
+
+.notificationRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 18px;
+  min-height: 72px;
+  padding: 13px 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.notificationRow strong { display: block; }
+.notificationRow p,
+.deviceBox p {
+  margin: 5px 0 0;
+  color: var(--color-text-muted);
+  line-height: 1.45;
+}
+
+.switch {
+  position: relative;
+  width: 46px;
+  height: 28px;
+  border: 1px solid var(--color-border-strong);
+  border-radius: 999px;
+  padding: 2px;
+  background: #101c27;
+  cursor: pointer;
+  transition: background-color 160ms ease, border-color 160ms ease;
+}
+
+.switch[data-checked='true'] {
+  border-color: #5d94ff;
+  background: #2e67d6;
+}
+
+.switch:disabled { cursor: not-allowed; opacity: 0.46; }
+
+.switchThumb {
+  display: block;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #f2f6fb;
+  transform: translateX(0);
+  transition: transform 160ms ease;
+}
+
+.switch[data-checked='true'] .switchThumb { transform: translateX(18px); }
+
+.deviceBox {
+  display: grid;
+  gap: 15px;
+  margin: 18px 0;
+  border: 1px solid var(--color-border-strong);
+  border-radius: 14px;
+  padding: 16px;
+  background: #0b1722;
+}
 
 .groupList {
   display: grid;
@@ -207,9 +273,16 @@
   .detailList div { grid-template-columns: 1fr; gap: 4px; }
   .detailList dd { text-align: left; }
   .actions > button { flex: 1 1 12rem; }
+  .notificationRow { gap: 12px; }
+  .comingSoon { white-space: normal; text-align: center; }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .back,
-  .deleteButton { scroll-behavior: auto; }
+  .deleteButton,
+  .switch,
+  .switchThumb {
+    scroll-behavior: auto;
+    transition: none;
+  }
 }

@@ -1,5 +1,5 @@
-# Deterministic local/CI Supabase configuration.
-# This file contains no production credentials.
+# Deterministic repository Supabase configuration.
+# This file contains no production credentials and the supported validation workflow is hosted-first/no-Docker.
 project_id = "fitness-game-pwa"
 
 [db]
@@ -29,3 +29,11 @@ verify_jwt = true
 # ACTIVE platform-admin state are verified inside the function. The service-role
 # key is a hosted Edge Function secret and is never exposed to the PWA.
 verify_jwt = true
+
+[functions.push-notifications]
+# Background pg_net/cron dispatch cannot carry an end-user JWT, so the platform
+# verifier is disabled for this one function. The function manually accepts only
+# (a) a verified ACTIVE user JWT for GET_PUBLIC_KEY or (b) the server-only random
+# dispatch credential stored in private database state for DRAIN. VAPID private
+# key material and the dispatch token never enter Vite/browser code.
+verify_jwt = false
