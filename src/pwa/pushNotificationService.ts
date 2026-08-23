@@ -46,13 +46,14 @@ function capability(): PushDeviceCapability {
   return 'available';
 }
 
-function vapidApplicationServerKey(value: string): Uint8Array {
+function vapidApplicationServerKey(value: string): ArrayBuffer {
   const padding = '='.repeat((4 - (value.length % 4)) % 4);
   const base64 = (value + padding).replace(/-/g, '+').replace(/_/g, '/');
   const decoded = atob(base64);
-  const bytes = new Uint8Array(decoded.length);
+  const buffer = new ArrayBuffer(decoded.length);
+  const bytes = new Uint8Array(buffer);
   for (let index = 0; index < decoded.length; index += 1) bytes[index] = decoded.charCodeAt(index);
-  return bytes;
+  return buffer;
 }
 
 async function registrationForPush(): Promise<ServiceWorkerRegistration | null> {
