@@ -842,7 +842,7 @@ for (const heading of [
   '#### 15.3E User reports + moderation case foundation — DONE',
   '#### 15.3F Privacy-bounded user activity review + moderation UI — DONE',
   '### 15.4 Admin-to-user messaging — DONE',
-  '### 15.5 Admin integration + security gate — NEXT',
+  '### 15.5 Admin integration + security gate — DONE',
 ]) {
   if (!roadmap.includes(heading)) fail('Phase 15.3 roadmap missing slice: ' + heading);
 }
@@ -1512,8 +1512,65 @@ for (const fragment of ['“What’s new” popup', 'set-based insert', 'minimum
   if (!phase154Doc.includes(fragment)) fail('Phase 15.4 documentation missing invariant: ' + fragment);
 }
 if (!roadmap.includes('### 15.4 Admin-to-user messaging — DONE')
-    || !roadmap.includes('### 15.5 Admin integration + security gate — NEXT')) {
-  fail('Phase 15.4 must be DONE and Phase 15.5 must be NEXT');
+    || !roadmap.includes('### 15.5 Admin integration + security gate — DONE')) {
+  fail('Phase 15.4 and Phase 15.5 must be DONE');
+}
+
+// Phase 15.5 integrated administration and deny-by-default function security.
+for (const relativePath of [
+  'PHASE15.5-PATCH-MANIFEST.txt',
+  'docs/PHASE15.5-ADMIN-INTEGRATION-SECURITY-GATE.md',
+  'supabase/migrations/20260823160157_phase15_5_admin_security_gate.sql',
+  'supabase/tests/036_admin_integration_security_gate.test.sql',
+  'tests/integration/platform-admin-security-journey.test.tsx',
+]) {
+  if (!fs.existsSync(path.join(root, relativePath))) fail('Phase 15.5 file missing: ' + relativePath);
+}
+const phase155Migration = read('supabase/migrations/20260823160157_phase15_5_admin_security_gate.sql');
+const phase155Test = read('supabase/tests/036_admin_integration_security_gate.test.sql');
+const phase155Integration = read('tests/integration/platform-admin-security-journey.test.tsx');
+const phase155Doc = read('docs/PHASE15.5-ADMIN-INTEGRATION-SECURITY-GATE.md');
+for (const fragment of [
+  'alter default privileges for role postgres in schema public',
+  'revoke execute on functions from public, anon, authenticated',
+  'revoke execute on all functions in schema public from public, anon',
+  "pg_get_function_result(p.oid) = 'trigger'",
+  'deny-by-default',
+]) {
+  if (!phase155Migration.includes(fragment)) fail('Phase 15.5 function hardening missing invariant: ' + fragment);
+}
+const phase155Plan = Number((phase155Test.match(/select\s+plan\((\d+)\)/i) || [])[1]);
+const phase155Assertions = (phase155Test.match(
+  /select\s+(?:has_type|has_table|has_column|has_function|is|results_eq|throws_ok|lives_ok)\s*\(/gi,
+) || []).length;
+if (phase155Plan !== 27 || phase155Plan !== phase155Assertions) {
+  fail(`Phase 15.5 pgTAP plan ${phase155Plan} must match its ${phase155Assertions} assertions`);
+}
+for (const coverage of [
+  'anonymous callers cannot execute any existing public function',
+  'group ownership does not grant platform administration',
+  'global Data API pre-request guard blocks a suspended account across every feature RPC',
+]) {
+  if (!phase155Test.includes(coverage)) fail('Phase 15.5 pgTAP missing coverage: ' + coverage);
+}
+for (const coverage of [
+  'never constructs a privileged route controller for an unauthorized deep link',
+  'delivers a confirmed full-app notice as a dismiss-once what-is-new popup',
+  "pathname=\"/platform-admin/messages\"",
+  '<UserMessageCenter service={userService}',
+]) {
+  if (!phase155Integration.includes(coverage)) fail('Phase 15.5 integration journey missing coverage: ' + coverage);
+}
+if (/service[_-]?role|SUPABASE_SECRET|from\(['"](?:platform_messages|moderation_access_log|platform_admins)/i.test(phase155Integration)) {
+  fail('Phase 15.5 integration browser code must not contain privileged credentials or direct private-table access');
+}
+for (const fragment of [
+  'deny-by-default database function boundary',
+  'ordinary account RPCs retain their active-account checks',
+  'does not add a new administrator role',
+  'does not require Docker',
+]) {
+  if (!phase155Doc.includes(fragment)) fail('Phase 15.5 documentation missing invariant: ' + fragment);
 }
 
 const ciWorkflow = read('.github/workflows/ci.yml');
@@ -1648,4 +1705,4 @@ if (fs.existsSync(obsoleteRepairPath)) {
   fail('structural validation must not materialize the obsolete repair migration');
 }
 
-console.log('Release validation passed: clean migration history, Phase 15.1 admin invariants, Phase 15.2 capacity contracts, Phase 15.3 account lifecycle/reporting/moderation contracts, Phase 15.4 auditable administrator messaging and dismiss-once full-app popup contracts, canonical GitHub CI/database discovery, visual-roadmap guards, and production chunk budget guards are present.');
+console.log('Release validation passed: clean migration history, Phase 15.1 admin invariants, Phase 15.2 capacity contracts, Phase 15.3 account lifecycle/reporting/moderation contracts, Phase 15.4 auditable administrator messaging, Phase 15.5 deny-by-default integration security, canonical GitHub CI/database discovery, visual-roadmap guards, and production chunk budget guards are present.');

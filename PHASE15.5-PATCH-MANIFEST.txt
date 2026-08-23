@@ -1,0 +1,14 @@
+Fitness Game PWA — Phase 15.5 administration integration and security gate
+
+Database security
+- supabase/migrations/20260823160157_phase15_5_admin_security_gate.sql
+- supabase/tests/036_admin_integration_security_gate.test.sql
+
+Cross-surface integration
+- tests/integration/platform-admin-security-journey.test.tsx
+
+Release contracts and documentation
+- docs/PHASE15.5-ADMIN-INTEGRATION-SECURITY-GATE.md
+- docs/ROADMAP.md
+- scripts/validate-db-ci.cjs
+- scripts/validate-project-clean.cjs

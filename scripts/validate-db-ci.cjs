@@ -68,6 +68,8 @@ const phase153fTest = 'supabase/tests/034_moderation_activity_review.test.sql';
 const phase154EnumMigration = 'supabase/migrations/20260823150601_platform_admin_messaging.sql';
 const phase154Migration = 'supabase/migrations/20260823151630_platform_admin_messaging_contracts.sql';
 const phase154Test = 'supabase/tests/035_platform_admin_messaging.test.sql';
+const phase155Migration = 'supabase/migrations/20260823160157_phase15_5_admin_security_gate.sql';
+const phase155Test = 'supabase/tests/036_admin_integration_security_gate.test.sql';
 for (const relativePath of [
   phase153aMigration,
   phase153aTest,
@@ -84,6 +86,8 @@ for (const relativePath of [
   phase154EnumMigration,
   phase154Migration,
   phase154Test,
+  phase155Migration,
+  phase155Test,
 ]) {
   if (!fs.existsSync(path.join(root, relativePath))) fail(`Phase 15 database artifact missing: ${relativePath}`);
 }
@@ -328,6 +332,33 @@ for (const coverage of [
   'administrator messaging does not create or alter XP events',
 ]) {
   if (!test154.includes(coverage)) fail(`Phase 15.4 pgTAP missing coverage: ${coverage}`);
+}
+
+const migration155 = read(phase155Migration);
+for (const invariant of [
+  'alter default privileges for role postgres in schema public',
+  'revoke execute on functions from public, anon, authenticated',
+  'revoke execute on all functions in schema public from public, anon',
+  "pg_get_function_result(p.oid) = 'trigger'",
+  'revoke execute on function %s from public, anon, authenticated',
+  'Function execution is deny-by-default',
+]) {
+  if (!migration155.includes(invariant)) fail(`Phase 15.5 migration missing invariant: ${invariant}`);
+}
+
+const test155 = read(phase155Test);
+if (!/select\s+plan\s*\(\s*27\s*\)\s*;/i.test(test155)) {
+  fail('Phase 15.5 pgTAP suite must retain its 27-assertion plan');
+}
+for (const coverage of [
+  'new public functions require an explicit authenticated grant',
+  'anonymous callers cannot execute any existing public function',
+  'authenticated callers cannot invoke trigger-only functions as RPCs',
+  'group ownership does not grant platform administration',
+  'global Data API pre-request guard blocks a suspended account across every feature RPC',
+  'active platform administrator retains the integrated messaging boundary',
+]) {
+  if (!test155.includes(coverage)) fail(`Phase 15.5 pgTAP missing coverage: ${coverage}`);
 }
 
 const ci = fs.readFileSync(ciPath, 'utf8');

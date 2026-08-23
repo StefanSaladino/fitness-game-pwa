@@ -787,7 +787,7 @@ Netlify billing/usage is team/account scoped. The public API calls a team an acc
 - admin messages never affect XP, badges, rankings, or progression.
 - full-app blasts are NOTICE-only and appear once as a dismissible, non-blocking “What’s new” popup; dismissal records read state so the popup does not reopen for that revision.
 
-### 15.5 Admin integration + security gate — NEXT
+### 15.5 Admin integration + security gate — DONE
 
 - admin sign-in/authorization boundary cannot be reached by normal users through client-side navigation tricks;
 - suspension takes effect across dashboard, workouts, cardio, groups, progress, and social RPCs;
