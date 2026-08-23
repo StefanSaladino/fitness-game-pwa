@@ -42,6 +42,8 @@ type LeaderboardRow = {
   xp: number | string;
 };
 
+type QueryResult<T = unknown> = { data: T; error: unknown | null };
+
 export interface DashboardService {
   load(input: DashboardLoadInput, now?: Date): Promise<DashboardSnapshot>;
 }
@@ -68,6 +70,12 @@ export function createDashboardService(client: SupabaseClient = getSupabaseClien
       const scoringDate = scoringDateInTimezone(now, input.timezone);
       const consistency = await createLiftingConsistencyService(client).load();
       const { weekStart, weekEnd } = weekBoundsForScoringDate(consistency.currentWeekStart || scoringDate);
+      const leaderboardPromise: Promise<QueryResult> = input.groupId
+        ? client.rpc('get_group_lifting_leaderboard', {
+            p_group_id: input.groupId,
+            p_week_start: weekStart,
+          }) as unknown as Promise<QueryResult>
+        : Promise.resolve({ data: [], error: null });
 
       const [weeklyEventsResult, recentWorkoutsResult, progressResult, profileResult, leaderboardResult] = await Promise.all([
         client
@@ -96,10 +104,7 @@ export function createDashboardService(client: SupabaseClient = getSupabaseClien
           .select('profile_picture_path')
           .eq('id', input.userId)
           .single(),
-        client.rpc('get_group_lifting_leaderboard', {
-          p_group_id: input.groupId,
-          p_week_start: weekStart,
-        }),
+        leaderboardPromise,
       ]);
 
       for (const result of [weeklyEventsResult, recentWorkoutsResult, progressResult, profileResult, leaderboardResult]) {
