@@ -1,3 +1,4 @@
+# One-shot branch transformer. It removes itself after reconciling the roadmap.
 name: Phase 15.8 roadmap reconcile
 
 on:
