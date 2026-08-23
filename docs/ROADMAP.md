@@ -901,7 +901,7 @@ Global rules for the overhaul:
 - no scoring, authorization, persistence, or offline contract may change merely for visual reasons;
 - shared components/tokens are promoted only after at least two approved pages demonstrate the same need.
 
-### 16.0 Visual inventory + mobile design-system direction — NEXT
+### 16.0 Visual inventory + mobile design-system direction — DONE
 
 - capture every current user-facing route/surface and its states;
 - identify global navigation, spacing, typography, surface, iconography, motion, and safe-area inconsistencies;
@@ -911,7 +911,9 @@ Global rules for the overhaul:
 - decide what remains global versus feature-local before implementation begins;
 - produce baseline before/after references so later slices can be judged consistently.
 
-### 16.1 App shell + primary navigation
+See `docs/PHASE16.0-VISUAL-INVENTORY-DIRECTION.md`.
+
+### 16.1 App shell + primary navigation — DONE
 
 - mobile bottom/navigation treatment and page-header behavior;
 - authenticated Profile/Settings access and `/settings` shell treatment, preserving the Phase 15 rule that an Admin action appears only for positively authorized ACTIVE platform administrators and is otherwise absent;
@@ -922,7 +924,9 @@ Global rules for the overhaul:
 - global loading transition for lazy feature chunks;
 - no page-specific content redesign yet.
 
-### 16.2 Authentication + password recovery
+See `docs/PHASE16.1-APP-SHELL.md`.
+
+### 16.2 Authentication + password recovery — NEXT
 
 - sign in;
 - create account;

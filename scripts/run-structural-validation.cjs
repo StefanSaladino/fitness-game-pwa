@@ -23,7 +23,9 @@ for (const heading of [
   '15.6C PWA notification permission + delivery integration — DONE',
   '15.6D Settings integration gate — DONE',
   'Phase 16 — Mobile-first visual overhaul — NEXT',
-  '16.0 Visual inventory + mobile design-system direction — NEXT',
+  '16.0 Visual inventory + mobile design-system direction — DONE',
+  '16.1 App shell + primary navigation — DONE',
+  '16.2 Authentication + password recovery — NEXT',
 ]) {
   if (!actualRoadmap.includes(heading)) {
     throw new Error(`Release validation failed: current roadmap missing release status: ${heading}`);

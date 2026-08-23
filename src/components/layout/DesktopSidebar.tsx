@@ -1,5 +1,6 @@
 import { Icon } from '../ui';
 import type { AppSection, NavigationItem } from './navigation';
+import styles from './DesktopSidebar.module.css';
 
 interface DesktopSidebarProps {
   activeItem: AppSection;
@@ -11,20 +12,22 @@ interface DesktopSidebarProps {
 }
 
 export function DesktopSidebar({ activeItem, items, userLabel, userMeta, onNavigate, onSignOut }: DesktopSidebarProps) {
+  const initial = userLabel.trim().slice(0, 1).toUpperCase() || 'U';
+
   return (
-    <aside className="desktop-sidebar" aria-label="Primary">
-      <div className="brand-lockup" aria-label="Workout Game">
-        <span className="brand-mark" aria-hidden="true">W</span>
-        <span className="brand-name">Workout Game</span>
+    <aside className={styles.sidebar} aria-label="Primary">
+      <div className={styles.brand} aria-label="Fitness Game">
+        <span className={styles.brandMark} aria-hidden="true">FG</span>
+        <span className={styles.brandName}>Fitness Game</span>
       </div>
 
-      <nav className="desktop-sidebar__nav">
+      <nav className={styles.nav}>
         {items.map((item) => {
           const active = item.id === activeItem;
           return (
             <button
               aria-current={active ? 'page' : undefined}
-              className={`nav-item${active ? ' nav-item--active' : ''}`}
+              className={`${styles.navItem}${active ? ` ${styles.navItemActive}` : ''}`}
               key={item.id}
               onClick={() => onNavigate?.(item.id)}
               type="button"
@@ -36,14 +39,21 @@ export function DesktopSidebar({ activeItem, items, userLabel, userMeta, onNavig
         })}
       </nav>
 
-      <div className="desktop-sidebar__account">
-        <div className="avatar-fallback" aria-hidden="true">{userLabel.slice(0, 1).toUpperCase()}</div>
-        <div className="desktop-sidebar__account-copy">
-          <strong>{userLabel}</strong>
-          {userMeta && <span>{userMeta}</span>}
-        </div>
+      <div className={styles.account}>
+        <button
+          aria-label={`Open Profile and Settings for ${userLabel}`}
+          className={styles.accountButton}
+          onClick={() => onNavigate?.('profile')}
+          type="button"
+        >
+          <span className={styles.avatar} aria-hidden="true">{initial}</span>
+          <span className={styles.accountCopy}>
+            <strong>{userLabel}</strong>
+            {userMeta && <span>{userMeta}</span>}
+          </span>
+        </button>
         {onSignOut && (
-          <button aria-label="Sign out" className="icon-button" onClick={onSignOut} type="button">
+          <button aria-label="Sign out" className={styles.signOut} onClick={onSignOut} type="button">
             <Icon name="logout" size={18} />
           </button>
         )}
