@@ -1,0 +1,5 @@
+create index push_delivery_queue_target_subscription_idx
+on private.push_delivery_queue (target_subscription_id);
+
+create index push_delivery_targets_subscription_idx
+on private.push_delivery_targets (subscription_id);
