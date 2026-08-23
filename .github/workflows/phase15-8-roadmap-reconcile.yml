@@ -1,0 +1,106 @@
+name: Phase 15.8 roadmap reconcile
+
+on:
+  push:
+    branches:
+      - phase15.8-training-content
+
+permissions:
+  contents: write
+
+jobs:
+  reconcile:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: phase15.8-training-content
+          fetch-depth: 0
+      - name: Reconcile roadmap and remove transformer
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          path = Path('docs/ROADMAP.md')
+          text = path.read_text()
+
+          old_gate = '- authenticated group gate: zero memberships -> setup, one-or-more -> app;'
+          new_gate = '- historical behavior at delivery: authenticated group gate: zero memberships -> setup, one-or-more -> app; **superseded by Phase 15.7 optional-group entry**;'
+          if old_gate not in text:
+              raise SystemExit('Expected historical Phase 5.5B group-gate anchor not found')
+          text = text.replace(old_gate, new_gate, 1)
+
+          old_integration = '### 5.7 Phase 5 integration validation — DONE\n\n- onboarding -> persisted group setup transition'
+          new_integration = '### 5.7 Phase 5 integration validation — DONE\n\nHistorical checkpoint: the forced zero-group setup transition below was valid when Phase 5 shipped and is superseded by Phase 15.7.\n\n- onboarding -> persisted group setup transition'
+          if old_integration not in text:
+              raise SystemExit('Expected Phase 5.7 integration anchor not found')
+          text = text.replace(old_integration, new_integration, 1)
+
+          phase16 = '## Phase 16 — Mobile-first visual overhaul — NEXT'
+          if phase16 not in text:
+              raise SystemExit('Expected Phase 16 anchor not found')
+          if '## Phase 15.7 — Optional groups + multi-group product entry — DONE' in text:
+              raise SystemExit('Phase 15.7 roadmap section already exists unexpectedly')
+          insert = '''## Phase 15.7 — Optional groups + multi-group product entry — DONE
+
+Product correction before the visual overhaul:
+
+- completing onboarding enters the personal dashboard even with zero groups;
+- group membership is optional and no longer gates Home, lifting, cardio, progress, or Settings;
+- pending targeted invitations can be accepted or declined later without blocking solo use;
+- users may create a group later from Groups;
+- users may belong to and own multiple groups simultaneously;
+- accepting another invitation adds membership rather than replacing an existing group;
+- group-only Competition fails honestly when no group is selected;
+- the hosted `(group_id, user_id)` membership model remains authoritative and required no schema change.
+
+See `docs/PHASE15.7-OPTIONAL-MULTI-GROUPS.md`.
+
+## Phase 15.8 — Curated training tips + preset workouts — DONE
+
+Functional content added before the visual overhaul resumes:
+
+- deterministic source-controlled training tips on Home and the pre-workout surface;
+- no LLM/remote-AI coaching and no scoring effects from tips;
+- Full Body Strength, Upper Strength, Lower Strength, Push, and Pull presets;
+- presets resolve through the active canonical exercise catalogue;
+- presets choose ordered exercises only; sets, reps, weights, substitutions, and completion remain user-controlled;
+- ordinary empty-lift start remains available;
+- `start_lifting_workout_from_preset` applies the validated preset atomically through the existing lifting lifecycle;
+- hosted migration `20260823223635_phase15_8_preset_workouts` and 10/10 hosted pgTAP are authoritative.
+
+See `docs/PHASE15.8-TRAINING-TIPS-PRESETS.md`.
+
+'''
+          text = text.replace(phase16, insert + phase16, 1)
+
+          old_163 = '''### 16.3 Onboarding + group-entry flow
+
+- profile onboarding;
+- weekly lifting target;
+- create/join group;
+- pending invitation acceptance/decline;'''
+          new_163 = '''### 16.3 Onboarding + optional group discovery
+
+- profile onboarding;
+- weekly lifting target;
+- land in the personal dashboard with zero groups allowed;
+- optional group creation from Groups;
+- pending invitation acceptance/decline;
+- additive multi-group membership and group-context switching;'''
+          if old_163 not in text:
+              raise SystemExit('Expected Phase 16.3 anchor not found')
+          text = text.replace(old_163, new_163, 1)
+
+          path.write_text(text)
+          PY
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git rm .github/workflows/phase15-8-roadmap-reconcile.yml
+          git add docs/ROADMAP.md
+          git diff --cached --check
+          git commit -m "docs: reconcile roadmap through Phase 15.8"
+          git push origin HEAD:phase15.8-training-content
