@@ -59,7 +59,18 @@ const phase153bMigration = 'supabase/migrations/20260822161454_platform_account_
 const phase153bHardeningMigration = 'supabase/migrations/20260822161801_harden_active_account_pre_request.sql';
 const phase153bHookSchemaMigration = 'supabase/migrations/20260822162155_move_account_hooks_out_of_data_api.sql';
 const phase153bTest = 'supabase/tests/031_platform_account_suspension_enforcement.test.sql';
-for (const relativePath of [phase153aMigration, phase153aTest, phase153bMigration, phase153bHardeningMigration, phase153bHookSchemaMigration, phase153bTest]) {
+const phase153cMigration = 'supabase/migrations/20260822172823_platform_account_irreversible_deletion.sql';
+const phase153cTest = 'supabase/tests/032_platform_account_irreversible_deletion.test.sql';
+for (const relativePath of [
+  phase153aMigration,
+  phase153aTest,
+  phase153bMigration,
+  phase153bHardeningMigration,
+  phase153bHookSchemaMigration,
+  phase153bTest,
+  phase153cMigration,
+  phase153cTest,
+]) {
   if (!fs.existsSync(path.join(root, relativePath))) fail(`Phase 15.3 database artifact missing: ${relativePath}`);
 }
 
@@ -122,6 +133,38 @@ for (const invariant of [
   if (!hookSchema153b.includes(invariant)) {
     fail(`Phase 15.3B non-exposed hook schema missing invariant: ${invariant}`);
   }
+}
+
+const migration153c = read(phase153cMigration);
+for (const invariant of [
+  'private.platform_account_deletion_jobs',
+  'public.request_own_platform_account_deletion',
+  'public.cancel_own_platform_account_deletion',
+  'public.prepare_platform_account_deletion',
+  'public.mark_platform_account_deletion_storage_cleared',
+  'public.record_platform_account_deletion_failure',
+  'auth_users_begin_platform_account_delete',
+  'profiles_finalize_platform_account_delete',
+  'Group ownership must be transferred before account deletion',
+  'Profile deletion must be coordinated through Auth',
+]) {
+  if (!migration153c.includes(invariant)) fail(`Phase 15.3C migration missing invariant: ${invariant}`);
+}
+if (/\b(?:delete\s+from|insert\s+into|update)\s+storage\.(?:objects|buckets)\b/i.test(migration153c)) {
+  fail('Phase 15.3C migration must never mutate Supabase Storage metadata with SQL');
+}
+
+const test153c = read(phase153cTest);
+if (!/select\s+plan\s*\(\s*68\s*\)\s*;/i.test(test153c)) {
+  fail('Phase 15.3C pgTAP suite must retain its 68-assertion plan');
+}
+for (const coverage of [
+  'hard Auth deletion is blocked before Storage cleanup completes',
+  'authoritative scoring history follows the documented profile cascade',
+  'self-service exact confirmation prepares the same deletion engine',
+  'direct hard Auth deletion cannot bypass pending-state and preparation checks',
+]) {
+  if (!test153c.includes(coverage)) fail(`Phase 15.3C pgTAP missing coverage: ${coverage}`);
 }
 
 const ci = fs.readFileSync(ciPath, 'utf8');

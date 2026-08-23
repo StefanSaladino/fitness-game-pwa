@@ -733,15 +733,18 @@ Netlify billing/usage is team/account scoped. The public API calls a team an acc
 - kept Auth ban separate from session semantics: no claim that `ban_duration` invalidates an issued JWT and no direct mutation of Supabase-managed Auth session rows;
 - added hosted pgTAP coverage for ACTIVE/SUSPENDED/DELETION_PENDING state, live/missing/expired sessions, Storage policies, retries, revision races, and non-deletion.
 
-#### 15.3C Irreversible account removal — NEXT
+#### 15.3C Irreversible account removal — DONE
 
-- require an already-DELETION_PENDING target plus a second explicit administrator confirmation;
-- re-check self-removal and final-platform-admin protections at the destructive boundary;
-- define Storage ownership cleanup, foreign-key cascade/retention, scoring-history treatment, group/social visibility, and append-only audit retention before Auth user deletion;
-- perform Auth user deletion only from a secured server-side boundary;
-- never rely on client-side confirmation as authorization.
+- require an already-DELETION_PENDING target plus exact server-verified `DELETE <username>` confirmation;
+- support both ACTIVE-platform-admin deletion of another non-admin account and ordinary-user self-deletion through the same retryable backend engine;
+- re-check actor/mode, self-removal, platform-admin, group-ownership, pending-state, and exact-confirmation protections at the destructive boundary;
+- delete every owned profile-picture object through the Storage API before hard Auth deletion, with revisioned retry/failure coordination;
+- permit the profile/data cascade only from a prepared Auth deletion transaction; block direct profile/Auth deletion otherwise;
+- delete profile-linked scoring, workout, progression, group-membership/social, badge, and preference rows by existing cascades while retaining UUID-only deletion jobs and append-only audit history;
+- require group ownership transfer first; never silently transfer or delete a group;
+- keep both administrator and ordinary-user deletion controls out of this non-visual slice.
 
-#### 15.3D User-administration visual gate + UI — LATER
+#### 15.3D User-administration visual gate + UI — NEXT
 
 - audit the real 15.3 account data/actions/states first;
 - generate phone-first and desktop user-directory/detail/action concepts using only implemented fields and actions;
@@ -780,7 +783,8 @@ This is the ordinary authenticated PWA account surface defined in `docs/PHASE15.
 - provide Profile + identity, Training preferences, Account + security, Groups, Privacy + data, App/PWA, Notifications, and conditionally authorized Administration sections;
 - support profile picture, display name, username, email/account identity, timezone, weekly lifting target, and a persisted preferred `kg` / `lb` unit without rewriting historical scoring/workout data;
 - link to existing group administration rather than duplicating group-role controls;
-- do not expose fake data-export, account-delete, session-management, or unsupported notification controls.
+- add a deliberate two-step self-service account-deletion control only after visual approval, using the Phase 15.3C request/cancel/confirm service contract and its group-transfer requirement;
+- do not expose fake data-export, session-management, or unsupported notification controls.
 
 #### 15.6B Notification preference persistence — LATER
 

@@ -46,8 +46,8 @@ That gate validates:
 - canonical numbered pgTAP suite discovery;
 - explicit pgTAP plans;
 - rollback-safe test transactions;
-- required Phase 15.3A and 15.3B migration/test invariants;
-- the 68-assertion Phase 15.3A and 52-assertion Phase 15.3B pgTAP contracts;
+- required Phase 15.3A, 15.3B, and 15.3C migration/test invariants;
+- the 68-assertion Phase 15.3A, 52-assertion Phase 15.3B, and 68-assertion Phase 15.3C pgTAP contracts;
 - and that executable GitHub CI contains no Docker, `supabase start`, `supabase db reset`, or `supabase test db` dependency.
 
 This repository gate is intentionally separate from runtime SQL execution. A migration or pgTAP suite is executed against hosted Supabase before its phase is considered database-validated.
@@ -90,8 +90,9 @@ npm test
 npm run test:integration
 npm run build
 npm run test:structure
-npm run test:e2e
 npm run test:internal
 ```
 
 Database migrations and pgTAP are executed against the hosted Supabase project instead of a local Docker stack.
+
+Phase 15.3C hosted validation must use rollback-safe pgTAP test users only. Never call the destructive Edge action against a real account as a test.

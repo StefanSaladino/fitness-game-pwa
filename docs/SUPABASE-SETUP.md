@@ -302,6 +302,12 @@ in **SQL Editor -> New query**. Then run the updated `005_profile_onboarding.tes
 
 If the repository later switches to Supabase CLI deployment, reconcile the hosted project's migration history before using `db push`.
 
+## Phase 15.3C irreversible account deletion
+
+Apply `supabase/migrations/20260822172823_platform_account_irreversible_deletion.sql` to hosted Supabase, then run `supabase/tests/032_platform_account_irreversible_deletion.test.sql` and require 68/68 assertions. Re-run canonical suites 030 and 031 before deploying the updated `platform-account-auth` Edge Function with JWT verification enabled.
+
+This workflow does not use Docker. The pgTAP suite is rollback-safe and uses only transaction-scoped fake users. Do not validate deletion by calling the Edge Function against a real account. The current Storage cleanup contract covers the `profile-pictures/<user-id>` prefix; any future user-owned bucket must be added to the server cleanup contract before it accepts user uploads.
+
 
 ## Phase 5.4 / v0.3 lifting-first migration
 

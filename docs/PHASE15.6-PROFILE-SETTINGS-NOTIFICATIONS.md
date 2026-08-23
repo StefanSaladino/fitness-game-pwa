@@ -121,9 +121,9 @@ Reserve a clear section for:
 - privacy information;
 - notification/data preferences;
 - future data export;
-- future self-service account deletion.
+- self-service account deletion backed by the completed Phase 15.3C lifecycle.
 
-Data export or account deletion must not appear as a functioning control until their full backend lifecycle, retention rules, audit behavior, Storage cleanup, and social/scoring consequences are implemented and tested.
+Data export must not appear as a functioning control until its backend exists. The account-deletion backend, retention rules, audit behavior, Storage cleanup, and social/scoring consequences are implemented by Phase 15.3C; its Settings control remains deferred until the Phase 15.6 visual gate approves the deliberate request/cancel/exact-confirmation UX.
 
 ### 7. App / PWA
 
@@ -165,6 +165,7 @@ Use dedicated settings/profile services and hooks so:
 - implement `/settings`;
 - identity/account/training/groups/privacy/app sections;
 - profile preference read/update services;
+- deliberate two-step self-service deletion UI using `accountDeletionService`, including group-ownership transfer guidance and the exact server-derived confirmation phrase;
 - keep group and admin authorization boundaries separate.
 
 ### 15.6B Notification preference persistence
@@ -199,6 +200,7 @@ Validate:
 - required in-app account/moderation notices remain visible;
 - conditional platform-admin discovery;
 - no scoring/XP/badge-award regressions.
+- self-deletion request, cancellation before confirmation, exact confirmation, group-owner blocking, and signed-out/deleted completion behavior.
 
 ## Non-negotiable rules
 
@@ -208,3 +210,4 @@ Validate:
 - A notification control must not claim to work until the associated delivery behavior exists.
 - Disabling optional notifications must never suppress required in-app account/security/moderation notices.
 - Profile/Settings changes must not weaken platform-admin authorization or alter scoring rules.
+- Self-service deletion UI must reuse the Phase 15.3C server boundary and must never treat a client-only confirmation as authorization.

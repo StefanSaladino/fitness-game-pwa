@@ -36,6 +36,7 @@ export interface PlatformAccountAdminService {
   restore(userId: string, reason: string): Promise<void>;
   requestDeletion(userId: string, reason: string): Promise<void>;
   cancelDeletion(userId: string, reason: string): Promise<void>;
+  confirmDeletion(userId: string, confirmation: string): Promise<void>;
 }
 
 function isIsoDate(value: string): boolean {
@@ -162,6 +163,17 @@ export function createPlatformAccountAdminService(
       const { error } = await client.rpc('cancel_platform_account_deletion', {
         p_target_user_id: nonEmptyUserId(userId),
         p_reason: reason,
+      });
+      if (error) throw error;
+    },
+
+    async confirmDeletion(userId, confirmation) {
+      const { error } = await client.functions.invoke('platform-account-auth', {
+        body: {
+          action: 'DELETE_ADMIN',
+          userId: nonEmptyUserId(userId),
+          confirmation,
+        },
       });
       if (error) throw error;
     },

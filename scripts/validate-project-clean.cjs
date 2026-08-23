@@ -392,7 +392,9 @@ for (const requiredFragment of [
 if (!/must not rely only on localStorage, IndexedDB, or a single browser installation/.test(settingsContract)
     || !/request permission only after an explicit user action/.test(settingsContract)
     || !/must not silently set the account-level master preference to OFF/.test(settingsContract)
-    || !/must not appear as a functioning control until their full backend lifecycle/.test(settingsContract)) {
+    || !/Data export must not appear as a functioning control until its backend exists/.test(settingsContract)
+    || !/account-deletion backend[\s\S]*implemented by Phase 15\.3C/.test(settingsContract)
+    || !/Settings control remains deferred until the Phase 15\.6 visual gate/.test(settingsContract)) {
   fail('Profile/Settings contract must preserve server persistence, explicit notification permission, multi-device semantics, and no fake controls');
 }
 if (!roadmap.includes('master Notifications ON/OFF preference server-side')
@@ -835,8 +837,8 @@ for (const heading of [
   '### 15.3 User account administration — IN PROGRESS',
   '#### 15.3A Account directory + lifecycle foundation — DONE',
   '#### 15.3B Suspension enforcement + Auth session coordination — DONE',
-  '#### 15.3C Irreversible account removal — NEXT',
-  '#### 15.3D User-administration visual gate + UI — LATER',
+  '#### 15.3C Irreversible account removal — DONE',
+  '#### 15.3D User-administration visual gate + UI — NEXT',
 ]) {
   if (!roadmap.includes(heading)) fail('Phase 15.3 roadmap missing slice: ' + heading);
 }
@@ -998,6 +1000,132 @@ for (const fragment of [
   if (!phase153bDoc.includes(fragment)) fail('Phase 15.3B documentation missing invariant: ' + fragment);
 }
 
+// Phase 15.3C irreversible administrator + self-service deletion engine.
+const phase153cMigrationPath = path.join(
+  root,
+  'supabase/migrations/20260822172823_platform_account_irreversible_deletion.sql',
+);
+const phase153cTestPath = path.join(
+  root,
+  'supabase/tests/032_platform_account_irreversible_deletion.test.sql',
+);
+for (const relativePath of [
+  'docs/PHASE15.3C-IRREVERSIBLE-ACCOUNT-DELETION.md',
+  'PHASE15.3C-PATCH-MANIFEST.txt',
+  'src/features/settings/accountDeletionService.ts',
+  'src/features/settings/accountDeletionService.test.ts',
+]) {
+  if (!fs.existsSync(path.join(root, relativePath))) fail('Phase 15.3C file missing: ' + relativePath);
+}
+if (!fs.existsSync(phase153cMigrationPath)) fail('Phase 15.3C irreversible-deletion migration exists');
+if (!fs.existsSync(phase153cTestPath)) fail('Phase 15.3C irreversible-deletion pgTAP test exists');
+
+const phase153cMigration = fs.readFileSync(phase153cMigrationPath, 'utf8');
+for (const fragment of [
+  'create table private.platform_account_deletion_jobs',
+  'function public.request_own_platform_account_deletion',
+  'function public.cancel_own_platform_account_deletion',
+  'function public.prepare_platform_account_deletion',
+  'function public.mark_platform_account_deletion_storage_cleared',
+  'function public.record_platform_account_deletion_failure',
+  'auth_users_begin_platform_account_delete',
+  'profiles_finalize_platform_account_delete',
+  'Group ownership must be transferred before account deletion',
+  "format('DELETE %s', v_username)",
+  "status = 'AUTH_DELETE_STARTED'",
+  "status = 'COMPLETED'",
+  "'ACCOUNT_DELETION_CONFIRMED'",
+  "'ACCOUNT_DELETED'",
+  "set search_path = ''",
+]) {
+  if (!phase153cMigration.includes(fragment)) fail('Phase 15.3C migration missing invariant: ' + fragment);
+}
+if (/\b(?:delete\s+from|insert\s+into|update)\s+storage\.(?:objects|buckets)\b/i.test(phase153cMigration)) {
+  fail('Phase 15.3C must use the Storage API instead of mutating Storage metadata with SQL');
+}
+for (const signature of [
+  'public.cancel_own_platform_account_deletion(uuid, text)',
+  'public.prepare_platform_account_deletion(uuid, uuid, text, text)',
+  'public.mark_platform_account_deletion_storage_cleared(uuid, uuid, bigint)',
+  'public.record_platform_account_deletion_failure(uuid, uuid, bigint, text)',
+]) {
+  if (!phase153cMigration.includes('grant execute on function ' + signature + ' to service_role')) {
+    fail('Phase 15.3C missing service-role-only deletion grant: ' + signature);
+  }
+}
+if (/grant\s+execute\s+on\s+function\s+public\.(?:cancel_own|prepare|mark|record)_platform_account_deletion[^;]*\bto\s+authenticated/i.test(phase153cMigration)) {
+  fail('Phase 15.3C irreversible coordination RPCs must never be executable by the browser role');
+}
+
+const phase153cTest = fs.readFileSync(phase153cTestPath, 'utf8');
+const phase153cPlan = Number((phase153cTest.match(/select\s+plan\((\d+)\)/i) || [])[1]);
+const phase153cAssertions = (phase153cTest.match(
+  /select\s+(?:has_table|has_column|has_function|is|results_eq|throws_ok|lives_ok)\s*\(/gi,
+) || []).length;
+if (phase153cPlan !== phase153cAssertions) {
+  fail('Phase 15.3C pgTAP plan ' + phase153cPlan + ' must match ' + phase153cAssertions + ' assertions');
+}
+if (phase153cPlan < 60) fail('Phase 15.3C deletion suite must retain comprehensive coverage');
+for (const coverage of [
+  'administrator cannot request deletion while the target owns a group',
+  'hard Auth deletion is blocked before Storage cleanup completes',
+  'direct profile deletion remains blocked even after Storage cleanup',
+  'authoritative scoring history follows the documented profile cascade',
+  'append-only deletion audit survives profile/Auth deletion',
+  'self-service exact confirmation prepares the same deletion engine',
+  'self-cancellation restores a clean ACTIVE account',
+  'direct hard Auth deletion cannot bypass pending-state and preparation checks',
+]) {
+  if (!phase153cTest.includes(coverage)) fail('Phase 15.3C pgTAP missing coverage: ' + coverage);
+}
+
+const phase153cFunction = read('supabase/functions/platform-account-auth/index.ts');
+for (const fragment of [
+  "action === 'DELETE_ADMIN'",
+  "action === 'DELETE_SELF'",
+  "action === 'CANCEL_DELETE_SELF'",
+  "rpc('prepare_platform_account_deletion'",
+  "rpc('mark_platform_account_deletion_storage_cleared'",
+  "rpc('record_platform_account_deletion_failure'",
+  "storage.from(PROFILE_PICTURE_BUCKET)",
+  'storage.remove(batch)',
+  'auth.admin.deleteUser(targetUserId, false)',
+  'STORAGE_CLEANUP_FAILED',
+  'AUTH_ADMIN_DELETE_FAILED',
+]) {
+  if (!phase153cFunction.includes(fragment)) fail('Phase 15.3C Edge Function missing invariant: ' + fragment);
+}
+if (/VITE_|serviceRoleKey.*jsonResponse|SUPABASE_SERVICE_ROLE_KEY.*body/i.test(phase153cFunction)) {
+  fail('Phase 15.3C Edge Function must never expose the service-role credential');
+}
+
+const selfDeletionService = read('src/features/settings/accountDeletionService.ts');
+for (const fragment of [
+  "rpc('request_own_platform_account_deletion')",
+  "action: 'CANCEL_DELETE_SELF'",
+  "action: 'DELETE_SELF'",
+]) {
+  if (!selfDeletionService.includes(fragment)) fail('Phase 15.3C self-deletion service missing boundary: ' + fragment);
+}
+for (const fragment of [
+  "action: 'DELETE_ADMIN'",
+  'confirmDeletion(userId: string, confirmation: string)',
+]) {
+  if (!phase153aService.includes(fragment)) fail('Phase 15.3C admin deletion service missing boundary: ' + fragment);
+}
+
+const phase153cDoc = read('docs/PHASE15.3C-IRREVERSIBLE-ACCOUNT-DELETION.md');
+for (const fragment of [
+  'one irreversible deletion engine',
+  '`DELETE <username>`',
+  'remove objects through Storage API batches of at most 1,000',
+  'Group ownership is never silently reassigned',
+  'Authoritative user-linked scoring is deleted with the account',
+  'no Docker or local Supabase stack',
+]) {
+  if (!phase153cDoc.includes(fragment)) fail('Phase 15.3C documentation missing invariant: ' + fragment);
+}
+
 const ciWorkflow = read('.github/workflows/ci.yml');
 const canonicalDbRunner = read('scripts/run-canonical-db-tests.cjs');
 const supabaseConfig = read('supabase/config.toml');
@@ -1130,4 +1258,4 @@ if (fs.existsSync(obsoleteRepairPath)) {
   fail('structural validation must not materialize the obsolete repair migration');
 }
 
-console.log('Release validation passed: clean migration history, Phase 15.1 admin invariants, Phase 15.2A capacity semantics, Phase 15.2B private telemetry/history authorization, Phase 15.2C secure Supabase provider boundary/provider-gap semantics, Phase 15.2D secure Netlify provider boundary/provider-gap semantics, Phase 15.2E real-data capacity UI/route/settings contracts, Phase 15.3A account lifecycle foundation, Phase 15.3B Data API/session enforcement and server-only Auth coordination, canonical GitHub CI/database discovery, visual-roadmap guards, and production chunk budget guards are present.');
+console.log('Release validation passed: clean migration history, Phase 15.1 admin invariants, Phase 15.2A capacity semantics, Phase 15.2B private telemetry/history authorization, Phase 15.2C secure Supabase provider boundary/provider-gap semantics, Phase 15.2D secure Netlify provider boundary/provider-gap semantics, Phase 15.2E real-data capacity UI/route/settings contracts, Phase 15.3A account lifecycle foundation, Phase 15.3B Data API/session enforcement and server-only Auth coordination, Phase 15.3C irreversible administrator/self-service deletion coordination, canonical GitHub CI/database discovery, visual-roadmap guards, and production chunk budget guards are present.');

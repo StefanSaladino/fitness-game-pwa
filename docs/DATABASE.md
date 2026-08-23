@@ -79,6 +79,8 @@ Authoritative scoring writes will be performed through controlled server/databas
 
 `profiles.profile_picture_path` stores the current object reference. Image bytes live in the `profile-pictures` Supabase Storage bucket. Paths are constrained to the owning profile UUID folder. The bucket is public-read for social rendering, while Storage mutation is authenticated and folder-scoped by RLS.
 
+Phase 15.3C account deletion removes every object under the user's UUID folder through the Storage API before hard Auth deletion. It never deletes Storage metadata with SQL. The Auth/profile cascade deletes profile-owned workouts, scoring/progression, badges, memberships/invites/reactions, and preferences. Group ownership is `ON DELETE RESTRICT`, so ownership must be transferred first. UUID-only deletion coordination and append-only platform audit records intentionally survive without profile foreign keys.
+
 
 ## Dashboard read model
 

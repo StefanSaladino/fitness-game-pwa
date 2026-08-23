@@ -94,6 +94,7 @@ describe('platform account admin service', () => {
     await service.restore(BASE_ROW.user_id, 'Review completed');
     await service.requestDeletion(BASE_ROW.user_id, 'Confirmed destructive request');
     await service.cancelDeletion(BASE_ROW.user_id, 'Deletion request cancelled');
+    await service.confirmDeletion(BASE_ROW.user_id, 'DELETE alpha');
 
     expect(invoke).toHaveBeenNthCalledWith(1, 'platform-account-auth', {
       body: {
@@ -108,6 +109,13 @@ describe('platform account admin service', () => {
         action: 'RESTORE',
         userId: BASE_ROW.user_id,
         reason: 'Review completed',
+      },
+    });
+    expect(invoke).toHaveBeenNthCalledWith(3, 'platform-account-auth', {
+      body: {
+        action: 'DELETE_ADMIN',
+        userId: BASE_ROW.user_id,
+        confirmation: 'DELETE alpha',
       },
     });
     expect(rpc).toHaveBeenNthCalledWith(1, 'request_platform_account_deletion', {
