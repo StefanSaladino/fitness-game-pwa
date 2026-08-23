@@ -1,6 +1,7 @@
 import { useRef } from 'react';
 import { Button } from '../../components/ui';
 import { navigateToPath } from '../../lib/appNavigation';
+import type { PushNotificationService } from '../../pwa/pushNotificationService';
 import type { PwaService } from '../../pwa/pwaService';
 import { usePlatformAccess } from '../admin/hooks/usePlatformAccess';
 import type { PlatformAccessService } from '../admin/platformAccessService';
@@ -16,6 +17,8 @@ import type { AccountDeletionService } from './accountDeletionService';
 import { AccountSecuritySection } from './AccountSecuritySection';
 import type { AccountSecurityService } from './accountSecurityService';
 import { AppStatusSection } from './AppStatusSection';
+import { NotificationSettingsSection } from './NotificationSettingsSection';
+import type { NotificationPreferenceService } from './notificationPreferenceService';
 import { ProfileSettingsForm } from './ProfileSettingsForm';
 import { useProfileSettings } from './hooks/useProfileSettings';
 import type { SettingsService } from './settingsService';
@@ -32,6 +35,8 @@ interface SettingsScreenProps {
   groupService?: GroupService;
   profilePictureService?: ProfilePictureService;
   pwaService?: PwaService;
+  notificationPreferenceService?: NotificationPreferenceService;
+  pushNotificationService?: PushNotificationService;
   onProfileChanged?: () => Promise<unknown> | unknown;
 }
 
@@ -46,6 +51,8 @@ export function SettingsScreen({
   groupService: injectedGroupService,
   profilePictureService,
   pwaService,
+  notificationPreferenceService,
+  pushNotificationService,
   onProfileChanged,
 }: SettingsScreenProps) {
   const platformAccess = usePlatformAccess(accessService);
@@ -92,17 +99,11 @@ export function SettingsScreen({
           profile={profileSettings.profile}
         />
 
-        <section className={styles.section} aria-labelledby="settings-notifications-heading">
-          <div className={styles.sectionHeading}>
-            <div>
-              <p className={styles.eyebrow}>MESSAGES</p>
-              <h2 id="settings-notifications-heading">Notifications</h2>
-            </div>
-            <span className={styles.statusBadge}>Preferences ready</span>
-          </div>
-          <p className={styles.supportCopy}>Account-level optional notification preferences are now stored securely. Device permission and delivery controls arrive in Phase 15.6C, so switches stay hidden until they can affect real delivery.</p>
-          <p className={styles.supportCopy}>Required account, security, moderation, suspension, and administrator ACTION_REQUIRED notices continue to appear in the in-app message center regardless of optional notification preferences.</p>
-        </section>
+        <NotificationSettingsSection
+          preferenceService={notificationPreferenceService}
+          pushService={pushNotificationService}
+          userId={profile.id}
+        />
 
         <AccountSecuritySection
           email={userEmail}

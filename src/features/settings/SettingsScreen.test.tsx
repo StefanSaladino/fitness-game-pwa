@@ -1,11 +1,13 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
+import type { PushNotificationService } from '../../pwa/pushNotificationService';
 import type { PwaService, PwaSnapshot } from '../../pwa/pwaService';
 import type { PlatformAccessService } from '../admin/platformAccessService';
 import type { GroupService } from '../groups/groupService';
 import type { ProfilePictureService } from '../profile-picture/profilePictureService';
 import type { AccountDeletionService } from './accountDeletionService';
+import type { NotificationPreferenceService, NotificationPreferences } from './notificationPreferenceService';
 import type { SettingsService } from './settingsService';
 import { SettingsScreen } from './SettingsScreen';
 
@@ -46,13 +48,58 @@ const pwaService = {
   applyUpdate: vi.fn(() => false),
 } satisfies PwaService;
 
+const notificationPreferences: NotificationPreferences = {
+  notificationsEnabled: false,
+  workoutReminders: false,
+  weeklyGoalReminders: false,
+  badgeAchievements: false,
+  personalRecordAlerts: false,
+  groupActivity: false,
+  groupInvitations: false,
+};
+
+const notificationPreferenceService = {
+  load: vi.fn(async () => notificationPreferences),
+  update: vi.fn(async (preferences: NotificationPreferences) => preferences),
+} satisfies NotificationPreferenceService;
+
+const pushNotificationService = {
+  inspect: vi.fn(async () => ({
+    capability: 'unsupported' as const,
+    permission: 'unsupported' as const,
+    subscribed: false,
+    activeDeviceCount: 0,
+  })),
+  enable: vi.fn(async () => ({
+    capability: 'unsupported' as const,
+    permission: 'unsupported' as const,
+    subscribed: false,
+    activeDeviceCount: 0,
+  })),
+  disable: vi.fn(async () => ({
+    capability: 'unsupported' as const,
+    permission: 'unsupported' as const,
+    subscribed: false,
+    activeDeviceCount: 0,
+  })),
+  sendTest: vi.fn(async () => undefined),
+} satisfies PushNotificationService;
+
 const settingsService = { load: vi.fn(async () => profile), update: vi.fn(async () => profile) } satisfies SettingsService;
 const deletionService = {
   request: vi.fn(async () => 'DELETE stefan'),
   cancel: vi.fn(async () => undefined),
   confirm: vi.fn(async () => undefined),
 } satisfies AccountDeletionService;
-const shared = { deletionService, groupService, profilePictureService, pwaService, settingsService };
+const shared = {
+  deletionService,
+  groupService,
+  notificationPreferenceService,
+  profilePictureService,
+  pushNotificationService,
+  pwaService,
+  settingsService,
+};
 
 describe('SettingsScreen foundation', () => {
   it('shows all real ordinary-account sections and account identity', async () => {

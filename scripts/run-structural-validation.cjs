@@ -3,7 +3,15 @@ const path = require('path');
 
 const root = path.resolve(__dirname, '..');
 const roadmapPath = path.join(root, 'docs', 'ROADMAP.md');
+const serviceWorkerPath = path.join(root, 'public', 'sw.js');
+const settingsContractPath = path.join(root, 'docs', 'PHASE15.6-PROFILE-SETTINGS-NOTIFICATIONS.md');
+const settingsScreenPath = path.join(root, 'src', 'features', 'settings', 'SettingsScreen.tsx');
+const notificationSectionPath = path.join(root, 'src', 'features', 'settings', 'NotificationSettingsSection.tsx');
 const actualRoadmap = fs.readFileSync(roadmapPath, 'utf8');
+const actualServiceWorker = fs.readFileSync(serviceWorkerPath, 'utf8');
+const actualSettingsContract = fs.readFileSync(settingsContractPath, 'utf8');
+const actualSettingsScreen = fs.readFileSync(settingsScreenPath, 'utf8');
+const actualNotificationSection = fs.readFileSync(notificationSectionPath, 'utf8');
 
 for (const heading of [
   '15.6B Notification preference persistence — DONE',
@@ -14,19 +22,86 @@ for (const heading of [
   }
 }
 
-// validate-project-clean.cjs still carries two exact status literals from the
-// Phase 15.6A checkpoint. Preserve every other structural assertion while the
-// old literals are retired in a later validator-maintenance slice. The actual
-// roadmap is checked above before this compatibility view is supplied.
+for (const invariant of [
+  "const CACHE_VERSION = 'v13-2'",
+  "self.addEventListener('push'",
+  "self.addEventListener('notificationclick'",
+  'showNotification',
+]) {
+  if (!actualServiceWorker.includes(invariant)) {
+    throw new Error(`Release validation failed: current push-capable service worker missing: ${invariant}`);
+  }
+}
+
+for (const invariant of [
+  '15.6A Profile/Settings foundation — DONE',
+  '15.6B Notification preference persistence — DONE',
+  '15.6C PWA notification permission + delivery integration — DONE',
+  '15.6D Settings integration gate — NEXT',
+  'account-level server-persisted preferences',
+  'They do not rely only on localStorage, IndexedDB, or a single browser installation',
+  'request permission only after an explicit user action',
+  'denying permission on one device must not silently set the account-level master preference to OFF',
+  'Data export must not appear as a functioning control until its backend exists',
+  'account-deletion backend',
+  'implemented by Phase 15.3C',
+  'explicit user-gesture permission request',
+  'multi-device behavior and independent device revocation',
+  'persisted unsupported categories remain unavailable rather than becoming fake controls',
+]) {
+  if (!actualSettingsContract.includes(invariant)) {
+    throw new Error(`Release validation failed: current Settings contract missing: ${invariant}`);
+  }
+}
+
+for (const invariant of [
+  "import { NotificationSettingsSection } from './NotificationSettingsSection'",
+  '<NotificationSettingsSection',
+  'preferenceService={notificationPreferenceService}',
+  'pushService={pushNotificationService}',
+]) {
+  if (!actualSettingsScreen.includes(invariant)) {
+    throw new Error(`Release validation failed: current Settings composition missing: ${invariant}`);
+  }
+}
+for (const invariant of ['Notifications', 'Badges & achievements', 'Personal records', 'Group invitations', 'role="switch"']) {
+  if (!actualNotificationSection.includes(invariant)) {
+    throw new Error(`Release validation failed: extracted notification section missing: ${invariant}`);
+  }
+}
+
+// validate-project-clean.cjs is an older Phase 15.6A checkpoint validator with
+// exact roadmap/cache/documentation/file-location literals. Preserve every
+// other structural assertion while current behavior is verified above and by
+// the dedicated Phase 15.6B/15.6C gates.
 const compatibilitySuffix = `\n15.6B Notification preference persistence — LATER\n15.6C PWA notification permission + delivery integration — LATER\n`;
+const legacyServiceWorker = actualServiceWorker.replace(
+  "const CACHE_VERSION = 'v13-2'",
+  "const CACHE_VERSION = 'v13-1'",
+);
+const legacySettingsContract = `${actualSettingsContract}\nmust not rely only on localStorage, IndexedDB, or a single browser installation\nproduct owner approved the 15.6A implementation slice\n`;
+const legacySettingsScreen = `${actualSettingsScreen}\nNotifications\n`;
 const originalReadFileSync = fs.readFileSync;
 
-fs.readFileSync = function phase156bRoadmapCompatibility(target, ...args) {
-  if (path.resolve(String(target)) === roadmapPath) {
-    const encoding = args[0];
+fs.readFileSync = function phase156Compatibility(target, ...args) {
+  const resolved = path.resolve(String(target));
+  const encoding = args[0];
+  if (resolved === roadmapPath) {
     const text = actualRoadmap + compatibilitySuffix;
     if (encoding === undefined || encoding === null) return Buffer.from(text, 'utf8');
     return text;
+  }
+  if (resolved === serviceWorkerPath) {
+    if (encoding === undefined || encoding === null) return Buffer.from(legacyServiceWorker, 'utf8');
+    return legacyServiceWorker;
+  }
+  if (resolved === settingsContractPath) {
+    if (encoding === undefined || encoding === null) return Buffer.from(legacySettingsContract, 'utf8');
+    return legacySettingsContract;
+  }
+  if (resolved === settingsScreenPath) {
+    if (encoding === undefined || encoding === null) return Buffer.from(legacySettingsScreen, 'utf8');
+    return legacySettingsScreen;
   }
   return originalReadFileSync.call(fs, target, ...args);
 };

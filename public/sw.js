@@ -1,6 +1,6 @@
 const CACHE_PREFIX = 'workout-game-shell-';
 // Historical Phase 12B shell checkpoint: v12b-2. Current releases advance CACHE_VERSION below.
-const CACHE_VERSION = 'v13-1';
+const CACHE_VERSION = 'v13-2';
 const CACHE = `${CACHE_PREFIX}${CACHE_VERSION}`;
 const ASSET_MANIFEST = '/asset-manifest.json';
 const CORE_SHELL = [
@@ -106,6 +106,29 @@ async function staticResponse(request) {
   }
 }
 
+function safePushPayload(event) {
+  let value = {};
+  try {
+    value = event.data?.json?.() ?? {};
+  } catch {
+    try {
+      value = JSON.parse(event.data?.text?.() ?? '{}');
+    } catch {
+      value = {};
+    }
+  }
+
+  const title = typeof value.title === 'string' && value.title.trim()
+    ? value.title.trim().slice(0, 120)
+    : 'Workout Game';
+  const body = typeof value.body === 'string' && value.body.trim()
+    ? value.body.trim().slice(0, 280)
+    : 'You have a new Workout Game notification.';
+  const path = typeof value.url === 'string' ? sameOriginPath(value.url) : null;
+  const tag = typeof value.tag === 'string' && value.tag.length <= 240 ? value.tag : undefined;
+  return { title, body, path: path || '/', tag };
+}
+
 self.addEventListener('install', (event) => {
   event.waitUntil((async () => {
     await precacheShell();
@@ -128,6 +151,38 @@ self.addEventListener('activate', (event) => {
 
 self.addEventListener('message', (event) => {
   if (event.data?.type === 'SKIP_WAITING') void self.skipWaiting();
+});
+
+self.addEventListener('push', (event) => {
+  const payload = safePushPayload(event);
+  event.waitUntil(self.registration.showNotification(payload.title, {
+    body: payload.body,
+    icon: '/icons/icon-192.png',
+    badge: '/icons/icon-192.png',
+    tag: payload.tag,
+    data: { url: payload.path },
+  }));
+});
+
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  const path = sameOriginPath(event.notification.data?.url) || '/';
+  const destination = new URL(path, self.location.origin).href;
+
+  event.waitUntil((async () => {
+    const windows = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+    for (const client of windows) {
+      try {
+        if (new URL(client.url).origin !== self.location.origin) continue;
+        if ('navigate' in client) await client.navigate(destination);
+        await client.focus();
+        return;
+      } catch {
+        // Try another existing same-origin client before opening a new one.
+      }
+    }
+    await self.clients.openWindow(destination);
+  })());
 });
 
 self.addEventListener('fetch', (event) => {
