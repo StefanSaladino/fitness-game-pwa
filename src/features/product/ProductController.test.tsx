@@ -20,7 +20,12 @@ vi.mock('../groups/components/GroupAdministrationController', () => ({
   GroupAdministrationController: ({ selectedGroupId }: { selectedGroupId: string }) => <p>Admin for {selectedGroupId}</p>,
 }));
 vi.mock('../groups/components/GroupSetupController', () => ({
-  GroupSetupController: () => <p>Optional group setup and invitations</p>,
+  GroupSetupController: ({ onBackToDashboard }: { onBackToDashboard?: () => void }) => (
+    <div>
+      <p>Optional group setup and invitations</p>
+      {onBackToDashboard && <button onClick={onBackToDashboard} type="button">Back to dashboard</button>}
+    </div>
+  ),
 }));
 vi.mock('../progress/components/ExerciseProgressController', () => ({ ExerciseProgressController: () => <p>Progress screen</p> }));
 vi.mock('../social/components/GroupSocialController', () => ({ GroupSocialController: ({ selectedGroupId }: { selectedGroupId: string }) => <p>Competition for {selectedGroupId}</p> }));
@@ -40,12 +45,14 @@ const groups: GroupSummary[] = [
 afterEach(() => window.history.replaceState({}, '', '/'));
 
 describe('ProductController', () => {
-  it('lands a zero-group user on their personal dashboard', async () => {
+  it('lands a zero-group user on their personal dashboard and lets them leave optional group entry', async () => {
     const user = userEvent.setup();
     render(<ProductController groups={[]} onGroupsChanged={vi.fn()} profile={profile} />);
     expect(await screen.findByText('Personal dashboard with no group')).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Open groups' }));
     expect(await screen.findByText('Optional group setup and invitations')).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Back to dashboard' }));
+    expect(await screen.findByText('Personal dashboard with no group')).toBeInTheDocument();
   });
 
   it('owns product-section navigation instead of putting routing into presentation components', async () => {
