@@ -34,6 +34,13 @@ for (const invariant of [
   '15.6B Notification preference persistence — DONE',
   '15.6C PWA notification permission + delivery integration — DONE',
   '15.6D Settings integration gate — NEXT',
+  'account-level server-persisted preferences',
+  'They do not rely only on localStorage, IndexedDB, or a single browser installation',
+  'request permission only after an explicit user action',
+  'denying permission on one device must not silently set the account-level master preference to OFF',
+  'Data export must not appear as a functioning control until its backend exists',
+  'account-deletion backend',
+  'implemented by Phase 15.3C',
   'explicit user-gesture permission request',
   'multi-device behavior and independent device revocation',
   'persisted unsupported categories remain unavailable rather than becoming fake controls',
@@ -51,7 +58,7 @@ const legacyServiceWorker = actualServiceWorker.replace(
   "const CACHE_VERSION = 'v13-2'",
   "const CACHE_VERSION = 'v13-1'",
 );
-const legacySettingsContract = `${actualSettingsContract}\nproduct owner approved the 15.6A implementation slice\n`;
+const legacySettingsContract = `${actualSettingsContract}\nmust not rely only on localStorage, IndexedDB, or a single browser installation\nproduct owner approved the 15.6A implementation slice\n`;
 const originalReadFileSync = fs.readFileSync;
 
 fs.readFileSync = function phase156Compatibility(target, ...args) {
