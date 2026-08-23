@@ -19,6 +19,7 @@
   --radius-md: 16px;
   --radius-lg: 22px;
   --radius-xl: 28px;
-  --desktop-sidebar-width: 232px;
-  --mobile-nav-height: 72px;
+  --desktop-sidebar-width: 216px;
+  --shell-header-height: 58px;
+  --mobile-nav-height: 70px;
 }
