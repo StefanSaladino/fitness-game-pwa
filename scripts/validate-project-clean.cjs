@@ -838,7 +838,9 @@ for (const heading of [
   '#### 15.3A Account directory + lifecycle foundation — DONE',
   '#### 15.3B Suspension enforcement + Auth session coordination — DONE',
   '#### 15.3C Irreversible account removal — DONE',
-  '#### 15.3D User-administration visual gate + UI — NEXT',
+  '#### 15.3D User-administration visual gate + UI — DONE',
+  '#### 15.3E User reports + moderation case foundation — LATER',
+  '#### 15.3F Privacy-bounded user activity review + moderation UI — LATER',
 ]) {
   if (!roadmap.includes(heading)) fail('Phase 15.3 roadmap missing slice: ' + heading);
 }
@@ -1126,6 +1128,96 @@ for (const fragment of [
   if (!phase153cDoc.includes(fragment)) fail('Phase 15.3C documentation missing invariant: ' + fragment);
 }
 
+// Phase 15.3D approved user-administration UI.
+for (const relativePath of [
+  'PHASE15.3D-PATCH-MANIFEST.txt',
+  'docs/PHASE15.3D-USER-ADMINISTRATION-UI.md',
+  'docs/concepts/phase15.3d-users-phone.png',
+  'docs/concepts/phase15.3d-users-desktop.png',
+  'src/features/admin/components/PlatformAdminShell.tsx',
+  'src/features/admin/components/PlatformAdminShell.module.css',
+  'src/features/admin/accounts/accountAdministrationValidation.ts',
+  'src/features/admin/accounts/hooks/useUserAdministration.ts',
+  'src/features/admin/accounts/components/AccountActionDialog.tsx',
+  'src/features/admin/accounts/components/UserAdministrationScreen.tsx',
+  'src/features/admin/accounts/components/UserAdministration.module.css',
+  'src/features/admin/accounts/components/UserAdministrationController.tsx',
+  'tests/integration/platform-account-administration-journey.test.tsx',
+  'tests/e2e/user-administration.spec.ts',
+  'tests/e2e/userAdministrationHarness.tsx',
+  'user-administration.e2e.html',
+]) {
+  if (!fs.existsSync(path.join(root, relativePath))) fail('Phase 15.3D file missing: ' + relativePath);
+}
+
+const phase153dDoc = read('docs/PHASE15.3D-USER-ADMINISTRATION-UI.md');
+const phase153dRoute = read('src/features/admin/PlatformAdminRoute.tsx');
+const phase153dApp = read('src/app/App.tsx');
+const phase153dScreen = read('src/features/admin/accounts/components/UserAdministrationScreen.tsx');
+const phase153dDialog = read('src/features/admin/accounts/components/AccountActionDialog.tsx');
+const phase153dHook = read('src/features/admin/accounts/hooks/useUserAdministration.ts');
+const phase153dValidation = read('src/features/admin/accounts/accountAdministrationValidation.ts');
+const phase153dCss = read('src/features/admin/accounts/components/UserAdministration.module.css');
+const phase153dShellCss = read('src/features/admin/components/PlatformAdminShell.module.css');
+
+for (const fragment of [
+  "pathname === '/platform-admin/users'",
+  'PlatformAdminShell',
+  'UserAdministrationController',
+  'currentUserId',
+]) {
+  if (!phase153dRoute.includes(fragment)) fail('Phase 15.3D route missing invariant: ' + fragment);
+}
+if (!phase153dApp.includes('currentUserId={session.user.id}')) {
+  fail('Phase 15.3D route must receive the authenticated user ID for self-action suppression');
+}
+for (const field of ['User ID', 'Joined', 'Last sign-in', 'Status updated', 'Status reason', 'Review date', 'Deletion requested']) {
+  if (!phase153dScreen.includes(field)) fail('Phase 15.3D account detail missing bounded field: ' + field);
+}
+for (const action of ['Suspend account', 'Restore account', 'Request deletion', 'Cancel deletion request', 'Delete permanently']) {
+  if (!phase153dScreen.includes(action) && !phase153dDialog.includes(action)) {
+    fail('Phase 15.3D UI missing lifecycle action: ' + action);
+  }
+}
+if (!phase153dValidation.includes('`DELETE ${username}`')
+    || !phase153dDialog.includes('deletionConfirmationMatches')
+    || !phase153dDialog.includes('aria-modal="true"')) {
+  fail('Phase 15.3D irreversible dialog must retain exact confirmation and accessible modal semantics');
+}
+for (const protection of ['directoryRequestRef', 'detailRequestRef', 'actionBusyRef']) {
+  if (!phase153dHook.includes(protection)) fail('Phase 15.3D async coordination missing protection: ' + protection);
+}
+if (/from\s+['"][^'"]*supabase|functions\.invoke|\.rpc\(/.test(
+  phase153dScreen + phase153dDialog + phase153dHook,
+)) {
+  fail('Phase 15.3D components and state hook must stay behind the account-administration service boundary');
+}
+if (!/@media \(min-width: 940px\)/.test(phase153dCss)
+    || !/@media \(prefers-reduced-motion: reduce\)/.test(phase153dCss)
+    || !/@media \(min-width: 940px\)/.test(phase153dShellCss)) {
+  fail('Phase 15.3D must retain distinct responsive layouts and reduced-motion behavior');
+}
+if (/linear-gradient|radial-gradient|backdrop-filter|filter:\s*blur/i.test(phase153dCss + phase153dShellCss)) {
+  fail('Phase 15.3D admin surface must preserve the approved opaque non-glow visual contract');
+}
+for (const fragment of [
+  'Status: **DONE',
+  'phone and desktop concepts approved',
+  'must never expose email',
+  '`DELETE <username>`',
+  'adds no migration, Edge Function, secret, or Docker requirement',
+]) {
+  if (!phase153dDoc.includes(fragment)) fail('Phase 15.3D documentation missing invariant: ' + fragment);
+}
+for (const futureRequirement of [
+  'durable in-app moderation work',
+  'purpose-built read models rather than unrestricted table access',
+  'specific user account, every current member of a selected group, or all eligible user accounts',
+  'server-side, retryable fan-out boundary',
+]) {
+  if (!roadmap.includes(futureRequirement)) fail('Phase 15 future moderation/messaging requirement missing: ' + futureRequirement);
+}
+
 const ciWorkflow = read('.github/workflows/ci.yml');
 const canonicalDbRunner = read('scripts/run-canonical-db-tests.cjs');
 const supabaseConfig = read('supabase/config.toml');
@@ -1258,4 +1350,4 @@ if (fs.existsSync(obsoleteRepairPath)) {
   fail('structural validation must not materialize the obsolete repair migration');
 }
 
-console.log('Release validation passed: clean migration history, Phase 15.1 admin invariants, Phase 15.2A capacity semantics, Phase 15.2B private telemetry/history authorization, Phase 15.2C secure Supabase provider boundary/provider-gap semantics, Phase 15.2D secure Netlify provider boundary/provider-gap semantics, Phase 15.2E real-data capacity UI/route/settings contracts, Phase 15.3A account lifecycle foundation, Phase 15.3B Data API/session enforcement and server-only Auth coordination, Phase 15.3C irreversible administrator/self-service deletion coordination, canonical GitHub CI/database discovery, visual-roadmap guards, and production chunk budget guards are present.');
+console.log('Release validation passed: clean migration history, Phase 15.1 admin invariants, Phase 15.2A capacity semantics, Phase 15.2B private telemetry/history authorization, Phase 15.2C secure Supabase provider boundary/provider-gap semantics, Phase 15.2D secure Netlify provider boundary/provider-gap semantics, Phase 15.2E real-data capacity UI/route/settings contracts, Phase 15.3A account lifecycle foundation, Phase 15.3B Data API/session enforcement and server-only Auth coordination, Phase 15.3C irreversible administrator/self-service deletion coordination, Phase 15.3D approved responsive account-administration UI, canonical GitHub CI/database discovery, visual-roadmap guards, and production chunk budget guards are present.');

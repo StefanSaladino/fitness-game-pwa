@@ -1,0 +1,75 @@
+PHASE 15.3D PATCH MANIFEST
+==========================
+
+Phase: User-administration visual gate + UI
+Baseline: remote master 337d0936ab246b9581a7b583fc57173b6ee828fd
+Delivery: one fast-forward commit to master; no tag
+Database/Edge changes: none
+Docker/local Supabase required: no
+
+IMPLEMENTED
+-----------
+- Approved phone and desktop visual concepts retained under docs/concepts.
+- Shared responsive platform-administration shell with Capacity and Users destinations.
+- ACTIVE-platform-admin-only /platform-admin/users route with authenticated self-action context.
+- Searchable, status-filtered, paginated bounded account directory and refreshed account detail.
+- Audited suspend, restore, deletion request, deletion cancellation, and irreversible deletion dialogs.
+- Exact case-sensitive DELETE <username> confirmation and group-ownership transfer guidance.
+- Self-action suppression, platform-admin deletion safeguards, stale-request rejection, duplicate-action prevention,
+  focus trapping/restoration, live announcements, error/retry states, and reduced-motion support.
+- Unit, component, hook, route, integration, and responsive Playwright critical-flow coverage.
+- Later roadmap contracts for user reports, durable moderation cases, privacy-bounded activity review,
+  and individual/group/all-user administrator messaging.
+
+FILES
+-----
+CHANGELOG.md
+docs/CI-VALIDATION.md
+docs/PHASE15.3D-USER-ADMINISTRATION-UI.md
+docs/ROADMAP.md
+docs/concepts/phase15.3d-users-desktop.png
+docs/concepts/phase15.3d-users-phone.png
+scripts/validate-project-clean.cjs
+src/app/App.tsx
+src/features/admin/PlatformAdminRoute.test.tsx
+src/features/admin/PlatformAdminRoute.tsx
+src/features/admin/accounts/accountAdministrationValidation.test.ts
+src/features/admin/accounts/accountAdministrationValidation.ts
+src/features/admin/accounts/components/AccountActionDialog.test.tsx
+src/features/admin/accounts/components/AccountActionDialog.tsx
+src/features/admin/accounts/components/UserAdministration.module.css
+src/features/admin/accounts/components/UserAdministrationController.tsx
+src/features/admin/accounts/components/UserAdministrationScreen.test.tsx
+src/features/admin/accounts/components/UserAdministrationScreen.tsx
+src/features/admin/accounts/hooks/useUserAdministration.test.tsx
+src/features/admin/accounts/hooks/useUserAdministration.ts
+src/features/admin/accounts/index.ts
+src/features/admin/capacity/components/CapacityDashboard.test.tsx
+src/features/admin/capacity/components/CapacityDashboard.tsx
+src/features/admin/capacity/components/CapacityDashboardController.tsx
+src/features/admin/components/PlatformAdminShell.module.css
+src/features/admin/components/PlatformAdminShell.test.tsx
+src/features/admin/components/PlatformAdminShell.tsx
+tests/e2e/user-administration.spec.ts
+tests/e2e/userAdministrationHarness.tsx
+tests/integration/platform-account-administration-journey.test.tsx
+user-administration.e2e.html
+vite.config.ts
+PHASE15.3D-PATCH-MANIFEST.txt
+
+VALIDATION
+----------
+- npm run typecheck
+- npm test
+- npm run test:integration
+- npm run build
+- npm run test:structure
+- npm run test:internal
+- node scripts/validate-db-ci.cjs (the npm alias invokes this same non-Docker repository gate)
+- The Playwright fixture compiled in the production E2E build. Local browser execution could not launch because
+  this workspace does not contain the Playwright Chromium/WebKit binaries; GitHub CI installs both before running it.
+
+LOCAL SYNC NOTE
+---------------
+The operator's unavailable local checkout remains at Phase 15.3B. When access returns, fetch remote master and
+fast-forward/rebase the local work deliberately before creating deferred phase tags.

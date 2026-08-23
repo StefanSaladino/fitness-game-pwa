@@ -744,22 +744,45 @@ Netlify billing/usage is team/account scoped. The public API calls a team an acc
 - require group ownership transfer first; never silently transfer or delete a group;
 - keep both administrator and ordinary-user deletion controls out of this non-visual slice.
 
-#### 15.3D User-administration visual gate + UI — NEXT
+#### 15.3D User-administration visual gate + UI — DONE
 
 - audit the real 15.3 account data/actions/states first;
 - generate phone-first and desktop user-directory/detail/action concepts using only implemented fields and actions;
-- obtain explicit product-owner approval before adding the Users admin destination;
-- implement searchable/paginated directory, detail, suspend/restore, and deliberate two-step deletion UX only after approval;
+- obtained explicit product-owner approval for the phone and desktop concepts before adding the Users admin destination;
+- implemented the searchable/paginated directory, detail, suspend/restore, and deliberate two-step deletion UX after approval;
 - keep destructive actions reasoned, explicit, accessible, and non-color-only.
+
+#### 15.3E User reports + moderation case foundation — LATER
+
+- let an authenticated user report another user, never themselves, with a required category/reason and optional reference to a supported group, message, workout, or other reviewable product object;
+- deliver reports into a private moderation queue for moderation-capable platform administrators; the first operational moderator is the existing platform administrator, without inventing a browser-only moderator role;
+- keep the reporter identity visible to authorized moderators for abuse review but hidden from the reported user unless an explicit later disclosure policy requires otherwise;
+- support NEW, IN_REVIEW, RESOLVED, and DISMISSED case states, moderator notes, assignment, timestamps, and append-only action history;
+- rate-limit and de-duplicate abusive submissions without preventing a user from reporting distinct incidents;
+- define report, evidence-reference, moderator-note, and resolution retention before exposing the reporting control;
+- alerts must be durable in-app moderation work, not a best-effort toast; later email/push delivery may supplement but never replace the queue.
+
+#### 15.3F Privacy-bounded user activity review + moderation UI — LATER
+
+- let an authorized moderator open a reported or directory-selected account’s review timeline using purpose-built read models rather than unrestricted table access;
+- include relevant account lifecycle events, workouts recorded, group membership/activity, reports, and communication history once each source exists;
+- show the minimum fields needed to investigate context, with links back to the originating moderation case where applicable;
+- audit moderator access to sensitive review data and every case/status/note/action mutation;
+- never expose password material, raw tokens, Auth identities/providers, private keys, unrestricted session rows, unrelated IP/device telemetry, or unrelated user data;
+- keep moderation review read-only with respect to workouts, scoring, badges, rankings, and progression; lifecycle enforcement continues through the existing audited account actions;
+- define pagination, retention, redaction, deletion effects, and group/message visibility before implementing the activity timeline.
 
 ### 15.4 Admin-to-user messaging
 
-- send a targeted in-app message to a specific user account;
+- send an in-app message to a specific user account, every current member of a selected group, or all eligible user accounts;
 - support message types such as NOTICE, WARNING, ACTION_REQUIRED, and ACCOUNT_STATUS;
 - administrator-entered subject/body plus optional expiry or acknowledgement requirement;
 - user inbox/banner surface with delivered/read/acknowledged state;
+- resolve and persist the recipient set at send time so group membership changes do not rewrite delivery history;
+- use a server-side, retryable fan-out boundary for group and all-user messages; never loop over privileged recipients from the browser;
+- provide an explicit audience preview/count and a second confirmation before a group or all-user send;
+- exclude deleted accounts and define how SUSPENDED/DELETION_PENDING recipients receive required account or moderation notices;
 - warnings and moderation notices remain visible according to an explicit retention policy;
-- optional later broadcast/system notices may reuse the same message model but are not required for the first slice;
 - every message send/edit/withdraw action is audit logged;
 - admin messages never affect XP, badges, rankings, or progression.
 
@@ -768,6 +791,8 @@ Netlify billing/usage is team/account scoped. The public API calls a team an acc
 - admin sign-in/authorization boundary cannot be reached by normal users through client-side navigation tricks;
 - suspension takes effect across dashboard, workouts, cardio, groups, progress, and social RPCs;
 - account removal behavior is validated against foreign-key cascades, Storage cleanup, and retained audit records;
+- user reports enter the private moderation queue, activity review is authorization- and audit-bounded, and reporter confidentiality is preserved;
+- targeted, group, and all-user message audiences are resolved server-side with durable per-recipient delivery history;
 - admin messaging is covered by service, component, integration, and authorization tests;
 - capacity metrics degrade safely when an external provider metric is unavailable;
 - phone/desktop administrator UI is responsive, but the admin console is not exposed in ordinary user navigation;

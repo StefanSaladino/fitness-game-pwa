@@ -17,7 +17,6 @@ interface CapacityDashboardProps {
   snapshot: CapacityDashboardSnapshot;
   error?: string;
   capturing?: boolean;
-  onBackToApp: () => void;
   onRefresh: () => void;
   onCaptureSnapshot: () => void;
 }
@@ -110,28 +109,10 @@ function ProviderRow({ name, scope, metrics }: { name: string; scope: string; me
   );
 }
 
-export function CapacityDashboard({ snapshot, error, capturing, onBackToApp, onRefresh, onCaptureSnapshot }: CapacityDashboardProps) {
+export function CapacityDashboard({ snapshot, error, capturing, onRefresh, onCaptureSnapshot }: CapacityDashboardProps) {
   const byCode = new Map(snapshot.current.map((metric) => [metric.code, metric]));
   return (
-    <div className={styles.shell}>
-      <aside className={styles.rail} aria-label="Platform administration">
-        <div className={styles.railBrand}>
-          <strong>Workout Game</strong>
-          <span>Platform administration</span>
-        </div>
-        <p className={styles.railLabel}>Operations</p>
-        <div className={styles.railCurrent} aria-current="page">Capacity</div>
-        <button className={styles.railButton} onClick={onBackToApp} type="button">Back to app</button>
-      </aside>
-
-      <div>
-        <div className={styles.mobileBar}>
-          <button className={styles.iconTextButton} onClick={onBackToApp} type="button">Back</button>
-          <span className={styles.mobileTitle}>Capacity</span>
-          <span aria-hidden="true" />
-        </div>
-
-        <main className={styles.main}>
+    <main className={styles.main}>
           <header className={styles.header}>
             <div>
               <h1>Capacity</h1>
@@ -179,8 +160,6 @@ export function CapacityDashboard({ snapshot, error, capturing, onBackToApp, onR
               <ProviderRow name="Netlify" scope="Account scope" metrics={snapshot.netlify.metrics} />
             </div>
           </section>
-        </main>
-      </div>
-    </div>
+    </main>
   );
 }

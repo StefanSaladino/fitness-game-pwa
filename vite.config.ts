@@ -35,6 +35,7 @@ export default defineConfig({
           competition: resolve(process.cwd(), 'competition.e2e.html'),
           indexeddb: resolve(process.cwd(), 'indexeddb.e2e.html'),
           progress: resolve(process.cwd(), 'progress.e2e.html'),
+          userAdministration: resolve(process.cwd(), 'user-administration.e2e.html'),
         },
       } : {}),
       output: {

@@ -1,6 +1,14 @@
 # Changelog
 
-## Unreleased — Phase 15.2 foundation + CI reliability
+## Unreleased — Phase 15.3D user administration
+
+- Added the approved ACTIVE-platform-admin-only `/platform-admin/users` directory and account-detail workflow.
+- Added search, explicit account-state filters, pagination, bounded account metadata, and shared Capacity/Users administration navigation.
+- Added audited suspend, restore, deletion-request, deletion-cancellation, and exact-confirmation irreversible-deletion dialogs over the existing server boundaries.
+- Kept current-admin and platform-admin deletion safeguards visible while leaving the server authoritative for every transition and group-ownership block.
+- Added stale-request protection, duplicate-mutation prevention, focus management, live announcements, mobile/desktop layouts, and responsive browser coverage.
+- Reserved user reporting, privacy-bounded activity investigation, and individual/group/all-user administrator messaging for later server-backed, audited slices.
+- Added no migration, Edge Function, provider secret, scoring change, or Docker requirement.
 
 - Added Phase 15.2C1's authenticated `platform-capacity-supabase` Edge Function and browser-neutral Supabase Management capacity adapter.
 - Kept Supabase billing telemetry explicitly organization-scoped and split cached egress, Realtime messages, and Realtime peak connections into unambiguous metric identities before UI implementation.

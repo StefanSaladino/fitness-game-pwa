@@ -84,7 +84,7 @@ function AuthenticatedApp({ pathname }: { pathname: string }) {
   if (pathname === '/platform-admin' || pathname.startsWith('/platform-admin/')) {
     return (
       <Suspense fallback={<RouteLoading />}>
-        <PlatformAdminRoute pathname={pathname} />
+        <PlatformAdminRoute currentUserId={session.user.id} pathname={pathname} />
       </Suspense>
     );
   }

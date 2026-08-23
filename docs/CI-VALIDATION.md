@@ -29,6 +29,8 @@ npm run test:e2e
 
 The configured projects cover desktop Chromium, Android-class Chromium, and iPhone-class WebKit.
 
+Phase 15.3D includes a deterministic user-administration browser fixture that selects a suspended account, submits an audited restore reason, verifies the refreshed ACTIVE controls, and checks for horizontal overflow at every configured viewport.
+
 ## Database gate
 
 GitHub does not start a local Supabase stack and does not run Docker-backed database resets.

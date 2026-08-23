@@ -28,7 +28,7 @@ const snapshot: CapacityDashboardSnapshot = {
 
 describe('CapacityDashboard', () => {
   it('renders only real local telemetry and honest unavailable/unconfigured states', () => {
-    render(<CapacityDashboard snapshot={snapshot} onBackToApp={vi.fn()} onRefresh={vi.fn()} onCaptureSnapshot={vi.fn()} />);
+    render(<CapacityDashboard snapshot={snapshot} onRefresh={vi.fn()} onCaptureSnapshot={vi.fn()} />);
     expect(screen.getByRole('heading', { name: 'Capacity', level: 1 })).toBeInTheDocument();
     expect(screen.getByText('Database size')).toBeInTheDocument();
     expect(screen.getByText('Postgres connections')).toBeInTheDocument();
@@ -39,16 +39,13 @@ describe('CapacityDashboard', () => {
     expect(screen.queryByText(/500 MB/i)).not.toBeInTheDocument();
   });
 
-  it('wires refresh, snapshot, and back actions without fake controls', () => {
-    const onBack = vi.fn();
+  it('wires refresh and snapshot actions without fake controls', () => {
     const onRefresh = vi.fn();
     const onCapture = vi.fn();
-    render(<CapacityDashboard snapshot={snapshot} onBackToApp={onBack} onRefresh={onRefresh} onCaptureSnapshot={onCapture} />);
+    render(<CapacityDashboard snapshot={snapshot} onRefresh={onRefresh} onCaptureSnapshot={onCapture} />);
     fireEvent.click(screen.getByRole('button', { name: 'Refresh' }));
     fireEvent.click(screen.getByRole('button', { name: 'Record snapshot' }));
-    fireEvent.click(screen.getAllByRole('button', { name: /Back/ })[0]);
     expect(onRefresh).toHaveBeenCalledOnce();
     expect(onCapture).toHaveBeenCalledOnce();
-    expect(onBack).toHaveBeenCalledOnce();
   });
 });
