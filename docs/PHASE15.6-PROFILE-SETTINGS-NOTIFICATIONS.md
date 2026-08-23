@@ -2,7 +2,7 @@
 
 ## Status
 
-**LOCKED; 15.6A–15.6C IMPLEMENTED.**
+**LOCKED; 15.6A–15.6D IMPLEMENTED.**
 
 This document defines the functional architecture for the authenticated `/settings` surface. It is an ordinary user-facing PWA area, not an administrator console, and later visual work must preserve these behaviors.
 
@@ -205,24 +205,25 @@ Dedicated settings/profile/notification services and hooks ensure:
 - no infrastructure push credentials in the browser;
 - persisted unsupported categories remain unavailable rather than becoming fake controls.
 
-### 15.6D Settings integration gate — NEXT
+### 15.6D Settings integration gate — DONE
 
-Validate:
+Validated by `tests/integration/settings-integration-journey.test.tsx` plus the existing unit/integration/E2E/security suites:
 
-- mobile and desktop Settings access;
-- settings access without group membership;
-- profile preference persistence;
-- master notifications ON/OFF behavior;
-- every supported category toggle;
-- preserved child selections across master OFF -> ON;
-- denied/default/granted/unsupported/install-required device permission states;
-- no automatic permission prompt on page load;
-- multi-device subscription separation;
-- explicit per-device test delivery;
-- required in-app account/moderation notices remain visible;
-- conditional platform-admin discovery;
-- no scoring/XP/badge-award regressions from settings changes;
-- self-deletion request, cancellation before confirmation, exact confirmation, group-owner blocking, and signed-out/deleted completion behavior.
+- mobile/desktop Settings behavior remains within the existing responsive contract;
+- Settings remains usable with zero group membership;
+- profile preference persistence stays behind the existing service/RPC boundary;
+- master notifications ON/OFF behavior preserves child selections across OFF -> ON;
+- every supported category remains a real working toggle while unsupported categories remain unavailable rather than fake controls;
+- default/granted/denied/unsupported/install-required device permission semantics remain separate from account preferences;
+- permission prompting requires an explicit user action and never occurs merely because Settings loads;
+- multi-device subscription separation and independent current-device revocation are preserved;
+- explicit per-device test delivery remains available only for a granted/subscribed device;
+- required in-app account/security/moderation/ACTION_REQUIRED notices remain visible even while optional push is disabled;
+- conditional platform-admin discovery remains ACTIVE-platform-admin-only and direct admin routes re-authorize independently;
+- Settings does not own or alter scoring, XP, badge-award, ranking, qualification, or historical-workout rules;
+- the Phase 15.3C self-deletion request/cancel/exact-confirmation boundary remains intact.
+
+See `docs/PHASE15.6D-SETTINGS-INTEGRATION-GATE.md` for the release evidence and documentation reconciliation.
 
 ## Non-negotiable rules
 

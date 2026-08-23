@@ -799,7 +799,7 @@ Netlify billing/usage is team/account scoped. The public API calls a team an acc
 - phone/desktop administrator UI is responsive, but the admin console is not exposed in ordinary user navigation;
 - destructive actions require explicit confirmation and produce an auditable result.
 
-### 15.6 Profile/Settings + notification preferences — IN PROGRESS
+### 15.6 Profile/Settings + notification preferences — DONE
 
 This is the ordinary authenticated PWA account surface defined in `docs/PHASE15.6-PROFILE-SETTINGS-NOTIFICATIONS.md`; it is not an administrator-only feature.
 
@@ -820,7 +820,7 @@ This is the ordinary authenticated PWA account surface defined in `docs/PHASE15.
 - users may read/update only their own preferences through authenticated service/RPC/RLS boundaries;
 - required in-app account, security, moderation, suspension, and ACTION_REQUIRED notices remain visible regardless of optional notification settings.
 
-#### 15.6C PWA notification permission + delivery integration — NEXT
+#### 15.6C PWA notification permission + delivery integration — DONE
 
 - account notification preferences and device/browser permission are distinct states;
 - request browser/OS notification permission only from an explicit user gesture, never automatically on Settings load;
@@ -830,7 +830,7 @@ This is the ordinary authenticated PWA account surface defined in `docs/PHASE15.
 - only expose category toggles as working when the associated delivery behavior actually exists;
 - push/provider credentials remain outside the browser bundle.
 
-#### 15.6D Settings integration gate — LATER
+#### 15.6D Settings integration gate — DONE
 
 - validate mobile/desktop Settings, no-group access, profile/training preference persistence, master notification ON/OFF, every supported category toggle, and preserved child selections across OFF -> ON;
 - validate default/granted/denied/unsupported notification-permission states, explicit permission prompting, multi-device subscription separation, and required in-app notices remaining visible;
@@ -839,7 +839,7 @@ This is the ordinary authenticated PWA account surface defined in `docs/PHASE15.
 
 Exit criterion: a trusted platform admin can see approaching free-tier limits, inspect account status, suspend/restore/remove users safely, and send auditable in-app policy/moderation notices; ordinary users also have a secure Profile/Settings foundation with explicit notification controls, without exposing privileged credentials or weakening scoring/privacy boundaries.
 
-## Phase 16 — Mobile-first visual overhaul — LATER
+## Phase 16 — Mobile-first visual overhaul — NEXT
 
 Objective: redesign the existing user-facing product **page by page** so it feels purpose-built as a polished mobile application while preserving authoritative behavior, accessibility, reliability, and responsive desktop support.
 
@@ -869,7 +869,7 @@ Global rules for the overhaul:
 - no scoring, authorization, persistence, or offline contract may change merely for visual reasons;
 - shared components/tokens are promoted only after at least two approved pages demonstrate the same need.
 
-### 16.0 Visual inventory + mobile design-system direction
+### 16.0 Visual inventory + mobile design-system direction — NEXT
 
 - capture every current user-facing route/surface and its states;
 - identify global navigation, spacing, typography, surface, iconography, motion, and safe-area inconsistencies;
