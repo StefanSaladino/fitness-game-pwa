@@ -37,5 +37,10 @@ export function GroupGate({ userId, children, service }: GroupGateProps) {
     );
   }
 
-  return <>{children(groupState.groups, groupState.retry)}</>;
+  const groups = groupState.groups;
+  if (groups.length === 0) {
+    return <>{children(groups, groupState.retry)}</>;
+  }
+
+  return <>{children(groups, groupState.retry)}</>;
 }
