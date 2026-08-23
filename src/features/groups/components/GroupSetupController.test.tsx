@@ -36,4 +36,11 @@ describe('GroupSetupController', () => {
     expect(service.acceptInvite).toHaveBeenCalledWith('i1');
     await waitFor(()=>expect(ready).toHaveBeenCalled());
   });
+
+  it('lets a group-free user return to the dashboard without creating or joining', async () => {
+    const user=userEvent.setup(); const back=vi.fn();
+    render(<GroupSetupController userId="u1" service={api(false)} onMembershipReady={vi.fn()} onBackToDashboard={back}/>);
+    await user.click(await screen.findByRole('button',{name:'Back to dashboard'}));
+    expect(back).toHaveBeenCalledOnce();
+  });
 });
