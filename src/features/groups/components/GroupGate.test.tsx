@@ -37,10 +37,14 @@ function service(groups: GroupSummary[]): GroupService {
 }
 
 describe('GroupGate', () => {
-  it('shows setup only when the user has zero active groups', async () => {
-    render(<GroupGate service={service([])} userId="user-1">{() => <p>Dashboard</p>}</GroupGate>);
-    expect(await screen.findByRole('heading', { name: /build the crew/i })).toBeInTheDocument();
-    expect(screen.queryByText('Dashboard')).not.toBeInTheDocument();
+  it('passes zero groups through as a valid product state', async () => {
+    render(
+      <GroupGate service={service([])} userId="user-1">
+        {(loaded) => <p>Dashboard with {loaded.length} groups</p>}
+      </GroupGate>,
+    );
+    expect(await screen.findByText('Dashboard with 0 groups')).toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: /build the crew/i })).not.toBeInTheDocument();
   });
 
   it('passes every loaded group through without assuming a single membership', async () => {
