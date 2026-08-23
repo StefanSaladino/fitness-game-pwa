@@ -59,6 +59,15 @@ export function ProductController(props: ProductControllerProps) {
     if (section === 'home' || section === 'groups' || section === 'workouts' || section === 'cardio' || section === 'progress' || section === 'compete') setActiveSection(section);
   };
   const onSignOut = () => { void signOut(); };
+  const optionalGroupEntry = (
+    <GroupSetupController
+      onBackToDashboard={() => onNavigate('home')}
+      onMembershipReady={onGroupsChanged}
+      profileCode={profile.profileCode}
+      service={groupService}
+      userId={profile.id}
+    />
+  );
 
   let section: ReactNode;
   if (activeSection === 'workouts') {
@@ -68,13 +77,13 @@ export function ProductController(props: ProductControllerProps) {
   } else if (activeSection === 'progress') {
     section = <ExerciseProgressController onNavigate={onNavigate} onSignOut={onSignOut} profile={profile} service={progressService} />;
   } else if (activeSection === 'groups' && !selectedGroup) {
-    section = <GroupSetupController onMembershipReady={onGroupsChanged} profileCode={profile.profileCode} service={groupService} userId={profile.id} />;
+    section = optionalGroupEntry;
   } else if (activeSection === 'groups' && selectedGroup) {
     section = <GroupAdministrationController groups={groups} onGroupsChanged={onGroupsChanged} onNavigate={onNavigate} onSelectGroup={setSelectedGroupId} onSignOut={onSignOut} profile={profile} selectedGroupId={selectedGroup.id} userId={profile.id} service={groupService} />;
   } else if (activeSection === 'compete' && selectedGroup) {
     section = <GroupSocialController key={selectedGroup.id} groups={groups} onNavigate={onNavigate} onSelectGroup={setSelectedGroupId} onSignOut={onSignOut} profile={profile} selectedGroupId={selectedGroup.id} service={socialService} reportService={reportService} />;
   } else if (activeSection === 'compete') {
-    section = <GroupSetupController onMembershipReady={onGroupsChanged} profileCode={profile.profileCode} service={groupService} userId={profile.id} />;
+    section = optionalGroupEntry;
   } else {
     section = <DashboardController group={selectedGroup} onNavigate={onNavigate} onSignOut={onSignOut} profile={profile} service={dashboardService} />;
   }
