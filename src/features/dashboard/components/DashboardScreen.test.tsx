@@ -72,4 +72,25 @@ describe('DashboardScreen', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Start Lift' }));
     expect(onNavigate).toHaveBeenCalledWith('workouts');
   });
+
+  it('keeps the real personal dashboard available with no group membership', () => {
+    render(
+      <DashboardScreen
+        group={null}
+        groupNotice={<section aria-label="Group status">Groups are optional.</section>}
+        onNavigate={vi.fn()}
+        onSignOut={() => undefined}
+        profile={profile}
+        snapshot={{ ...snapshot, leaderboard: [] }}
+      />,
+    );
+
+    expect(screen.getByText('SOLO TRAINING')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Your lifting week' })).toBeInTheDocument();
+    expect(screen.getByText('Upper Push')).toBeInTheDocument();
+    expect(screen.getByText('Bench Press')).toBeInTheDocument();
+    expect(screen.getByText('Not in a group')).toBeInTheDocument();
+    expect(screen.getByLabelText('Group status')).toHaveTextContent('Groups are optional.');
+    expect(screen.queryByRole('heading', { name: 'This week’s group rank' })).not.toBeInTheDocument();
+  });
 });
