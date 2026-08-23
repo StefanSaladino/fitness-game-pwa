@@ -1,0 +1,36 @@
+Phase 15.6B — Notification Preference Persistence
+
+Hosted migration
+- 20260823175728_phase15_6b_notification_preferences
+
+Hosted validation
+- pgTAP 038: 37/37 passed, rollback-safe
+- Security advisors reviewed: no ERROR findings; expected authenticated SECURITY DEFINER warning for guarded self-service RPC
+- Performance advisors reviewed: no new Phase 15.6B finding
+
+Repository behavior
+- server-persisted master optional-notification preference
+- six persisted category preferences
+- default-off consent
+- master OFF preserves category selections
+- authenticated own-row RLS read boundary
+- direct browser table mutation denied
+- self-only guarded update RPC
+- new-profile initialization and existing-profile backfill
+- typed notificationPreferenceService + unit coverage
+- no browser permission, push subscription, or delivery implementation before Phase 15.6C
+- no scoring/badge side effects
+
+Documentation cleanup
+- replaced stale Docker-first Supabase setup guidance
+- replaced stale package-era validation guidance
+- corrected Supabase directory documentation to the hosted-first no-Docker architecture
+- CI validation contract now includes Phase 15.6B
+
+Canonical files
+- supabase/migrations/20260823175728_phase15_6b_notification_preferences.sql
+- supabase/tests/038_phase15_6b_notification_preferences.test.sql
+- src/features/settings/notificationPreferenceService.ts
+- src/features/settings/notificationPreferenceService.test.ts
+- scripts/validate-phase15-6b.cjs
+- docs/PHASE15.6B-NOTIFICATION-PREFERENCE-PERSISTENCE.md

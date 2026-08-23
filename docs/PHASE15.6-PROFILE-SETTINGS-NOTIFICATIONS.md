@@ -2,7 +2,7 @@
 
 ## Status
 
-**LOCKED; 15.6A IMPLEMENTED.**
+**LOCKED; 15.6A + 15.6B IMPLEMENTED.**
 
 This document defines the functional architecture for the authenticated `/settings` surface. It is an ordinary user-facing PWA area, not an administrator console, and later visual work must preserve these behaviors.
 
@@ -160,7 +160,7 @@ Use dedicated settings/profile services and hooks so:
 
 ## Notification implementation slices
 
-### 15.6A Profile/Settings foundation
+### 15.6A Profile/Settings foundation — DONE
 
 - implement `/settings`;
 - identity/account/training/groups/privacy/app sections;
@@ -168,14 +168,14 @@ Use dedicated settings/profile services and hooks so:
 - deliberate two-step self-service deletion UI using `accountDeletionService`, including group-ownership transfer guidance and the exact server-derived confirmation phrase;
 - keep group and admin authorization boundaries separate.
 
-### 15.6B Notification preference persistence
+### 15.6B Notification preference persistence — DONE
 
 - add server-persisted master and per-category preference state;
 - authenticated read/update RPC/service contracts;
 - master-off semantics that preserve category selections;
 - authorization/RLS tests proving users can manage only their own preferences.
 
-### 15.6C PWA notification permission + delivery integration
+### 15.6C PWA notification permission + delivery integration — NEXT
 
 - explicit user-gesture permission request;
 - device-specific push subscription lifecycle;
@@ -184,7 +184,7 @@ Use dedicated settings/profile services and hooks so:
 - blocked/unsupported-device states;
 - no infrastructure push credentials in the browser.
 
-### 15.6D Settings integration gate
+### 15.6D Settings integration gate — LATER
 
 Validate:
 

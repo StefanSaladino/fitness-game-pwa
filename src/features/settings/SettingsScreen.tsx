@@ -98,10 +98,10 @@ export function SettingsScreen({
               <p className={styles.eyebrow}>MESSAGES</p>
               <h2 id="settings-notifications-heading">Notifications</h2>
             </div>
-            <span className={styles.statusBadge}>Next step</span>
+            <span className={styles.statusBadge}>Preferences ready</span>
           </div>
-          <p className={styles.supportCopy}>Account-level notification preferences arrive in Phase 15.6B. No decorative switches are shown before reminder delivery exists.</p>
-          <p className={styles.supportCopy}>Required account, security, moderation, and administrator notices continue to appear in the in-app message center.</p>
+          <p className={styles.supportCopy}>Account-level optional notification preferences are now stored securely. Device permission and delivery controls arrive in Phase 15.6C, so switches stay hidden until they can affect real delivery.</p>
+          <p className={styles.supportCopy}>Required account, security, moderation, suspension, and administrator ACTION_REQUIRED notices continue to appear in the in-app message center regardless of optional notification preferences.</p>
         </section>
 
         <AccountSecuritySection

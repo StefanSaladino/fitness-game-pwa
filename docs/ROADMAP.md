@@ -596,9 +596,9 @@ Primary boundary: define deterministic capacity states and provider-neutral tele
 - validate custom threshold bands as finite, strictly increasing percentages between 0 and 100;
 - estimate positive growth and time-to-limit only from comparable metric/source/unit samples with valid elapsed time;
 - define DATABASE_LOCAL, SUPABASE_MANAGEMENT, and NETLIFY_API provider boundaries without storing credentials;
-- repair the repository CI gate so Node 24 application/browser validation and an isolated GitHub-hosted Supabase reconstruction run on every push/PR;
-- commit non-secret `supabase/config.toml` with PostgreSQL major version 17 and select only canonical `supabase/tests/*.test.sql` suites in database CI, preventing generated/aggregate SQL from becoming accidental pgTAP programs;
-- keep Docker optional for the developer workflow while GitHub CI may use Docker to prove clean migration-zero reconstruction;
+- repair the repository CI gate so Node 24 application/browser validation and the hosted-Supabase database contract run on every push/PR;
+- commit non-secret `supabase/config.toml` for repository compatibility and select only canonical `supabase/tests/*.test.sql` suites in database CI;
+- keep the developer and GitHub validation workflows Docker-free; runtime database validation remains hosted-Supabase authoritative;
 - no database migration, admin UI, scoring, XP, badge-award, ranking, or user-visibility change in this slice.
 
 #### 15.2B Database-local telemetry + historical snapshots — DONE
@@ -812,7 +812,7 @@ This is the ordinary authenticated PWA account surface defined in `docs/PHASE15.
 - provide the approved deliberate two-step self-service account-deletion control, using the Phase 15.3C request/cancel/confirm service contract, exact server phrase, immediate local sign-out after deletion, and group-transfer requirement;
 - do not expose fake data-export, session-management, or unsupported notification controls.
 
-#### 15.6B Notification preference persistence — LATER
+#### 15.6B Notification preference persistence — DONE
 
 - persist a user-owned master Notifications ON/OFF preference server-side;
 - persist individual optional categories for workout reminders, weekly goal reminders, badges + achievements, personal-record alerts, group activity, and group invitations;
@@ -820,7 +820,7 @@ This is the ordinary authenticated PWA account surface defined in `docs/PHASE15.
 - users may read/update only their own preferences through authenticated service/RPC/RLS boundaries;
 - required in-app account, security, moderation, suspension, and ACTION_REQUIRED notices remain visible regardless of optional notification settings.
 
-#### 15.6C PWA notification permission + delivery integration — LATER
+#### 15.6C PWA notification permission + delivery integration — NEXT
 
 - account notification preferences and device/browser permission are distinct states;
 - request browser/OS notification permission only from an explicit user gesture, never automatically on Settings load;

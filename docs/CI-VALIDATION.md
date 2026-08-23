@@ -4,7 +4,7 @@
 
 GitHub Actions is the clean-environment regression gate for application, browser, and repository database contracts. The project does not require Docker for the normal developer workflow or for GitHub database validation.
 
-Runtime database migrations and pgTAP execution remain authoritative on the hosted Supabase project through the Dashboard SQL Editor workflow.
+Runtime database migrations and pgTAP execution remain authoritative on the hosted Supabase project.
 
 ## Application gate
 
@@ -49,7 +49,8 @@ That gate validates:
 - explicit pgTAP plans;
 - rollback-safe test transactions;
 - required Phase 15.3A through Phase 15.6A migration/test invariants;
-- the 68-assertion Phase 15.3A, 52-assertion Phase 15.3B, 68-assertion Phase 15.3C, 88-assertion Phase 15.3E, 45-assertion Phase 15.3F, 96-assertion Phase 15.4, 27-assertion Phase 15.5, and 31-assertion Phase 15.6A pgTAP contracts;
+- the Phase 15.6B notification-persistence migration/service/test contract;
+- the 68-assertion Phase 15.3A, 52-assertion Phase 15.3B, 68-assertion Phase 15.3C, 88-assertion Phase 15.3E, 45-assertion Phase 15.3F, 96-assertion Phase 15.4, 27-assertion Phase 15.5, 31-assertion Phase 15.6A, and 37-assertion Phase 15.6B pgTAP contracts;
 - and that executable GitHub CI contains no Docker, `supabase start`, `supabase db reset`, or `supabase test db` dependency.
 
 This repository gate is intentionally separate from runtime SQL execution. A migration or pgTAP suite is executed against hosted Supabase before its phase is considered database-validated.
@@ -72,8 +73,9 @@ For database-bearing slices:
 2. Run the corresponding canonical pgTAP file against the hosted database.
 3. Confirm the transaction rolls back cleanly and all planned assertions pass.
 4. Deploy any phase Edge Function with JWT verification enabled.
-5. Run hosted security/performance advisors after DDL changes.
-6. Run the GitHub Database gate to validate repository structure and prevent local-stack/Docker regression.
+5. Regenerate committed database types from the hosted schema when the public schema changes.
+6. Run hosted security/performance advisors after DDL changes.
+7. Run the GitHub Database gate to validate repository structure and prevent local-stack/Docker regression.
 
 No service-role secret, database password, or privileged Supabase credential belongs in GitHub workflow source merely to reproduce hosted validation.
 
@@ -92,7 +94,9 @@ npm test
 npm run test:integration
 npm run build
 npm run test:structure
+npm run test:e2e
 npm run test:internal
+npm run db:test:ci
 ```
 
 Database migrations and pgTAP are executed against the hosted Supabase project instead of a local Docker stack.
@@ -105,4 +109,6 @@ Phase 15.3F hosted validation applies its migration and pgTAP fixtures in one ro
 
 Phase 15.4 hosted validation proves server-resolved audience previews, set-based and idempotent fan-out, immutable revisions and deliveries, recipient isolation, delivery/read/acknowledged state, edit/withdraw audit, two-year retention, suspension enforcement, moderation-timeline communication context, and zero scoring effects. Full-app delivery is additionally constrained to NOTICE messages that cannot require acknowledgement and that the PWA presents once as a dismissible “What’s new” popup.
 
-Phase 15.6A hosted validation proves authenticated self-only profile updates, deny-by-default RPC execution, removal of direct identity/preference column writes, persisted kg/lb display preference, next-Monday weekly-target scheduling, suspended-account rejection, and zero scoring/history rewrites. The ordinary application gate and hosted Supabase workflow remain non-Docker.
+Phase 15.6A hosted validation proves authenticated self-only profile updates, deny-by-default RPC execution, removal of direct identity/preference column writes, persisted kg/lb display preference, next-Monday weekly-target scheduling, suspended-account rejection, and zero scoring/history rewrites.
+
+Phase 15.6B hosted validation proves default-off account-level optional notification preferences, own-row RLS visibility, direct-mutation denial, authenticated self-only RPC updates, master OFF preserving category selections for later ON, suspended-account rejection, and zero scoring/badge side effects. Browser/device permission and push subscriptions remain explicitly deferred to Phase 15.6C.
