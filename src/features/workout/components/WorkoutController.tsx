@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { AppShell, type AppSection } from '../../../components/layout';
 import { Button } from '../../../components/ui';
 import type { OnboardingProfile } from '../../onboarding';
@@ -14,13 +14,15 @@ import { useWorkoutSets } from '../hooks/useWorkoutSets';
 import { useExercisePickerCatalog } from '../hooks/useExercisePickerCatalog';
 import { useWorkoutRecovery } from '../hooks/useWorkoutRecovery';
 import { useWorkoutMutationQueue } from '../hooks/useWorkoutMutationQueue';
+import { presetWorkoutById, resolvePresetExerciseIds, type PresetWorkoutId } from '../presetWorkouts';
 import {
   restoreWorkoutExercises,
   restoreWorkoutSession,
   restoreWorkoutSets,
   type WorkoutRecoveryState,
 } from '../recovery/workoutRecoveryModel';
-import { ActiveWorkoutScreen, WorkoutStartScreen, WorkoutSyncConflictScreen } from './WorkoutSessionScreen';
+import { ActiveWorkoutScreen, WorkoutSyncConflictScreen } from './WorkoutSessionScreen';
+import { WorkoutPresetStartScreen } from './WorkoutPresetStartScreen';
 import styles from './WorkoutSessionScreen.module.css';
 
 interface WorkoutControllerProps {
@@ -37,6 +39,7 @@ interface WorkoutControllerProps {
 export function WorkoutController({ profile, onNavigate, onSignOut, service, exerciseService, pickerService, setService, mutationService }: WorkoutControllerProps) {
   const recovery = useWorkoutRecovery(profile.id);
   const workout = useActiveWorkout(profile.id, service);
+  const [presetError, setPresetError] = useState('');
   const recoveredWorkout = recovery.snapshot ? restoreWorkoutSession(recovery.snapshot.session) : null;
   const useRecoveredWorkout = workout.status !== 'ready' && workout.activeWorkout === null && recoveredWorkout !== null;
   const activeWorkout = workout.activeWorkout ?? (useRecoveredWorkout ? recoveredWorkout : null);
@@ -48,7 +51,7 @@ export function WorkoutController({ profile, onNavigate, onSignOut, service, exe
   const useRecoveredExercises = recoveryMatchesWorkout && composition.status !== 'ready';
   const exercises = useRecoveredExercises ? recoveredExercises : composition.exercises;
 
-  const picker = useExercisePickerCatalog(Boolean(activeWorkout), pickerService);
+  const picker = useExercisePickerCatalog(true, pickerService);
   const recoveredSets = recoveryMatchesWorkout && recovery.snapshot
     ? restoreWorkoutSets(recovery.snapshot).filter((set) => exercises.some((exercise) => exercise.id === set.workoutExerciseId))
     : [];
@@ -143,7 +146,33 @@ export function WorkoutController({ profile, onNavigate, onSignOut, service, exe
         />
       );
     }
-    return <WorkoutStartScreen busyAction={workout.busyAction} error={workout.error} onNavigate={onNavigate} onSignOut={onSignOut} onStart={workout.start} profile={profile} />;
+
+    const startPreset = async (presetId: PresetWorkoutId, actionAtMs?: number) => {
+      setPresetError('');
+      try {
+        const exerciseIds = resolvePresetExerciseIds(presetWorkoutById(presetId), picker.catalog);
+        return await workout.startPreset(exerciseIds, actionAtMs);
+      } catch (caught) {
+        setPresetError(toUserFacingWorkoutError(caught));
+        return null;
+      }
+    };
+
+    return (
+      <WorkoutPresetStartScreen
+        busyAction={workout.busyAction}
+        error={presetError || workout.error}
+        exerciseCatalog={picker.catalog}
+        exercisePickerError={picker.error}
+        exercisePickerStatus={picker.status}
+        onNavigate={onNavigate}
+        onRetryExercisePicker={picker.retry}
+        onSignOut={onSignOut}
+        onStart={workout.start}
+        onStartPreset={startPreset}
+        profile={profile}
+      />
+    );
   }
 
   const recoveryDrafts = recoveryMatchesWorkout ? recovery.snapshot?.ui.setDrafts : undefined;
