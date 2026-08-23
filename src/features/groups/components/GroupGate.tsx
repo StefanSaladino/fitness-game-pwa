@@ -3,7 +3,6 @@ import { Button } from '../../../components/ui';
 import type { GroupService } from '../groupService';
 import { useGroups } from '../hooks/useGroups';
 import type { GroupSummary } from '../model';
-import { GroupSetupController } from './GroupSetupController';
 import styles from './GroupGate.module.css';
 
 interface GroupGateProps {
@@ -13,7 +12,7 @@ interface GroupGateProps {
   profileCode?: string;
 }
 
-export function GroupGate({ userId, children, service, profileCode }: GroupGateProps) {
+export function GroupGate({ userId, children, service }: GroupGateProps) {
   const groupState = useGroups(userId, service);
 
   if (groupState.status === 'loading') {
@@ -35,17 +34,6 @@ export function GroupGate({ userId, children, service, profileCode }: GroupGateP
           <Button onClick={() => void groupState.retry()}>Try again</Button>
         </section>
       </main>
-    );
-  }
-
-  if (groupState.groups.length === 0) {
-    return (
-      <GroupSetupController
-        onMembershipReady={groupState.retry}
-        service={service}
-        userId={userId}
-        profileCode={profileCode}
-      />
     );
   }
 
