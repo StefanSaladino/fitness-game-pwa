@@ -108,44 +108,18 @@ for (const invariant of ['Notifications', 'Badges & achievements', 'Personal rec
   }
 }
 
-// validate-project-clean.cjs is an older Phase 15.6A checkpoint validator with
-// exact roadmap/cache/documentation/file-location literals. Preserve every
-// other structural assertion while current behavior is verified above and by
-// the dedicated Phase 15.6B/15.6C/15.6D gates.
-const compatibilitySuffix = `\n15.6 Profile/Settings + notification preferences — IN PROGRESS\n15.6B Notification preference persistence — LATER\n15.6C PWA notification permission + delivery integration — LATER\n15.6D Settings integration gate — LATER\nPhase 16 — Mobile-first visual overhaul — LATER\n`;
-const legacyServiceWorker = actualServiceWorker.replace(
-  "const CACHE_VERSION = 'v13-2'",
-  "const CACHE_VERSION = 'v13-1'",
-);
-const legacySettingsContract = `${actualSettingsContract}\n15.6D Settings integration gate — NEXT\nmust not rely only on localStorage, IndexedDB, or a single browser installation\nproduct owner approved the 15.6A implementation slice\n`;
-const legacySettingsScreen = `${actualSettingsScreen}\nNotifications\n`;
-const originalReadFileSync = fs.readFileSync;
-
-fs.readFileSync = function phase156Compatibility(target, ...args) {
-  const resolved = path.resolve(String(target));
-  const encoding = args[0];
-  if (resolved === roadmapPath) {
-    const text = actualRoadmap + compatibilitySuffix;
-    if (encoding === undefined || encoding === null) return Buffer.from(text, 'utf8');
-    return text;
+for (const [file, fragments] of [
+  ['scripts/validate-project-clean.cjs', ['v13-1', '15.6B Notification preference persistence — LATER', '15.6C PWA notification permission + delivery integration — LATER', '15.6D Settings integration gate — LATER']],
+  ['scripts/validate-project.cjs', ['0.12.1', '20260822000200_fix_lifting_calendar_summaries.sql', 'v12b-2']],
+  ['public/sw.js', ['v12b-2']],
+  ['.github/workflows/ci.yml', ['npx supabase start', 'npx supabase db reset', 'npm run db:test:local', 'npx supabase db lint --level warning']],
+]) {
+  const text = fs.readFileSync(path.join(root, file), 'utf8');
+  for (const fragment of fragments) {
+    if (text.includes(fragment)) throw new Error(`Stale assertion cleanup failed: ${file} still contains ${fragment}`);
   }
-  if (resolved === serviceWorkerPath) {
-    if (encoding === undefined || encoding === null) return Buffer.from(legacyServiceWorker, 'utf8');
-    return legacyServiceWorker;
-  }
-  if (resolved === settingsContractPath) {
-    if (encoding === undefined || encoding === null) return Buffer.from(legacySettingsContract, 'utf8');
-    return legacySettingsContract;
-  }
-  if (resolved === settingsScreenPath) {
-    if (encoding === undefined || encoding === null) return Buffer.from(legacySettingsScreen, 'utf8');
-    return legacySettingsScreen;
-  }
-  return originalReadFileSync.call(fs, target, ...args);
-};
-
-try {
-  require('./validate-project-clean.cjs');
-} finally {
-  fs.readFileSync = originalReadFileSync;
 }
+
+require('./validate-project-clean.cjs');
+
+console.log('Current Phase 15.6/16 structural gate passed with no legacy assertion shims.');

@@ -1,5 +1,4 @@
 const CACHE_PREFIX = 'workout-game-shell-';
-// Historical Phase 12B shell checkpoint: v12b-2. Current releases advance CACHE_VERSION below.
 const CACHE_VERSION = 'v13-2';
 const CACHE = `${CACHE_PREFIX}${CACHE_VERSION}`;
 const ASSET_MANIFEST = '/asset-manifest.json';

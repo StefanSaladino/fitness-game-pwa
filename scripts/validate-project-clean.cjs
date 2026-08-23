@@ -157,8 +157,8 @@ if (!/fitness-asset-manifest/.test(viteConfig) || !/asset-manifest\.json/.test(v
 }
 
 const serviceWorker = read('public/sw.js');
-if (!/const\s+CACHE_VERSION\s*=\s*['"]v13-1['"]/.test(serviceWorker)) {
-  fail('Phase 15.1 must declare service-worker cache version v13-1');
+if (!/const\s+CACHE_VERSION\s*=\s*['"]v13-2['"]/.test(serviceWorker)) {
+  fail('current service worker must declare cache version v13-2');
 }
 if (!/const\s+CACHE\s*=\s*`\$\{CACHE_PREFIX\}\$\{CACHE_VERSION\}`/.test(serviceWorker)) {
   fail('service-worker cache name must be composed from the stable prefix and explicit cache version');
@@ -206,14 +206,14 @@ for (const heading of [
 ]) {
   if (!roadmap.includes(heading)) fail(`roadmap missing capacity slice: ${heading}`);
 }
-if (!/15\.6 Profile\/Settings \+ notification preferences .*IN PROGRESS/.test(roadmap)) {
-  fail('roadmap must mark the Profile/Settings + notification preferences phase in progress');
+if (!/15\.6 Profile\/Settings \+ notification preferences .*DONE/.test(roadmap)) {
+  fail('roadmap must mark the Profile/Settings + notification preferences phase done');
 }
 for (const heading of [
   '15.6A Profile/Settings foundation — DONE',
-  '15.6B Notification preference persistence — LATER',
-  '15.6C PWA notification permission + delivery integration — LATER',
-  '15.6D Settings integration gate — LATER',
+  '15.6B Notification preference persistence — DONE',
+  '15.6C PWA notification permission + delivery integration — DONE',
+  '15.6D Settings integration gate — DONE',
 ]) {
   if (!roadmap.includes(heading)) fail(`roadmap missing settings/notification slice: ${heading}`);
 }
@@ -389,13 +389,14 @@ for (const requiredFragment of [
     fail(`Profile/Settings notification contract missing: ${requiredFragment}`);
   }
 }
-if (!/must not rely only on localStorage, IndexedDB, or a single browser installation/.test(settingsContract)
+if (!/They do not rely only on localStorage, IndexedDB, or a single browser installation/.test(settingsContract)
     || !/request permission only after an explicit user action/.test(settingsContract)
-    || !/must not silently set the account-level master preference to OFF/.test(settingsContract)
+    || !/denying permission on one device must not silently set the account-level master preference to OFF/.test(settingsContract)
     || !/Data export must not appear as a functioning control until its backend exists/.test(settingsContract)
     || !/account-deletion backend[\s\S]*implemented by Phase 15\.3C/.test(settingsContract)
-    || !/product owner approved the 15\.6A implementation slice/.test(settingsContract)) {
-  fail('Profile/Settings contract must preserve server persistence, explicit notification permission, multi-device semantics, and no fake controls');
+    || !/LOCKED; 15\.6A–15\.6D IMPLEMENTED\./.test(settingsContract)
+    || !/persisted unsupported categories remain unavailable rather than becoming fake controls/.test(settingsContract)) {
+  fail('Profile/Settings contract must preserve current server persistence, explicit permission, multi-device, and honest-control semantics');
 }
 if (!roadmap.includes('master Notifications ON/OFF preference server-side')
     || !roadmap.includes('workout reminders, weekly goal reminders, badges + achievements, personal-record alerts, group activity, and group invitations')
@@ -1593,6 +1594,7 @@ for (const relativePath of [
 const phase156aMigration = read('supabase/migrations/20260823162857_phase15_6a_profile_settings_foundation.sql');
 const phase156aTest = read('supabase/tests/037_phase15_6a_profile_settings_foundation.test.sql');
 const phase156aScreen = read('src/features/settings/SettingsScreen.tsx');
+const phase156NotificationSection = read('src/features/settings/NotificationSettingsSection.tsx');
 const phase156aProfileForm = read('src/features/settings/ProfileSettingsForm.tsx');
 const phase156aDeletion = read('src/features/settings/AccountDeletionPanel.tsx');
 const phase156aService = read('src/features/settings/settingsService.ts');
@@ -1623,14 +1625,23 @@ for (const fragment of [
 ]) {
   if (!phase156aService.includes(fragment)) fail('Phase 15.6A settings service missing boundary: ' + fragment);
 }
-for (const heading of ['Profile picture', 'Notifications', 'Security', 'Groups', 'Privacy & data']) {
-  if (!phase156aScreen.includes(heading)) fail('Phase 15.6A Settings surface missing section: ' + heading);
+for (const heading of ['Profile picture', 'Security', 'Groups', 'Privacy & data']) {
+  if (!phase156aScreen.includes(heading)) fail('Settings surface missing section: ' + heading);
 }
-if (/type=["']checkbox["']|role=["']switch["']/.test(phase156aScreen + phase156aProfileForm)) {
-  fail('Phase 15.6A must not expose notification toggles before persistence and delivery exist');
+if (!phase156aScreen.includes('NotificationSettingsSection') || !phase156NotificationSection.includes('Notifications')) {
+  fail('Settings must compose the extracted Notifications section');
+}
+for (const control of ['Badges & achievements', 'Personal records', 'Group invitations']) {
+  if (!phase156NotificationSection.includes(control)) fail('Notifications surface missing supported control: ' + control);
+}
+if (!/role=["']switch["']/.test(phase156NotificationSection)) {
+  fail('supported notification categories must expose real switches');
+}
+if (/type=["']checkbox["']|role=["']switch["']/.test(phase156aProfileForm)) {
+  fail('profile form must not absorb notification controls');
 }
 if (/from\s+['"][^'"]*supabase|\.rpc\(|functions\.invoke/.test(
-  phase156aScreen + phase156aProfileForm + phase156aDeletion,
+  phase156aScreen + phase156NotificationSection + phase156aProfileForm + phase156aDeletion,
 )) {
   fail('Phase 15.6A presentation must remain behind typed services and hooks');
 }
@@ -1650,16 +1661,17 @@ for (const fragment of ['Status: **DONE**', 'does not require Docker', '31-asser
 }
 
 const ciWorkflow = read('.github/workflows/ci.yml');
-const canonicalDbRunner = read('scripts/run-canonical-db-tests.cjs');
 const supabaseConfig = read('supabase/config.toml');
 const hostedAggregateSentinel = read('supabase/tests/_all-hosted-tests.sql');
 const ciDoc = read('docs/CI-VALIDATION.md');
 const currentPackageJson = JSON.parse(read('package.json'));
 if (currentPackageJson.scripts?.['db:test']) {
-  fail('ambiguous db:test script must stay removed; Docker-local database testing is explicitly db:test:local');
+  fail('ambiguous db:test script must stay removed; the supported repository gate is db:test:ci');
 }
-if (currentPackageJson.scripts?.['db:test:local'] !== 'node scripts/run-canonical-db-tests.cjs') {
-  fail('db:test:local must use the cross-platform canonical pgTAP runner');
+if (!String(currentPackageJson.scripts?.['db:test:ci'] || '').includes('validate-db-ci.cjs')
+    || !String(currentPackageJson.scripts?.['db:test:ci'] || '').includes('validate-phase15-6b.cjs')
+    || !String(currentPackageJson.scripts?.['db:test:ci'] || '').includes('validate-phase15-6c.cjs')) {
+  fail('db:test:ci must retain the current static database contract validators');
 }
 for (const command of [
   'npm ci',
@@ -1671,38 +1683,35 @@ for (const command of [
   'npm run test:internal',
   'npx playwright install --with-deps chromium webkit',
   'npm run test:e2e',
+  'npm run db:test:ci',
+]) {
+  if (!ciWorkflow.includes(command)) fail(`GitHub CI missing required gate command: ${command}`);
+}
+for (const staleCommand of [
   'npx supabase start',
   'npx supabase db reset',
   'npm run db:test:local',
   'npx supabase db lint --level warning',
 ]) {
-  if (!ciWorkflow.includes(command)) fail(`GitHub CI missing required gate command: ${command}`);
+  if (ciWorkflow.includes(staleCommand)) fail(`GitHub CI must not retain stale local-Supabase command text: ${staleCommand}`);
 }
 if (!/node-version:\s*24/.test(ciWorkflow)) fail('GitHub CI must match the Node 24 release environment');
-if (/if \[ ! -f supabase\/config\.toml \]; then npx supabase init; fi/.test(ciWorkflow)) {
-  fail('GitHub CI must use the committed deterministic Supabase config instead of generating one ad hoc');
-}
-if (!/endsWith\('\.test\.sql'\)/.test(canonicalDbRunner)
-    || !/spawnSync/.test(canonicalDbRunner)
-    || !/supabase', 'test', 'db'/.test(canonicalDbRunner)) {
-  fail('canonical database runner must explicitly enumerate *.test.sql and invoke supabase test db with those paths');
-}
 if (!/project_id\s*=\s*"fitness-game-pwa"/.test(supabaseConfig)
     || !/major_version\s*=\s*17/.test(supabaseConfig)
     || !/site_url\s*=\s*"http:\/\/localhost:5173"/.test(supabaseConfig)) {
-  fail('Supabase local/CI config must remain committed, non-secret, Postgres-17 aligned, and Vite-auth compatible');
+  fail('committed Supabase CLI config must remain non-secret, Postgres-17 aligned, and Vite-auth compatible');
 }
 const sentinelPlans = (hostedAggregateSentinel.match(/select\s+plan\(/gi) || []).length;
 if (sentinelPlans !== 1 || /-- ={10,}\s*\n-- 00\d_/m.test(hostedAggregateSentinel)) {
   fail('_all-hosted-tests.sql must remain a one-plan compatibility sentinel, never a concatenated pgTAP bundle');
 }
 if (!/Only files matching this convention are canonical database suites/.test(ciDoc)
-    || !/Docker remains optional|does not require Docker/.test(ciDoc)
+    || !/does not require Docker|Docker.*not part/i.test(ciDoc)
     || !/supabase\/tests\/\*\.test\.sql/.test(ciDoc)) {
-  fail('CI documentation must preserve canonical test discovery and the developer-vs-GitHub Docker distinction');
+  fail('CI documentation must preserve canonical test discovery and the hosted-Supabase/no-Docker workflow');
 }
 
-if (!/Phase 16 .*Mobile-first visual overhaul .*LATER/.test(roadmap)) fail('roadmap must include the mobile-first visual overhaul');
+if (!/Phase 16 .*Mobile-first visual overhaul .*NEXT/.test(roadmap)) fail('roadmap must mark the mobile-first visual overhaul next');
 if (!/^### Phase 16 execution contract — REQUIRED FOR EVERY VISUAL SLICE$/m.test(roadmap)) {
   fail('visual-overhaul roadmap must retain the per-surface design/approval execution contract');
 }
@@ -1732,53 +1741,7 @@ if (!/^### 16\.15 Visual-overhaul integration gate$/m.test(roadmap)) {
 }
 if (!/Phase 17 .*Public\/broader release hardening .*LATER/.test(roadmap)) fail('public-release hardening must follow the visual overhaul');
 
-// The historical v0.12.1 structural validator was written after the broken
-// migration had already shipped and therefore expects a repair file. Preserve
-// all of its existing project-wide assertions without putting that bad migration
-// back into the repository: while the legacy validator runs, map that one stale
-// path to the corrected primary migration in memory only.
-const originalExistsSync = fs.existsSync;
-const originalReadFileSync = fs.readFileSync;
-const repairKey = path.resolve(obsoleteRepairPath);
-const packageKey = path.resolve(path.join(root, 'package.json'));
-const packageLockKey = path.resolve(path.join(root, 'package-lock.json'));
+// Baseline structural validation is current and runs directly without synthetic files or metadata.
+require('./validate-project.cjs');
 
-fs.existsSync = function patchedExistsSync(target) {
-  if (path.resolve(String(target)) === repairKey) return true;
-  return originalExistsSync.call(fs, target);
-};
-
-function legacyCheckpointPackage(target, ...args) {
-  const parsed = JSON.parse(originalReadFileSync.call(fs, target, 'utf8'));
-  parsed.version = '0.12.1';
-  if (parsed.packages?.['']) parsed.packages[''].version = '0.12.1';
-  const text = `${JSON.stringify(parsed, null, 2)}\n`;
-  if (args[0] === undefined || args[0] === null) return Buffer.from(text, 'utf8');
-  return text;
-}
-
-fs.readFileSync = function patchedReadFileSync(target, ...args) {
-  const resolved = path.resolve(String(target));
-  if (resolved === repairKey) return primaryMigration;
-  // validate-project.cjs is the frozen v0.12.1 checkpoint validator. The
-  // release-specific assertions above validate the real v0.13.0 metadata;
-  // this compatibility view prevents its historical exact-version assertion
-  // from rejecting every later release while preserving all other checks.
-  if (resolved === packageKey || resolved === packageLockKey) {
-    return legacyCheckpointPackage(target, ...args);
-  }
-  return originalReadFileSync.call(fs, target, ...args);
-};
-
-try {
-  require('./validate-project.cjs');
-} finally {
-  fs.existsSync = originalExistsSync;
-  fs.readFileSync = originalReadFileSync;
-}
-
-if (fs.existsSync(obsoleteRepairPath)) {
-  fail('structural validation must not materialize the obsolete repair migration');
-}
-
-console.log('Release validation passed: clean migration history, Phase 15.1 admin invariants, Phase 15.2 capacity contracts, Phase 15.3 account lifecycle/reporting/moderation contracts, Phase 15.4 auditable administrator messaging, Phase 15.5 deny-by-default integration security, Phase 15.6A Profile/Settings foundation, canonical GitHub CI/database discovery, visual-roadmap guards, and production chunk budget guards are present.');
+console.log('Release validation passed: clean migration history, current PWA/cache state, Phase 15 admin/capacity/account/messaging/security invariants, completed Phase 15.6 Settings/notification contracts, Docker-free GitHub CI/database discovery, the Phase 16 handoff, and production chunk-budget guards are present.');
