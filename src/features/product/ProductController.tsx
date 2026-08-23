@@ -30,6 +30,10 @@ const GroupAdministrationController = lazy(async () => {
   const module = await import('../groups/components/GroupAdministrationController');
   return { default: module.GroupAdministrationController };
 });
+const OptionalGroupSetupController = lazy(async () => {
+  const module = await import('../groups/components/OptionalGroupSetupController');
+  return { default: module.OptionalGroupSetupController };
+});
 const ExerciseProgressController = lazy(async () => {
   const module = await import('../progress/components/ExerciseProgressController');
   return { default: module.ExerciseProgressController };
@@ -80,7 +84,7 @@ export function ProductController({ profile, groups, onGroupsChanged, groupServi
   }, [groups, selectedGroupId]);
 
   const selectedGroup = useMemo(
-    () => groups.find((group) => group.id === selectedGroupId) ?? groups[0],
+    () => groups.find((group) => group.id === selectedGroupId) ?? groups[0] ?? null,
     [groups, selectedGroupId],
   );
 
@@ -92,8 +96,6 @@ export function ProductController({ profile, groups, onGroupsChanged, groupServi
     if (section === 'home' || section === 'groups' || section === 'workouts' || section === 'cardio' || section === 'progress' || section === 'compete') setActiveSection(section);
   };
   const onSignOut = () => { void signOut(); };
-
-  if (!selectedGroup) return null;
 
   let section: ReactNode;
 
@@ -122,7 +124,7 @@ export function ProductController({ profile, groups, onGroupsChanged, groupServi
       />
     );
   } else if (activeSection === 'compete') {
-    section = (
+    section = selectedGroup ? (
       <GroupSocialController
         key={selectedGroup.id}
         groups={groups}
@@ -134,9 +136,18 @@ export function ProductController({ profile, groups, onGroupsChanged, groupServi
         service={socialService}
         reportService={reportService}
       />
+    ) : (
+      <OptionalGroupSetupController
+        activeItem="compete"
+        onMembershipReady={onGroupsChanged}
+        onNavigate={onNavigate}
+        onSignOut={onSignOut}
+        profile={profile}
+        service={groupService}
+      />
     );
   } else if (activeSection === 'groups') {
-    section = (
+    section = selectedGroup ? (
       <GroupAdministrationController
         groups={groups}
         onGroupsChanged={onGroupsChanged}
@@ -148,11 +159,23 @@ export function ProductController({ profile, groups, onGroupsChanged, groupServi
         userId={profile.id}
         service={groupService}
       />
+    ) : (
+      <OptionalGroupSetupController
+        activeItem="groups"
+        onMembershipReady={onGroupsChanged}
+        onNavigate={onNavigate}
+        onSignOut={onSignOut}
+        profile={profile}
+        service={groupService}
+      />
     );
   } else {
     section = (
       <DashboardController
         group={selectedGroup}
+        groupCount={groups.length}
+        groupService={groupService}
+        onGroupsChanged={onGroupsChanged}
         onNavigate={onNavigate}
         onSignOut={onSignOut}
         profile={profile}
