@@ -320,6 +320,7 @@ describe('group-to-product integration journey', () => {
     });
     render(<JourneyHarness service={service} />);
     await screen.findByRole('heading', { name: 'Your lifting week' });
+    expect(screen.getByRole('heading', { name: 'Completed weeks & badges' })).toBeInTheDocument();
     await user.click(screen.getAllByRole('button', { name: 'Groups' })[0]!);
     expect(await screen.findByRole('button', { name: 'Make admin' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Send invite' })).toBeInTheDocument();
@@ -333,6 +334,7 @@ describe('group-to-product integration journey', () => {
     });
     render(<JourneyHarness service={service} />);
     expect(await screen.findByRole('heading', { name: 'Your lifting week' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Completed weeks & badges' })).toBeInTheDocument();
     await user.click(screen.getAllByRole('button', { name: 'Groups' })[0]!);
     expect(await screen.findByRole('button', { name: 'Leave group' })).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Send invite' })).not.toBeInTheDocument();
@@ -348,6 +350,7 @@ describe('group-to-product integration journey', () => {
     expect(await screen.findByRole('heading', { name: 'Crew standings' })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Highlights, not surveillance' })).toBeInTheDocument();
     await user.click(screen.getAllByRole('button', { name: 'Progress' })[0]!);
-    expect(await screen.findByRole('heading', { name: 'Know your trend. Beat your last.' })).toBeInTheDocument();
+    expect(await screen.findByRole('heading',{name:'Know your trend. Beat your last.'})).toBeInTheDocument();
+    expect(await screen.findByRole('heading',{name:'Weekly & monthly summary'})).toBeInTheDocument();
   });
 });
