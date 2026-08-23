@@ -26,6 +26,7 @@ interface UserAdministrationScreenProps {
   onRetryDirectory: () => void;
   onRetryDetail: () => void;
   onOpenAction: (action: 'SUSPEND' | 'RESTORE' | 'REQUEST_DELETION' | 'CANCEL_DELETION' | 'CONFIRM_DELETION') => void;
+  onOpenActivityReview?: (userId: string) => void;
 }
 
 const statuses: Array<{ value: PlatformAccountStatus | null; label: string }> = [
@@ -163,6 +164,7 @@ export function UserAdministrationScreen(props: UserAdministrationScreenProps) {
     onRetryDirectory,
     onRetryDetail,
     onOpenAction,
+    onOpenActivityReview,
   } = props;
   const [search, setSearch] = useState(filters.search);
   const directoryHeadingRef = useRef<HTMLHeadingElement>(null);
@@ -333,6 +335,15 @@ export function UserAdministrationScreen(props: UserAdministrationScreenProps) {
                 {detail.deletionRequestedBy && <DetailRow code label="Requested by" value={detail.deletionRequestedBy} />}
                 {detail.isPlatformAdmin && <DetailRow label="Platform access" value="Platform administrator" />}
               </dl>
+              {onOpenActivityReview && (
+                <button
+                  className={styles.secondaryButton}
+                  onClick={() => onOpenActivityReview(detail.userId)}
+                  type="button"
+                >
+                  Review activity
+                </button>
+              )}
               <AccountControls account={detail} currentUserId={currentUserId} onOpenAction={onOpenAction} />
             </>
           )}

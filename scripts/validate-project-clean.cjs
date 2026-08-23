@@ -840,7 +840,8 @@ for (const heading of [
   '#### 15.3C Irreversible account removal — DONE',
   '#### 15.3D User-administration visual gate + UI — DONE',
   '#### 15.3E User reports + moderation case foundation — DONE',
-  '#### 15.3F Privacy-bounded user activity review + moderation UI — NEXT',
+  '#### 15.3F Privacy-bounded user activity review + moderation UI — DONE',
+  '### 15.4 Admin-to-user messaging — NEXT',
 ]) {
   if (!roadmap.includes(heading)) fail('Phase 15.3 roadmap missing slice: ' + heading);
 }
@@ -1319,8 +1320,107 @@ for (const fragment of [
   if (!phase153eDoc.includes(fragment)) fail('Phase 15.3E documentation missing invariant: ' + fragment);
 }
 if (!roadmap.includes('#### 15.3E User reports + moderation case foundation — DONE')
-    || !roadmap.includes('#### 15.3F Privacy-bounded user activity review + moderation UI — NEXT')) {
-  fail('Phase 15.3E roadmap must be DONE and Phase 15.3F must be NEXT');
+    || !roadmap.includes('#### 15.3F Privacy-bounded user activity review + moderation UI — DONE')) {
+  fail('Phase 15.3E and Phase 15.3F roadmap slices must be DONE');
+}
+
+// Phase 15.3F privacy-bounded activity review + reporting/moderation UI.
+for (const relativePath of [
+  'PHASE15.3F-PATCH-MANIFEST.txt',
+  'docs/PHASE15.3F-PRIVACY-BOUNDED-MODERATION-UI.md',
+  'supabase/migrations/20260823144115_moderation_activity_review.sql',
+  'supabase/tests/034_moderation_activity_review.test.sql',
+  'src/features/moderation/components/UserReportDialog.tsx',
+  'src/features/moderation/components/UserReportDialog.test.tsx',
+  'src/features/admin/moderation/components/ModerationWorkspaceController.tsx',
+  'src/features/admin/moderation/components/ModerationWorkspaceScreen.tsx',
+  'src/features/admin/moderation/components/ModerationWorkspaceScreen.test.tsx',
+  'src/features/social/components/GroupSocialReports.module.css',
+]) {
+  if (!fs.existsSync(path.join(root, relativePath))) fail('Phase 15.3F file missing: ' + relativePath);
+}
+
+const phase153fMigration = read('supabase/migrations/20260823144115_moderation_activity_review.sql');
+const phase153fTest = read('supabase/tests/034_moderation_activity_review.test.sql');
+const phase153fAdminService = read('src/features/admin/moderation/moderationCaseService.ts');
+const phase153fReportDialog = read('src/features/moderation/components/UserReportDialog.tsx');
+const phase153fWorkspace = read('src/features/admin/moderation/components/ModerationWorkspaceScreen.tsx');
+const phase153fRoute = read('src/features/admin/PlatformAdminRoute.tsx');
+const phase153fDoc = read('docs/PHASE15.3F-PRIVACY-BOUNDED-MODERATION-UI.md');
+
+for (const fragment of [
+  'create type public.moderation_activity_type',
+  'create table private.moderation_access_log',
+  'function private.resolve_moderation_subject',
+  'function private.append_moderation_access',
+  'function public.begin_moderation_activity_review',
+  'function public.list_moderation_activity_review',
+  'private.require_active_platform_admin()',
+  "access_kind in ('CASE_DETAIL', 'ACTIVITY_TIMELINE')",
+  "interval '15 minutes'",
+  "interval '2 years'",
+  'private.reject_moderation_immutable_mutation()',
+  "set search_path = ''",
+]) {
+  if (!phase153fMigration.includes(fragment)) fail('Phase 15.3F migration missing invariant: ' + fragment);
+}
+if (/grant\s+[^;]*\bon\s+(?:table\s+|function\s+)?private\./i.test(phase153fMigration)) {
+  fail('Phase 15.3F must not grant browser roles direct access to private moderation objects');
+}
+if (/['"]COMMUNICATION['"]/.test(
+  phase153fMigration.match(/create type public\.moderation_activity_type[\s\S]*?\);/)?.[0] || '',
+)) {
+  fail('Phase 15.3F must not fabricate communication activity before Phase 15.4');
+}
+const phase153fPlan = Number((phase153fTest.match(/select\s+plan\((\d+)\)/i) || [])[1]);
+const phase153fAssertions = (phase153fTest.match(
+  /select\s+(?:has_type|has_table|has_column|has_function|is|results_eq|throws_ok|lives_ok)\s*\(/gi,
+) || []).length;
+if (phase153fPlan !== phase153fAssertions) {
+  fail('Phase 15.3F pgTAP plan ' + phase153fPlan + ' must match ' + phase153fAssertions + ' assertions');
+}
+if (phase153fPlan < 40) fail('Phase 15.3F sensitive-activity suite must retain comprehensive coverage');
+for (const coverage of [
+  'ordinary users cannot begin sensitive activity review',
+  'review grants are bound to the moderator who declared the purpose',
+  'activity source selection is enforced server-side',
+  'workout notes are redacted from moderation review',
+  'sensitive access audit is append-only',
+  'identity snapshots preserve deletion-safe retained review context',
+]) {
+  if (!phase153fTest.includes(coverage)) fail('Phase 15.3F pgTAP missing coverage: ' + coverage);
+}
+for (const rpc of ['begin_moderation_activity_review', 'list_moderation_activity_review']) {
+  if (!phase153fAdminService.includes(rpc)) fail('Phase 15.3F moderator service missing RPC: ' + rpc);
+}
+if (!phase153fReportDialog.includes('submit_user_report') && !phase153fReportDialog.includes('service.submit')) {
+  fail('Phase 15.3F user report dialog must use the existing guarded report service');
+}
+for (const copy of ['SENSITIVE REVIEW', 'Reason for access', 'Raw workout content, Auth/session data, and unrelated users are excluded']) {
+  if (!phase153fWorkspace.includes(copy)) fail('Phase 15.3F moderation workspace missing privacy contract: ' + copy);
+}
+if (!phase153fRoute.includes("pathname === '/platform-admin/moderation'")) {
+  fail('Phase 15.3F moderation UI must remain inside the guarded platform-admin route');
+}
+if (/service[_-]?role|SUPABASE_SECRET|from\(['"](?:moderation_access_log|workout_sessions|group_members|group_activity_reactions)/i.test(
+  phase153fAdminService + phase153fReportDialog + phase153fWorkspace,
+)) {
+  fail('Phase 15.3F browser code must not contain privileged credentials or direct activity/private-table access');
+}
+for (const fragment of [
+  '15-minute ACTIVITY_TIMELINE grant',
+  'cursor-paginated',
+  'never returns workout notes',
+  'Communication history is intentionally absent',
+  'minimum two-year retention boundary',
+  'Product rows continue to follow their existing account-deletion cascades',
+  '/platform-admin/moderation',
+]) {
+  if (!phase153fDoc.includes(fragment)) fail('Phase 15.3F documentation missing invariant: ' + fragment);
+}
+if (!roadmap.includes('#### 15.3F Privacy-bounded user activity review + moderation UI — DONE')
+    || !roadmap.includes('### 15.4 Admin-to-user messaging — NEXT')) {
+  fail('Phase 15.3F must be DONE and Phase 15.4 must be NEXT');
 }
 
 const ciWorkflow = read('.github/workflows/ci.yml');
@@ -1455,4 +1555,4 @@ if (fs.existsSync(obsoleteRepairPath)) {
   fail('structural validation must not materialize the obsolete repair migration');
 }
 
-console.log('Release validation passed: clean migration history, Phase 15.1 admin invariants, Phase 15.2A capacity semantics, Phase 15.2B private telemetry/history authorization, Phase 15.2C secure Supabase provider boundary/provider-gap semantics, Phase 15.2D secure Netlify provider boundary/provider-gap semantics, Phase 15.2E real-data capacity UI/route/settings contracts, Phase 15.3A account lifecycle foundation, Phase 15.3B Data API/session enforcement and server-only Auth coordination, Phase 15.3C irreversible administrator/self-service deletion coordination, Phase 15.3D approved responsive account-administration UI, Phase 15.3E private user reports and moderation-case lifecycle contracts, canonical GitHub CI/database discovery, visual-roadmap guards, and production chunk budget guards are present.');
+console.log('Release validation passed: clean migration history, Phase 15.1 admin invariants, Phase 15.2A capacity semantics, Phase 15.2B private telemetry/history authorization, Phase 15.2C secure Supabase provider boundary/provider-gap semantics, Phase 15.2D secure Netlify provider boundary/provider-gap semantics, Phase 15.2E real-data capacity UI/route/settings contracts, Phase 15.3A account lifecycle foundation, Phase 15.3B Data API/session enforcement and server-only Auth coordination, Phase 15.3C irreversible administrator/self-service deletion coordination, Phase 15.3D approved responsive account-administration UI, Phase 15.3E private user reports and moderation-case lifecycle contracts, Phase 15.3F audited privacy-bounded activity review and reporting/moderation UI, canonical GitHub CI/database discovery, visual-roadmap guards, and production chunk budget guards are present.');

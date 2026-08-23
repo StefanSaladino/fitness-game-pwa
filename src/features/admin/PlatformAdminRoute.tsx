@@ -4,6 +4,8 @@ import type { PlatformAccountAdminService } from './accounts/platformAccountAdmi
 import { UserAdministrationController } from './accounts/components/UserAdministrationController';
 import type { CapacityDashboardService } from './capacity/capacityDashboardService';
 import { CapacityDashboardController } from './capacity/components/CapacityDashboardController';
+import type { ModerationCaseService } from './moderation/moderationCaseService';
+import { ModerationWorkspaceController } from './moderation/components/ModerationWorkspaceController';
 import { PlatformAdminShell, type PlatformAdminSection } from './components/PlatformAdminShell';
 import { usePlatformAccess } from './hooks/usePlatformAccess';
 import type { PlatformAccessService } from './platformAccessService';
@@ -14,6 +16,7 @@ interface PlatformAdminRouteProps {
   accessService?: PlatformAccessService;
   accountService?: PlatformAccountAdminService;
   capacityService?: CapacityDashboardService;
+  moderationService?: ModerationCaseService;
 }
 
 function GenericRouteLoading() {
@@ -26,6 +29,7 @@ export function PlatformAdminRoute({
   accessService,
   accountService,
   capacityService,
+  moderationService,
 }: PlatformAdminRouteProps) {
   const platformAccess = usePlatformAccess(accessService);
   const authorized = platformAccess.state === 'ready'
@@ -33,6 +37,7 @@ export function PlatformAdminRoute({
     && platformAccess.access.isPlatformAdmin;
   const canonicalCapacityRoute = pathname === '/platform-admin/capacity';
   const canonicalUsersRoute = pathname === '/platform-admin/users';
+  const canonicalModerationRoute = pathname === '/platform-admin/moderation';
   const adminRoot = pathname === '/platform-admin';
 
   useEffect(() => {
@@ -45,25 +50,38 @@ export function PlatformAdminRoute({
       replacePath('/platform-admin/capacity');
       return;
     }
-    if (!canonicalCapacityRoute && !canonicalUsersRoute) replacePath('/');
-  }, [adminRoot, authorized, canonicalCapacityRoute, canonicalUsersRoute, platformAccess.state]);
+    if (!canonicalCapacityRoute && !canonicalUsersRoute && !canonicalModerationRoute) replacePath('/');
+  }, [adminRoot, authorized, canonicalCapacityRoute, canonicalModerationRoute, canonicalUsersRoute, platformAccess.state]);
 
-  if (!authorized || adminRoot || (!canonicalCapacityRoute && !canonicalUsersRoute)) {
+  if (!authorized || adminRoot || (!canonicalCapacityRoute && !canonicalUsersRoute && !canonicalModerationRoute)) {
     return <GenericRouteLoading />;
   }
 
-  const activeSection: PlatformAdminSection = canonicalUsersRoute ? 'users' : 'capacity';
+  const activeSection: PlatformAdminSection = canonicalModerationRoute ? 'moderation' : canonicalUsersRoute ? 'users' : 'capacity';
+  const initialModerationTarget = typeof window === 'undefined'
+    ? null
+    : new URLSearchParams(window.location.search).get('target');
 
   return (
     <PlatformAdminShell
       activeSection={activeSection}
-      mobileTitle={activeSection === 'users' ? 'Users' : 'Capacity'}
+      mobileTitle={activeSection === 'moderation' ? 'Moderation' : activeSection === 'users' ? 'Users' : 'Capacity'}
       onBackToApp={() => navigateToPath('/')}
       onNavigate={(section) => navigateToPath(`/platform-admin/${section}`)}
     >
-      {activeSection === 'users'
-        ? <UserAdministrationController currentUserId={currentUserId} service={accountService} />
-        : <CapacityDashboardController service={capacityService} />}
+      {activeSection === 'users' ? (
+        <UserAdministrationController
+          currentUserId={currentUserId}
+          onOpenActivityReview={(userId) => navigateToPath(`/platform-admin/moderation?target=${encodeURIComponent(userId)}`)}
+          service={accountService}
+        />
+      ) : activeSection === 'moderation' ? (
+        <ModerationWorkspaceController
+          currentUserId={currentUserId}
+          initialTargetUserId={initialModerationTarget}
+          service={moderationService}
+        />
+      ) : <CapacityDashboardController service={capacityService} />}
     </PlatformAdminShell>
   );
 }

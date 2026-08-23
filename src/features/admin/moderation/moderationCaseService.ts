@@ -7,7 +7,13 @@ import {
 } from '../../moderation/model';
 import {
   MODERATION_CASE_ACTIONS,
+  MODERATION_ACTIVITY_TYPES,
   MODERATION_CASE_STATUSES,
+  type BeginModerationActivityReviewInput,
+  type ModerationActivityItem,
+  type ModerationActivityPage,
+  type ModerationActivityReviewAccess,
+  type ModerationActivityType,
   type ModerationCaseAction,
   type ModerationCaseDetail,
   type ModerationCaseDirectoryPage,
@@ -21,6 +27,7 @@ import {
 
 const statuses = new Set<string>(MODERATION_CASE_STATUSES);
 const actions = new Set<string>(MODERATION_CASE_ACTIONS);
+const activityTypes = new Set<string>(MODERATION_ACTIVITY_TYPES);
 const categories = new Set<string>(USER_REPORT_CATEGORIES);
 const referenceTypes = new Set<string>(['GROUP', 'WORKOUT', 'SOCIAL_ACTIVITY']);
 
@@ -75,12 +82,41 @@ type EventRow = {
   created_at: string;
 };
 
+type ActivityAccessRow = {
+  access_id: string;
+  target_user_id: string;
+  target_username: string;
+  target_display_name: string;
+  account_status: string | null;
+  case_id: string | null;
+  activity_types: string[];
+  granted_at: string;
+  expires_at: string;
+};
+
+type ActivityRow = {
+  activity_type: string;
+  activity_key: string;
+  title: string;
+  detail: string;
+  occurred_at: string;
+  source_case_id: string | null;
+  metadata: unknown;
+  has_more: boolean;
+};
+
 export interface ModerationCaseService {
   list(query?: ModerationCaseDirectoryQuery): Promise<ModerationCaseDirectoryPage>;
   get(caseId: string): Promise<ModerationCaseRecord>;
   assign(caseId: string, assigneeUserId: string | null, reason: string): Promise<void>;
   addNote(caseId: string, note: string): Promise<string>;
   updateStatus(caseId: string, status: Exclude<ModerationCaseStatus, 'NEW'>, reason: string): Promise<void>;
+  beginActivityReview(input: BeginModerationActivityReviewInput): Promise<ModerationActivityReviewAccess>;
+  listActivity(
+    accessId: string,
+    cursor?: { occurredAt: string; activityKey: string } | null,
+    pageSize?: number,
+  ): Promise<ModerationActivityPage>;
 }
 
 function required(value: string, label: string): string {
@@ -130,6 +166,45 @@ function count(value: number | string): number {
   const parsed = typeof value === 'number' ? value : Number(value);
   if (!Number.isSafeInteger(parsed) || parsed < 0) throw new Error('Invalid moderation case total.');
   return parsed;
+}
+
+function activityType(value: string): ModerationActivityType {
+  if (!activityTypes.has(value)) throw new Error('Invalid moderation activity type.');
+  return value as ModerationActivityType;
+}
+
+function activityAccess(row: ActivityAccessRow): ModerationActivityReviewAccess {
+  const validStatuses = new Set(['ACTIVE', 'SUSPENDED', 'DELETION_PENDING']);
+  if (!row.access_id || !Array.isArray(row.activity_types) || row.activity_types.length === 0) {
+    throw new Error('Invalid moderation activity access.');
+  }
+  if (row.account_status !== null && !validStatuses.has(row.account_status)) {
+    throw new Error('Invalid moderation review account status.');
+  }
+  return {
+    accessId: row.access_id,
+    target: party(row.target_user_id, row.target_username, row.target_display_name),
+    accountStatus: row.account_status as ModerationActivityReviewAccess['accountStatus'],
+    caseId: row.case_id,
+    activityTypes: row.activity_types.map(activityType),
+    grantedAt: isoDate(row.granted_at, 'moderation activity grant date'),
+    expiresAt: isoDate(row.expires_at, 'moderation activity expiry date'),
+  };
+}
+
+function activity(row: ActivityRow): ModerationActivityItem {
+  if (!row.activity_key || !row.title || !row.detail || typeof row.has_more !== 'boolean') {
+    throw new Error('Invalid moderation activity row.');
+  }
+  return {
+    activityType: activityType(row.activity_type),
+    activityKey: row.activity_key,
+    title: row.title,
+    detail: row.detail,
+    occurredAt: isoDate(row.occurred_at, 'moderation activity date'),
+    sourceCaseId: row.source_case_id,
+    metadata: plainObject(row.metadata, 'moderation activity metadata'),
+  };
 }
 
 function summary(row: Omit<SummaryRow, 'total_count'>): ModerationCaseSummary {
@@ -265,6 +340,50 @@ export function createModerationCaseService(
         p_reason: required(reason, 'Status reason'),
       });
       if (error) throw error;
+    },
+
+    async beginActivityReview(input) {
+      const accessReason = required(input.accessReason, 'Activity access reason');
+      if (accessReason.length > 500) throw new Error('Activity access reason must be between 3 and 500 characters.');
+      if (accessReason.length < 3) throw new Error('Activity access reason must be between 3 and 500 characters.');
+      const requestedTypes = input.activityTypes ?? [...MODERATION_ACTIVITY_TYPES];
+      if (requestedTypes.length < 1 || requestedTypes.length > MODERATION_ACTIVITY_TYPES.length) {
+        throw new Error('Choose at least one moderation activity type.');
+      }
+      const normalizedTypes = [...new Set(requestedTypes.map(activityType))];
+
+      const { data, error } = await client.rpc('begin_moderation_activity_review', {
+        p_target_user_id: required(input.targetUserId, 'Moderation review subject'),
+        p_access_reason: accessReason,
+        p_case_id: input.caseId?.trim() || null,
+        p_activity_types: normalizedTypes,
+      });
+      if (error) throw error;
+      const row = ((data ?? []) as ActivityAccessRow[])[0];
+      if (!row) throw new Error('Moderation activity access was not granted.');
+      return activityAccess(row);
+    },
+
+    async listActivity(accessId, cursor = null, pageSize = 25) {
+      if (!Number.isInteger(pageSize) || pageSize < 1 || pageSize > 50) {
+        throw new Error('Activity page size must be between 1 and 50.');
+      }
+      const { data, error } = await client.rpc('list_moderation_activity_review', {
+        p_access_id: required(accessId, 'Moderation activity access'),
+        p_before_occurred_at: cursor ? isoDate(cursor.occurredAt, 'activity cursor date') : null,
+        p_before_activity_key: cursor ? required(cursor.activityKey, 'Activity cursor key') : null,
+        p_page_size: pageSize,
+      });
+      if (error) throw error;
+      const rows = (data ?? []) as ActivityRow[];
+      const items = rows.map(activity);
+      const last = items.at(-1);
+      return {
+        items,
+        nextCursor: rows[0]?.has_more && last
+          ? { occurredAt: last.occurredAt, activityKey: last.activityKey }
+          : null,
+      };
     },
   };
 }

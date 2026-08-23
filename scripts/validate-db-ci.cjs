@@ -63,6 +63,8 @@ const phase153cMigration = 'supabase/migrations/20260822172823_platform_account_
 const phase153cTest = 'supabase/tests/032_platform_account_irreversible_deletion.test.sql';
 const phase153eMigration = 'supabase/migrations/20260823140206_user_reports_moderation_foundation.sql';
 const phase153eTest = 'supabase/tests/033_user_reports_moderation_foundation.test.sql';
+const phase153fMigration = 'supabase/migrations/20260823144115_moderation_activity_review.sql';
+const phase153fTest = 'supabase/tests/034_moderation_activity_review.test.sql';
 for (const relativePath of [
   phase153aMigration,
   phase153aTest,
@@ -74,6 +76,8 @@ for (const relativePath of [
   phase153cTest,
   phase153eMigration,
   phase153eTest,
+  phase153fMigration,
+  phase153fTest,
 ]) {
   if (!fs.existsSync(path.join(root, relativePath))) fail(`Phase 15.3 database artifact missing: ${relativePath}`);
 }
@@ -217,6 +221,60 @@ for (const coverage of [
   'message evidence is not fabricated before a message source exists',
 ]) {
   if (!test153e.includes(coverage)) fail(`Phase 15.3E pgTAP missing coverage: ${coverage}`);
+}
+
+const migration153f = read(phase153fMigration);
+for (const invariant of [
+  'public.moderation_activity_type',
+  'private.moderation_access_log',
+  'private.resolve_moderation_subject',
+  'private.append_moderation_access',
+  'public.begin_moderation_activity_review',
+  'public.list_moderation_activity_review',
+  'private.require_active_platform_admin()',
+  "access_kind in ('CASE_DETAIL', 'ACTIVITY_TIMELINE')",
+  "interval '15 minutes'",
+  "interval '2 years'",
+  'workout_sessions',
+  'group_members',
+  'group_activity_reactions',
+  'platform_admin_audit_log',
+  'user_reports',
+  'private.reject_moderation_immutable_mutation()',
+  "set search_path = ''",
+]) {
+  if (!migration153f.includes(invariant)) fail(`Phase 15.3F migration missing invariant: ${invariant}`);
+}
+if (/grant\s+[^;]*\bon\s+(?:table\s+|function\s+)?private\./i.test(migration153f)) {
+  fail('Phase 15.3F must not grant browser roles direct access to private moderation objects');
+}
+if (/['"]COMMUNICATION['"]/.test(
+  migration153f.match(/create type public\.moderation_activity_type[\s\S]*?\);/)?.[0] || '',
+)) {
+  fail('Phase 15.3F must not fabricate communication activity before Phase 15.4 creates a durable source');
+}
+for (const forbiddenField of ['w.notes', 'workout_sets', 'auth.users', 'auth.identities', 'auth.sessions']) {
+  const timelineBody = migration153f.match(/create or replace function public\.list_moderation_activity_review[\s\S]*?\n\$\$;/)?.[0] || '';
+  if (timelineBody.includes(forbiddenField)) {
+    fail(`Phase 15.3F timeline must not expose forbidden source: ${forbiddenField}`);
+  }
+}
+
+const test153f = read(phase153fTest);
+if (!/select\s+plan\s*\(\s*45\s*\)\s*;/i.test(test153f)) {
+  fail('Phase 15.3F pgTAP suite must retain its 45-assertion plan');
+}
+for (const coverage of [
+  'ordinary users cannot begin sensitive activity review',
+  'review grants are bound to the moderator who declared the purpose',
+  'activity source selection is enforced server-side',
+  'workout notes are redacted from moderation review',
+  'report activity links back to its originating moderation case',
+  'sensitive access audit is append-only',
+  'identity snapshots preserve deletion-safe retained review context',
+  'communication activity is not fabricated before Phase 15.4 creates a durable source',
+]) {
+  if (!test153f.includes(coverage)) fail(`Phase 15.3F pgTAP missing coverage: ${coverage}`);
 }
 
 const ci = fs.readFileSync(ciPath, 'utf8');

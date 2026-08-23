@@ -18,6 +18,7 @@ describe('PlatformAdminShell', () => {
     );
 
     expect(screen.getAllByRole('button', { name: 'Users' })[0]).toHaveAttribute('aria-current', 'page');
+    expect(screen.getAllByRole('button', { name: 'Moderation' })).toHaveLength(2);
     fireEvent.click(screen.getAllByRole('button', { name: 'Capacity' })[0]);
     fireEvent.click(screen.getAllByRole('button', { name: /Back/ })[0]);
     expect(onNavigate).toHaveBeenCalledWith('capacity');

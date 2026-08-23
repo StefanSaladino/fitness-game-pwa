@@ -21,6 +21,16 @@ export const MODERATION_CASE_ACTIONS = [
 export type ModerationCaseStatus = (typeof MODERATION_CASE_STATUSES)[number];
 export type ModerationCaseAction = (typeof MODERATION_CASE_ACTIONS)[number];
 
+export const MODERATION_ACTIVITY_TYPES = [
+  'ACCOUNT',
+  'WORKOUT',
+  'GROUP_MEMBERSHIP',
+  'GROUP_ACTIVITY',
+  'REPORT',
+] as const;
+
+export type ModerationActivityType = (typeof MODERATION_ACTIVITY_TYPES)[number];
+
 export interface ModerationCaseParty {
   userId: string;
   username: string;
@@ -87,4 +97,41 @@ export interface ModerationCaseDirectoryPage {
   total: number;
   page: number;
   pageSize: number;
+}
+
+export interface BeginModerationActivityReviewInput {
+  targetUserId: string;
+  accessReason: string;
+  caseId?: string | null;
+  activityTypes?: ModerationActivityType[];
+}
+
+export interface ModerationActivityReviewAccess {
+  accessId: string;
+  target: ModerationCaseParty;
+  accountStatus: 'ACTIVE' | 'SUSPENDED' | 'DELETION_PENDING' | null;
+  caseId: string | null;
+  activityTypes: ModerationActivityType[];
+  grantedAt: string;
+  expiresAt: string;
+}
+
+export interface ModerationActivityItem {
+  activityType: ModerationActivityType;
+  activityKey: string;
+  title: string;
+  detail: string;
+  occurredAt: string;
+  sourceCaseId: string | null;
+  metadata: Record<string, unknown>;
+}
+
+export interface ModerationActivityCursor {
+  occurredAt: string;
+  activityKey: string;
+}
+
+export interface ModerationActivityPage {
+  items: ModerationActivityItem[];
+  nextCursor: ModerationActivityCursor | null;
 }

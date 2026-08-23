@@ -153,4 +153,68 @@ describe('moderation case service', () => {
 
     await expect(service.list()).rejects.toThrow('Invalid moderation case status.');
   });
+
+  it('opens a purpose-bounded activity grant and maps cursor pagination', async () => {
+    const accessId = '153f0000-0000-4000-8000-000000000010';
+    const rpc = vi.fn()
+      .mockResolvedValueOnce({
+        data: [{
+          access_id: accessId,
+          target_user_id: 'target-id',
+          target_username: 'target',
+          target_display_name: 'Target User',
+          account_status: 'ACTIVE',
+          case_id: CASE_ID,
+          activity_types: ['WORKOUT', 'REPORT'],
+          granted_at: CREATED_AT,
+          expires_at: '2026-08-23T12:15:00.000Z',
+        }],
+        error: null,
+      })
+      .mockResolvedValueOnce({
+        data: [{
+          activity_type: 'WORKOUT',
+          activity_key: 'WORKOUT:one',
+          title: 'Strength workout',
+          detail: 'Completed · In app',
+          occurred_at: CREATED_AT,
+          source_case_id: null,
+          metadata: { durationSeconds: 1800 },
+          has_more: true,
+        }],
+        error: null,
+      });
+    const service = createModerationCaseService(clientWithRpc(rpc));
+
+    const access = await service.beginActivityReview({
+      targetUserId: 'target-id',
+      accessReason: 'Reviewing workout evidence',
+      caseId: CASE_ID,
+      activityTypes: ['WORKOUT', 'REPORT', 'WORKOUT'],
+    });
+    const page = await service.listActivity(access.accessId, null, 1);
+
+    expect(access.target.username).toBe('target');
+    expect(access.activityTypes).toEqual(['WORKOUT', 'REPORT']);
+    expect(page.items[0].metadata).toEqual({ durationSeconds: 1800 });
+    expect(page.nextCursor).toEqual({ occurredAt: CREATED_AT, activityKey: 'WORKOUT:one' });
+    expect(rpc).toHaveBeenNthCalledWith(1, 'begin_moderation_activity_review', {
+      p_target_user_id: 'target-id',
+      p_access_reason: 'Reviewing workout evidence',
+      p_case_id: CASE_ID,
+      p_activity_types: ['WORKOUT', 'REPORT'],
+    });
+  });
+
+  it('rejects malformed or overbroad activity requests before the RPC', async () => {
+    const rpc = vi.fn();
+    const service = createModerationCaseService(clientWithRpc(rpc));
+
+    await expect(service.beginActivityReview({
+      targetUserId: 'target-id',
+      accessReason: 'x',
+    })).rejects.toThrow('between 3 and 500');
+    await expect(service.listActivity('access-id', null, 51)).rejects.toThrow('between 1 and 50');
+    expect(rpc).not.toHaveBeenCalled();
+  });
 });

@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import styles from './PlatformAdminShell.module.css';
 
-export type PlatformAdminSection = 'capacity' | 'users';
+export type PlatformAdminSection = 'capacity' | 'users' | 'moderation';
 
 interface PlatformAdminShellProps {
   activeSection: PlatformAdminSection;
@@ -14,6 +14,7 @@ interface PlatformAdminShellProps {
 const destinations: Array<{ id: PlatformAdminSection; label: string }> = [
   { id: 'capacity', label: 'Capacity' },
   { id: 'users', label: 'Users' },
+  { id: 'moderation', label: 'Moderation' },
 ];
 
 export function PlatformAdminShell({

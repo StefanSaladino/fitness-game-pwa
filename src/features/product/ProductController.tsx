@@ -7,6 +7,7 @@ import type { DashboardService } from '../dashboard';
 import type { CardioService } from '../cardio';
 import type { GroupService, GroupSummary } from '../groups';
 import type { OnboardingProfile } from '../onboarding';
+import type { UserReportService } from '../moderation';
 import type { ExerciseProgressService } from '../progress';
 import type { GroupSocialService } from '../social';
 import type {
@@ -55,6 +56,7 @@ interface ProductControllerProps {
   workoutMutationService?: WorkoutMutationService;
   progressService?: ExerciseProgressService;
   socialService?: GroupSocialService;
+  reportService?: UserReportService;
   cardioService?: CardioService;
 }
 
@@ -62,7 +64,7 @@ function ProductSectionFallback() {
   return <div aria-live="polite" role="status">Loading…</div>;
 }
 
-export function ProductController({ profile, groups, onGroupsChanged, groupService, dashboardService, workoutService, workoutExerciseService, exercisePickerService, workoutSetService, workoutMutationService, progressService, socialService, cardioService }: ProductControllerProps) {
+export function ProductController({ profile, groups, onGroupsChanged, groupService, dashboardService, workoutService, workoutExerciseService, exercisePickerService, workoutSetService, workoutMutationService, progressService, socialService, reportService, cardioService }: ProductControllerProps) {
   const [activeSection, setActiveSection] = useState<AppSection>('home');
   const [selectedGroupId, setSelectedGroupId] = useState(groups[0]?.id ?? '');
 
@@ -123,6 +125,7 @@ export function ProductController({ profile, groups, onGroupsChanged, groupServi
         profile={profile}
         selectedGroupId={selectedGroup.id}
         service={socialService}
+        reportService={reportService}
       />
     );
   } else if (activeSection === 'groups') {

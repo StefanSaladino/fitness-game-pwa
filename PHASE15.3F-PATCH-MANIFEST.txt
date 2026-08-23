@@ -1,0 +1,40 @@
+Phase 15.3F — Privacy-bounded activity review + moderation UI
+
+Database
+- supabase/migrations/20260823144115_moderation_activity_review.sql
+- supabase/tests/034_moderation_activity_review.test.sql
+
+Moderator client
+- src/features/admin/moderation/model.ts
+- src/features/admin/moderation/moderationCaseService.ts
+- src/features/admin/moderation/moderationCaseService.test.ts
+- src/features/admin/moderation/components/ModerationWorkspaceController.tsx
+- src/features/admin/moderation/components/ModerationWorkspaceScreen.tsx
+- src/features/admin/moderation/components/ModerationWorkspaceScreen.test.tsx
+- src/features/admin/moderation/components/ModerationWorkspace.module.css
+- src/features/admin/moderation/index.ts
+- src/features/admin/PlatformAdminRoute.tsx
+- src/features/admin/PlatformAdminRoute.test.tsx
+- src/features/admin/components/PlatformAdminShell.tsx
+- src/features/admin/components/PlatformAdminShell.module.css
+- src/features/admin/components/PlatformAdminShell.test.tsx
+- src/features/admin/accounts/components/UserAdministrationController.tsx
+- src/features/admin/accounts/components/UserAdministrationScreen.tsx
+
+Ordinary-user reporting
+- src/features/moderation/components/UserReportDialog.tsx
+- src/features/moderation/components/UserReportDialog.module.css
+- src/features/moderation/components/UserReportDialog.test.tsx
+- src/features/moderation/index.ts
+- src/features/social/components/GroupSocialScreen.tsx
+- src/features/social/components/GroupSocialScreen.test.tsx
+- src/features/social/components/GroupSocialReports.module.css
+- src/features/social/components/GroupSocialController.tsx
+- src/features/product/ProductController.tsx
+
+Documentation and gates
+- docs/PHASE15.3F-PRIVACY-BOUNDED-MODERATION-UI.md
+- docs/ROADMAP.md
+- docs/CI-VALIDATION.md
+- scripts/validate-db-ci.cjs
+- scripts/validate-project-clean.cjs

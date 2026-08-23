@@ -4,6 +4,7 @@ import { describe, expect, it, vi } from 'vitest';
 import type { GroupSummary } from '../../groups';
 import type { OnboardingProfile } from '../../onboarding';
 import type { GroupCompetitionLeaderboard, GroupSocialFeedItem } from '../model';
+import type { UserReportService } from '../../moderation';
 import { GroupSocialScreen } from './GroupSocialScreen';
 
 const profile: OnboardingProfile = {
@@ -46,5 +47,26 @@ describe('GroupSocialScreen', () => {
 
     await user.click(screen.getByRole('button', { name: /Fire 2/i }));
     expect(onReact).toHaveBeenCalledWith('PR:opaque', 'FIRE');
+  });
+
+  it('offers report controls for other users and attaches the visible social activity', async () => {
+    const user = userEvent.setup();
+    const reportService: UserReportService = { submit: vi.fn().mockResolvedValue({ caseId: 'case-id' }) };
+    render(<GroupSocialScreen
+      allTime={allTime} busyReactionKey={null} error="" feed={feed} group={group} groups={[group]} hasMore={false}
+      loadingMore={false} onLoadMore={vi.fn()} onNavigate={vi.fn()} onReact={vi.fn()} onSelectGroup={vi.fn()}
+      onSignOut={vi.fn()} profile={profile} reportService={reportService} weekly={weekly}
+    />);
+
+    expect(screen.queryByRole('button', { name: /report stefan/i })).not.toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Report this activity' }));
+    await user.type(screen.getByLabelText('What happened?'), 'This visible group activity needs moderator review.');
+    await user.click(screen.getByRole('button', { name: 'Submit report' }));
+
+    expect(reportService.submit).toHaveBeenCalledWith(expect.objectContaining({
+      targetUserId: 'user-2',
+      reference: { type: 'SOCIAL_ACTIVITY', groupId: 'group-1', activityKey: 'PR:opaque' },
+    }));
+    expect(await screen.findByRole('status')).toHaveTextContent('private moderation queue');
   });
 });

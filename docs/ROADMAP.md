@@ -762,7 +762,7 @@ Netlify billing/usage is team/account scoped. The public API calls a team an acc
 - define report, evidence-reference, moderator-note, and resolution retention before exposing the reporting control;
 - alerts must be durable in-app moderation work, not a best-effort toast; later email/push delivery may supplement but never replace the queue.
 
-#### 15.3F Privacy-bounded user activity review + moderation UI — NEXT
+#### 15.3F Privacy-bounded user activity review + moderation UI — DONE
 
 - let an authorized moderator open a reported or directory-selected account’s review timeline using purpose-built read models rather than unrestricted table access;
 - include relevant account lifecycle events, workouts recorded, group membership/activity, reports, and communication history once each source exists;
@@ -772,7 +772,7 @@ Netlify billing/usage is team/account scoped. The public API calls a team an acc
 - keep moderation review read-only with respect to workouts, scoring, badges, rankings, and progression; lifecycle enforcement continues through the existing audited account actions;
 - define pagination, retention, redaction, deletion effects, and group/message visibility before implementing the activity timeline.
 
-### 15.4 Admin-to-user messaging
+### 15.4 Admin-to-user messaging — NEXT
 
 - send an in-app message to a specific user account, every current member of a selected group, or all eligible user accounts;
 - support message types such as NOTICE, WARNING, ACTION_REQUIRED, and ACCOUNT_STATUS;
