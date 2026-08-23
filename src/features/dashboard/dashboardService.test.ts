@@ -49,10 +49,11 @@ class FakeQuery {
   }
 }
 
-function fakeClient(): SupabaseClient {
+function fakeClient(rpcCalls: string[] = []): SupabaseClient {
   const client = {
     from(table: string) { return new FakeQuery(table); },
     rpc(name: string) {
+      rpcCalls.push(name);
       if (name === 'get_my_lifting_consistency_summary') {
         return Promise.resolve({
           data: [{
@@ -100,5 +101,18 @@ describe('dashboard service', () => {
     expect(result.leaderboard[1]).toMatchObject({ rank: 2, isCurrentUser: true, xp: 135 });
     expect(result.currentUserProfilePictureUrl).toContain('user-1/pfp.webp');
     expect(result.consistency).toMatchObject({ currentCompletedWeekStreak: 2, bestCompletedWeekStreak: 3, goalsHit: 3 });
+  });
+
+  it('loads all personal dashboard data without invoking a group leaderboard when membership is empty', async () => {
+    const rpcCalls: string[] = [];
+    const service = createDashboardService(fakeClient(rpcCalls));
+    const result = await service.load({ userId: 'user-1', timezone: 'America/Toronto', weeklyTarget: 4, groupId: null }, new Date('2026-08-19T22:00:00.000Z'));
+
+    expect(result.weeklyXp).toBe(135);
+    expect(result.recentLifts[0]?.title).toBe('Upper Push');
+    expect(result.recentPrs[0]?.exerciseName).toBe('Bench Press');
+    expect(result.leaderboard).toEqual([]);
+    expect(rpcCalls).toContain('get_my_lifting_consistency_summary');
+    expect(rpcCalls).not.toContain('get_group_lifting_leaderboard');
   });
 });

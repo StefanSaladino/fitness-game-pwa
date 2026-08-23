@@ -1,5 +1,5 @@
 import type { AppSection } from '../../../components/layout';
-import type { GroupSummary } from '../../groups';
+import { DashboardGroupMembership, type GroupService, type GroupSummary } from '../../groups';
 import type { OnboardingProfile } from '../../onboarding';
 import type { DashboardService } from '../dashboardService';
 import { useDashboard } from '../hooks/useDashboard';
@@ -7,20 +7,22 @@ import { DashboardError, DashboardLoading, DashboardScreen } from './DashboardSc
 
 interface DashboardControllerProps {
   profile: OnboardingProfile;
-  group: GroupSummary;
+  group: GroupSummary | null;
+  groupCount: number;
+  onGroupsChanged: () => Promise<unknown> | unknown;
   onNavigate: (section: AppSection) => void;
   onSignOut: () => void;
   service?: DashboardService;
+  groupService?: GroupService;
 }
 
-export function DashboardController({ profile, group, onNavigate, onSignOut, service }: DashboardControllerProps) {
+export function DashboardController({ profile, group, groupCount, onGroupsChanged, onNavigate, onSignOut, service, groupService }: DashboardControllerProps) {
   const dashboard = useDashboard({
     userId: profile.id,
     timezone: profile.timezone,
     weeklyTarget: profile.weeklyWorkoutTarget,
-    groupId: group.id,
+    groupId: group?.id ?? null,
   }, service);
-
 
   if (dashboard.status === 'loading' || !dashboard.snapshot) {
     if (dashboard.status === 'error') {
@@ -40,6 +42,14 @@ export function DashboardController({ profile, group, onNavigate, onSignOut, ser
   return (
     <DashboardScreen
       group={group}
+      groupNotice={(
+        <DashboardGroupMembership
+          groupCount={groupCount}
+          onGroupsChanged={onGroupsChanged}
+          onNavigate={onNavigate}
+          service={groupService}
+        />
+      )}
       onNavigate={onNavigate}
       onSignOut={onSignOut}
       profile={profile}

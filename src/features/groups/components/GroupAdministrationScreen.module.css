@@ -142,6 +142,22 @@
   max-width: 620px;
 }
 
+.createGroupDetails {
+  max-width: 620px;
+  border-top: 1px solid var(--color-border);
+  padding-top: 14px;
+}
+
+.createGroupDetails summary {
+  width: fit-content;
+  color: var(--color-text-soft);
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.createGroupDetails[open] summary { margin-bottom: 16px; }
+.createGroupForm { max-width: 520px; }
+
 .settings { padding: 34px 0 0; }
 .settingsText { max-width: 620px; margin: 9px 0 18px; color: var(--color-text-soft); line-height: 1.5; }
 .leaveRow { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }

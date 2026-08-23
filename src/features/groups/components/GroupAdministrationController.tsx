@@ -2,8 +2,9 @@ import { AppShell, type AppSection } from '../../../components/layout';
 import { Button } from '../../../components/ui';
 import type { OnboardingProfile } from '../../onboarding';
 import type { GroupService } from '../groupService';
+import { useCreateGroup } from '../hooks/useCreateGroup';
 import { useGroupAdministration } from '../hooks/useGroupAdministration';
-import type { GroupSummary } from '../model';
+import type { CreateGroupInput, GroupSummary } from '../model';
 import { GroupAdministrationScreen } from './GroupAdministrationScreen';
 import styles from './GroupAdministrationScreen.module.css';
 
@@ -29,6 +30,15 @@ export function GroupAdministrationController(props: GroupAdministrationControll
     service: props.service,
     onGroupsChanged: props.onGroupsChanged,
   });
+  const createState = useCreateGroup(props.userId, props.service);
+
+  async function createAdditionalGroup(input: CreateGroupInput) {
+    const created = await createState.create(input);
+    if (!created) return null;
+    await props.onGroupsChanged();
+    props.onSelectGroup(created.id);
+    return created;
+  }
 
   if (administration.status === 'loading') {
     return (
@@ -52,12 +62,15 @@ export function GroupAdministrationController(props: GroupAdministrationControll
   return (
     <GroupAdministrationScreen
       busyAction={administration.busyAction}
+      createGroupError={createState.error}
+      creatingGroup={createState.submitting}
       error={administration.error}
       group={group}
       groups={props.groups}
       invites={administration.invites}
       pendingInvites={administration.pendingInvites}
       members={administration.members}
+      onCreateGroup={createAdditionalGroup}
       onCreateInvite={administration.createInvite}
       onAcceptInvite={administration.acceptInvite}
       onDeclineInvite={administration.declineInvite}

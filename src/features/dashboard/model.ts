@@ -60,5 +60,5 @@ export interface DashboardLoadInput {
   userId: string;
   timezone: string;
   weeklyTarget: number;
-  groupId: string;
+  groupId: string | null;
 }

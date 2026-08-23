@@ -21,6 +21,7 @@ const invite: ManagedGroupInvite = { id:'invite-1', groupId:'group-1', invitedUs
 function props(group: GroupSummary) {
   return {
     busyAction:null, error:'', group, groups:[group], invites:group.role==='MEMBER'?[]:[invite], pendingInvites:[], members,
+    creatingGroup:false, createGroupError:'', onCreateGroup:vi.fn(async()=>undefined),
     onCreateInvite:vi.fn(async (_recipient:string)=>undefined), onAcceptInvite:vi.fn(async (_id:string)=>undefined), onDeclineInvite:vi.fn(async (_id:string)=>undefined),
     onLeaveGroup:vi.fn(async()=>undefined), onNavigate:vi.fn(), onRemoveMember:vi.fn(async()=>undefined), onRename:vi.fn(async()=>undefined),
     onRevokeInvite:vi.fn(async()=>undefined), onSelectGroup:vi.fn(), onSetMemberRole:vi.fn(async()=>undefined), onSignOut:vi.fn(), onTransferOwnership:vi.fn(async()=>undefined), profile,
@@ -32,12 +33,25 @@ describe('GroupAdministrationScreen', () => {
     render(<GroupAdministrationScreen {...props(ownerGroup)} />);
     expect(screen.getByRole('heading',{name:'Members'})).toBeInTheDocument();
     expect(screen.getByRole('heading',{name:'Invites'})).toBeInTheDocument();
+    expect(screen.getByRole('heading',{name:'Your groups'})).toBeInTheDocument();
+    expect(screen.getByText(/join or own more than one/i)).toBeInTheDocument();
     expect(screen.getByRole('textbox',{name:'Username or invite ID'})).toBeInTheDocument();
     expect(screen.getByText(/FG-1A2B3C4D5E/)).toBeInTheDocument();
     expect(screen.getByRole('button',{name:'Make admin'})).toBeInTheDocument();
     expect(screen.getAllByRole('button',{name:'Transfer ownership'})).toHaveLength(2);
     expect(screen.getByRole('button',{name:'Save name'})).toBeInTheDocument();
     expect(screen.queryByRole('button',{name:'Leave group'})).not.toBeInTheDocument();
+  });
+
+  it('creates an additional group without replacing the current membership', async () => {
+    const user = userEvent.setup();
+    const p = props(ownerGroup);
+    render(<GroupAdministrationScreen {...p} />);
+    await user.click(screen.getByText('Create another group'));
+    await user.type(screen.getByRole('textbox', { name: 'Group name' }), 'Sunday Crew');
+    await user.click(screen.getByRole('button', { name: 'Create group' }));
+    expect(p.onCreateGroup).toHaveBeenCalledWith({ name: 'Sunday Crew' });
+    expect(screen.getByText(/currently belong to 1 group/i)).toBeInTheDocument();
   });
 
   it('sends a targeted invitation and never exposes a reusable copy-code action', async () => {
@@ -49,11 +63,13 @@ describe('GroupAdministrationScreen', () => {
     expect(screen.queryByText(/copy code/i)).not.toBeInTheDocument();
   });
 
-  it('keeps ordinary members read-only except for their invite ID, incoming invites, and leaving', () => {
+  it('keeps ordinary members read-only except for their invite ID, incoming invites, multi-group creation, and leaving', () => {
     const memberProps={...props({...ownerGroup,role:'MEMBER'}),pendingInvites:[{id:'incoming-1',groupId:'group-2',groupName:'Night Crew',invitedByUserId:'other',invitedByUsername:'jordan',invitedByDisplayName:'Jordan',createdAt:'x'}]};
     render(<GroupAdministrationScreen {...memberProps} />);
     expect(screen.getByText(/FG-1A2B3C4D5E/)).toBeInTheDocument();
     expect(screen.getByRole('heading',{name:'Pending invitations'})).toBeInTheDocument();
+    expect(screen.getByText(/adds that group to your account/i)).toBeInTheDocument();
+    expect(screen.getByText('Create another group')).toBeInTheDocument();
     expect(screen.queryByRole('heading',{name:'Invites'})).not.toBeInTheDocument();
     expect(screen.queryByRole('button',{name:'Make admin'})).not.toBeInTheDocument();
     expect(screen.queryByRole('button',{name:'Save name'})).not.toBeInTheDocument();
