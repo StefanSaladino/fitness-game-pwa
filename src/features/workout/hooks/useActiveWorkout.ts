@@ -52,6 +52,13 @@ export function useActiveWorkout(userId: string, injectedService?: WorkoutServic
     return workout;
   }), [runSessionAction]);
 
+  const startPreset = useCallback(async (exerciseIds: string[], actionAtMs: number = Date.now()) => runSessionAction('start', async () => {
+    const workout = await serviceRef.current!.startPresetWorkout(exerciseIds, actionAtMs);
+    setActiveWorkout(workout);
+    setStatus('ready');
+    return workout;
+  }), [runSessionAction]);
+
   const pause = useCallback(async (actionAtMs: number = Date.now()) => {
     if (!activeWorkout) return null;
     return runSessionAction('pause', async () => {
@@ -92,5 +99,5 @@ export function useActiveWorkout(userId: string, injectedService?: WorkoutServic
     return result;
   }, [activeWorkout, load, runSessionAction]);
 
-  return { status, activeWorkout, busyAction, error, retry: load, start, pause, resume, finish, cancel };
+  return { status, activeWorkout, busyAction, error, retry: load, start, startPreset, pause, resume, finish, cancel };
 }
