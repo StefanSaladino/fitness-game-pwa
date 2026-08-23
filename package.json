@@ -18,10 +18,10 @@
     "test:e2e": "playwright test",
     "test:internal": "node scripts/internal-test.cjs",
     "supabase:init": "supabase init",
-    "db:test:ci": "node scripts/validate-db-ci.cjs && node scripts/validate-phase15-6b.cjs && node scripts/validate-phase15-6c.cjs",
+    "db:test:ci": "node scripts/validate-db-ci.cjs && node scripts/validate-phase15-6b.cjs && node scripts/validate-phase15-6c.cjs && node scripts/validate-phase15-8-db.cjs",
     "db:test:local": "node scripts/run-canonical-db-tests.cjs",
     "validate": "npm run typecheck && npm test && npm run build",
-    "test:structure": "node scripts/run-structural-validation.cjs && node scripts/validate-phase15-7.cjs"
+    "test:structure": "node scripts/run-structural-validation.cjs && node scripts/validate-phase15-7.cjs && node scripts/validate-phase15-8.cjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.112.3",

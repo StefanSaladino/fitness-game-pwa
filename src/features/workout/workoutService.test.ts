@@ -46,6 +46,22 @@ describe('workoutService', () => {
     expect((client as { from: ReturnType<typeof vi.fn> }).from).not.toHaveBeenCalled();
   });
 
+  it('starts a preset and its ordered exercise ids through one atomic RPC', async () => {
+    const rpc = vi.fn(async () => ({ data: row, error: null }));
+    const client = { from: vi.fn(), rpc } as never;
+    const workout = await createWorkoutService(client).startPresetWorkout(
+      ['exercise-1', 'exercise-2', 'exercise-3'],
+      Date.parse('2026-08-19T22:00:00.000Z'),
+    );
+
+    expect(workout.id).toBe('workout-1');
+    expect(rpc).toHaveBeenCalledWith('start_lifting_workout_from_preset', {
+      p_exercise_ids: ['exercise-1', 'exercise-2', 'exercise-3'],
+      p_action_at: '2026-08-19T22:00:00.000Z',
+    });
+    expect((client as { from: ReturnType<typeof vi.fn> }).from).not.toHaveBeenCalled();
+  });
+
   it('pauses and resumes from user action timestamps without a follow-up select round trip', async () => {
     const rpc = vi.fn(async () => ({ data: row, error: null }));
     const client = { from: vi.fn(), rpc } as never;

@@ -1,6 +1,7 @@
 import type { AppSection } from '../../../components/layout';
 import { DashboardGroupMembership, type GroupService, type GroupSummary } from '../../groups';
 import type { OnboardingProfile } from '../../onboarding';
+import { TrainingTipSurface, trainingTipForDate } from '../../training-content';
 import type { DashboardService } from '../dashboardService';
 import { useDashboard } from '../hooks/useDashboard';
 import { DashboardError, DashboardLoading, DashboardScreen } from './DashboardScreen';
@@ -23,6 +24,7 @@ export function DashboardController({ profile, group, groupCount, onGroupsChange
     weeklyTarget: profile.weeklyWorkoutTarget,
     groupId: group?.id ?? null,
   }, service);
+  const tip = trainingTipForDate(new Date(), profile.id);
 
   if (dashboard.status === 'loading' || !dashboard.snapshot) {
     if (dashboard.status === 'error') {
@@ -43,12 +45,15 @@ export function DashboardController({ profile, group, groupCount, onGroupsChange
     <DashboardScreen
       group={group}
       groupNotice={(
-        <DashboardGroupMembership
-          groupCount={groupCount}
-          onGroupsChanged={onGroupsChanged}
-          onNavigate={onNavigate}
-          service={groupService}
-        />
+        <>
+          <TrainingTipSurface compact tip={tip} />
+          <DashboardGroupMembership
+            groupCount={groupCount}
+            onGroupsChanged={onGroupsChanged}
+            onNavigate={onNavigate}
+            service={groupService}
+          />
+        </>
       )}
       onNavigate={onNavigate}
       onSignOut={onSignOut}

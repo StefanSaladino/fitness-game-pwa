@@ -21,6 +21,7 @@ function service(overrides: Partial<WorkoutService> = {}): WorkoutService {
   return {
     loadActiveWorkout: vi.fn(async () => null),
     startOrResumeWorkout: vi.fn(async () => active),
+    startPresetWorkout: vi.fn(async () => active),
     pauseWorkout: vi.fn(async () => ({ ...active, activeDurationSeconds: 120, pausedAt: '2026-08-19T22:02:00.000Z', lastResumedAt: null })),
     resumeWorkout: vi.fn(async () => ({ ...active, activeDurationSeconds: 120, lastResumedAt: '2026-08-19T22:03:00.000Z' })),
     finishWorkout: vi.fn(async () => undefined),
@@ -57,6 +58,16 @@ describe('useActiveWorkout', () => {
     expect(api.startOrResumeWorkout).toHaveBeenCalledWith(3_000);
   });
 
+  it('forwards ordered preset ids and the exact start timestamp through the same lifecycle state', async () => {
+    const api = service();
+    const { result } = renderHook(() => useActiveWorkout('user-1', api));
+    await waitFor(() => expect(result.current.status).toBe('ready'));
+
+    await act(async () => { await result.current.startPreset(['exercise-1', 'exercise-2'], 4_000); });
+    expect(api.startPresetWorkout).toHaveBeenCalledWith(['exercise-1', 'exercise-2'], 4_000);
+    expect(result.current.activeWorkout?.id).toBe('workout-1');
+  });
+
   it('clears local active state only after finish succeeds', async () => {
     const api = service({ loadActiveWorkout: vi.fn(async () => active) });
     const { result } = renderHook(() => useActiveWorkout('user-1', api));
@@ -84,5 +95,4 @@ describe('useActiveWorkout', () => {
     expect(result.current.status).toBe('ready');
     expect(result.current.activeWorkout).toBeNull();
   });
-
 });

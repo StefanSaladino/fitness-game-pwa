@@ -190,7 +190,7 @@ The lifting-first mobile/desktop/watch concept direction has been explored. Impl
 
 - create-group form with local validation and normalized group names;
 - join-by-invite form accepting raw invite UUIDs or invite URLs;
-- authenticated group gate: zero memberships -> setup, one-or-more -> app;
+- historical behavior at delivery: authenticated group gate: zero memberships -> setup, one-or-more -> app; **superseded by Phase 15.7 optional-group entry**;
 - create/join controller refreshes persisted membership before advancing;
 - loading/error states and retry behavior;
 - multiple-group membership remains supported;
@@ -251,6 +251,8 @@ See `docs/PHASE5.5D-LIFTING-DASHBOARD.md`.
 - the old reusable token/URL join flow is retired from the active product.
 
 ### 5.7 Phase 5 integration validation — DONE
+
+Historical checkpoint: the forced zero-group setup transition below was valid when Phase 5 shipped and is superseded by Phase 15.7.
 
 - onboarding -> persisted group setup transition
 - zero-group -> create -> membership refresh -> lifting dashboard
@@ -839,6 +841,36 @@ This is the ordinary authenticated PWA account surface defined in `docs/PHASE15.
 
 Exit criterion: a trusted platform admin can see approaching free-tier limits, inspect account status, suspend/restore/remove users safely, and send auditable in-app policy/moderation notices; ordinary users also have a secure Profile/Settings foundation with explicit notification controls, without exposing privileged credentials or weakening scoring/privacy boundaries.
 
+## Phase 15.7 — Optional groups + multi-group product entry — DONE
+
+Product correction before the visual overhaul:
+
+- completing onboarding enters the personal dashboard even with zero groups;
+- group membership is optional and no longer gates Home, lifting, cardio, progress, or Settings;
+- pending targeted invitations can be accepted or declined later without blocking solo use;
+- users may create a group later from Groups;
+- users may belong to and own multiple groups simultaneously;
+- accepting another invitation adds membership rather than replacing an existing group;
+- group-only Competition fails honestly when no group is selected;
+- the hosted `(group_id, user_id)` membership model remains authoritative and required no schema change.
+
+See `docs/PHASE15.7-OPTIONAL-MULTI-GROUPS.md`.
+
+## Phase 15.8 — Curated training tips + preset workouts — DONE
+
+Functional content added before the visual overhaul resumes:
+
+- deterministic source-controlled training tips on Home and the pre-workout surface;
+- no LLM/remote-AI coaching and no scoring effects from tips;
+- Full Body Strength, Upper Strength, Lower Strength, Push, and Pull presets;
+- presets resolve through the active canonical exercise catalogue;
+- presets choose ordered exercises only; sets, reps, weights, substitutions, and completion remain user-controlled;
+- ordinary empty-lift start remains available;
+- `start_lifting_workout_from_preset` applies the validated preset atomically through the existing lifting lifecycle;
+- hosted migration `20260823223635_phase15_8_preset_workouts` and 10/10 hosted pgTAP are authoritative.
+
+See `docs/PHASE15.8-TRAINING-TIPS-PRESETS.md`.
+
 ## Phase 16 — Mobile-first visual overhaul — NEXT
 
 Objective: redesign the existing user-facing product **page by page** so it feels purpose-built as a polished mobile application while preserving authoritative behavior, accessibility, reliability, and responsive desktop support.
@@ -899,12 +931,14 @@ Global rules for the overhaul:
 - verification/confirmation states;
 - error and configuration-help states.
 
-### 16.3 Onboarding + group-entry flow
+### 16.3 Onboarding + optional group discovery
 
 - profile onboarding;
 - weekly lifting target;
-- create/join group;
+- land in the personal dashboard with zero groups allowed;
+- optional group creation from Groups;
 - pending invitation acceptance/decline;
+- additive multi-group membership and group-context switching;
 - first-run empty/error/loading states.
 
 ### 16.4 Home / lifting dashboard
