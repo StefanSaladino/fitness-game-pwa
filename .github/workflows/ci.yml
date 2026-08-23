@@ -4,19 +4,28 @@ on:
   push:
     branches:
       - phase16.0-visual-inventory-v2
+  pull_request:
+    branches:
+      - master
 
 permissions:
   contents: write
 
 jobs:
   cleanup:
+    if: github.event_name == 'pull_request' && github.head_ref == 'phase16.0-visual-inventory-v2'
     runs-on: ubuntu-latest
     steps:
-      - name: Delete merged and superseded branches
+      - name: Delete merged Phase 15.8 branch
         shell: bash
         run: |
           git ls-remote --exit-code --heads "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" refs/heads/master >/dev/null
-          git push "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" \
-            --delete phase15.8-training-content phase16.0-visual-inventory-v2
+          git push "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" --delete phase15.8-training-content
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Delete superseded Phase 16 draft branch
+        shell: bash
+        run: |
+          git push "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" --delete phase16.0-visual-inventory-v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
