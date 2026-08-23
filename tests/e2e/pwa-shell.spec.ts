@@ -33,8 +33,8 @@ test('production app shell boots from cache during an offline navigation', async
       for (const request of await cache.keys()) paths.push(new URL(request.url).pathname);
     }
 
-    const activeCacheName = cacheNames.find((name) => name.endsWith('v13-1'));
-    if (!activeCacheName) throw new Error('Phase 15.1 shell cache was not installed.');
+    const activeCacheName = cacheNames.find((name) => name.endsWith('v13-2'));
+    if (!activeCacheName) throw new Error('Current push-capable shell cache was not installed.');
     const activeCache = await caches.open(activeCacheName);
     for (const asset of emittedAssets) {
       if (!(await activeCache.match(asset, { ignoreVary: true }))) missingEmittedAssets.push(asset);
