@@ -5,39 +5,56 @@ on:
   pull_request:
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  maintenance-cleanup:
-    name: Maintenance assertion cleanup
-    if: github.head_ref == 'maintenance/stale-assertion-cleanup' && github.actor != 'github-actions[bot]'
-    runs-on: ubuntu-24.04
-    timeout-minutes: 10
+  application:
+    name: Application gate
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
-        with:
-          ref: maintenance/stale-assertion-cleanup
-          fetch-depth: 0
       - uses: actions/setup-node@v4
         with:
           node-version: 24
           cache: npm
       - run: npm ci
-      - name: Reconcile stale assertions
-        run: |
-          node scripts/maintenance-stale-assertions.cjs
-          node scripts/maintenance-stale-assertions-patch2.cjs
-      - name: Validate reconciled structural suite
-        run: npm run test:structure
-      - name: Commit cleaned tree
-        run: |
-          git checkout HEAD -- .github/workflows/ci.yml .github/workflows/maintenance-stale-assertions.yml
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -A
-          git commit -m "test: remove stale structural assertions"
-          git push origin HEAD:maintenance/stale-assertion-cleanup
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run test:integration
+      - run: npm run build
+      - run: npm run test:structure
+      - run: npm run test:internal
+
+  browser:
+    name: Browser gate
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium webkit
+      - run: npm run test:e2e
+
+  database:
+    name: Database gate
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Validate database migration and pgTAP contracts
+        run: npm run db:test:ci
