@@ -28,7 +28,9 @@ jobs:
           cache: npm
       - run: npm ci
       - name: Reconcile stale assertions
-        run: node scripts/maintenance-stale-assertions.cjs
+        run: |
+          node scripts/maintenance-stale-assertions.cjs
+          node scripts/maintenance-stale-assertions-patch2.cjs
       - name: Validate reconciled structural suite
         run: npm run test:structure
       - name: Commit cleaned tree
