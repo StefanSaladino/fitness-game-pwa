@@ -2,7 +2,7 @@
 
 ## Status
 
-**IN PROGRESS.**
+**DONE.**
 
 Phase 15.6D is the release gate for the ordinary authenticated Profile/Settings work delivered by Phases 15.6A–15.6C. It adds no new product behavior, scoring rule, database schema, push-delivery category, or administrator capability.
 
@@ -71,9 +71,24 @@ The supported path is already unambiguous:
 
 The previously stale instructions in `supabase/README.md`, `docs/SUPABASE-SETUP.md`, and `docs/VALIDATION.md` have already been removed/reconciled on the Phase 15.6C base tree, so this slice does not churn those files merely to restate the same architecture.
 
+## Validation
+
+The first isolated PR #10 execution of the two-file 15.6D gate passed before release bookkeeping was advanced:
+
+- TypeScript typecheck;
+- the complete unit suite;
+- the integration suite including all five new Settings journeys;
+- production build and bundle budget;
+- structural validation;
+- internal validation;
+- Browser E2E;
+- repository database-contract validation.
+
+The final release head must preserve those same green gates after the roadmap, Phase 15.6 contract, and structural sentinel are advanced to the completed state.
+
 ## Exit criteria
 
-Phase 15.6D is complete only when:
+Phase 15.6D is complete because:
 
 - the new Settings integration journey passes;
 - all existing unit and integration tests pass;
@@ -81,4 +96,4 @@ Phase 15.6D is complete only when:
 - structural and internal validation pass;
 - browser E2E passes;
 - repository database-contract validation passes;
-- no production Settings behavior or authorization boundary had to be weakened to make the gate green.
+- no production Settings behavior or authorization boundary was weakened to make the gate green.
