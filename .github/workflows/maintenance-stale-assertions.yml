@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - maintenance/stale-assertion-cleanup
+  pull_request:
+    branches:
+      - master
 
 permissions:
   contents: write
@@ -64,16 +67,8 @@ jobs:
           }
 
           const oldValidator = 'scripts/validate-project.cjs';
-          replaceOnce(
-            oldValidator,
-            "  'supabase/migrations/20260822000200_fix_lifting_calendar_summaries.sql',\n",
-            '',
-          );
-          replaceOnce(
-            oldValidator,
-            "const phase13bRepairMigration = read('supabase/migrations/20260822000200_fix_lifting_calendar_summaries.sql');\n",
-            '',
-          );
+          replaceOnce(oldValidator, "  'supabase/migrations/20260822000200_fix_lifting_calendar_summaries.sql',\n", '');
+          replaceOnce(oldValidator, "const phase13bRepairMigration = read('supabase/migrations/20260822000200_fix_lifting_calendar_summaries.sql');\n", '');
           replaceOnce(
             oldValidator,
             "ok(/create or replace function public\\.get_my_lifting_calendar_summaries/.test(phase13bRepairMigration) && /gs\\.bucket_start/.test(phase13bRepairMigration) && !/\\bperiod_start::date as period_start\\b/.test(phase13bRepairMigration), 'Phase 13B repair migration removes PL/pgSQL output-variable ambiguity from generated calendar buckets');\nok(/bucket_start/.test(phase13bRepairMigration) && /bucket_end/.test(phase13bRepairMigration) && /session_total/.test(phase13bRepairMigration) && /pr_total/.test(phase13bRepairMigration), 'Phase 13B repair keeps internal aggregate names distinct from RETURNS TABLE output variables');",
@@ -186,11 +181,7 @@ console.log('Release validation passed: clean migration history, current PWA/cac
 `,
           );
 
-          replaceOnce(
-            'public/sw.js',
-            "// Historical Phase 12B shell checkpoint: v12b-2. Current releases advance CACHE_VERSION below.\n",
-            '',
-          );
+          replaceOnce('public/sw.js', "// Historical Phase 12B shell checkpoint: v12b-2. Current releases advance CACHE_VERSION below.\n", '');
           replaceOnce(
             '.github/workflows/ci.yml',
             "# Legacy structural-validator compatibility only. These lines are comments and\n# MUST NOT become executable CI steps. Runtime DB validation is hosted-Supabase authoritative.\n# npx supabase start\n# npx supabase db reset\n# npm run db:test:local\n# npx supabase db lint --level warning\n\n",
