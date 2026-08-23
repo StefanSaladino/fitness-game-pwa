@@ -79,7 +79,7 @@ export function WorkoutPresetStartScreen(props: WorkoutPresetStartScreenProps) {
         <header className={styles.header}>
           <div>
             <p className={styles.kicker}>LIFT</p>
-            <h1>Start a workout</h1>
+            <h1>Start a lift</h1>
             <p>Start empty and build your own session, or preload a curated exercise list. Presets choose exercises only—sets, reps, weights, and substitutions stay yours.</p>
           </div>
           <div className={styles.headerActions}>
