@@ -10,7 +10,8 @@ import styles from './DashboardScreen.module.css';
 
 interface DashboardScreenProps {
   profile: OnboardingProfile;
-  group: GroupSummary;
+  group: GroupSummary | null;
+  groupNotice?: ReactNode;
   snapshot: DashboardSnapshot;
   onNavigate: (section: AppSection) => void;
   onSignOut: () => void;
@@ -93,7 +94,7 @@ export function DashboardError({ profile, message, onNavigate, onRetry, onSignOu
   );
 }
 
-export function DashboardScreen({ profile, group, snapshot, onNavigate, onSignOut }: DashboardScreenProps) {
+export function DashboardScreen({ profile, group, groupNotice, snapshot, onNavigate, onSignOut }: DashboardScreenProps) {
   const completed = new Set(snapshot.completedLiftingDates);
   const currentRank = snapshot.leaderboard.find((entry) => entry.isCurrentUser);
   const targetPercent = Math.min(100, Math.round((snapshot.completedLiftingDays / snapshot.weeklyTarget) * 100));
@@ -103,7 +104,7 @@ export function DashboardScreen({ profile, group, snapshot, onNavigate, onSignOu
       <div className={styles.dashboard}>
         <header className={styles.header}>
           <div>
-            <p className={styles.kicker}>{group.name}</p>
+            <p className={styles.kicker}>{group?.name ?? 'SOLO TRAINING'}</p>
             <h1>Your lifting week</h1>
             <p className={styles.subhead}>Progress from completed lifts and authoritative lifting-v1 scoring.</p>
           </div>
@@ -118,6 +119,8 @@ export function DashboardScreen({ profile, group, snapshot, onNavigate, onSignOu
             </div>
           </div>
         </header>
+
+        {groupNotice}
 
         <section className={styles.weekSummary} aria-labelledby="weekly-progress-heading">
           <div className={styles.weekPrimary}>
@@ -153,8 +156,8 @@ export function DashboardScreen({ profile, group, snapshot, onNavigate, onSignOu
 
           <div className={styles.metric}>
             <span>Group rank</span>
-            <strong>{currentRank ? `#${currentRank.rank}` : '—'}</strong>
-            <small>{snapshot.leaderboard.length ? `${snapshot.leaderboard.length} active members` : 'No ranking yet'}</small>
+            <strong>{group && currentRank ? `#${currentRank.rank}` : '—'}</strong>
+            <small>{group ? (snapshot.leaderboard.length ? `${snapshot.leaderboard.length} active members` : 'No ranking yet') : 'Not in a group'}</small>
           </div>
         </section>
 
@@ -286,29 +289,31 @@ export function DashboardScreen({ profile, group, snapshot, onNavigate, onSignOu
           </section>
         </div>
 
-        <section className={styles.leaderboard} aria-labelledby="group-rank-heading">
-          <div className={styles.sectionHeadingCompact}>
-            <div>
-              <p className={styles.sectionLabel}>{group.name}</p>
-              <h2 id="group-rank-heading">This week’s group rank</h2>
+        {group && (
+          <section className={styles.leaderboard} aria-labelledby="group-rank-heading">
+            <div className={styles.sectionHeadingCompact}>
+              <div>
+                <p className={styles.sectionLabel}>{group.name}</p>
+                <h2 id="group-rank-heading">This week’s group rank</h2>
+              </div>
+              <div className={styles.leaderboardActions}><span className={styles.memberCount}>{group.memberCount} members</span><Button onClick={() => onNavigate('compete')} variant="ghost">View competition</Button></div>
             </div>
-            <div className={styles.leaderboardActions}><span className={styles.memberCount}>{group.memberCount} members</span><Button onClick={() => onNavigate('compete')} variant="ghost">View competition</Button></div>
-          </div>
 
-          <ol className={styles.leaderboardRows}>
-            {snapshot.leaderboard.map((entry) => (
-              <li className={entry.isCurrentUser ? styles.currentUser : ''} key={entry.userId}>
-                <span className={styles.rank}>{entry.rank}</span>
-                <ProfilePicture displayName={entry.displayName} size="sm" src={entry.profilePictureUrl} />
-                <div className={styles.memberIdentity}>
-                  <strong>{entry.displayName}{entry.isCurrentUser ? ' (You)' : ''}</strong>
-                  <span>@{entry.username}</span>
-                </div>
-                <b>{entry.xp} XP</b>
-              </li>
-            ))}
-          </ol>
-        </section>
+            <ol className={styles.leaderboardRows}>
+              {snapshot.leaderboard.map((entry) => (
+                <li className={entry.isCurrentUser ? styles.currentUser : ''} key={entry.userId}>
+                  <span className={styles.rank}>{entry.rank}</span>
+                  <ProfilePicture displayName={entry.displayName} size="sm" src={entry.profilePictureUrl} />
+                  <div className={styles.memberIdentity}>
+                    <strong>{entry.displayName}{entry.isCurrentUser ? ' (You)' : ''}</strong>
+                    <span>@{entry.username}</span>
+                  </div>
+                  <b>{entry.xp} XP</b>
+                </li>
+              ))}
+            </ol>
+          </section>
+        )}
       </div>
     </DashboardShell>
   );
