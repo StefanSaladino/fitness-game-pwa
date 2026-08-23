@@ -10,6 +10,8 @@ export * from './components/CreateGroupForm';
 export * from './components/JoinGroupForm';
 export * from './components/GroupSetupScreen';
 export * from './components/GroupSetupController';
+export * from './components/OptionalGroupSetupScreen';
+export * from './components/OptionalGroupSetupController';
 export * from './components/GroupGate';
 export * from './components/DashboardGroupMembership';
 export * from './hooks/useGroupAdministration';
