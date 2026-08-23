@@ -1,7 +1,9 @@
 import type { PropsWithChildren } from 'react';
 import { DesktopSidebar } from './DesktopSidebar';
 import { MobileNav } from './MobileNav';
+import { ShellHeader } from './ShellHeader';
 import { primaryNavigation, type AppSection, type NavigationItem } from './navigation';
+import styles from './AppShell.module.css';
 
 interface AppShellProps {
   activeItem?: AppSection;
@@ -22,7 +24,7 @@ export function AppShell({
   onSignOut,
 }: PropsWithChildren<AppShellProps>) {
   return (
-    <div className="product-shell">
+    <div className={styles.shell}>
       <DesktopSidebar
         activeItem={activeItem}
         items={navigationItems}
@@ -31,7 +33,10 @@ export function AppShell({
         userLabel={userLabel}
         userMeta={userMeta}
       />
-      <main className="product-main">{children}</main>
+      <div className={styles.viewport}>
+        <ShellHeader onNavigate={onNavigate} userLabel={userLabel} />
+        <main className={styles.main}>{children}</main>
+      </div>
       <MobileNav activeItem={activeItem} items={navigationItems} onNavigate={onNavigate} />
     </div>
   );
