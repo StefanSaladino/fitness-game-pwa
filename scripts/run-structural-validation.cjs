@@ -112,7 +112,7 @@ for (const invariant of ['Notifications', 'Badges & achievements', 'Personal rec
 // exact roadmap/cache/documentation/file-location literals. Preserve every
 // other structural assertion while current behavior is verified above and by
 // the dedicated Phase 15.6B/15.6C/15.6D gates.
-const compatibilitySuffix = `\n15.6B Notification preference persistence — LATER\n15.6C PWA notification permission + delivery integration — LATER\n`;
+const compatibilitySuffix = `\n15.6 Profile/Settings + notification preferences — IN PROGRESS\n15.6B Notification preference persistence — LATER\n15.6C PWA notification permission + delivery integration — LATER\n`;
 const legacyServiceWorker = actualServiceWorker.replace(
   "const CACHE_VERSION = 'v13-2'",
   "const CACHE_VERSION = 'v13-1'",
