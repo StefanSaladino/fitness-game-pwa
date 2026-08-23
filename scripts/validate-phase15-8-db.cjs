@@ -2,7 +2,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const root = process.cwd();
-const migrationPath = path.join(root, 'supabase/migrations/20260823222330_phase15_8_preset_workouts.sql');
+const migrationPath = path.join(root, 'supabase/migrations/20260823223635_phase15_8_preset_workouts.sql');
 const testPath = path.join(root, 'supabase/tests/080_phase15_8_preset_workouts.test.sql');
 const fail = (message) => { throw new Error(`Phase 15.8 database validation failed: ${message}`); };
 
