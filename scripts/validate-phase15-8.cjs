@@ -15,7 +15,7 @@ const presetScreen = read('src/features/workout/components/WorkoutPresetStartScr
 const controller = read('src/features/workout/components/WorkoutController.tsx');
 const service = read('src/features/workout/workoutService.ts');
 const dashboard = read('src/features/dashboard/components/DashboardController.tsx');
-const migration = read('supabase/migrations/20260823222330_phase15_8_preset_workouts.sql');
+const migration = read('supabase/migrations/20260823223635_phase15_8_preset_workouts.sql');
 const pgTap = read('supabase/tests/080_phase15_8_preset_workouts.test.sql');
 
 ok(/\*\*IN PROGRESS\.\*\*/.test(doc) || /\*\*DONE\.\*\*/.test(doc), 'phase document must carry an explicit status');
