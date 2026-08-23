@@ -6,9 +6,9 @@ import type { GroupSummary } from '../groups';
 import type { OnboardingProfile } from '../onboarding';
 
 vi.mock('../dashboard/components/DashboardController', () => ({
-  DashboardController: ({ group, onNavigate }: { group: GroupSummary; onNavigate: (section: AppSection) => void }) => (
+  DashboardController: ({ group, onNavigate }: { group: GroupSummary | null; onNavigate: (section: AppSection) => void }) => (
     <div>
-      <p>Dashboard for {group.name}</p>
+      <p>Dashboard for {group?.name ?? 'solo'}</p>
       <button onClick={() => onNavigate('groups')} type="button">Open groups</button>
       <button onClick={() => onNavigate('progress')} type="button">Open progress</button>
       <button onClick={() => onNavigate('compete')} type="button">Open competition</button>
@@ -18,6 +18,10 @@ vi.mock('../dashboard/components/DashboardController', () => ({
 
 vi.mock('../groups/components/GroupAdministrationController', () => ({
   GroupAdministrationController: ({ selectedGroupId }: { selectedGroupId: string }) => <p>Admin for {selectedGroupId}</p>,
+}));
+
+vi.mock('../groups/components/OptionalGroupSetupController', () => ({
+  OptionalGroupSetupController: ({ activeItem }: { activeItem: string }) => <p>Optional group setup for {activeItem}</p>,
 }));
 
 vi.mock('../progress/components/ExerciseProgressController', () => ({
@@ -75,5 +79,28 @@ describe('ProductController', () => {
     await screen.findByText('Dashboard for Iron Crew');
     await user.click(screen.getByRole('button', { name: 'Open competition' }));
     expect(await screen.findByText('Competition for group-1')).toBeInTheDocument();
+  });
+
+  it('renders the dashboard immediately when the user has zero groups', async () => {
+    render(<ProductController groups={[]} onGroupsChanged={vi.fn()} profile={profile} />);
+    expect(await screen.findByText('Dashboard for solo')).toBeInTheDocument();
+  });
+
+  it('keeps Groups voluntary and explains Competition when the user has zero groups', async () => {
+    const user = userEvent.setup();
+    render(<ProductController groups={[]} onGroupsChanged={vi.fn()} profile={profile} />);
+    await screen.findByText('Dashboard for solo');
+
+    await user.click(screen.getByRole('button', { name: 'Open groups' }));
+    expect(await screen.findByText('Optional group setup for groups')).toBeInTheDocument();
+  });
+
+  it('does not require a group for personal progress navigation', async () => {
+    const user = userEvent.setup();
+    render(<ProductController groups={[]} onGroupsChanged={vi.fn()} profile={profile} />);
+    await screen.findByText('Dashboard for solo');
+
+    await user.click(screen.getByRole('button', { name: 'Open progress' }));
+    expect(await screen.findByText('Progress screen')).toBeInTheDocument();
   });
 });
