@@ -2,9 +2,9 @@
 
 ## Status
 
-**IN PROGRESS.**
+**DONE.**
 
-Phase 15.7 is a product-behavior correction that must land before the Phase 16 visual overhaul resumes.
+Phase 15.7 is the product-behavior correction that lands before the Phase 16 visual overhaul resumes.
 
 It supersedes the original Phase 5 assumption that a completed user profile with zero active group memberships must be diverted into group setup before entering the product.
 
@@ -130,9 +130,24 @@ No schema migration is required.
 
 This phase intentionally reuses the existing multi-group membership schema and targeted-invitation RPCs. No RLS, authorization, group-role, or ownership semantics are changed.
 
+## Verification
+
+The final implementation checkpoint passed the complete repository gate on GitHub Actions run `#299`:
+
+- TypeScript: passed;
+- unit tests: **431/431** across 115 test files;
+- integration tests: **22/22** across 6 integration files;
+- production build + JavaScript bundle budget: passed;
+- structural validation, including the dedicated Phase 15.7 gate: passed;
+- internal validation: passed;
+- Browser gate: passed;
+- Database repository-contract gate: passed.
+
+Hosted Supabase was inspected directly for the group model and existing RPC behavior. No database mutation was needed for this phase.
+
 ## Regression contract
 
-Before Phase 15.7 is complete, automated coverage must prove:
+Automated coverage proves:
 
 1. `GroupGate` passes zero memberships into the product rather than rendering mandatory setup;
 2. onboarding completion leads directly to the real personal dashboard with zero groups;
@@ -144,10 +159,12 @@ Before Phase 15.7 is complete, automated coverage must prove:
 8. a current group member may create another group;
 9. group switching continues to expose every active membership;
 10. Competition provides an honest group-required state when membership is zero;
-11. no scoring, XP, qualification, badge, workout-recovery, or personal-history rule changes.
+11. owner/member permission presentation remains correct across the integrated group journey;
+12. existing consistency/badge, competition/social, and lifting-analytics integration coverage remains intact;
+13. no scoring, XP, qualification, badge, workout-recovery, or personal-history rule changes.
 
 ## Phase 16 handoff
 
 The previous Phase 16.0 review PR was intentionally closed without merge after this product correction was requested.
 
-Once Phase 15.7 is merged and green, Phase 16.0 must re-inventory the new baseline. In particular, the visual overhaul must treat solo mode, optional invitations, and multiple groups as first-class real product states rather than designing around the superseded mandatory-group gate.
+Phase 16.0 must re-inventory the new baseline. In particular, the visual overhaul must treat solo mode, optional invitations, and multiple groups as first-class real product states rather than designing around the superseded mandatory-group gate.
