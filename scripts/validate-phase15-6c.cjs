@@ -4,7 +4,10 @@ const path = require('node:path');
 const root = path.resolve(__dirname, '..');
 const migrationPath = 'supabase/migrations/20260823182658_phase15_6c_pwa_push_delivery.sql';
 const repairPath = 'supabase/migrations/20260823182930_phase15_6c_fix_push_target_conflict.sql';
+const reconciliationPath = 'supabase/migrations/20260823191313_phase15_6c_reconcile_pg_net_extension.sql';
+const indexPath = 'supabase/migrations/20260823191540_phase15_6c_push_foreign_key_indexes.sql';
 const testPath = 'supabase/tests/039_phase15_6c_pwa_push_delivery.test.sql';
+const reconciliationTestPath = 'supabase/tests/040_phase15_6c_pg_net_reconciliation.test.sql';
 const edgePath = 'supabase/functions/push-notifications/index.ts';
 const pushServicePath = 'src/pwa/pushNotificationService.ts';
 const pushServiceTestPath = 'src/pwa/pushNotificationService.test.ts';
@@ -14,6 +17,7 @@ const hookPath = 'src/features/settings/hooks/useNotificationSettings.ts';
 const serviceWorkerPath = 'public/sw.js';
 const configPath = 'supabase/config.toml';
 const phaseDocPath = 'docs/PHASE15.6C-PWA-PUSH-DELIVERY.md';
+const reconciliationDocPath = 'docs/PHASE15.6C-PG-NET-RECONCILIATION.md';
 const manifestPath = 'PHASE15.6C-PATCH-MANIFEST.txt';
 
 function fail(message) {
@@ -70,6 +74,35 @@ if (!repair.includes('create or replace function public.prepare_push_delivery'))
   fail('repair migration must remain narrowly scoped to delivery preparation');
 }
 
+const reconciliation = read(reconciliationPath);
+for (const invariant of [
+  'lock table net.http_request_queue in access exclusive mode',
+  'pg_net request queue must be empty before extension reconciliation',
+  'drop extension pg_net',
+  'create extension pg_net with schema extensions',
+  "v_extension_schema is distinct from 'extensions'",
+  "has_schema_privilege('anon', 'private', 'USAGE')",
+  "has_schema_privilege('authenticated', 'private', 'USAGE')",
+  "private.dispatch_push_delivery(uuid)",
+  "jobname = 'fitness-push-delivery'",
+  "command = 'select private.dispatch_pending_push_deliveries();'",
+]) {
+  if (!reconciliation.includes(invariant)) fail(`pg_net reconciliation migration missing invariant: ${invariant}`);
+}
+if (/drop extension pg_net\s+cascade/i.test(reconciliation)) {
+  fail('pg_net reconciliation must never use CASCADE');
+}
+
+const indexMigration = read(indexPath);
+for (const invariant of [
+  'create index push_delivery_queue_target_subscription_idx',
+  'on private.push_delivery_queue (target_subscription_id)',
+  'create index push_delivery_targets_subscription_idx',
+  'on private.push_delivery_targets (subscription_id)',
+]) {
+  if (!indexMigration.includes(invariant)) fail(`push foreign-key index migration missing: ${invariant}`);
+}
+
 const test = read(testPath);
 if (!/select\s+plan\s*\(\s*79\s*\)\s*;/i.test(test)) {
   fail('pgTAP suite must retain its hosted-verified 79-assertion plan');
@@ -88,6 +121,22 @@ for (const coverage of [
   'delivery suppression never clears persisted category selections',
 ]) {
   if (!test.includes(coverage)) fail(`pgTAP suite missing coverage: ${coverage}`);
+}
+
+const reconciliationTest = read(reconciliationTestPath);
+if (!/select\s+plan\s*\(\s*14\s*\)\s*;/i.test(reconciliationTest)) {
+  fail('pg_net reconciliation pgTAP suite must retain its hosted-verified 14-assertion plan');
+}
+for (const coverage of [
+  'pg_net extension is registered outside public',
+  'private push dispatcher remains security definer',
+  'anonymous browser role cannot use private schema',
+  'authenticated browser role cannot use private schema',
+  'authenticated browser role cannot execute private push dispatcher',
+  'hosted push retry cron remains active and exact',
+  'private dispatcher can still invoke recreated pg_net API',
+]) {
+  if (!reconciliationTest.includes(coverage)) fail(`pg_net reconciliation suite missing coverage: ${coverage}`);
 }
 
 const edge = read(edgePath);
@@ -217,5 +266,17 @@ for (const statement of [
   if (!phaseDoc.toLowerCase().includes(statement.toLowerCase())) fail(`phase documentation missing: ${statement}`);
 }
 
+const reconciliationDoc = read(reconciliationDocPath);
+for (const statement of [
+  '20260823191313_phase15_6c_reconcile_pg_net_extension',
+  '20260823191540_phase15_6c_push_foreign_key_indexes',
+  '14/14',
+  'extension_in_public_pg_net',
+  'Supabase-managed',
+  'HTTP 200',
+]) {
+  if (!reconciliationDoc.includes(statement)) fail(`pg_net reconciliation documentation missing: ${statement}`);
+}
+
 read(manifestPath);
-console.log('Phase 15.6C contract gate passed: permission is explicit, push delivery is durable and device-scoped, unsupported categories stay honest, and server credentials remain private.');
+console.log('Phase 15.6C contract gate passed: permission is explicit, push delivery is durable and device-scoped, pg_net is reconciled outside public, unsupported categories stay honest, and server credentials remain private.');
