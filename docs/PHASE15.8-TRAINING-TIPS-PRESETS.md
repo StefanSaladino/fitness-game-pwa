@@ -2,9 +2,9 @@
 
 ## Status
 
-**IN PROGRESS.**
+**DONE.**
 
-Phase 15.8 lands before the Phase 16 visual overhaul resumes. It turns two useful ideas from the visual concept work into real product behavior so later design work does not present decorative or fake controls.
+Phase 15.8 landed before the Phase 16 visual overhaul resumes. It turns two useful ideas from the visual concept work into real product behavior so later design work does not present decorative or fake controls.
 
 ## Objective
 
@@ -82,7 +82,7 @@ The browser presents named presets using `get_exercise_picker_catalog`, which is
 
 ## Workout reliability
 
-Phase 15.8 must preserve the existing workout reliability contracts:
+Phase 15.8 preserves the existing workout reliability contracts:
 
 - ordinary empty workout start remains available;
 - start/preset-start shows an immediate local timer from the exact user action timestamp while the request is in flight;
@@ -99,9 +99,9 @@ Presets are an online start convenience. Phase 15.8 does not invent an offline q
 
 This is a functional pre-visual slice, not Phase 16 styling.
 
-- the pre-workout page may expose the real presets now;
-- Home may expose a real curated training tip now;
-- styling should remain compatible with the existing application rather than opportunistically reskinning unrelated pages;
+- the pre-workout page exposes the real presets;
+- Home exposes a real curated training tip;
+- styling remains compatible with the existing application rather than opportunistically reskinning unrelated pages;
 - Phase 16 will later redesign these real surfaces using the approved smooth, restrained, trope-free visual direction.
 
 ## Non-goals
@@ -121,16 +121,16 @@ Phase 15.8 does not:
 
 ## Validation gate
 
-Before Phase 15.8 can be marked DONE:
+Completed release verification:
 
-- pure preset resolution tests pass;
-- deterministic training-tip tests pass;
-- component tests cover disabled/unavailable preset states and ordinary empty start;
-- controller coverage proves the selected preset resolves canonical IDs in order and enters the normal active workout flow;
-- service coverage proves one RPC carries the ordered IDs and action timestamp;
-- hosted migration is applied;
-- hosted pgTAP proves authorization, atomic ordering, non-empty-workout refusal, duplicate refusal, and rollback behavior;
-- TypeScript, unit, integration, build/bundle, structural/internal, Browser, and Database repository-contract gates are green on the exact PR head;
+- deterministic training-tip and preset-resolution unit coverage is green;
+- unavailable preset states and ordinary empty start are covered;
+- controller coverage proves ordered canonical-ID resolution into the normal workout lifecycle;
+- service coverage proves one RPC carries ordered IDs plus the user-action timestamp;
+- hosted migration `20260823223635_phase15_8_preset_workouts` is applied;
+- hosted pgTAP is **10/10**, covering authorization, atomic ordering, non-empty-workout refusal, duplicate refusal, and rollback/no-orphan behavior;
+- exact implementation head passed TypeScript, **442/442 unit tests**, **22/22 integration tests**, production build/bundle, structural/internal, Browser E2E, and Database repository-contract gates;
+- Supabase security/performance advisors were reviewed after migration; the new authenticated SECURITY DEFINER warning is intentional for this user-facing RPC and its actor/validation boundary is covered by hosted pgTAP;
 - the roadmap is reconciled before merge.
 
-Only then may Phase 16.0 restart from this updated baseline.
+Phase 16.0 may now restart from this updated functional baseline.
