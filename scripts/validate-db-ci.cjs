@@ -65,6 +65,9 @@ const phase153eMigration = 'supabase/migrations/20260823140206_user_reports_mode
 const phase153eTest = 'supabase/tests/033_user_reports_moderation_foundation.test.sql';
 const phase153fMigration = 'supabase/migrations/20260823144115_moderation_activity_review.sql';
 const phase153fTest = 'supabase/tests/034_moderation_activity_review.test.sql';
+const phase154EnumMigration = 'supabase/migrations/20260823150601_platform_admin_messaging.sql';
+const phase154Migration = 'supabase/migrations/20260823151630_platform_admin_messaging_contracts.sql';
+const phase154Test = 'supabase/tests/035_platform_admin_messaging.test.sql';
 for (const relativePath of [
   phase153aMigration,
   phase153aTest,
@@ -78,8 +81,11 @@ for (const relativePath of [
   phase153eTest,
   phase153fMigration,
   phase153fTest,
+  phase154EnumMigration,
+  phase154Migration,
+  phase154Test,
 ]) {
-  if (!fs.existsSync(path.join(root, relativePath))) fail(`Phase 15.3 database artifact missing: ${relativePath}`);
+  if (!fs.existsSync(path.join(root, relativePath))) fail(`Phase 15 database artifact missing: ${relativePath}`);
 }
 
 const migration153a = read(phase153aMigration);
@@ -272,9 +278,56 @@ for (const coverage of [
   'report activity links back to its originating moderation case',
   'sensitive access audit is append-only',
   'identity snapshots preserve deletion-safe retained review context',
-  'communication activity is not fabricated before Phase 15.4 creates a durable source',
+  'later Phase 15.4 adds communication only after creating a durable message source',
 ]) {
   if (!test153f.includes(coverage)) fail(`Phase 15.3F pgTAP missing coverage: ${coverage}`);
+}
+
+const migration154Enum = read(phase154EnumMigration);
+const migration154 = read(phase154Migration);
+if (!migration154Enum.includes("alter type public.moderation_activity_type add value if not exists 'COMMUNICATION'")) {
+  fail('Phase 15.4 must add COMMUNICATION in its own committed enum migration');
+}
+for (const invariant of [
+  'private.platform_messages',
+  'private.platform_message_revisions',
+  'private.platform_message_deliveries',
+  'private.platform_message_events',
+  'private.platform_message_previews',
+  'private.resolve_platform_message_recipients',
+  'private.platform_message_recipient_fingerprint',
+  'public.preview_platform_message_audience',
+  'public.send_platform_message',
+  'public.edit_platform_message',
+  'public.withdraw_platform_message',
+  'public.list_platform_messages',
+  'public.list_my_platform_messages',
+  'public.mark_platform_message_read',
+  'public.acknowledge_platform_message',
+  'Full-platform blasts must be dismissible notices',
+  'Full-platform blasts are dismissible and cannot require acknowledgement',
+  "interval '2 years'",
+  "set search_path = ''",
+]) {
+  if (!migration154.includes(invariant)) fail(`Phase 15.4 migration missing invariant: ${invariant}`);
+}
+if (/grant\s+[^;]*\bon\s+(?:table\s+|function\s+)?private\./i.test(migration154)) {
+  fail('Phase 15.4 must not grant browser roles direct access to private messaging objects');
+}
+const test154 = read(phase154Test);
+if (!/select\s+plan\s*\(\s*96\s*\)\s*;/i.test(test154)) {
+  fail('Phase 15.4 pgTAP suite must retain its 96-assertion plan');
+}
+for (const coverage of [
+  'group preview excludes suspended current members',
+  'retrying a completed preview returns the original message idempotently',
+  'recipient must read and acknowledge a newly edited revision again',
+  'full-platform what-is-new popup cannot demand acknowledgement',
+  'dismissed full-platform blast will not reopen on the next inbox load',
+  'purpose-bounded moderation timeline includes retained communication activity',
+  'administrator messaging does not create or alter XP events',
+]) {
+  if (!test154.includes(coverage)) fail(`Phase 15.4 pgTAP missing coverage: ${coverage}`);
 }
 
 const ci = fs.readFileSync(ciPath, 'utf8');

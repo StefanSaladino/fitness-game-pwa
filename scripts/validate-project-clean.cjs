@@ -202,7 +202,7 @@ for (const heading of [
   '15.2D1 Secure Netlify API boundary + capability adapter — DONE',
   '15.2D2 Provider-authoritative account usage feed — BLOCKED ON DOCUMENTED NETLIFY API/EXPORT',
   '15.2E Capacity dashboard visual gate + implementation — DONE',
-  '### 15.3 User account administration — IN PROGRESS',
+  '### 15.3 User account administration — DONE',
 ]) {
   if (!roadmap.includes(heading)) fail(`roadmap missing capacity slice: ${heading}`);
 }
@@ -715,8 +715,8 @@ if (!/\/\*\s+\/index\.html\s+200/.test(netlifyRedirects152e)) {
   fail('Phase 15.2E direct admin/settings routes require the Netlify SPA fallback');
 }
 if (!roadmap.includes('15.2E Capacity dashboard visual gate + implementation — DONE')
-    || !roadmap.includes('### 15.3 User account administration — IN PROGRESS')) {
-  fail('Phase 15.2E roadmap must be DONE and Phase 15.3 must become NEXT');
+    || !roadmap.includes('### 15.3 User account administration — DONE')) {
+  fail('Phase 15.2E and Phase 15.3 roadmap slices must remain DONE');
 }
 
 // Phase 15.3A account directory + lifecycle foundation.
@@ -834,14 +834,15 @@ for (const fragment of [
 }
 
 for (const heading of [
-  '### 15.3 User account administration — IN PROGRESS',
+  '### 15.3 User account administration — DONE',
   '#### 15.3A Account directory + lifecycle foundation — DONE',
   '#### 15.3B Suspension enforcement + Auth session coordination — DONE',
   '#### 15.3C Irreversible account removal — DONE',
   '#### 15.3D User-administration visual gate + UI — DONE',
   '#### 15.3E User reports + moderation case foundation — DONE',
   '#### 15.3F Privacy-bounded user activity review + moderation UI — DONE',
-  '### 15.4 Admin-to-user messaging — NEXT',
+  '### 15.4 Admin-to-user messaging — DONE',
+  '### 15.5 Admin integration + security gate — NEXT',
 ]) {
   if (!roadmap.includes(heading)) fail('Phase 15.3 roadmap missing slice: ' + heading);
 }
@@ -1419,8 +1420,100 @@ for (const fragment of [
   if (!phase153fDoc.includes(fragment)) fail('Phase 15.3F documentation missing invariant: ' + fragment);
 }
 if (!roadmap.includes('#### 15.3F Privacy-bounded user activity review + moderation UI — DONE')
-    || !roadmap.includes('### 15.4 Admin-to-user messaging — NEXT')) {
-  fail('Phase 15.3F must be DONE and Phase 15.4 must be NEXT');
+    || !roadmap.includes('### 15.4 Admin-to-user messaging — DONE')) {
+  fail('Phase 15.3F and Phase 15.4 must be DONE');
+}
+
+// Phase 15.4 auditable administrator-to-user messaging.
+for (const relativePath of [
+  'PHASE15.4-PATCH-MANIFEST.txt',
+  'docs/PHASE15.4-ADMIN-MESSAGING.md',
+  'supabase/migrations/20260823150601_platform_admin_messaging.sql',
+  'supabase/migrations/20260823151630_platform_admin_messaging_contracts.sql',
+  'supabase/tests/035_platform_admin_messaging.test.sql',
+  'src/features/admin/messaging/platformMessagingService.ts',
+  'src/features/admin/messaging/platformMessagingService.test.ts',
+  'src/features/admin/messaging/components/PlatformMessagingController.tsx',
+  'src/features/admin/messaging/components/PlatformMessagingController.test.tsx',
+  'src/features/messaging/platformMessageService.ts',
+  'src/features/messaging/platformMessageService.test.ts',
+  'src/features/messaging/UserMessageCenter.tsx',
+  'src/features/messaging/UserMessageCenter.test.tsx',
+]) {
+  if (!fs.existsSync(path.join(root, relativePath))) fail('Phase 15.4 file missing: ' + relativePath);
+}
+const phase154EnumMigration = read('supabase/migrations/20260823150601_platform_admin_messaging.sql');
+const phase154Migration = read('supabase/migrations/20260823151630_platform_admin_messaging_contracts.sql');
+const phase154Test = read('supabase/tests/035_platform_admin_messaging.test.sql');
+const phase154AdminService = read('src/features/admin/messaging/platformMessagingService.ts');
+const phase154AdminUi = read('src/features/admin/messaging/components/PlatformMessagingController.tsx');
+const phase154UserService = read('src/features/messaging/platformMessageService.ts');
+const phase154UserUi = read('src/features/messaging/UserMessageCenter.tsx');
+const phase154Doc = read('docs/PHASE15.4-ADMIN-MESSAGING.md');
+if (!phase154EnumMigration.includes("alter type public.moderation_activity_type add value if not exists 'COMMUNICATION'")) {
+  fail('Phase 15.4 communication enum value must be committed before its durable source is referenced');
+}
+for (const fragment of [
+  'create table private.platform_messages',
+  'create table private.platform_message_revisions',
+  'create table private.platform_message_deliveries',
+  'create table private.platform_message_events',
+  'function private.resolve_platform_message_recipients',
+  'function public.preview_platform_message_audience',
+  'function public.send_platform_message',
+  'function public.list_my_platform_messages',
+  'Full-platform blasts must be dismissible notices',
+  'Full-platform blasts are dismissible and cannot require acknowledgement',
+  "interval '2 years'",
+  "set search_path = ''",
+]) {
+  if (!phase154Migration.includes(fragment)) fail('Phase 15.4 migration missing invariant: ' + fragment);
+}
+if (/grant\s+[^;]*\bon\s+(?:table\s+|function\s+)?private\./i.test(phase154Migration)) {
+  fail('Phase 15.4 must not grant browser roles direct access to private messaging objects');
+}
+const phase154Plan = Number((phase154Test.match(/select\s+plan\((\d+)\)/i) || [])[1]);
+const phase154Assertions = (phase154Test.match(
+  /select\s+(?:has_type|has_table|has_column|has_function|is|results_eq|throws_ok|lives_ok)\s*\(/gi,
+) || []).length;
+if (phase154Plan !== 96 || phase154Plan !== phase154Assertions) {
+  fail('Phase 15.4 pgTAP plan must match its 96 assertions');
+}
+for (const coverage of [
+  'retrying a completed preview returns the original message idempotently',
+  'recipient must read and acknowledge a newly edited revision again',
+  'full-platform what-is-new popup cannot demand acknowledgement',
+  'dismissed full-platform blast will not reopen on the next inbox load',
+  'administrator messaging does not create or alter XP events',
+]) {
+  if (!phase154Test.includes(coverage)) fail('Phase 15.4 pgTAP missing coverage: ' + coverage);
+}
+for (const rpc of ['search_platform_message_users', 'search_platform_message_groups', 'preview_platform_message_audience', 'send_platform_message', 'list_platform_messages']) {
+  if (!phase154AdminService.includes(rpc)) fail('Phase 15.4 administrator service missing RPC: ' + rpc);
+}
+for (const rpc of ['list_my_platform_messages', 'mark_platform_message_read', 'acknowledge_platform_message']) {
+  if (!phase154UserService.includes(rpc)) fail('Phase 15.4 user service missing RPC: ' + rpc);
+}
+for (const copy of ['Shown as a “What’s new” popup', 'never requires acknowledgement', 'Preview audience']) {
+  if (!phase154AdminUi.includes(copy)) fail('Phase 15.4 administrator UI missing blast safety copy: ' + copy);
+}
+for (const copy of ['WHAT’S NEW', 'Got it', "item.audienceType === 'ALL'", 'api.markRead']) {
+  if (!phase154UserUi.includes(copy)) fail('Phase 15.4 user popup missing dismiss-once contract: ' + copy);
+}
+if (!phase153fRoute.includes("pathname === '/platform-admin/messages'")) {
+  fail('Phase 15.4 messaging UI must remain inside the guarded platform-admin route');
+}
+if (/service[_-]?role|SUPABASE_SECRET|from\(['"](?:platform_messages|platform_message_revisions|platform_message_deliveries|platform_message_events)/i.test(
+  phase154AdminService + phase154AdminUi + phase154UserService + phase154UserUi,
+)) {
+  fail('Phase 15.4 browser code must not contain privileged credentials or direct private-message table access');
+}
+for (const fragment of ['“What’s new” popup', 'set-based insert', 'minimum two-year retention boundary', '/platform-admin/messages', 'does not insert, update, or delete XP events']) {
+  if (!phase154Doc.includes(fragment)) fail('Phase 15.4 documentation missing invariant: ' + fragment);
+}
+if (!roadmap.includes('### 15.4 Admin-to-user messaging — DONE')
+    || !roadmap.includes('### 15.5 Admin integration + security gate — NEXT')) {
+  fail('Phase 15.4 must be DONE and Phase 15.5 must be NEXT');
 }
 
 const ciWorkflow = read('.github/workflows/ci.yml');
@@ -1555,4 +1648,4 @@ if (fs.existsSync(obsoleteRepairPath)) {
   fail('structural validation must not materialize the obsolete repair migration');
 }
 
-console.log('Release validation passed: clean migration history, Phase 15.1 admin invariants, Phase 15.2A capacity semantics, Phase 15.2B private telemetry/history authorization, Phase 15.2C secure Supabase provider boundary/provider-gap semantics, Phase 15.2D secure Netlify provider boundary/provider-gap semantics, Phase 15.2E real-data capacity UI/route/settings contracts, Phase 15.3A account lifecycle foundation, Phase 15.3B Data API/session enforcement and server-only Auth coordination, Phase 15.3C irreversible administrator/self-service deletion coordination, Phase 15.3D approved responsive account-administration UI, Phase 15.3E private user reports and moderation-case lifecycle contracts, Phase 15.3F audited privacy-bounded activity review and reporting/moderation UI, canonical GitHub CI/database discovery, visual-roadmap guards, and production chunk budget guards are present.');
+console.log('Release validation passed: clean migration history, Phase 15.1 admin invariants, Phase 15.2 capacity contracts, Phase 15.3 account lifecycle/reporting/moderation contracts, Phase 15.4 auditable administrator messaging and dismiss-once full-app popup contracts, canonical GitHub CI/database discovery, visual-roadmap guards, and production chunk budget guards are present.');

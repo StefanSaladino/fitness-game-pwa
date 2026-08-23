@@ -1,0 +1,43 @@
+Fitness Game PWA — Phase 15.4 administrator-to-user messaging
+
+Database
+- supabase/migrations/20260823150601_platform_admin_messaging.sql
+- supabase/migrations/20260823151630_platform_admin_messaging_contracts.sql
+- supabase/tests/034_moderation_activity_review.test.sql
+- supabase/tests/035_platform_admin_messaging.test.sql
+
+Administrator messaging
+- src/features/admin/messaging/model.ts
+- src/features/admin/messaging/platformMessagingService.ts
+- src/features/admin/messaging/platformMessagingService.test.ts
+- src/features/admin/messaging/components/PlatformMessagingController.tsx
+- src/features/admin/messaging/components/PlatformMessagingController.test.tsx
+- src/features/admin/messaging/components/PlatformMessaging.module.css
+- src/features/admin/messaging/index.ts
+
+User messaging
+- src/features/messaging/model.ts
+- src/features/messaging/platformMessageService.ts
+- src/features/messaging/platformMessageService.test.ts
+- src/features/messaging/UserMessageCenter.tsx
+- src/features/messaging/UserMessageCenter.test.tsx
+- src/features/messaging/UserMessageCenter.module.css
+- src/features/messaging/index.ts
+
+Integration, moderation, and release contracts
+- src/app/App.tsx
+- src/features/admin/PlatformAdminRoute.tsx
+- src/features/admin/PlatformAdminRoute.test.tsx
+- src/features/admin/components/PlatformAdminShell.tsx
+- src/features/admin/components/PlatformAdminShell.module.css
+- src/features/admin/accounts/components/UserAdministrationController.tsx
+- src/features/admin/accounts/components/UserAdministrationScreen.tsx
+- src/features/admin/moderation/model.ts
+- src/features/admin/moderation/components/ModerationWorkspaceScreen.tsx
+- src/features/admin/moderation/components/ModerationWorkspaceScreen.test.tsx
+- src/features/admin/index.ts
+- docs/PHASE15.4-ADMIN-MESSAGING.md
+- docs/ROADMAP.md
+- docs/CI-VALIDATION.md
+- scripts/validate-db-ci.cjs
+- scripts/validate-project-clean.cjs

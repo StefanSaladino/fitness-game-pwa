@@ -32,7 +32,7 @@ function props(overrides: Record<string, unknown> = {}) {
     currentUserId: 'admin-id', directory, directoryLoading: false, directoryError: '', status: null, page: 1,
     selectedCaseId: 'case-id', record, detailLoading: false, detailError: '', notice: '', actionBusy: false,
     actionError: '', directReview: false, reviewSubjectId: 'target-id',
-    activityTypes: ['ACCOUNT', 'WORKOUT', 'GROUP_MEMBERSHIP', 'GROUP_ACTIVITY', 'REPORT'] as ModerationActivityType[],
+    activityTypes: ['ACCOUNT', 'WORKOUT', 'GROUP_MEMBERSHIP', 'GROUP_ACTIVITY', 'REPORT', 'COMMUNICATION'] as ModerationActivityType[],
     activityAccess: null, activity: null, activityLoading: false, activityError: '',
     onChangeStatus: vi.fn(), onChangePage: vi.fn(), onOpenCase: vi.fn(), onClearSelection: vi.fn(),
     onRetryDirectory: vi.fn(), onRetryDetail: vi.fn(), onAssignSelf: vi.fn().mockResolvedValue(true),
@@ -58,7 +58,7 @@ describe('ModerationWorkspaceScreen', () => {
 
     expect(onBeginActivityReview).toHaveBeenCalledWith(
       'Investigating the reported safety context',
-      ['ACCOUNT', 'WORKOUT', 'GROUP_MEMBERSHIP', 'GROUP_ACTIVITY', 'REPORT'],
+      ['ACCOUNT', 'WORKOUT', 'GROUP_MEMBERSHIP', 'GROUP_ACTIVITY', 'REPORT', 'COMMUNICATION'],
     );
   });
 

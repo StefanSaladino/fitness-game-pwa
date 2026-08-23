@@ -6,6 +6,8 @@ import type { CapacityDashboardService } from './capacity/capacityDashboardServi
 import { CapacityDashboardController } from './capacity/components/CapacityDashboardController';
 import type { ModerationCaseService } from './moderation/moderationCaseService';
 import { ModerationWorkspaceController } from './moderation/components/ModerationWorkspaceController';
+import type { PlatformMessagingService } from './messaging/platformMessagingService';
+import { PlatformMessagingController } from './messaging/components/PlatformMessagingController';
 import { PlatformAdminShell, type PlatformAdminSection } from './components/PlatformAdminShell';
 import { usePlatformAccess } from './hooks/usePlatformAccess';
 import type { PlatformAccessService } from './platformAccessService';
@@ -17,6 +19,7 @@ interface PlatformAdminRouteProps {
   accountService?: PlatformAccountAdminService;
   capacityService?: CapacityDashboardService;
   moderationService?: ModerationCaseService;
+  messagingService?: PlatformMessagingService;
 }
 
 function GenericRouteLoading() {
@@ -30,6 +33,7 @@ export function PlatformAdminRoute({
   accountService,
   capacityService,
   moderationService,
+  messagingService,
 }: PlatformAdminRouteProps) {
   const platformAccess = usePlatformAccess(accessService);
   const authorized = platformAccess.state === 'ready'
@@ -38,6 +42,7 @@ export function PlatformAdminRoute({
   const canonicalCapacityRoute = pathname === '/platform-admin/capacity';
   const canonicalUsersRoute = pathname === '/platform-admin/users';
   const canonicalModerationRoute = pathname === '/platform-admin/moderation';
+  const canonicalMessagesRoute = pathname === '/platform-admin/messages';
   const adminRoot = pathname === '/platform-admin';
 
   useEffect(() => {
@@ -50,28 +55,32 @@ export function PlatformAdminRoute({
       replacePath('/platform-admin/capacity');
       return;
     }
-    if (!canonicalCapacityRoute && !canonicalUsersRoute && !canonicalModerationRoute) replacePath('/');
-  }, [adminRoot, authorized, canonicalCapacityRoute, canonicalModerationRoute, canonicalUsersRoute, platformAccess.state]);
+    if (!canonicalCapacityRoute && !canonicalUsersRoute && !canonicalModerationRoute && !canonicalMessagesRoute) replacePath('/');
+  }, [adminRoot, authorized, canonicalCapacityRoute, canonicalMessagesRoute, canonicalModerationRoute, canonicalUsersRoute, platformAccess.state]);
 
-  if (!authorized || adminRoot || (!canonicalCapacityRoute && !canonicalUsersRoute && !canonicalModerationRoute)) {
+  if (!authorized || adminRoot || (!canonicalCapacityRoute && !canonicalUsersRoute && !canonicalModerationRoute && !canonicalMessagesRoute)) {
     return <GenericRouteLoading />;
   }
 
-  const activeSection: PlatformAdminSection = canonicalModerationRoute ? 'moderation' : canonicalUsersRoute ? 'users' : 'capacity';
+  const activeSection: PlatformAdminSection = canonicalMessagesRoute ? 'messages' : canonicalModerationRoute ? 'moderation' : canonicalUsersRoute ? 'users' : 'capacity';
   const initialModerationTarget = typeof window === 'undefined'
+    ? null
+    : new URLSearchParams(window.location.search).get('target');
+  const initialMessageTarget = typeof window === 'undefined'
     ? null
     : new URLSearchParams(window.location.search).get('target');
 
   return (
     <PlatformAdminShell
       activeSection={activeSection}
-      mobileTitle={activeSection === 'moderation' ? 'Moderation' : activeSection === 'users' ? 'Users' : 'Capacity'}
+      mobileTitle={activeSection === 'messages' ? 'Messages' : activeSection === 'moderation' ? 'Moderation' : activeSection === 'users' ? 'Users' : 'Capacity'}
       onBackToApp={() => navigateToPath('/')}
       onNavigate={(section) => navigateToPath(`/platform-admin/${section}`)}
     >
       {activeSection === 'users' ? (
         <UserAdministrationController
           currentUserId={currentUserId}
+          onMessageUser={(userId) => navigateToPath(`/platform-admin/messages?target=${encodeURIComponent(userId)}`)}
           onOpenActivityReview={(userId) => navigateToPath(`/platform-admin/moderation?target=${encodeURIComponent(userId)}`)}
           service={accountService}
         />
@@ -81,6 +90,8 @@ export function PlatformAdminRoute({
           initialTargetUserId={initialModerationTarget}
           service={moderationService}
         />
+      ) : activeSection === 'messages' ? (
+        <PlatformMessagingController initialTargetUserId={initialMessageTarget} service={messagingService} />
       ) : <CapacityDashboardController service={capacityService} />}
     </PlatformAdminShell>
   );

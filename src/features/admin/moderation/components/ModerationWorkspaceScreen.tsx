@@ -53,6 +53,7 @@ const statusOptions: Array<{ value: ModerationCaseStatus | null; label: string }
 const activityLabels: Record<ModerationActivityType, string> = {
   ACCOUNT: 'Account lifecycle', WORKOUT: 'Workout summaries',
   GROUP_MEMBERSHIP: 'Group membership', GROUP_ACTIVITY: 'Group activity', REPORT: 'Reports',
+  COMMUNICATION: 'Administrator messages',
 };
 
 function formatDate(value: string): string {
@@ -78,6 +79,7 @@ function activityContext(item: ModerationActivityItem): string | null {
   if (item.activityType === 'GROUP_ACTIVITY') return typeof value('reactionType') === 'string' ? `Reaction: ${(value('reactionType') as string).toLowerCase()}` : null;
   if (item.activityType === 'GROUP_MEMBERSHIP') return typeof value('role') === 'string' ? `Role: ${(value('role') as string).toLowerCase()}` : null;
   if (item.activityType === 'REPORT') return typeof value('referenceLabel') === 'string' ? value('referenceLabel') as string : null;
+  if (item.activityType === 'COMMUNICATION') return typeof value('deliveryState') === 'string' ? `Delivery: ${(value('deliveryState') as string).toLowerCase()}` : null;
   return null;
 }
 

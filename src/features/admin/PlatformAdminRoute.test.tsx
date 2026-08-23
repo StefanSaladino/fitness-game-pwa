@@ -15,6 +15,11 @@ vi.mock('./moderation/components/ModerationWorkspaceController', () => ({
     <div>Real moderation route for {currentUserId} target {initialTargetUserId ?? 'none'}</div>
   ),
 }));
+vi.mock('./messaging/components/PlatformMessagingController', () => ({
+  PlatformMessagingController: ({ initialTargetUserId }: { initialTargetUserId?: string | null }) => (
+    <div>Real messages route target {initialTargetUserId ?? 'none'}</div>
+  ),
+}));
 
 import { PlatformAdminRoute } from './PlatformAdminRoute';
 
@@ -41,6 +46,13 @@ describe('PlatformAdminRoute', () => {
     render(<PlatformAdminRoute currentUserId="admin-1" pathname="/platform-admin/moderation" accessService={access('ACTIVE', true)} />);
     expect(await screen.findByText('Real moderation route for admin-1 target target-1')).toBeInTheDocument();
     expect(screen.getAllByRole('button', { name: 'Moderation' })[0]).toHaveAttribute('aria-current', 'page');
+  });
+
+  it('renders messaging and preserves a directory-selected recipient', async () => {
+    window.history.replaceState({}, '', '/platform-admin/messages?target=target-2');
+    render(<PlatformAdminRoute currentUserId="admin-1" pathname="/platform-admin/messages" accessService={access('ACTIVE', true)} />);
+    expect(await screen.findByText('Real messages route target target-2')).toBeInTheDocument();
+    expect(screen.getAllByRole('button', { name: 'Messages' })[0]).toHaveAttribute('aria-current', 'page');
   });
 
   it('replace-redirects unauthorized authenticated callers to ordinary home without admin denial copy', async () => {

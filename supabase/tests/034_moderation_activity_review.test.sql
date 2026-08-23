@@ -84,8 +84,8 @@ select results_eq(
     where n.nspname = 'public'
       and t.typname = 'moderation_activity_type'
       and e.enumlabel = 'COMMUNICATION'$$,
-  array[0::bigint],
-  'communication activity is not fabricated before Phase 15.4 creates a durable source'
+  array[1::bigint],
+  'later Phase 15.4 adds communication only after creating a durable message source'
 );
 select results_eq(
   $$select c.relrowsecurity::text

@@ -27,6 +27,7 @@ interface UserAdministrationScreenProps {
   onRetryDetail: () => void;
   onOpenAction: (action: 'SUSPEND' | 'RESTORE' | 'REQUEST_DELETION' | 'CANCEL_DELETION' | 'CONFIRM_DELETION') => void;
   onOpenActivityReview?: (userId: string) => void;
+  onMessageUser?: (userId: string) => void;
 }
 
 const statuses: Array<{ value: PlatformAccountStatus | null; label: string }> = [
@@ -165,6 +166,7 @@ export function UserAdministrationScreen(props: UserAdministrationScreenProps) {
     onRetryDetail,
     onOpenAction,
     onOpenActivityReview,
+    onMessageUser,
   } = props;
   const [search, setSearch] = useState(filters.search);
   const directoryHeadingRef = useRef<HTMLHeadingElement>(null);
@@ -342,6 +344,15 @@ export function UserAdministrationScreen(props: UserAdministrationScreenProps) {
                   type="button"
                 >
                   Review activity
+                </button>
+              )}
+              {onMessageUser && (
+                <button
+                  className={styles.secondaryButton}
+                  onClick={() => onMessageUser(detail.userId)}
+                  type="button"
+                >
+                  Message user
                 </button>
               )}
               <AccountControls account={detail} currentUserId={currentUserId} onOpenAction={onOpenAction} />

@@ -700,7 +700,7 @@ Netlify billing/usage is team/account scoped. The public API calls a team an acc
 - phone layout uses a compact sticky admin header and one-column operational rows; desktop uses a narrow real-only admin rail and denser two-column telemetry rows without a KPI card wall;
 - no database migration, platform-admin bootstrap, scoring, XP, badge, ranking, workout, group, or ordinary-user domain behavior change in this slice.
 
-### 15.3 User account administration — IN PROGRESS
+### 15.3 User account administration — DONE
 
 - searchable/paginated user directory with stable user ID, username, display name, account status, created date, and limited operational metadata;
 - ACTIVE / SUSPENDED / DELETION_PENDING account states;
@@ -772,7 +772,7 @@ Netlify billing/usage is team/account scoped. The public API calls a team an acc
 - keep moderation review read-only with respect to workouts, scoring, badges, rankings, and progression; lifecycle enforcement continues through the existing audited account actions;
 - define pagination, retention, redaction, deletion effects, and group/message visibility before implementing the activity timeline.
 
-### 15.4 Admin-to-user messaging — NEXT
+### 15.4 Admin-to-user messaging — DONE
 
 - send an in-app message to a specific user account, every current member of a selected group, or all eligible user accounts;
 - support message types such as NOTICE, WARNING, ACTION_REQUIRED, and ACCOUNT_STATUS;
@@ -785,8 +785,9 @@ Netlify billing/usage is team/account scoped. The public API calls a team an acc
 - warnings and moderation notices remain visible according to an explicit retention policy;
 - every message send/edit/withdraw action is audit logged;
 - admin messages never affect XP, badges, rankings, or progression.
+- full-app blasts are NOTICE-only and appear once as a dismissible, non-blocking “What’s new” popup; dismissal records read state so the popup does not reopen for that revision.
 
-### 15.5 Admin integration + security gate
+### 15.5 Admin integration + security gate — NEXT
 
 - admin sign-in/authorization boundary cannot be reached by normal users through client-side navigation tricks;
 - suspension takes effect across dashboard, workouts, cardio, groups, progress, and social RPCs;

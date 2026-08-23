@@ -12,12 +12,14 @@ interface UserAdministrationControllerProps {
   currentUserId: string;
   service?: PlatformAccountAdminService;
   onOpenActivityReview?: (userId: string) => void;
+  onMessageUser?: (userId: string) => void;
 }
 
 export function UserAdministrationController({
   currentUserId,
   service,
   onOpenActivityReview,
+  onMessageUser,
 }: UserAdministrationControllerProps) {
   const administration = useUserAdministration(service);
   const [dialogAction, setDialogAction] = useState<AccountDialogAction | null>(null);
@@ -71,6 +73,7 @@ export function UserAdministrationController({
         onClearSelection={administration.clearSelection}
         onOpenAction={openDialog}
         onOpenActivityReview={onOpenActivityReview}
+        onMessageUser={onMessageUser}
         onRetryDetail={administration.retryDetail}
         onRetryDirectory={administration.retryDirectory}
         onSelectUser={administration.selectUser}

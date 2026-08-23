@@ -6,6 +6,7 @@ import { ResetPasswordScreen } from '../features/auth/ResetPasswordScreen';
 import { GroupGate } from '../features/groups/components/GroupGate';
 import { OnboardingScreen, useOnboarding } from '../features/onboarding';
 import { ProductController } from '../features/product';
+import { UserMessageCenter } from '../features/messaging';
 import { isSupabaseConfigured } from '../lib/supabase';
 import { replacePath, usePathname } from '../lib/appNavigation';
 
@@ -61,18 +62,24 @@ function ProfileGate({ userId, pathname }: { userId: string; pathname: string })
 
   if (pathname === '/settings') {
     return (
-      <Suspense fallback={<RouteLoading />}>
-        <SettingsScreen profile={onboarding.profile} />
-      </Suspense>
+      <>
+        <Suspense fallback={<RouteLoading />}>
+          <SettingsScreen profile={onboarding.profile} />
+        </Suspense>
+        <UserMessageCenter />
+      </>
     );
   }
 
   if (pathname !== '/') return <UnknownAuthenticatedRoute />;
 
   return (
-    <GroupGate profileCode={onboarding.profile.profileCode} userId={userId}>
-      {(groups, refreshGroups) => <ProductController groups={groups} onGroupsChanged={refreshGroups} profile={onboarding.profile!} />}
-    </GroupGate>
+    <>
+      <GroupGate profileCode={onboarding.profile.profileCode} userId={userId}>
+        {(groups, refreshGroups) => <ProductController groups={groups} onGroupsChanged={refreshGroups} profile={onboarding.profile!} />}
+      </GroupGate>
+      <UserMessageCenter />
+    </>
   );
 }
 

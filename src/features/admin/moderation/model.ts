@@ -27,6 +27,7 @@ export const MODERATION_ACTIVITY_TYPES = [
   'GROUP_MEMBERSHIP',
   'GROUP_ACTIVITY',
   'REPORT',
+  'COMMUNICATION',
 ] as const;
 
 export type ModerationActivityType = (typeof MODERATION_ACTIVITY_TYPES)[number];
