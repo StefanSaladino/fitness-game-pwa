@@ -13,17 +13,16 @@ jobs:
     if: github.head_ref == 'maintenance/stale-branch-cleanup'
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - name: Verify master exists
         shell: bash
         run: |
-          git ls-remote --exit-code --heads "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" refs/heads/master >/dev/null
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          git ls-remote --exit-code --heads origin refs/heads/master >/dev/null
       - name: Delete stale branches
         shell: bash
         run: |
-          git push "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" --delete phase15.8-training-content
-          git push "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" --delete phase16.0-visual-inventory-v2
-          git push "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" --delete maintenance/stale-branch-cleanup
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          git push origin --delete phase15.8-training-content
+          git push origin --delete phase16.0-visual-inventory-v2
+          git push origin --delete maintenance/stale-branch-cleanup
