@@ -1,3 +1,4 @@
+import { Button } from '../../../components/ui';
 import type { CreateGroupInput, PendingGroupInvite } from '../model';
 import { CreateGroupForm } from './CreateGroupForm';
 import styles from './GroupSetup.module.css';
@@ -8,14 +9,16 @@ interface Props{
   onCreate(input:CreateGroupInput):Promise<unknown>|unknown;
   onAcceptInvite(id:string):Promise<unknown>|unknown;
   onDeclineInvite(id:string):Promise<unknown>|unknown;
+  onBackToDashboard?:()=>void;
 }
-export function GroupSetupScreen({creating=false,createError='',inviteError='',busyAction=null,profileCode,pendingInvites,onCreate,onAcceptInvite,onDeclineInvite}:Props){
+export function GroupSetupScreen({creating=false,createError='',inviteError='',busyAction=null,profileCode,pendingInvites,onCreate,onAcceptInvite,onDeclineInvite,onBackToDashboard}:Props){
   return <main className={styles.shell}>
     <section className={styles.hero} aria-labelledby="group-setup-title">
       <div className={styles.brandLine}><span className={styles.brandMark} aria-hidden="true">L</span><span>LIFTING-V1</span></div>
-      <div className={styles.heroCopy}><p className={styles.eyebrow}>YOUR TRAINING CIRCLE</p><h1 id="group-setup-title">Build the crew you want to get stronger with.</h1><p className={styles.lead}>Create a group, or accept an invitation sent directly to your username or invite ID.</p></div>
+      <div className={styles.heroCopy}><p className={styles.eyebrow}>YOUR TRAINING CIRCLE</p><h1 id="group-setup-title">Build the crew you want to get stronger with.</h1><p className={styles.lead}>Groups are optional. Create one, accept an invitation sent directly to you, or keep training on your own.</p></div>
     </section>
     <section className={styles.panel} aria-label="Group setup">
+      {onBackToDashboard && <div className={styles.backAction}><Button variant="ghost" onClick={onBackToDashboard}>Back to dashboard</Button></div>}
       {pendingInvites.length>0 && <div className={styles.pendingSection}>
         <p className={styles.kicker}>PENDING INVITATIONS</p>
         <ul className={styles.pendingList}>{pendingInvites.map(invite=><li key={invite.id} className={styles.pendingRow}>

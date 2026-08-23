@@ -10,38 +10,15 @@ import type { OnboardingProfile } from '../onboarding';
 import type { UserReportService } from '../moderation';
 import type { ExerciseProgressService } from '../progress';
 import type { GroupSocialService } from '../social';
-import type {
-  ExercisePickerService,
-  WorkoutExerciseService,
-  WorkoutMutationService,
-  WorkoutService,
-  WorkoutSetService,
-} from '../workout';
+import type { ExercisePickerService, WorkoutExerciseService, WorkoutMutationService, WorkoutService, WorkoutSetService } from '../workout';
 
-const DashboardController = lazy(async () => {
-  const module = await import('../dashboard/components/DashboardController');
-  return { default: module.DashboardController };
-});
-const CardioController = lazy(async () => {
-  const module = await import('../cardio/components/CardioController');
-  return { default: module.CardioController };
-});
-const GroupAdministrationController = lazy(async () => {
-  const module = await import('../groups/components/GroupAdministrationController');
-  return { default: module.GroupAdministrationController };
-});
-const ExerciseProgressController = lazy(async () => {
-  const module = await import('../progress/components/ExerciseProgressController');
-  return { default: module.ExerciseProgressController };
-});
-const GroupSocialController = lazy(async () => {
-  const module = await import('../social/components/GroupSocialController');
-  return { default: module.GroupSocialController };
-});
-const WorkoutController = lazy(async () => {
-  const module = await import('../workout/components/WorkoutController');
-  return { default: module.WorkoutController };
-});
+const DashboardController = lazy(async () => ({ default: (await import('../dashboard/components/DashboardController')).DashboardController }));
+const CardioController = lazy(async () => ({ default: (await import('../cardio/components/CardioController')).CardioController }));
+const GroupAdministrationController = lazy(async () => ({ default: (await import('../groups/components/GroupAdministrationController')).GroupAdministrationController }));
+const GroupSetupController = lazy(async () => ({ default: (await import('../groups/components/GroupSetupController')).GroupSetupController }));
+const ExerciseProgressController = lazy(async () => ({ default: (await import('../progress/components/ExerciseProgressController')).ExerciseProgressController }));
+const GroupSocialController = lazy(async () => ({ default: (await import('../social/components/GroupSocialController')).GroupSocialController }));
+const WorkoutController = lazy(async () => ({ default: (await import('../workout/components/WorkoutController')).WorkoutController }));
 
 interface ProductControllerProps {
   profile: OnboardingProfile;
@@ -60,18 +37,15 @@ interface ProductControllerProps {
   cardioService?: CardioService;
 }
 
-function ProductSectionFallback() {
-  return <div aria-live="polite" role="status">Loading…</div>;
-}
-
+function ProductSectionFallback() { return <div aria-live="polite" role="status">Loading…</div>; }
 function initialProductSection(): AppSection {
   if (typeof window === 'undefined') return 'home';
   const requested = new URLSearchParams(window.location.search).get('section');
-  return requested === 'groups' || requested === 'workouts' || requested === 'cardio'
-    || requested === 'progress' || requested === 'compete' ? requested : 'home';
+  return requested === 'groups' || requested === 'workouts' || requested === 'cardio' || requested === 'progress' || requested === 'compete' ? requested : 'home';
 }
 
-export function ProductController({ profile, groups, onGroupsChanged, groupService, dashboardService, workoutService, workoutExerciseService, exercisePickerService, workoutSetService, workoutMutationService, progressService, socialService, reportService, cardioService }: ProductControllerProps) {
+export function ProductController(props: ProductControllerProps) {
+  const { profile, groups, onGroupsChanged, groupService, dashboardService, workoutService, workoutExerciseService, exercisePickerService, workoutSetService, workoutMutationService, progressService, socialService, reportService, cardioService } = props;
   const [activeSection, setActiveSection] = useState<AppSection>(initialProductSection);
   const [selectedGroupId, setSelectedGroupId] = useState(groups[0]?.id ?? '');
 
@@ -79,86 +53,39 @@ export function ProductController({ profile, groups, onGroupsChanged, groupServi
     if (!groups.some((group) => group.id === selectedGroupId)) setSelectedGroupId(groups[0]?.id ?? '');
   }, [groups, selectedGroupId]);
 
-  const selectedGroup = useMemo(
-    () => groups.find((group) => group.id === selectedGroupId) ?? groups[0],
-    [groups, selectedGroupId],
-  );
-
+  const selectedGroup = useMemo(() => groups.find((group) => group.id === selectedGroupId) ?? groups[0], [groups, selectedGroupId]);
   const onNavigate = (section: AppSection) => {
-    if (section === 'profile') {
-      navigateToPath('/settings');
-      return;
-    }
+    if (section === 'profile') { navigateToPath('/settings'); return; }
     if (section === 'home' || section === 'groups' || section === 'workouts' || section === 'cardio' || section === 'progress' || section === 'compete') setActiveSection(section);
   };
   const onSignOut = () => { void signOut(); };
-
-  if (!selectedGroup) return null;
+  const optionalGroupEntry = (
+    <GroupSetupController
+      onBackToDashboard={() => onNavigate('home')}
+      onMembershipReady={onGroupsChanged}
+      profileCode={profile.profileCode}
+      service={groupService}
+      userId={profile.id}
+    />
+  );
 
   let section: ReactNode;
-
   if (activeSection === 'workouts') {
-    section = (
-      <WorkoutController
-        onNavigate={onNavigate}
-        onSignOut={onSignOut}
-        profile={profile}
-        service={workoutService}
-        exerciseService={workoutExerciseService}
-        pickerService={exercisePickerService}
-        setService={workoutSetService}
-        mutationService={workoutMutationService}
-      />
-    );
+    section = <WorkoutController onNavigate={onNavigate} onSignOut={onSignOut} profile={profile} service={workoutService} exerciseService={workoutExerciseService} pickerService={exercisePickerService} setService={workoutSetService} mutationService={workoutMutationService} />;
   } else if (activeSection === 'cardio') {
     section = <CardioController onNavigate={onNavigate} onSignOut={onSignOut} profile={profile} service={cardioService} />;
   } else if (activeSection === 'progress') {
-    section = (
-      <ExerciseProgressController
-        onNavigate={onNavigate}
-        onSignOut={onSignOut}
-        profile={profile}
-        service={progressService}
-      />
-    );
+    section = <ExerciseProgressController onNavigate={onNavigate} onSignOut={onSignOut} profile={profile} service={progressService} />;
+  } else if (activeSection === 'groups' && !selectedGroup) {
+    section = optionalGroupEntry;
+  } else if (activeSection === 'groups' && selectedGroup) {
+    section = <GroupAdministrationController groups={groups} onGroupsChanged={onGroupsChanged} onNavigate={onNavigate} onSelectGroup={setSelectedGroupId} onSignOut={onSignOut} profile={profile} selectedGroupId={selectedGroup.id} userId={profile.id} service={groupService} />;
+  } else if (activeSection === 'compete' && selectedGroup) {
+    section = <GroupSocialController key={selectedGroup.id} groups={groups} onNavigate={onNavigate} onSelectGroup={setSelectedGroupId} onSignOut={onSignOut} profile={profile} selectedGroupId={selectedGroup.id} service={socialService} reportService={reportService} />;
   } else if (activeSection === 'compete') {
-    section = (
-      <GroupSocialController
-        key={selectedGroup.id}
-        groups={groups}
-        onNavigate={onNavigate}
-        onSelectGroup={setSelectedGroupId}
-        onSignOut={onSignOut}
-        profile={profile}
-        selectedGroupId={selectedGroup.id}
-        service={socialService}
-        reportService={reportService}
-      />
-    );
-  } else if (activeSection === 'groups') {
-    section = (
-      <GroupAdministrationController
-        groups={groups}
-        onGroupsChanged={onGroupsChanged}
-        onNavigate={onNavigate}
-        onSelectGroup={setSelectedGroupId}
-        onSignOut={onSignOut}
-        profile={profile}
-        selectedGroupId={selectedGroup.id}
-        userId={profile.id}
-        service={groupService}
-      />
-    );
+    section = optionalGroupEntry;
   } else {
-    section = (
-      <DashboardController
-        group={selectedGroup}
-        onNavigate={onNavigate}
-        onSignOut={onSignOut}
-        profile={profile}
-        service={dashboardService}
-      />
-    );
+    section = <DashboardController group={selectedGroup} onNavigate={onNavigate} onSignOut={onSignOut} profile={profile} service={dashboardService} />;
   }
 
   return <Suspense fallback={<ProductSectionFallback />}>{section}</Suspense>;

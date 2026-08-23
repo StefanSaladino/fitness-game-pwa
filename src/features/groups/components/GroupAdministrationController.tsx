@@ -2,6 +2,7 @@ import { AppShell, type AppSection } from '../../../components/layout';
 import { Button } from '../../../components/ui';
 import type { OnboardingProfile } from '../../onboarding';
 import type { GroupService } from '../groupService';
+import { useCreateGroup } from '../hooks/useCreateGroup';
 import { useGroupAdministration } from '../hooks/useGroupAdministration';
 import type { GroupSummary } from '../model';
 import { GroupAdministrationScreen } from './GroupAdministrationScreen';
@@ -21,56 +22,48 @@ interface GroupAdministrationControllerProps {
 
 export function GroupAdministrationController(props: GroupAdministrationControllerProps) {
   const group = props.groups.find((item) => item.id === props.selectedGroupId) ?? props.groups[0];
-  if (!group) return null;
+  const createState = useCreateGroup(props.userId, props.service);
+  const administration = useGroupAdministration({ userId: props.userId, group, service: props.service, onGroupsChanged: props.onGroupsChanged });
 
-  const administration = useGroupAdministration({
-    userId: props.userId,
-    group,
-    service: props.service,
-    onGroupsChanged: props.onGroupsChanged,
-  });
+  async function createAdditionalGroup(name: string) {
+    const created = await createState.create({ name });
+    if (!created) return null;
+    await props.onGroupsChanged();
+    props.onSelectGroup(created.id);
+    return created;
+  }
 
   if (administration.status === 'loading') {
-    return (
-      <AppShell activeItem="groups" onNavigate={props.onNavigate} onSignOut={props.onSignOut} userLabel={props.profile.displayName} userMeta={`@${props.profile.username}`}>
-        <div className={styles.state} role="status">Loading group administration…</div>
-      </AppShell>
-    );
+    return <AppShell activeItem="groups" onNavigate={props.onNavigate} onSignOut={props.onSignOut} userLabel={props.profile.displayName} userMeta={`@${props.profile.username}`}><div className={styles.state} role="status">Loading group administration…</div></AppShell>;
   }
 
   if (administration.status === 'error') {
-    return (
-      <AppShell activeItem="groups" onNavigate={props.onNavigate} onSignOut={props.onSignOut} userLabel={props.profile.displayName} userMeta={`@${props.profile.username}`}>
-        <section className={styles.state}>
-          <p>{administration.error}</p>
-          <Button onClick={() => void administration.retry()}>Try again</Button>
-        </section>
-      </AppShell>
-    );
+    return <AppShell activeItem="groups" onNavigate={props.onNavigate} onSignOut={props.onSignOut} userLabel={props.profile.displayName} userMeta={`@${props.profile.username}`}><section className={styles.state}><p>{administration.error}</p><Button onClick={() => void administration.retry()}>Try again</Button></section></AppShell>;
   }
 
-  return (
-    <GroupAdministrationScreen
-      busyAction={administration.busyAction}
-      error={administration.error}
-      group={group}
-      groups={props.groups}
-      invites={administration.invites}
-      pendingInvites={administration.pendingInvites}
-      members={administration.members}
-      onCreateInvite={administration.createInvite}
-      onAcceptInvite={administration.acceptInvite}
-      onDeclineInvite={administration.declineInvite}
-      onLeaveGroup={async () => { const result = await administration.leaveGroup(); if (result !== null) props.onNavigate('home'); return result; }}
-      onNavigate={props.onNavigate}
-      onRemoveMember={administration.removeMember}
-      onRename={administration.rename}
-      onRevokeInvite={administration.revokeInvite}
-      onSelectGroup={props.onSelectGroup}
-      onSetMemberRole={administration.setMemberRole}
-      onSignOut={props.onSignOut}
-      onTransferOwnership={administration.transferOwnership}
-      profile={props.profile}
-    />
-  );
+  return <GroupAdministrationScreen
+    busyAction={administration.busyAction}
+    createGroupError={createState.error}
+    creatingGroup={createState.submitting}
+    error={administration.error}
+    group={group}
+    groups={props.groups}
+    invites={administration.invites}
+    pendingInvites={administration.pendingInvites}
+    members={administration.members}
+    onCreateGroup={createAdditionalGroup}
+    onCreateInvite={administration.createInvite}
+    onAcceptInvite={administration.acceptInvite}
+    onDeclineInvite={administration.declineInvite}
+    onLeaveGroup={async () => { const result = await administration.leaveGroup(); if (result !== null) props.onNavigate('home'); return result; }}
+    onNavigate={props.onNavigate}
+    onRemoveMember={administration.removeMember}
+    onRename={administration.rename}
+    onRevokeInvite={administration.revokeInvite}
+    onSelectGroup={props.onSelectGroup}
+    onSetMemberRole={administration.setMemberRole}
+    onSignOut={props.onSignOut}
+    onTransferOwnership={administration.transferOwnership}
+    profile={props.profile}
+  />;
 }

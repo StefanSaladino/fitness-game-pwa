@@ -7,7 +7,6 @@ class FakeQuery {
   private inFilters = new Map<string, unknown[]>();
   private wantsSingle = false;
   private limited = false;
-
   constructor(private readonly table: string) {}
   select() { return this; }
   eq(column: string, value: unknown) { this.filters.set(column, value); return this; }
@@ -17,7 +16,6 @@ class FakeQuery {
   limit() { this.limited = true; return this; }
   in(column: string, values: unknown[]) { this.inFilters.set(column, values); return this; }
   single() { this.wantsSingle = true; return this; }
-
   private result() {
     if (this.table === 'weekly_goals') return { data: [{ target: 4 }], error: null };
     if (this.table === 'workout_sessions') {
@@ -40,48 +38,25 @@ class FakeQuery {
     if (this.table === 'exercise_catalog') return { data: [{ id: 'bench', canonical_name: 'Bench Press' }], error: null };
     return { data: [], error: null };
   }
-
-  then<TResult1 = unknown, TResult2 = never>(
-    onfulfilled?: ((value: { data: unknown; error: null }) => TResult1 | PromiseLike<TResult1>) | null,
-    onrejected?: ((reason: unknown) => TResult2 | PromiseLike<TResult2>) | null,
-  ): Promise<TResult1 | TResult2> {
+  then<TResult1 = unknown, TResult2 = never>(onfulfilled?: ((value: { data: unknown; error: null }) => TResult1 | PromiseLike<TResult1>) | null,onrejected?: ((reason: unknown) => TResult2 | PromiseLike<TResult2>) | null): Promise<TResult1 | TResult2> {
     return Promise.resolve(this.result()).then(onfulfilled, onrejected);
   }
 }
 
-function fakeClient(): SupabaseClient {
+function fakeClient(rpcNames: string[] = []): SupabaseClient {
   const client = {
     from(table: string) { return new FakeQuery(table); },
     rpc(name: string) {
+      rpcNames.push(name);
       if (name === 'get_my_lifting_consistency_summary') {
-        return Promise.resolve({
-          data: [{
-            current_week_start: '2026-08-17',
-            current_week_target: 4,
-            current_week_lifting_days: 2,
-            current_completed_week_streak: 2,
-            best_completed_week_streak: 3,
-            completed_weeks: 4,
-            goals_hit: 3,
-            recent_weeks: [{ weekStart: '2026-08-10', target: 4, liftingDays: 4, achieved: true }],
-            badges: [{ badgeKey: 'GOAL_STREAK_2', earnedAt: '2026-08-17T04:00:00Z' }],
-          }],
-          error: null,
-        });
+        return Promise.resolve({ data: [{ current_week_start: '2026-08-17', current_week_target: 4, current_week_lifting_days: 2, current_completed_week_streak: 2, best_completed_week_streak: 3, completed_weeks: 4, goals_hit: 3, recent_weeks: [{ weekStart: '2026-08-10', target: 4, liftingDays: 4, achieved: true }], badges: [{ badgeKey: 'GOAL_STREAK_2', earnedAt: '2026-08-17T04:00:00Z' }] }], error: null });
       }
-      return Promise.resolve({
-        data: [
-          { member_user_id: 'user-2', username: 'alex', display_name: 'Alex', profile_picture_path: null, xp: 100 },
-          { member_user_id: 'user-1', username: 'stefan', display_name: 'Stefan', profile_picture_path: 'user-1/pfp.webp', xp: 135 },
-        ],
-        error: null,
-      });
+      return Promise.resolve({ data: [
+        { member_user_id: 'user-2', username: 'alex', display_name: 'Alex', profile_picture_path: null, xp: 100 },
+        { member_user_id: 'user-1', username: 'stefan', display_name: 'Stefan', profile_picture_path: 'user-1/pfp.webp', xp: 135 },
+      ], error: null });
     },
-    storage: {
-      from() {
-        return { getPublicUrl(path: string) { return { data: { publicUrl: `https://storage.test/${path}` } }; } };
-      },
-    },
+    storage: { from() { return { getPublicUrl(path: string) { return { data: { publicUrl: `https://storage.test/${path}` } }; } }; } },
   };
   return client as unknown as SupabaseClient;
 }
@@ -90,7 +65,6 @@ describe('dashboard service', () => {
   it('aggregates persisted lifting data into a dashboard read model', async () => {
     const service = createDashboardService(fakeClient());
     const result = await service.load({ userId: 'user-1', timezone: 'America/Toronto', weeklyTarget: 4, groupId: 'group-1' }, new Date('2026-08-19T22:00:00.000Z'));
-
     expect(result.weekStart).toBe('2026-08-17');
     expect(result.completedLiftingDays).toBe(2);
     expect(result.weeklyXp).toBe(135);
@@ -100,5 +74,16 @@ describe('dashboard service', () => {
     expect(result.leaderboard[1]).toMatchObject({ rank: 2, isCurrentUser: true, xp: 135 });
     expect(result.currentUserProfilePictureUrl).toContain('user-1/pfp.webp');
     expect(result.consistency).toMatchObject({ currentCompletedWeekStreak: 2, bestCompletedWeekStreak: 3, goalsHit: 3 });
+  });
+
+  it('loads personal dashboard data without invoking the group leaderboard RPC', async () => {
+    const rpcNames: string[] = [];
+    const service = createDashboardService(fakeClient(rpcNames));
+    const result = await service.load({ userId: 'user-1', timezone: 'America/Toronto', weeklyTarget: 4, groupId: null }, new Date('2026-08-19T22:00:00.000Z'));
+    expect(result.weeklyXp).toBe(135);
+    expect(result.recentLifts).toHaveLength(1);
+    expect(result.leaderboard).toEqual([]);
+    expect(rpcNames).toContain('get_my_lifting_consistency_summary');
+    expect(rpcNames).not.toContain('get_group_lifting_leaderboard');
   });
 });

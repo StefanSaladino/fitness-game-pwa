@@ -10,7 +10,7 @@ import styles from './DashboardScreen.module.css';
 
 interface DashboardScreenProps {
   profile: OnboardingProfile;
-  group: GroupSummary;
+  group?: GroupSummary;
   snapshot: DashboardSnapshot;
   onNavigate: (section: AppSection) => void;
   onSignOut: () => void;
@@ -38,11 +38,8 @@ function formatPr(pr: DashboardRecentPr): { performance: string; benchmark: stri
     const reps = pr.bestReps ?? Math.round(pr.bestValue);
     return { performance: `${reps} reps`, benchmark: 'Bodyweight best' };
   }
-
   const weight = pr.bestWeightKg === null ? null : Math.round(pr.bestWeightKg * 10) / 10;
-  const performance = weight === null
-    ? `e1RM ${Math.round(pr.bestValue)} kg`
-    : `${weight} kg${pr.bestReps ? ` × ${pr.bestReps}` : ''}`;
+  const performance = weight === null ? `e1RM ${Math.round(pr.bestValue)} kg` : `${weight} kg${pr.bestReps ? ` × ${pr.bestReps}` : ''}`;
   return { performance, benchmark: `e1RM ${Math.round(pr.bestValue)} kg` };
 }
 
@@ -51,46 +48,20 @@ function weekDates(weekStart: string): Array<{ date: string; label: string }> {
   return Array.from({ length: 7 }, (_, index) => {
     const date = new Date(start);
     date.setUTCDate(start.getUTCDate() + index);
-    return {
-      date: date.toISOString().slice(0, 10),
-      label: ['M', 'T', 'W', 'T', 'F', 'S', 'S'][index],
-    };
+    return { date: date.toISOString().slice(0, 10), label: ['M', 'T', 'W', 'T', 'F', 'S', 'S'][index] };
   });
 }
 
 function DashboardShell({ profile, children, onNavigate, onSignOut, weeklyTarget = profile.weeklyWorkoutTarget }: { profile: OnboardingProfile; children: ReactNode; onNavigate: (section: AppSection) => void; onSignOut: () => void; weeklyTarget?: number }) {
-  return (
-    <AppShell
-      activeItem="home"
-      onNavigate={onNavigate}
-      onSignOut={onSignOut}
-      userLabel={profile.displayName}
-      userMeta={`@${profile.username} · ${weeklyTarget} lift days`}
-    >
-      {children}
-    </AppShell>
-  );
+  return <AppShell activeItem="home" onNavigate={onNavigate} onSignOut={onSignOut} userLabel={profile.displayName} userMeta={`@${profile.username} · ${weeklyTarget} lift days`}>{children}</AppShell>;
 }
 
 export function DashboardLoading({ profile, onNavigate, onSignOut }: Pick<DashboardScreenProps, 'profile' | 'onNavigate' | 'onSignOut'>) {
-  return (
-    <DashboardShell profile={profile} onNavigate={onNavigate} onSignOut={onSignOut}>
-      <div className={styles.state} role="status">Loading your lifting dashboard…</div>
-    </DashboardShell>
-  );
+  return <DashboardShell profile={profile} onNavigate={onNavigate} onSignOut={onSignOut}><div className={styles.state} role="status">Loading your lifting dashboard…</div></DashboardShell>;
 }
 
 export function DashboardError({ profile, message, onNavigate, onRetry, onSignOut }: DashboardErrorProps) {
-  return (
-    <DashboardShell profile={profile} onNavigate={onNavigate} onSignOut={onSignOut}>
-      <section className={styles.state}>
-        <p className={styles.kicker}>DASHBOARD</p>
-        <h1>Training data unavailable</h1>
-        <p>{message}</p>
-        <Button onClick={onRetry}>Try again</Button>
-      </section>
-    </DashboardShell>
-  );
+  return <DashboardShell profile={profile} onNavigate={onNavigate} onSignOut={onSignOut}><section className={styles.state}><p className={styles.kicker}>DASHBOARD</p><h1>Training data unavailable</h1><p>{message}</p><Button onClick={onRetry}>Try again</Button></section></DashboardShell>;
 }
 
 export function DashboardScreen({ profile, group, snapshot, onNavigate, onSignOut }: DashboardScreenProps) {
@@ -102,213 +73,26 @@ export function DashboardScreen({ profile, group, snapshot, onNavigate, onSignOu
     <DashboardShell profile={profile} onNavigate={onNavigate} onSignOut={onSignOut} weeklyTarget={snapshot.weeklyTarget}>
       <div className={styles.dashboard}>
         <header className={styles.header}>
-          <div>
-            <p className={styles.kicker}>{group.name}</p>
-            <h1>Your lifting week</h1>
-            <p className={styles.subhead}>Progress from completed lifts and authoritative lifting-v1 scoring.</p>
-          </div>
-          <div className={styles.headerRight}>
-            <div className={styles.primaryActions}><Button onClick={() => onNavigate('workouts')}>Start Lift</Button><Button variant="secondary" onClick={() => onNavigate('cardio')}>Log cardio</Button></div>
-            <div className={styles.identity}>
-              <ProfilePicture displayName={profile.displayName} size="lg" src={snapshot.currentUserProfilePictureUrl} />
-              <div>
-                <strong>{profile.displayName}</strong>
-                <span>@{profile.username}</span>
-              </div>
-            </div>
-          </div>
+          <div><p className={styles.kicker}>{group?.name ?? 'PERSONAL DASHBOARD'}</p><h1>Your lifting week</h1><p className={styles.subhead}>Progress from completed lifts and authoritative lifting-v1 scoring.</p></div>
+          <div className={styles.headerRight}><div className={styles.primaryActions}><Button onClick={() => onNavigate('workouts')}>Start Lift</Button><Button variant="secondary" onClick={() => onNavigate('cardio')}>Log cardio</Button></div><div className={styles.identity}><ProfilePicture displayName={profile.displayName} size="lg" src={snapshot.currentUserProfilePictureUrl} /><div><strong>{profile.displayName}</strong><span>@{profile.username}</span></div></div></div>
         </header>
 
+        {!group && <section className={styles.dataSection} aria-labelledby="group-optional-heading"><div className={styles.sectionHeadingCompact}><div><p className={styles.sectionLabel}>Groups are optional</p><h2 id="group-optional-heading">Train on your own or join when you want</h2></div></div><p className={styles.empty}>Your workouts, XP, progress, and badges work without a group. Open Groups whenever you want to create one or review invitations sent to you.</p><Button onClick={() => onNavigate('groups')} variant="secondary">Open Groups</Button></section>}
+
         <section className={styles.weekSummary} aria-labelledby="weekly-progress-heading">
-          <div className={styles.weekPrimary}>
-            <p className={styles.sectionLabel} id="weekly-progress-heading">Weekly lifting target</p>
-            <div className={styles.weekCount}>
-              <strong>{snapshot.completedLiftingDays}</strong>
-              <span>/ {snapshot.weeklyTarget} lifting days</span>
-            </div>
-            <div className={styles.weekDays} aria-label={`${snapshot.completedLiftingDays} of ${snapshot.weeklyTarget} lifting days complete`}>
-              {weekDates(snapshot.weekStart).map((day) => (
-                <div className={styles.weekDay} key={day.date}>
-                  <span className={completed.has(day.date) ? styles.dayComplete : styles.dayOpen} aria-hidden="true" />
-                  <span>{day.label}</span>
-                </div>
-              ))}
-            </div>
-            <div className={styles.progressTrack} aria-hidden="true">
-              <span style={{ width: `${targetPercent}%` }} />
-            </div>
-          </div>
-
-          <div className={styles.metric}>
-            <span>This week</span>
-            <strong>{snapshot.weeklyXp} XP</strong>
-            <small>{formatScoringDate(snapshot.weekStart)}–{formatScoringDate(snapshot.weekEnd)}</small>
-          </div>
-
-          <div className={styles.metric}>
-            <span>Goal streak</span>
-            <strong>{snapshot.consistency.currentCompletedWeekStreak} wk</strong>
-            <small>Completed weeks only</small>
-          </div>
-
-          <div className={styles.metric}>
-            <span>Group rank</span>
-            <strong>{currentRank ? `#${currentRank.rank}` : '—'}</strong>
-            <small>{snapshot.leaderboard.length ? `${snapshot.leaderboard.length} active members` : 'No ranking yet'}</small>
-          </div>
+          <div className={styles.weekPrimary}><p className={styles.sectionLabel} id="weekly-progress-heading">Weekly lifting target</p><div className={styles.weekCount}><strong>{snapshot.completedLiftingDays}</strong><span>/ {snapshot.weeklyTarget} lifting days</span></div><div className={styles.weekDays} aria-label={`${snapshot.completedLiftingDays} of ${snapshot.weeklyTarget} lifting days complete`}>{weekDates(snapshot.weekStart).map((day) => <div className={styles.weekDay} key={day.date}><span className={completed.has(day.date) ? styles.dayComplete : styles.dayOpen} aria-hidden="true" /><span>{day.label}</span></div>)}</div><div className={styles.progressTrack} aria-hidden="true"><span style={{ width: `${targetPercent}%` }} /></div></div>
+          <div className={styles.metric}><span>This week</span><strong>{snapshot.weeklyXp} XP</strong><small>{formatScoringDate(snapshot.weekStart)}–{formatScoringDate(snapshot.weekEnd)}</small></div>
+          <div className={styles.metric}><span>Goal streak</span><strong>{snapshot.consistency.currentCompletedWeekStreak} wk</strong><small>Completed weeks only</small></div>
+          <div className={styles.metric}><span>Group rank</span><strong>{group && currentRank ? `#${currentRank.rank}` : '—'}</strong><small>{group ? (snapshot.leaderboard.length ? `${snapshot.leaderboard.length} active members` : 'No ranking yet') : 'No group selected'}</small></div>
         </section>
 
-        <section className={styles.xpSection} aria-labelledby="xp-breakdown-heading">
-          <div className={styles.sectionHeading}>
-            <div>
-              <p className={styles.sectionLabel} id="xp-breakdown-heading">XP breakdown</p>
-              <h2>{snapshot.weeklyXp} XP this week</h2>
-            </div>
-            <p>Cardio stays a small bonus; lifting completion and progression drive the score.</p>
-          </div>
-          <dl className={styles.xpBreakdown}>
-            <div><dt>Workout</dt><dd>{snapshot.xpBreakdown.workout}</dd></div>
-            <div><dt>Exercises</dt><dd>{snapshot.xpBreakdown.exercises}</dd></div>
-            <div><dt>Progression</dt><dd>{snapshot.xpBreakdown.progression}</dd></div>
-            <div className={styles.cardioRow}><dt>Cardio bonus</dt><dd>{snapshot.xpBreakdown.cardio}</dd></div>
-          </dl>
-        </section>
+        <section className={styles.xpSection} aria-labelledby="xp-breakdown-heading"><div className={styles.sectionHeading}><div><p className={styles.sectionLabel} id="xp-breakdown-heading">XP breakdown</p><h2>{snapshot.weeklyXp} XP this week</h2></div><p>Cardio stays a small bonus; lifting completion and progression drive the score.</p></div><dl className={styles.xpBreakdown}><div><dt>Workout</dt><dd>{snapshot.xpBreakdown.workout}</dd></div><div><dt>Exercises</dt><dd>{snapshot.xpBreakdown.exercises}</dd></div><div><dt>Progression</dt><dd>{snapshot.xpBreakdown.progression}</dd></div><div className={styles.cardioRow}><dt>Cardio bonus</dt><dd>{snapshot.xpBreakdown.cardio}</dd></div></dl></section>
 
-        <section className={styles.consistencySection} aria-labelledby="consistency-heading">
-          <div className={styles.sectionHeading}>
-            <div>
-              <p className={styles.sectionLabel}>Consistency</p>
-              <h2 id="consistency-heading">Completed weeks & badges</h2>
-            </div>
-            <p>Badges recognize lifting habits and PRs only. They never add XP.</p>
-          </div>
+        <section className={styles.consistencySection} aria-labelledby="consistency-heading"><div className={styles.sectionHeading}><div><p className={styles.sectionLabel}>Consistency</p><h2 id="consistency-heading">Completed weeks & badges</h2></div><p>Badges recognize lifting habits and PRs only. They never add XP.</p></div><div className={styles.consistencyOverview}><dl className={styles.consistencyStats}><div><dt>Current streak</dt><dd>{snapshot.consistency.currentCompletedWeekStreak} weeks</dd></div><div><dt>Best streak</dt><dd>{snapshot.consistency.bestCompletedWeekStreak} weeks</dd></div><div><dt>Goals hit</dt><dd>{snapshot.consistency.goalsHit} / {snapshot.consistency.completedWeeks}</dd></div></dl><div className={styles.recentWeeks}><strong>Recent completed weeks</strong>{snapshot.consistency.recentWeeks.length === 0 ? <p className={styles.empty}>Your first completed week will be snapshotted here.</p> : <ul>{snapshot.consistency.recentWeeks.slice(0, 4).map((week) => <li key={week.weekStart}><time dateTime={week.weekStart}>{formatScoringDate(week.weekStart)}</time><span>{week.liftingDays}/{week.target} lift days</span><b className={week.achieved ? styles.weekHit : styles.weekMiss}>{week.achieved ? 'Hit' : 'Miss'}</b></li>)}</ul>}</div></div><div className={styles.badgeHeading}><strong>Earned badges</strong><span>{snapshot.consistency.badges.length}</span></div>{snapshot.consistency.badges.length === 0 ? <p className={styles.empty}>Complete lift days, weekly goals, and personal records to earn recognition badges.</p> : <ul className={styles.badgeGrid}>{snapshot.consistency.badges.map((badge) => { const definition = liftingBadgeDefinition(badge.badgeKey); return <li key={badge.badgeKey}><span className={styles.badgeCategory}>{definition.category}</span><strong>{definition.title}</strong><p>{definition.description}</p><time dateTime={badge.earnedAt}>Earned {formatTimestamp(badge.earnedAt)}</time></li>; })}</ul>}</section>
 
-          <div className={styles.consistencyOverview}>
-            <dl className={styles.consistencyStats}>
-              <div><dt>Current streak</dt><dd>{snapshot.consistency.currentCompletedWeekStreak} weeks</dd></div>
-              <div><dt>Best streak</dt><dd>{snapshot.consistency.bestCompletedWeekStreak} weeks</dd></div>
-              <div><dt>Goals hit</dt><dd>{snapshot.consistency.goalsHit} / {snapshot.consistency.completedWeeks}</dd></div>
-            </dl>
+        <div className={styles.trainingColumns}><section className={styles.dataSection} aria-labelledby="recent-lifts-heading"><div className={styles.sectionHeadingCompact}><div><p className={styles.sectionLabel}>Training log</p><h2 id="recent-lifts-heading">Recent lifts</h2></div></div>{snapshot.recentLifts.length === 0 ? <p className={styles.empty}>Completed strength sessions will appear here.</p> : <ul className={styles.rows}>{snapshot.recentLifts.map((lift) => <li key={lift.id}><div><strong>{lift.title}</strong><span>{formatScoringDate(lift.scoringDate)} · {lift.durationMinutes} min · {lift.exerciseCount} exercises</span></div><b>{lift.xp} XP</b></li>)}</ul>}</section><section className={styles.dataSection} aria-labelledby="recent-prs-heading"><div className={styles.sectionHeadingCompact}><div><p className={styles.sectionLabel}>Progression</p><h2 id="recent-prs-heading">Personal records</h2></div></div>{snapshot.recentPrs.length === 0 ? <p className={styles.empty}>Your first valid performance establishes each exercise baseline.</p> : <ul className={styles.rows}>{snapshot.recentPrs.map((pr) => { const formatted = formatPr(pr); return <li key={`${pr.exerciseId}-${pr.metricType}`}><div><strong>{pr.exerciseName}</strong><span>{formatted.performance} · {formatted.benchmark}</span></div><time dateTime={pr.achievedAt}>{formatTimestamp(pr.achievedAt)}</time></li>; })}</ul>}</section></div>
 
-            <div className={styles.recentWeeks}>
-              <strong>Recent completed weeks</strong>
-              {snapshot.consistency.recentWeeks.length === 0 ? (
-                <p className={styles.empty}>Your first completed week will be snapshotted here.</p>
-              ) : (
-                <ul>
-                  {snapshot.consistency.recentWeeks.slice(0, 4).map((week) => (
-                    <li key={week.weekStart}>
-                      <time dateTime={week.weekStart}>{formatScoringDate(week.weekStart)}</time>
-                      <span>{week.liftingDays}/{week.target} lift days</span>
-                      <b className={week.achieved ? styles.weekHit : styles.weekMiss}>{week.achieved ? 'Hit' : 'Miss'}</b>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
-          </div>
-
-          <div className={styles.badgeHeading}>
-            <strong>Earned badges</strong>
-            <span>{snapshot.consistency.badges.length}</span>
-          </div>
-          {snapshot.consistency.badges.length === 0 ? (
-            <p className={styles.empty}>Complete lift days, weekly goals, and personal records to earn recognition badges.</p>
-          ) : (
-            <ul className={styles.badgeGrid}>
-              {snapshot.consistency.badges.map((badge) => {
-                const definition = liftingBadgeDefinition(badge.badgeKey);
-                return (
-                  <li key={badge.badgeKey}>
-                    <span className={styles.badgeCategory}>{definition.category}</span>
-                    <strong>{definition.title}</strong>
-                    <p>{definition.description}</p>
-                    <time dateTime={badge.earnedAt}>Earned {formatTimestamp(badge.earnedAt)}</time>
-                  </li>
-                );
-              })}
-            </ul>
-          )}
-        </section>
-
-        <div className={styles.trainingColumns}>
-          <section className={styles.dataSection} aria-labelledby="recent-lifts-heading">
-            <div className={styles.sectionHeadingCompact}>
-              <div>
-                <p className={styles.sectionLabel}>Training log</p>
-                <h2 id="recent-lifts-heading">Recent lifts</h2>
-              </div>
-            </div>
-
-            {snapshot.recentLifts.length === 0 ? (
-              <p className={styles.empty}>Completed strength sessions will appear here.</p>
-            ) : (
-              <ul className={styles.rows}>
-                {snapshot.recentLifts.map((lift) => (
-                  <li key={lift.id}>
-                    <div>
-                      <strong>{lift.title}</strong>
-                      <span>{formatScoringDate(lift.scoringDate)} · {lift.durationMinutes} min · {lift.exerciseCount} exercises</span>
-                    </div>
-                    <b>{lift.xp} XP</b>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </section>
-
-          <section className={styles.dataSection} aria-labelledby="recent-prs-heading">
-            <div className={styles.sectionHeadingCompact}>
-              <div>
-                <p className={styles.sectionLabel}>Progression</p>
-                <h2 id="recent-prs-heading">Personal records</h2>
-              </div>
-            </div>
-
-            {snapshot.recentPrs.length === 0 ? (
-              <p className={styles.empty}>Your first valid performance establishes each exercise baseline.</p>
-            ) : (
-              <ul className={styles.rows}>
-                {snapshot.recentPrs.map((pr) => {
-                  const formatted = formatPr(pr);
-                  return (
-                    <li key={`${pr.exerciseId}-${pr.metricType}`}>
-                      <div>
-                        <strong>{pr.exerciseName}</strong>
-                        <span>{formatted.performance} · {formatted.benchmark}</span>
-                      </div>
-                      <time dateTime={pr.achievedAt}>{formatTimestamp(pr.achievedAt)}</time>
-                    </li>
-                  );
-                })}
-              </ul>
-            )}
-          </section>
-        </div>
-
-        <section className={styles.leaderboard} aria-labelledby="group-rank-heading">
-          <div className={styles.sectionHeadingCompact}>
-            <div>
-              <p className={styles.sectionLabel}>{group.name}</p>
-              <h2 id="group-rank-heading">This week’s group rank</h2>
-            </div>
-            <div className={styles.leaderboardActions}><span className={styles.memberCount}>{group.memberCount} members</span><Button onClick={() => onNavigate('compete')} variant="ghost">View competition</Button></div>
-          </div>
-
-          <ol className={styles.leaderboardRows}>
-            {snapshot.leaderboard.map((entry) => (
-              <li className={entry.isCurrentUser ? styles.currentUser : ''} key={entry.userId}>
-                <span className={styles.rank}>{entry.rank}</span>
-                <ProfilePicture displayName={entry.displayName} size="sm" src={entry.profilePictureUrl} />
-                <div className={styles.memberIdentity}>
-                  <strong>{entry.displayName}{entry.isCurrentUser ? ' (You)' : ''}</strong>
-                  <span>@{entry.username}</span>
-                </div>
-                <b>{entry.xp} XP</b>
-              </li>
-            ))}
-          </ol>
-        </section>
+        {group && <section className={styles.leaderboard} aria-labelledby="group-rank-heading"><div className={styles.sectionHeadingCompact}><div><p className={styles.sectionLabel}>{group.name}</p><h2 id="group-rank-heading">This week’s group rank</h2></div><div className={styles.leaderboardActions}><span className={styles.memberCount}>{group.memberCount} members</span><Button onClick={() => onNavigate('compete')} variant="ghost">View competition</Button></div></div><ol className={styles.leaderboardRows}>{snapshot.leaderboard.map((entry) => <li className={entry.isCurrentUser ? styles.currentUser : ''} key={entry.userId}><span className={styles.rank}>{entry.rank}</span><ProfilePicture displayName={entry.displayName} size="sm" src={entry.profilePictureUrl} /><div className={styles.memberIdentity}><strong>{entry.displayName}{entry.isCurrentUser ? ' (You)' : ''}</strong><span>@{entry.username}</span></div><b>{entry.xp} XP</b></li>)}</ol></section>}
       </div>
     </DashboardShell>
   );
