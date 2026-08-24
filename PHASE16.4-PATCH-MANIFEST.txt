@@ -1,0 +1,27 @@
+Phase 16.4 — Home / lifting dashboard
+
+Replacement files:
+- src/features/dashboard/components/DashboardScreen.tsx
+- src/features/dashboard/components/DashboardScreen.module.css
+- src/features/dashboard/components/DashboardScreen.test.tsx
+
+New files:
+- docs/PHASE16.4-HOME-LIFTING-DASHBOARD.md
+- scripts/validate-phase16-4.cjs
+- PHASE16.4-PATCH-MANIFEST.txt
+
+Patched in place by apply-phase16.4.ps1:
+- docs/ROADMAP.md
+- README.md
+- CHANGELOG.md
+- package.json
+- package-lock.json
+- scripts/run-structural-validation.cjs
+- scripts/validate-project-clean.cjs
+- scripts/validate-project.cjs
+- public/sw.js
+- tests/e2e/pwa-shell.spec.ts
+
+No database migration.
+No scoring/XP/domain behavior changes.
+No GitHub writes are performed by the patch script.

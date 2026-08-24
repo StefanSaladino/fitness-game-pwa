@@ -53,27 +53,37 @@ const snapshot: DashboardSnapshot = {
 };
 
 describe('DashboardScreen', () => {
-  it('renders lifting-first progress, PRs, group rank, and secondary cardio without template filler', () => {
+  it('renders the approved lifting-first hierarchy using only real dashboard data and pathways', () => {
     const onNavigate = vi.fn();
-    render(<DashboardScreen group={group} onNavigate={onNavigate} onSignOut={() => undefined} profile={profile} snapshot={snapshot} />);
+    const { container } = render(
+      <DashboardScreen group={group} onNavigate={onNavigate} onSignOut={() => undefined} profile={profile} snapshot={snapshot} />,
+    );
 
     expect(screen.getByRole('heading', { name: 'Your lifting week' })).toBeInTheDocument();
     expect(screen.getByLabelText('2 of 4 lifting days complete')).toBeInTheDocument();
-    expect(screen.getByText('90 XP this week')).toBeInTheDocument();
+    expect(screen.getAllByText('90 XP').length).toBeGreaterThan(0);
     expect(screen.getByText('Upper Push')).toBeInTheDocument();
     expect(screen.getByText('Bench Press')).toBeInTheDocument();
     expect(screen.getByText('Stefan (You)')).toBeInTheDocument();
     expect(screen.getByText('Cardio bonus')).toBeInTheDocument();
-    expect(screen.getByText('2 wk')).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: 'Completed weeks & badges' })).toBeInTheDocument();
     expect(screen.getByText('2-Week Streak')).toBeInTheDocument();
-    expect(screen.getByText(/never add XP/i)).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Completed weeks & badges' })).toBeInTheDocument();
+    expect(container.querySelector('img[src*="top-set-plate-banner"]')).toBeInTheDocument();
+
+    expect(screen.queryByText(/recommended/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/level \d+/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/weekly xp goal/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/unlock your potential/i)).not.toBeInTheDocument();
+
     fireEvent.click(screen.getByRole('button', { name: 'Start Lift' }));
     expect(onNavigate).toHaveBeenCalledWith('workouts');
+    fireEvent.click(screen.getByRole('button', { name: 'Log cardio' }));
+    expect(onNavigate).toHaveBeenCalledWith('cardio');
+    fireEvent.click(screen.getByRole('button', { name: 'View competition' }));
+    expect(onNavigate).toHaveBeenCalledWith('compete');
   });
 
-  it('keeps the real personal dashboard available with no group membership', () => {
+  it('keeps the complete personal dashboard useful without group membership', () => {
     render(
       <DashboardScreen
         group={null}
@@ -90,7 +100,8 @@ describe('DashboardScreen', () => {
     expect(screen.getByText('Upper Push')).toBeInTheDocument();
     expect(screen.getByText('Bench Press')).toBeInTheDocument();
     expect(screen.getByText('Not in a group')).toBeInTheDocument();
+    expect(screen.getByText(/works fully without group membership/i)).toBeInTheDocument();
     expect(screen.getByLabelText('Group status')).toHaveTextContent('Groups are optional.');
-    expect(screen.queryByRole('heading', { name: 'This week’s group rank' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'View competition' })).not.toBeInTheDocument();
   });
 });

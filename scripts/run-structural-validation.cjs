@@ -18,16 +18,17 @@ const actualNotificationSection = fs.readFileSync(notificationSectionPath, 'utf8
 const actualSettingsIntegration = fs.readFileSync(settingsIntegrationPath, 'utf8');
 
 for (const heading of [
-  '15.6 Profile/Settings + notification preferences — DONE',
-  '15.6B Notification preference persistence — DONE',
-  '15.6C PWA notification permission + delivery integration — DONE',
-  '15.6D Settings integration gate — DONE',
-  'Phase 16 — Mobile-first visual overhaul — NEXT',
-  '16.0 Visual inventory + mobile design-system direction — DONE',
-  '16.1 App shell + primary navigation — DONE',
-  '16.2 Authentication + password recovery — DONE',
-  '16.3 Onboarding + optional group discovery — DONE',
-  '16.4 Home / lifting dashboard — NEXT',
+  '15.6 Profile/Settings + notification preferences Ã¢â‚¬â€ DONE',
+  '15.6B Notification preference persistence Ã¢â‚¬â€ DONE',
+  '15.6C PWA notification permission + delivery integration Ã¢â‚¬â€ DONE',
+  '15.6D Settings integration gate Ã¢â‚¬â€ DONE',
+  'Phase 16 Ã¢â‚¬â€ Mobile-first visual overhaul Ã¢â‚¬â€ NEXT',
+  '16.0 Visual inventory + mobile design-system direction Ã¢â‚¬â€ DONE',
+  '16.1 App shell + primary navigation Ã¢â‚¬â€ DONE',
+  '16.2 Authentication + password recovery Ã¢â‚¬â€ DONE',
+  '16.3 Onboarding + optional group discovery Ã¢â‚¬â€ DONE',
+  '16.4 Home / lifting dashboard Ã¢â‚¬â€ DONE',
+  '16.5 Active workout + set logging Ã¢â‚¬â€ NEXT',
 ]) {
   if (!actualRoadmap.includes(heading)) {
     throw new Error(`Release validation failed: current roadmap missing release status: ${heading}`);
@@ -35,7 +36,7 @@ for (const heading of [
 }
 
 for (const invariant of [
-  "const CACHE_VERSION = 'v13-2'",
+  "const CACHE_VERSION = 'v14-0'",
   "self.addEventListener('push'",
   "self.addEventListener('notificationclick'",
   'showNotification',
@@ -46,11 +47,11 @@ for (const invariant of [
 }
 
 for (const invariant of [
-  'LOCKED; 15.6A–15.6D IMPLEMENTED.',
-  '15.6A Profile/Settings foundation — DONE',
-  '15.6B Notification preference persistence — DONE',
-  '15.6C PWA notification permission + delivery integration — DONE',
-  '15.6D Settings integration gate — DONE',
+  'LOCKED; 15.6AÃ¢â‚¬â€œ15.6D IMPLEMENTED.',
+  '15.6A Profile/Settings foundation Ã¢â‚¬â€ DONE',
+  '15.6B Notification preference persistence Ã¢â‚¬â€ DONE',
+  '15.6C PWA notification permission + delivery integration Ã¢â‚¬â€ DONE',
+  '15.6D Settings integration gate Ã¢â‚¬â€ DONE',
   'account-level server-persisted preferences',
   'They do not rely only on localStorage, IndexedDB, or a single browser installation',
   'request permission only after an explicit user action',
@@ -113,7 +114,7 @@ for (const invariant of ['Notifications', 'Badges & achievements', 'Personal rec
 }
 
 for (const [file, fragments] of [
-  ['scripts/validate-project-clean.cjs', ['v13-1', '15.6B Notification preference persistence — LATER', '15.6C PWA notification permission + delivery integration — LATER', '15.6D Settings integration gate — LATER']],
+  ['scripts/validate-project-clean.cjs', ['v13-1', '15.6B Notification preference persistence Ã¢â‚¬â€ LATER', '15.6C PWA notification permission + delivery integration Ã¢â‚¬â€ LATER', '15.6D Settings integration gate Ã¢â‚¬â€ LATER']],
   ['scripts/validate-project.cjs', ['0.12.1', '20260822000200_fix_lifting_calendar_summaries.sql', 'v12b-2']],
   ['public/sw.js', ['v12b-2']],
   ['.github/workflows/ci.yml', ['npx supabase start', 'npx supabase db reset', 'npm run db:test:local', 'npx supabase db lint --level warning']],

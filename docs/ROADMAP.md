@@ -2,7 +2,7 @@
 
 Status legend: **DONE**, **IN PROGRESS**, **NEXT**, **LATER**.
 
-## Product-wide UI implementation gate — REQUIRED
+## Product-wide UI implementation gate Ã¢â‚¬â€ REQUIRED
 
 Before implementing any substantial user-facing screen or redesign:
 
@@ -32,7 +32,7 @@ CSS separation rules are equally strict:
 
 See `docs/UI-DEVELOPMENT-GATE.md`, `docs/UI-ARCHITECTURE.md`, and `docs/CSS-ARCHITECTURE.md`.
 
-## Engineering execution rules — REQUIRED
+## Engineering execution rules Ã¢â‚¬â€ REQUIRED
 
 These rules apply to every remaining phase, including non-visual backend/reliability work.
 
@@ -59,13 +59,13 @@ These rules apply to every remaining phase, including non-visual backend/reliabi
 - keep checkpoint commits narrow so a regression can be bisected to one behavior change;
 - when a phase is still large after decomposition, split it into lettered subphases before coding rather than creating a large patch and dividing it afterward.
 
-## Phase 0 — Original product rules — SUPERSEDED
+## Phase 0 Ã¢â‚¬â€ Original product rules Ã¢â‚¬â€ SUPERSEDED
 
 The original v0.2 general-fitness model (100 base XP/day + calibrated Performance XP) was implemented and tested, then intentionally superseded by the lifting-first v0.3 product direction.
 
 The migration history remains valuable; new product behavior follows `lifting-v1`.
 
-## Phase 1 — Domain/test oracle — DONE, UPDATED FOR v0.3
+## Phase 1 Ã¢â‚¬â€ Domain/test oracle Ã¢â‚¬â€ DONE, UPDATED FOR v0.3
 
 Objective: keep scoring behavior executable and independent of React/Supabase.
 
@@ -83,21 +83,21 @@ Current lifting-v1 oracle covers:
 - weekly lifting consistency and completed-week streak semantics;
 - fairness/anti-padding invariants.
 
-## Phase 2 — React/PWA technical foundation — DONE
+## Phase 2 Ã¢â‚¬â€ React/PWA technical foundation Ã¢â‚¬â€ DONE
 
 - React/TypeScript/Vite
 - PWA manifest/service worker
 - Vitest/RTL/Playwright
 - CI shell
 
-## Phase 3 — Repository/testing scaffold — DONE
+## Phase 3 Ã¢â‚¬â€ Repository/testing scaffold Ã¢â‚¬â€ DONE
 
 - domain verifier
 - structural validator
 - GitHub Actions frontend shell
 - PWA assets
 
-## Phase 4 — Supabase data/auth foundation — DONE
+## Phase 4 Ã¢â‚¬â€ Supabase data/auth foundation Ã¢â‚¬â€ DONE
 
 Delivered:
 
@@ -113,22 +113,22 @@ Delivered:
 
 The project currently uses a hosted-Supabase/dashboard-first migration workflow.
 
-## Phase 5 — Onboarding + product foundation — IN PROGRESS
+## Phase 5 Ã¢â‚¬â€ Onboarding + product foundation Ã¢â‚¬â€ IN PROGRESS
 
-### 5.1 Non-visual onboarding foundation — DONE
+### 5.1 Non-visual onboarding foundation Ã¢â‚¬â€ DONE
 
 - atomic username/display-name/timezone/weekly-target onboarding RPC
 - validation/state/service contracts
 - pgTAP coverage
 
-### 5.2 Visual-design checkpoint + shared UI foundation — DONE
+### 5.2 Visual-design checkpoint + shared UI foundation Ã¢â‚¬â€ DONE
 
 - approved phone, desktop, and future smartwatch directions
 - responsive `AppShell`
 - UI primitives and accessibility tests
 - Nutrition/Calories explicitly excluded
 
-### 5.3A Authentication + onboarding UI — DONE
+### 5.3A Authentication + onboarding UI Ã¢â‚¬â€ DONE
 
 - sign in/create account/recovery
 - email-verification handoff
@@ -137,7 +137,7 @@ The project currently uses a hosted-Supabase/dashboard-first migration workflow.
 - weekly target control
 - phone/desktop responsive production flow
 
-### 5.4 Lifting-first domain refactor — DONE
+### 5.4 Lifting-first domain refactor Ã¢â‚¬â€ DONE
 
 Foundational v0.3 change. The app is now a **lifting progression game**, not a general fitness consistency game.
 
@@ -169,11 +169,11 @@ CSS architecture is also locked in this phase. Existing Phase 5 global selectors
 
 See `docs/DOMAIN-RULES.md` and `docs/CSS-ARCHITECTURE.md`.
 
-### 5.5 Group setup + first real lifting dashboard — DONE
+### 5.5 Group setup + first real lifting dashboard Ã¢â‚¬â€ DONE
 
 The lifting-first mobile/desktop/watch concept direction has been explored. Implementation remains componentized and follows the CSS architecture rules even where the concept art is still provisional.
 
-#### 5.5A Non-visual group foundation — DONE
+#### 5.5A Non-visual group foundation Ã¢â‚¬â€ DONE
 
 - typed multi-group summaries and member models;
 - load all active groups for a user (no single-group assumption);
@@ -186,7 +186,7 @@ The lifting-first mobile/desktop/watch concept direction has been explored. Impl
 - user-facing group error mapping;
 - no feature UI or feature CSS added in this subphase.
 
-#### 5.5B Create / Join Group UI — DONE
+#### 5.5B Create / Join Group UI Ã¢â‚¬â€ DONE
 
 - create-group form with local validation and normalized group names;
 - join-by-invite form accepting raw invite UUIDs or invite URLs;
@@ -196,7 +196,7 @@ The lifting-first mobile/desktop/watch concept direction has been explored. Impl
 - multiple-group membership remains supported;
 - all new feature styling is colocated CSS Modules; no group CSS added to `global.css`.
 
-#### 5.5C Profile pictures — DONE
+#### 5.5C Profile pictures Ã¢â‚¬â€ DONE
 
 Profile pictures only; this is not an avatar/customization system.
 
@@ -212,7 +212,7 @@ Profile pictures only; this is not an avatar/customization system.
 
 See `docs/PHASE5.5C-PROFILE-PICTURES.md`.
 
-#### 5.5D First real lifting dashboard — DONE
+#### 5.5D First real lifting dashboard Ã¢â‚¬â€ DONE
 
 - persisted weekly lifting-day status from completed `qualifies_lifting` sessions;
 - lifting-v1 weekly XP and category breakdown from `scoring_events`;
@@ -226,7 +226,7 @@ See `docs/PHASE5.5C-PROFILE-PICTURES.md`.
 
 See `docs/PHASE5.5D-LIFTING-DASHBOARD.md`.
 
-### 5.6 Group administration UI — DONE
+### 5.6 Group administration UI Ã¢â‚¬â€ DONE
 
 - product-level Home / Groups navigation boundary;
 - multi-group switcher without introducing a single-group assumption;
@@ -239,7 +239,7 @@ See `docs/PHASE5.5D-LIFTING-DASHBOARD.md`.
 - explicit authenticated-only EXECUTE grants for membership-mutating RPCs;
 - all new group administration styling remains colocated in CSS Modules.
 
-#### 5.6.1 Targeted user invitations — DONE
+#### 5.6.1 Targeted user invitations Ã¢â‚¬â€ DONE
 
 - invite a specific user by canonical username or stable `FG-...` profile invite ID;
 - each profile receives a stable invite ID that is not a reusable group secret;
@@ -250,7 +250,7 @@ See `docs/PHASE5.5D-LIFTING-DASHBOARD.md`.
 - the invite table represents pending invitations only;
 - the old reusable token/URL join flow is retired from the active product.
 
-### 5.7 Phase 5 integration validation — DONE
+### 5.7 Phase 5 integration validation Ã¢â‚¬â€ DONE
 
 Historical checkpoint: the forced zero-group setup transition below was valid when Phase 5 shipped and is superseded by Phase 15.7.
 
@@ -263,15 +263,15 @@ Historical checkpoint: the forced zero-group setup transition below was valid wh
 - pgTAP/RLS/RPC permission suites remain the authority for database authorization
 - onboarding labels continue to describe lifting-day targets
 
-## Phase 6 — Lifting workout capture engine
+## Phase 6 Ã¢â‚¬â€ Lifting workout capture engine
 
 Objective: make logging a real lifting session fast, resilient, and progression-aware.
 
 Apply the UI design gate before coding the workout builder.
 
-### 6.1 Active lifting session — DONE
+### 6.1 Active lifting session Ã¢â‚¬â€ DONE
 
-#### 6.1A Session lifecycle foundation — DONE
+#### 6.1A Session lifecycle foundation Ã¢â‚¬â€ DONE
 
 - Start Lift with idempotent create-or-resume semantics
 - persisted timer with pause/resume
@@ -280,7 +280,7 @@ Apply the UI design gate before coding the workout builder.
 - single-active-in-app-lift database invariant
 - client direct workout-session mutation removed
 
-#### 6.1B Exercise composition — DONE
+#### 6.1B Exercise composition Ã¢â‚¬â€ DONE
 
 - canonical exercises attach through authenticated-only composition RPCs
 - duplicate adds are idempotent per workout/canonical exercise
@@ -289,14 +289,14 @@ Apply the UI design gate before coding the workout builder.
 - active workout UI renders persisted canonical exercise order and move/remove controls
 - service/hook boundary is ready for the real catalog search picker
 
-#### 6.1C Exercise picker integration — DONE
+#### 6.1C Exercise picker integration Ã¢â‚¬â€ DONE
 
 - active workout opens the real canonical exercise picker
 - selected exercises attach only by canonical exercise ID
 - duplicate adds remain blocked by the composition layer
 - phone-first picker locks background scroll and closes with Escape
 
-### 6.2 Exercise search — CORE DONE
+### 6.2 Exercise search Ã¢â‚¬â€ CORE DONE
 
 - searchable expanded 356-exercise catalog
 - instant case-insensitive local search
@@ -309,12 +309,12 @@ Apply the UI design gate before coding the workout builder.
 - canonical IDs always remain scoring/progression identity
 - favorites remain a later convenience, not a blocker for set logging
 
-#### 6.2A Favorites — LATER
+#### 6.2A Favorites Ã¢â‚¬â€ LATER
 
 - favorite/unfavorite canonical exercises
 - favorites shortcut in the picker without changing exercise identity
 
-#### 6.1C.1 Muscle group icon integration — DONE
+#### 6.1C.1 Muscle group icon integration Ã¢â‚¬â€ DONE
 
 - replace plain-text muscle-group choices with compact icon + visible-label controls
 - cover Chest, Back, Shoulders, Biceps, Triceps, Forearms/Grip, Core/Abs, Obliques, Quads, Hamstrings, Glutes, Calves, Neck, and Full Body
@@ -325,7 +325,7 @@ Apply the UI design gate before coding the workout builder.
 - icons remain a picker affordance only; do not spread muscle illustrations throughout unrelated app surfaces
 - exercise picker panel is fully opaque; only the outside backdrop may be translucent
 
-#### 6.1C.2 Picker drill-down + timer synchronization — DONE
+#### 6.1C.2 Picker drill-down + timer synchronization Ã¢â‚¬â€ DONE
 
 - muscle-group icons are navigation destinations, not toggle filters
 - selecting a muscle group opens a dedicated exercise-library screen for that group
@@ -338,22 +338,22 @@ Apply the UI design gate before coding the workout builder.
 - intent-aware lifecycle RPCs use a narrowly bounded client action timestamp so network transport time is not counted as workout time
 - intent-aware start/pause/resume RPCs return the session snapshot directly, removing the extra follow-up select round trip
 
-### 6.3 Set tracking — DONE
+### 6.3 Set tracking Ã¢â‚¬â€ DONE
 
 - every set is stored independently; an exercise never has one shared weight/reps value for all sets
 - warmup vs working sets
-- per-set weight and reps (for example 135 × 10, 185 × 8, 205 × 6 in the same exercise)
+- per-set weight and reps (for example 135 Ãƒâ€” 10, 185 Ãƒâ€” 8, 205 Ãƒâ€” 6 in the same exercise)
 - bodyweight reps and supported bodyweight loading modes
 - completed set state
 - add/remove sets and preserve stable set ordering
 - duplicate/copy previous set conveniences without forcing copied values to stay linked
 - unit display conversion without changing canonical stored units
 
-### 6.4 Workout reliability — DONE
+### 6.4 Workout reliability Ã¢â‚¬â€ DONE
 
 Phase 6.4 is intentionally split into small reliability slices. Do not implement it as one large offline/sync patch.
 
-#### 6.4A Local active-workout recovery — DONE
+#### 6.4A Local active-workout recovery Ã¢â‚¬â€ DONE
 
 Primary boundary: preserve the user's in-progress workout locally when connectivity disappears.
 
@@ -366,7 +366,7 @@ Primary boundary: preserve the user's in-progress workout locally when connectiv
 
 Exit criteria: refreshing or losing connectivity during an active lift does not make the visible workout disappear.
 
-#### 6.4B Idempotent workout mutation queue — DONE
+#### 6.4B Idempotent workout mutation queue Ã¢â‚¬â€ DONE
 
 Primary boundary: safely retry workout-capture mutations created while offline or during transient failures.
 
@@ -379,7 +379,7 @@ Primary boundary: safely retry workout-capture mutations created while offline o
 
 Exit criteria: replaying the same queued mutation more than once cannot duplicate persisted workout data.
 
-#### 6.4C Conflict and destructive-edit safety — DONE
+#### 6.4C Conflict and destructive-edit safety Ã¢â‚¬â€ DONE
 
 Primary boundary: reconcile local and remote workout state without silently overwriting newer data.
 
@@ -391,7 +391,7 @@ Primary boundary: reconcile local and remote workout state without silently over
 
 Exit criteria: reconnect/retry cannot silently lose newer workout data or revive intentionally removed data.
 
-#### 6.4D Reliability integration gate — DONE
+#### 6.4D Reliability integration gate Ã¢â‚¬â€ DONE
 
 Primary boundary: prove the complete capture flow survives ordinary connectivity failures.
 
@@ -404,7 +404,7 @@ Primary boundary: prove the complete capture flow survives ordinary connectivity
 
 Exit criteria: an ordinary connection interruption cannot lose or duplicate a workout, exercise, or set.
 
-## Phase 7 — Authoritative lifting-v1 scoring persistence — DONE
+## Phase 7 Ã¢â‚¬â€ Authoritative lifting-v1 scoring persistence Ã¢â‚¬â€ DONE
 
 Objective: make PostgreSQL compute/reconcile the new score safely.
 
@@ -421,11 +421,11 @@ Objective: make PostgreSQL compute/reconcile the new score safely.
 
 Exit criteria: duplicate, concurrent, retried, edited, or deleted data cannot manufacture or orphan XP.
 
-## Phase 8 — Exercise progression engine + history — DONE
+## Phase 8 Ã¢â‚¬â€ Exercise progression engine + history Ã¢â‚¬â€ DONE
 
 Objective: make each canonical lift a first-class progression timeline.
 
-- weighted best-set Epley observations (1–12 reps)
+- weighted best-set Epley observations (1Ã¢â‚¬â€œ12 reps)
 - bodyweight best-rep observations
 - personal-best snapshot updates
 - previous PR / current PR history
@@ -435,7 +435,7 @@ Objective: make each canonical lift a first-class progression timeline.
 - added-weight/assisted comparison rules when defensible
 - no cross-user comparison in progression calculation
 
-## Phase 9 — Weekly lifting consistency + badges — DONE
+## Phase 9 Ã¢â‚¬â€ Weekly lifting consistency + badges Ã¢â‚¬â€ DONE
 
 - weekly lifting-goal snapshots
 - completed-week goal streak
@@ -445,7 +445,7 @@ Objective: make each canonical lift a first-class progression timeline.
 - cardio accessory milestones where useful
 - badges remain non-XP initially
 
-## Phase 10 — Group competition/social — DONE
+## Phase 10 Ã¢â‚¬â€ Group competition/social Ã¢â‚¬â€ DONE
 
 Apply the UI design gate before leaderboard/activity-feed implementation.
 
@@ -456,7 +456,7 @@ Apply the UI design gate before leaderboard/activity-feed implementation.
 - lightweight reactions
 - privacy-safe summaries rather than raw workout-set exposure
 
-## Phase 11 — Cardio accessory logging — DONE
+## Phase 11 Ã¢â‚¬â€ Cardio accessory logging Ã¢â‚¬â€ DONE
 
 Cardio remains deliberately secondary.
 
@@ -469,11 +469,11 @@ Cardio remains deliberately secondary.
 - history/analytics
 - no cardio contribution to lifting-day weekly target
 
-## Phase 12 — PWA/offline hardening — DONE
+## Phase 12 Ã¢â‚¬â€ PWA/offline hardening Ã¢â‚¬â€ DONE
 
 Phase 12 is split into reliability slices so durable storage, shell caching, retry behavior, and mobile-browser validation can be proven independently.
 
-### 12A IndexedDB workout durability — DONE
+### 12A IndexedDB workout durability Ã¢â‚¬â€ DONE
 
 Primary boundary: move active-lift recovery and the queued workout-mutation journal from synchronous localStorage persistence to IndexedDB without changing the v1 recovery/mutation contracts.
 
@@ -485,7 +485,7 @@ Primary boundary: move active-lift recovery and the queued workout-mutation jour
 - localStorage is fallback-only when IndexedDB is unavailable or rejects a write;
 - no scoring, Supabase schema, or workout behavior changes.
 
-### 12B Offline shell + install UX — DONE
+### 12B Offline shell + install UX Ã¢â‚¬â€ DONE
 
 - production offline app shell;
 - service-worker cache/version lifecycle;
@@ -493,14 +493,14 @@ Primary boundary: move active-lift recovery and the queued workout-mutation jour
 - standalone/display-mode handling;
 - update/reload UX that does not interrupt an active workout.
 
-### 12C Reconnect + retry hardening — DONE
+### 12C Reconnect + retry hardening Ã¢â‚¬â€ DONE
 
 - reconcile IndexedDB state with the authoritative server after reconnect;
 - preserve existing idempotency/conflict guarantees through app restart;
 - bounded retry/backoff for safe queued mutations;
 - no background mutation that bypasses explicit conflict policy.
 
-### 12D Mobile PWA validation — DONE
+### 12D Mobile PWA validation Ã¢â‚¬â€ DONE
 
 - iOS Safari/installed-web-app lifecycle validation;
 - Android Chrome/installed-PWA lifecycle validation;
@@ -508,11 +508,11 @@ Primary boundary: move active-lift recovery and the queued workout-mutation jour
 - storage persistence and eviction behavior documentation;
 - final Phase 12 reliability integration gate.
 
-## Phase 13 — Lifting analytics — DONE
+## Phase 13 Ã¢â‚¬â€ Lifting analytics Ã¢â‚¬â€ DONE
 
 The product-wide UI design gate was completed before implementation. Phase 13 is split so per-exercise analytics and cross-session calendar summaries can be proven independently.
 
-### 13A Per-exercise lifting analytics — DONE
+### 13A Per-exercise lifting analytics Ã¢â‚¬â€ DONE
 
 Primary boundary: turn the existing authoritative Phase 8 exercise-history read model into useful personal lifting analytics without changing scoring or persistence.
 
@@ -526,7 +526,7 @@ Primary boundary: turn the existing authoritative Phase 8 exercise-history read 
 - responsive desktop, Android-class Chromium, and iPhone-class WebKit browser fixture;
 - no Supabase migration and no scoring/XP changes.
 
-### 13B Weekly/monthly lifting summaries — DONE
+### 13B Weekly/monthly lifting summaries Ã¢â‚¬â€ DONE
 
 Primary boundary: aggregate completed lifting history into calendar summaries without changing the per-exercise progression contract.
 
@@ -536,7 +536,7 @@ Primary boundary: aggregate completed lifting history into calendar summaries wi
 - volume remains analytics-only;
 - no cross-user comparison and no scoring changes.
 
-## Phase 14 — Wearables / native companion — LATER
+## Phase 14 Ã¢â‚¬â€ Wearables / native companion Ã¢â‚¬â€ LATER
 
 The PWA never requires a smartwatch. A future native watch companion may support:
 
@@ -548,13 +548,13 @@ The PWA never requires a smartwatch. A future native watch companion may support
 
 Wearables never increase scoring simply because a device was used.
 
-## Phase 15 — Platform administration, moderation + capacity dashboard — IN PROGRESS
+## Phase 15 Ã¢â‚¬â€ Platform administration, moderation + capacity dashboard Ã¢â‚¬â€ IN PROGRESS
 
 Objective: give trusted platform administrators a secure operational console for capacity monitoring, account moderation, and direct user notices without granting those powers to ordinary group owners/admins.
 
 Apply the UI design gate before implementing the administrator console. This phase must be split into the following subphases rather than shipped as one large patch.
 
-### 15.1 Platform-admin authorization + audit foundation — DONE
+### 15.1 Platform-admin authorization + audit foundation Ã¢â‚¬â€ DONE
 
 Primary boundary: establish the non-visual security substrate before any administrator console is exposed.
 
@@ -569,7 +569,7 @@ Primary boundary: establish the non-visual security substrate before any adminis
 - explicit authorization tests for platform admin, normal user, suspended admin, and unauthenticated caller;
 - do not add the administrator console in this slice.
 
-#### 15.1B Production bundle chunking/performance gate — DONE
+#### 15.1B Production bundle chunking/performance gate Ã¢â‚¬â€ DONE
 
 This required engineering cleanup ships with the v0.13.0 checkpoint but does not change product behavior.
 
@@ -583,11 +583,11 @@ This required engineering cleanup ships with the v0.13.0 checkpoint but does not
 
 Exit criterion: v0.13.0 has a tested platform-admin authorization/audit boundary and no production JavaScript chunk is allowed to exceed the configured 500 kB release budget.
 
-### 15.2 Capacity + platform-health dashboard — IN PROGRESS
+### 15.2 Capacity + platform-health dashboard Ã¢â‚¬â€ IN PROGRESS
 
 Phase 15.2 is deliberately split so local operational measurements, provider-authoritative quota data, historical persistence, and the eventual administrator UI can be proven independently without putting infrastructure credentials in the browser.
 
-#### 15.2A Capacity semantics + provider contract — DONE
+#### 15.2A Capacity semantics + provider contract Ã¢â‚¬â€ DONE
 
 Primary boundary: define deterministic capacity states and provider-neutral telemetry contracts before persistence or UI.
 
@@ -603,7 +603,7 @@ Primary boundary: define deterministic capacity states and provider-neutral tele
 - keep the developer and GitHub validation workflows Docker-free; runtime database validation remains hosted-Supabase authoritative;
 - no database migration, admin UI, scoring, XP, badge-award, ranking, or user-visibility change in this slice.
 
-#### 15.2B Database-local telemetry + historical snapshots — DONE
+#### 15.2B Database-local telemetry + historical snapshots Ã¢â‚¬â€ DONE
 
 Delivered non-visual persistence/read boundary:
 
@@ -637,11 +637,11 @@ Locked route + authorization architecture:
 - guarded snapshot capture/read RPCs using the Phase 15.1 active-platform-admin boundary;
 - authorization and rollback-safe pgTAP coverage for normal, group-owner/group-admin, suspended, unauthenticated, and active-platform-admin callers.
 
-#### 15.2C Supabase provider quota adapter — IN PROGRESS (PROVIDER BILLING-USAGE API GAP)
+#### 15.2C Supabase provider quota adapter Ã¢â‚¬â€ IN PROGRESS (PROVIDER BILLING-USAGE API GAP)
 
 Provider billing is organization-scoped, so Supabase billing metrics must be identified as organization usage rather than mislabeled as a project-only quota.
 
-##### 15.2C1 Secure Management API boundary + capability adapter — DONE
+##### 15.2C1 Secure Management API boundary + capability adapter Ã¢â‚¬â€ DONE
 
 - add the authenticated `platform-capacity-supabase` Edge Function with `verify_jwt = true`;
 - authorize the caller with `public.get_my_platform_access()` and require `account_status = ACTIVE` plus `is_platform_admin = true` before touching Management API credentials;
@@ -652,7 +652,7 @@ Provider billing is organization-scoped, so Supabase billing metrics must be ide
 - reserve explicit organization-scoped metric identities for provider MAU, uncached egress, cached egress, Realtime message count, and Realtime peak connections;
 - validate the normalized Edge response in a provider adapter and degrade malformed/missing/provider-failed metrics to UNAVAILABLE with null values rather than zeroes.
 
-##### 15.2C2 Provider-authoritative billing-cycle usage feed — BLOCKED ON DOCUMENTED SUPABASE API/EXPORT
+##### 15.2C2 Provider-authoritative billing-cycle usage feed Ã¢â‚¬â€ BLOCKED ON DOCUMENTED SUPABASE API/EXPORT
 
 - Supabase currently documents authoritative billing-cycle MAU/egress/Realtime usage on the organization Usage page but does not document a stable Management API endpoint for those organization billing-cycle totals;
 - do not invent an undocumented `/usage` endpoint, scrape the Dashboard, derive billable MAU from local 30-day sign-ins/Auth logs, or infer unified billing egress from partial project reports;
@@ -660,11 +660,11 @@ Provider billing is organization-scoped, so Supabase billing metrics must be ide
 - keep provider billing metrics UNAVAILABLE until a documented machine-readable billing-cycle source exists, then normalize it through the already-secured Edge boundary;
 - the provider API gap does not block independent Netlify adapter work.
 
-#### 15.2D Netlify provider usage adapter — IN PROGRESS (PROVIDER ACCOUNT-USAGE API GAP)
+#### 15.2D Netlify provider usage adapter Ã¢â‚¬â€ IN PROGRESS (PROVIDER ACCOUNT-USAGE API GAP)
 
 Netlify billing/usage is team/account scoped. The public API calls a team an account, so provider measurements use the explicit ACCOUNT scope rather than pretending the billing totals belong to one project.
 
-##### 15.2D1 Secure Netlify API boundary + capability adapter — DONE
+##### 15.2D1 Secure Netlify API boundary + capability adapter Ã¢â‚¬â€ DONE
 
 - add the authenticated `platform-capacity-netlify` Edge Function with `verify_jwt = true`;
 - authorize the caller with `public.get_my_platform_access()` and require `account_status = ACTIVE` plus `is_platform_admin = true` before touching Netlify credentials;
@@ -676,7 +676,7 @@ Netlify billing/usage is team/account scoped. The public API calls a team an acc
 - validate normalized Netlify provider responses in a browser-safe adapter and degrade failed/malformed/missing metrics to UNAVAILABLE/null rather than zero;
 - never expose raw account/site provider payloads or allow a caller-controlled Netlify API origin.
 
-##### 15.2D2 Provider-authoritative account usage feed — BLOCKED ON DOCUMENTED NETLIFY API/EXPORT
+##### 15.2D2 Provider-authoritative account usage feed Ã¢â‚¬â€ BLOCKED ON DOCUMENTED NETLIFY API/EXPORT
 
 - Netlify currently documents authoritative bandwidth, web-request, build/compute and credit consumption in Usage & billing / Account usage insights, but the public OpenAPI does not expose stable endpoints for those billing totals;
 - do not invent an undocumented usage endpoint, scrape the Dashboard, derive billable bandwidth/requests from logs, sum deploy durations into build usage, or calculate credits from public pricing tables;
@@ -684,7 +684,7 @@ Netlify billing/usage is team/account scoped. The public API calls a team an acc
 - do not hard-code mutable plan allowances into runtime application logic;
 - keep Netlify billing metrics UNAVAILABLE until a documented machine-readable source exists, then normalize it through the already-secured Edge boundary.
 
-#### 15.2E Capacity dashboard visual gate + implementation — DONE
+#### 15.2E Capacity dashboard visual gate + implementation Ã¢â‚¬â€ DONE
 
 - completed the required phone-first + desktop visual gate and locked the approved cleaner operational direction before implementation;
 - added project-wide anti-AI layout rules in `docs/UI-ANTI-AI-LAYOUT-RULES.md` so future concepts cannot invent routes, metrics, quotas, history, provider success, or generic dashboard chrome;
@@ -702,7 +702,7 @@ Netlify billing/usage is team/account scoped. The public API calls a team an acc
 - phone layout uses a compact sticky admin header and one-column operational rows; desktop uses a narrow real-only admin rail and denser two-column telemetry rows without a KPI card wall;
 - no database migration, platform-admin bootstrap, scoring, XP, badge, ranking, workout, group, or ordinary-user domain behavior change in this slice.
 
-### 15.3 User account administration — DONE
+### 15.3 User account administration Ã¢â‚¬â€ DONE
 
 - searchable/paginated user directory with stable user ID, username, display name, account status, created date, and limited operational metadata;
 - ACTIVE / SUSPENDED / DELETION_PENDING account states;
@@ -714,7 +714,7 @@ Netlify billing/usage is team/account scoped. The public API calls a team an acc
 - never expose password hashes, auth secrets, raw tokens, or unrelated private user data in the admin UI;
 - suspension/removal must reconcile or exclude affected social/leaderboard visibility without corrupting authoritative historical scoring.
 
-#### 15.3A Account directory + lifecycle foundation — DONE
+#### 15.3A Account directory + lifecycle foundation Ã¢â‚¬â€ DONE
 
 - extend the existing private account-state row with suspension-review and reversible deletion-request metadata;
 - add a reusable `private.require_active_account()` status guard for the next enforcement slice;
@@ -725,7 +725,7 @@ Netlify billing/usage is team/account scoped. The public API calls a team an acc
 - keep irreversible Auth/profile deletion out of this slice until Storage/cascade/session behavior is reviewed;
 - no user-administration UI is added before the required visual gate.
 
-#### 15.3B Suspension enforcement + Auth session coordination — DONE
+#### 15.3B Suspension enforcement + Auth session coordination Ã¢â‚¬â€ DONE
 
 - installed an authenticated PostgREST pre-request boundary so every Data API table/view/RPC request requires ACTIVE account state and a live `auth.sessions` row matching the JWT `session_id` claim;
 - applied the same active-session helper to authenticated profile-picture Storage policies; the PWA has no Realtime subscriptions in this slice;
@@ -735,7 +735,7 @@ Netlify billing/usage is team/account scoped. The public API calls a team an acc
 - kept Auth ban separate from session semantics: no claim that `ban_duration` invalidates an issued JWT and no direct mutation of Supabase-managed Auth session rows;
 - added hosted pgTAP coverage for ACTIVE/SUSPENDED/DELETION_PENDING state, live/missing/expired sessions, Storage policies, retries, revision races, and non-deletion.
 
-#### 15.3C Irreversible account removal — DONE
+#### 15.3C Irreversible account removal Ã¢â‚¬â€ DONE
 
 - require an already-DELETION_PENDING target plus exact server-verified `DELETE <username>` confirmation;
 - support both ACTIVE-platform-admin deletion of another non-admin account and ordinary-user self-deletion through the same retryable backend engine;
@@ -746,7 +746,7 @@ Netlify billing/usage is team/account scoped. The public API calls a team an acc
 - require group ownership transfer first; never silently transfer or delete a group;
 - keep both administrator and ordinary-user deletion controls out of this non-visual slice.
 
-#### 15.3D User-administration visual gate + UI — DONE
+#### 15.3D User-administration visual gate + UI Ã¢â‚¬â€ DONE
 
 - audit the real 15.3 account data/actions/states first;
 - generate phone-first and desktop user-directory/detail/action concepts using only implemented fields and actions;
@@ -754,7 +754,7 @@ Netlify billing/usage is team/account scoped. The public API calls a team an acc
 - implemented the searchable/paginated directory, detail, suspend/restore, and deliberate two-step deletion UX after approval;
 - keep destructive actions reasoned, explicit, accessible, and non-color-only.
 
-#### 15.3E User reports + moderation case foundation — DONE
+#### 15.3E User reports + moderation case foundation Ã¢â‚¬â€ DONE
 
 - let an authenticated user report another user, never themselves, with a required category/reason and optional validated reference to a supported group, completed workout, or group social activity; message references remain deferred until a real message source exists;
 - deliver reports into a private moderation queue for moderation-capable platform administrators; the first operational moderator is the existing platform administrator, without inventing a browser-only moderator role;
@@ -764,9 +764,9 @@ Netlify billing/usage is team/account scoped. The public API calls a team an acc
 - define report, evidence-reference, moderator-note, and resolution retention before exposing the reporting control;
 - alerts must be durable in-app moderation work, not a best-effort toast; later email/push delivery may supplement but never replace the queue.
 
-#### 15.3F Privacy-bounded user activity review + moderation UI — DONE
+#### 15.3F Privacy-bounded user activity review + moderation UI Ã¢â‚¬â€ DONE
 
-- let an authorized moderator open a reported or directory-selected account’s review timeline using purpose-built read models rather than unrestricted table access;
+- let an authorized moderator open a reported or directory-selected accountÃ¢â‚¬â„¢s review timeline using purpose-built read models rather than unrestricted table access;
 - include relevant account lifecycle events, workouts recorded, group membership/activity, reports, and communication history once each source exists;
 - show the minimum fields needed to investigate context, with links back to the originating moderation case where applicable;
 - audit moderator access to sensitive review data and every case/status/note/action mutation;
@@ -774,7 +774,7 @@ Netlify billing/usage is team/account scoped. The public API calls a team an acc
 - keep moderation review read-only with respect to workouts, scoring, badges, rankings, and progression; lifecycle enforcement continues through the existing audited account actions;
 - define pagination, retention, redaction, deletion effects, and group/message visibility before implementing the activity timeline.
 
-### 15.4 Admin-to-user messaging — DONE
+### 15.4 Admin-to-user messaging Ã¢â‚¬â€ DONE
 
 - send an in-app message to a specific user account, every current member of a selected group, or all eligible user accounts;
 - support message types such as NOTICE, WARNING, ACTION_REQUIRED, and ACCOUNT_STATUS;
@@ -787,9 +787,9 @@ Netlify billing/usage is team/account scoped. The public API calls a team an acc
 - warnings and moderation notices remain visible according to an explicit retention policy;
 - every message send/edit/withdraw action is audit logged;
 - admin messages never affect XP, badges, rankings, or progression.
-- full-app blasts are NOTICE-only and appear once as a dismissible, non-blocking “What’s new” popup; dismissal records read state so the popup does not reopen for that revision.
+- full-app blasts are NOTICE-only and appear once as a dismissible, non-blocking Ã¢â‚¬Å“WhatÃ¢â‚¬â„¢s newÃ¢â‚¬Â popup; dismissal records read state so the popup does not reopen for that revision.
 
-### 15.5 Admin integration + security gate — DONE
+### 15.5 Admin integration + security gate Ã¢â‚¬â€ DONE
 
 - admin sign-in/authorization boundary cannot be reached by normal users through client-side navigation tricks;
 - suspension takes effect across dashboard, workouts, cardio, groups, progress, and social RPCs;
@@ -801,11 +801,11 @@ Netlify billing/usage is team/account scoped. The public API calls a team an acc
 - phone/desktop administrator UI is responsive, but the admin console is not exposed in ordinary user navigation;
 - destructive actions require explicit confirmation and produce an auditable result.
 
-### 15.6 Profile/Settings + notification preferences — DONE
+### 15.6 Profile/Settings + notification preferences Ã¢â‚¬â€ DONE
 
 This is the ordinary authenticated PWA account surface defined in `docs/PHASE15.6-PROFILE-SETTINGS-NOTIFICATIONS.md`; it is not an administrator-only feature.
 
-#### 15.6A Profile/Settings foundation — DONE
+#### 15.6A Profile/Settings foundation Ã¢â‚¬â€ DONE
 
 - implement `/settings` as the canonical authenticated Profile/Settings route, reachable once profile identity exists and not blocked by `GroupGate`;
 - provide Profile + identity, Training preferences, Account + security, Groups, Privacy + data, App/PWA, Notifications, and conditionally authorized Administration sections;
@@ -814,7 +814,7 @@ This is the ordinary authenticated PWA account surface defined in `docs/PHASE15.
 - provide the approved deliberate two-step self-service account-deletion control, using the Phase 15.3C request/cancel/confirm service contract, exact server phrase, immediate local sign-out after deletion, and group-transfer requirement;
 - do not expose fake data-export, session-management, or unsupported notification controls.
 
-#### 15.6B Notification preference persistence — DONE
+#### 15.6B Notification preference persistence Ã¢â‚¬â€ DONE
 
 - persist a user-owned master Notifications ON/OFF preference server-side;
 - persist individual optional categories for workout reminders, weekly goal reminders, badges + achievements, personal-record alerts, group activity, and group invitations;
@@ -822,7 +822,7 @@ This is the ordinary authenticated PWA account surface defined in `docs/PHASE15.
 - users may read/update only their own preferences through authenticated service/RPC/RLS boundaries;
 - required in-app account, security, moderation, suspension, and ACTION_REQUIRED notices remain visible regardless of optional notification settings.
 
-#### 15.6C PWA notification permission + delivery integration — DONE
+#### 15.6C PWA notification permission + delivery integration Ã¢â‚¬â€ DONE
 
 - account notification preferences and device/browser permission are distinct states;
 - request browser/OS notification permission only from an explicit user gesture, never automatically on Settings load;
@@ -832,7 +832,7 @@ This is the ordinary authenticated PWA account surface defined in `docs/PHASE15.
 - only expose category toggles as working when the associated delivery behavior actually exists;
 - push/provider credentials remain outside the browser bundle.
 
-#### 15.6D Settings integration gate — DONE
+#### 15.6D Settings integration gate Ã¢â‚¬â€ DONE
 
 - validate mobile/desktop Settings, no-group access, profile/training preference persistence, master notification ON/OFF, every supported category toggle, and preserved child selections across OFF -> ON;
 - validate default/granted/denied/unsupported notification-permission states, explicit permission prompting, multi-device subscription separation, and required in-app notices remaining visible;
@@ -841,7 +841,7 @@ This is the ordinary authenticated PWA account surface defined in `docs/PHASE15.
 
 Exit criterion: a trusted platform admin can see approaching free-tier limits, inspect account status, suspend/restore/remove users safely, and send auditable in-app policy/moderation notices; ordinary users also have a secure Profile/Settings foundation with explicit notification controls, without exposing privileged credentials or weakening scoring/privacy boundaries.
 
-## Phase 15.7 — Optional groups + multi-group product entry — DONE
+## Phase 15.7 Ã¢â‚¬â€ Optional groups + multi-group product entry Ã¢â‚¬â€ DONE
 
 Product correction before the visual overhaul:
 
@@ -856,7 +856,7 @@ Product correction before the visual overhaul:
 
 See `docs/PHASE15.7-OPTIONAL-MULTI-GROUPS.md`.
 
-## Phase 15.8 — Curated training tips + preset workouts — DONE
+## Phase 15.8 Ã¢â‚¬â€ Curated training tips + preset workouts Ã¢â‚¬â€ DONE
 
 Functional content added before the visual overhaul resumes:
 
@@ -871,13 +871,13 @@ Functional content added before the visual overhaul resumes:
 
 See `docs/PHASE15.8-TRAINING-TIPS-PRESETS.md`.
 
-## Phase 16 — Mobile-first visual overhaul — NEXT
+## Phase 16 Ã¢â‚¬â€ Mobile-first visual overhaul Ã¢â‚¬â€ NEXT
 
 Objective: redesign the existing user-facing product **page by page** so it feels purpose-built as a polished mobile application while preserving authoritative behavior, accessibility, reliability, and responsive desktop support.
 
 This is not a one-shot reskin. Each page/surface is its own approved slice. Do not implement the next slice until the current slice has completed the visual gate and has been validated in the real app.
 
-### Phase 16 execution contract — REQUIRED FOR EVERY VISUAL SLICE
+### Phase 16 execution contract Ã¢â‚¬â€ REQUIRED FOR EVERY VISUAL SLICE
 
 For each page or major surface:
 
@@ -901,7 +901,7 @@ Global rules for the overhaul:
 - no scoring, authorization, persistence, or offline contract may change merely for visual reasons;
 - shared components/tokens are promoted only after at least two approved pages demonstrate the same need.
 
-### 16.0 Visual inventory + mobile design-system direction — DONE
+### 16.0 Visual inventory + mobile design-system direction Ã¢â‚¬â€ DONE
 
 - capture every current user-facing route/surface and its states;
 - identify global navigation, spacing, typography, surface, iconography, motion, and safe-area inconsistencies;
@@ -913,7 +913,7 @@ Global rules for the overhaul:
 
 See `docs/PHASE16.0-VISUAL-INVENTORY-DIRECTION.md`.
 
-### 16.1 App shell + primary navigation — DONE
+### 16.1 App shell + primary navigation Ã¢â‚¬â€ DONE
 
 - mobile bottom/navigation treatment and page-header behavior;
 - authenticated Profile/Settings access and `/settings` shell treatment, preserving the Phase 15 rule that an Admin action appears only for positively authorized ACTIVE platform administrators and is otherwise absent;
@@ -926,7 +926,7 @@ See `docs/PHASE16.0-VISUAL-INVENTORY-DIRECTION.md`.
 
 See `docs/PHASE16.1-APP-SHELL.md`.
 
-### 16.2 Authentication + password recovery — DONE
+### 16.2 Authentication + password recovery Ã¢â‚¬â€ DONE
 
 - sign in;
 - create account;
@@ -935,7 +935,7 @@ See `docs/PHASE16.1-APP-SHELL.md`.
 - verification/confirmation states;
 - error and configuration-help states.
 
-### 16.3 Onboarding + optional group discovery — DONE
+### 16.3 Onboarding + optional group discovery Ã¢â‚¬â€ DONE
 
 - profile onboarding;
 - weekly lifting target;
@@ -945,7 +945,7 @@ See `docs/PHASE16.1-APP-SHELL.md`.
 - additive multi-group membership and group-context switching;
 - first-run empty/error/loading states.
 
-### 16.4 Home / lifting dashboard — NEXT
+### 16.4 Home / lifting dashboard Ã¢â‚¬â€ DONE
 
 - weekly lifting goal and XP hierarchy;
 - recent lifts;
@@ -955,7 +955,7 @@ See `docs/PHASE16.1-APP-SHELL.md`.
 - reserve a compact badge/achievement showcase area that can surface earned badges without competing with Start Lift;
 - Start Lift as the primary action without turning the page into a collection of equal-weight cards.
 
-### 16.5 Active workout + set logging
+### 16.5 Active workout + set logging â€” NEXT
 
 - workout timer and lifecycle controls;
 - exercise sections;
@@ -1067,7 +1067,7 @@ Create imagery **only when an approved page has a real communication need**. Do 
 
 Exit criterion: the application presents a coherent, polished, mobile-native visual experience page by page, with deliberate desktop adaptations and only purposeful approved imagery.
 
-## Phase 17 — Public/broader release hardening — LATER
+## Phase 17 Ã¢â‚¬â€ Public/broader release hardening Ã¢â‚¬â€ LATER
 
 Phase 15 platform administration/moderation and the Phase 16 visual-overhaul integration gate should be complete before a broader public launch.
 

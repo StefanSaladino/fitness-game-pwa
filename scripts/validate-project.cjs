@@ -205,7 +205,7 @@ ok(/groups\.length === 0/.test(groupGate), 'GroupGate only requires setup for ze
 ok(/GroupGate/.test(appSource), 'App gates onboarded users through persisted group membership');
 ok(!/group-setup|groupSetup|modeSwitch|principles/.test(globalCssPhase55b), 'Phase 5.5B group selectors are not added to global.css');
 ok(groupSetupCss.length > 500 && groupGateCss.length > 100, 'Phase 5.5B feature styling is colocated in CSS Modules');
-ok(/First real lifting dashboard — DONE/.test(read('docs/ROADMAP.md')), 'roadmap marks the real lifting dashboard complete');
+ok(/First real lifting dashboard â€” DONE/.test(read('docs/ROADMAP.md')), 'roadmap marks the real lifting dashboard complete');
 
 
 const profilePictureService = read('src/features/profile-picture/profilePictureService.ts');
@@ -222,7 +222,7 @@ ok(/useProfilePicture/.test(profilePictureManager), 'ProfilePictureManager deleg
 ok(/\.module\.css/.test(read('src/features/profile-picture/components/ProfilePicture.tsx')) && profilePictureCss.length > 300 && profilePictureManagerCss.length > 500, 'profile-picture styling is colocated in CSS Modules');
 ok(!/profilePicture|profile-picture|profile_picture/.test(read('src/styles/global.css')), 'profile-picture selectors are not added to global CSS');
 ok(/profilePicturePath/.test(read('src/features/groups/model.ts')), 'group member identity carries profile-picture path');
-ok(/Profile pictures — DONE/.test(read('docs/ROADMAP.md')), 'roadmap marks profile pictures complete');
+ok(/Profile pictures â€” DONE/.test(read('docs/ROADMAP.md')), 'roadmap marks profile pictures complete');
 ok(/not.*avatar|no avatar/i.test(read('docs/PHASE5.5C-PROFILE-PICTURES.md')), 'profile-picture phase explicitly excludes avatars');
 
 
@@ -247,7 +247,7 @@ ok(!/dashboardScreen|weekSummary|xpBreakdown|leaderboardRows/.test(read('src/sty
 ok(/Cardio bonus/.test(dashboardScreen), 'dashboard exposes cardio only as a bonus category');
 ok(!/level 14|unlock your potential|design principles|feature summary/i.test(dashboardScreen), 'dashboard avoids demo-only template filler');
 ok(/createDashboardService/.test(dashboardHook), 'dashboard hook owns the dashboard service dependency');
-ok(/First real lifting dashboard — DONE/.test(read('docs/ROADMAP.md')), 'roadmap records Phase 5.5D completion');
+ok(/First real lifting dashboard â€” DONE/.test(read('docs/ROADMAP.md')), 'roadmap records Phase 5.5D completion');
 
 
 
@@ -276,7 +276,7 @@ ok(/activeSection/.test(productController) && /selectedGroupId/.test(productCont
 ok(/DashboardController/.test(productController) && /GroupAdministrationController/.test(productController), 'ProductController composes dashboard and group administration views');
 ok(groupAdministrationCss.length > 1500, 'group administration styling is substantial and colocated in a CSS Module');
 ok(!/memberRow|inviteRow|renameForm|groupAdministration/.test(read('src/styles/global.css')), 'Phase 5.6 selectors are not added to global CSS');
-ok(/Group administration UI — DONE/.test(read('docs/ROADMAP.md')), 'roadmap marks Phase 5.6 group administration complete');
+ok(/Group administration UI â€” DONE/.test(read('docs/ROADMAP.md')), 'roadmap marks Phase 5.6 group administration complete');
 
 
 
@@ -300,7 +300,7 @@ ok(
   phase57CoversMemberPermissions,
   'Phase 5.7 covers member permission presentation',
 );
-ok(/Phase 5 integration validation — DONE/.test(read('docs/ROADMAP.md')), 'roadmap marks Phase 5.7 integration validation complete');
+ok(/Phase 5 integration validation â€” DONE/.test(read('docs/ROADMAP.md')), 'roadmap marks Phase 5.7 integration validation complete');
 const integrationVitestConfig = read('vitest.integration.config.ts');
 const packageJsonPhase57 = read('package.json');
 const groupHooksPhase57 = read('src/features/groups/hooks/groupHooks.test.tsx');
@@ -331,7 +331,7 @@ ok(/WorkoutSessionScreen\.module\.css/.test(read('src/features/workout/component
 ok(!/WorkoutSessionScreen|activeHeader|exerciseStage|sessionMeta/.test(read('src/styles/global.css')), 'Phase 6.1 selectors are not added to global CSS');
 ok(/activeSection === 'workouts'/.test(productControllerPhase61) && /WorkoutController/.test(productControllerPhase61), 'ProductController composes the Workouts surface');
 ok(/Start Lift/.test(read('src/features/dashboard/components/DashboardScreen.tsx')), 'dashboard exposes the Start Lift entry point');
-ok(/Session lifecycle foundation — DONE/.test(read('docs/ROADMAP.md')), 'roadmap records Phase 6.1A completion');
+ok(/Session lifecycle foundation â€” DONE/.test(read('docs/ROADMAP.md')), 'roadmap records Phase 6.1A completion');
 
 
 
@@ -359,9 +359,9 @@ ok(!/supabase/i.test(workoutCompositionScreen), 'exercise composition presentati
 ok(/Move \$\{exercise\.canonicalName\} up/.test(workoutCompositionScreen) && /Remove \$\{exercise\.canonicalName\}/.test(workoutCompositionScreen), 'active workout exposes accessible move/remove exercise controls');
 ok(/exerciseList/.test(workoutCompositionCss) && /exerciseRow/.test(workoutCompositionCss), 'exercise composition styling is colocated in the workout CSS Module');
 ok(!/exerciseList|exerciseRow|exerciseActions/.test(read('src/styles/global.css')), 'Phase 6.1B exercise selectors are not added to global CSS');
-ok(/Exercise composition — DONE/.test(read('docs/ROADMAP.md')), 'roadmap records Phase 6.1B completion');
+ok(/Exercise composition â€” DONE/.test(read('docs/ROADMAP.md')), 'roadmap records Phase 6.1B completion');
 ok(
-  /Exercise picker integration — (?:NEXT|DONE)/.test(read('docs/ROADMAP.md')),
+  /Exercise picker integration â€” (?:NEXT|DONE)/.test(read('docs/ROADMAP.md')),
   'roadmap retains the exercise picker after exercise composition',
 );
 ok(/one canonical exercise may appear at most once/i.test(read('docs/PHASE6.1B-EXERCISE-COMPOSITION.md')), 'Phase 6.1B documents canonical exercise uniqueness');
@@ -404,11 +404,11 @@ ok(exercisePickerCss.length > 1800, 'exercise picker styling is substantial and 
 ok(!/exercisePicker|resultRow|browseSwitch/.test(read('src/styles/global.css')), 'Phase 6.1C picker selectors are not added to global CSS');
 ok(/pickerService\?: ExercisePickerService/.test(workoutControllerPhase61c), 'workout controller supports picker-service injection');
 ok(/exercisePickerService\?: ExercisePickerService/.test(productControllerPhase61c), 'product controller preserves picker-service injection for integration tests');
-ok(/Exercise picker integration — DONE/.test(read('docs/ROADMAP.md')), 'roadmap marks exercise picker integration complete');
-ok(/Exercise search — CORE DONE/.test(read('docs/ROADMAP.md')), 'roadmap marks core exercise search complete');
+ok(/Exercise picker integration â€” DONE/.test(read('docs/ROADMAP.md')), 'roadmap marks exercise picker integration complete');
+ok(/Exercise search â€” CORE DONE/.test(read('docs/ROADMAP.md')), 'roadmap marks core exercise search complete');
 
 
-// Phase 6.1C.1 / 6.1C.2 — muscle-group navigation + timer intent sync
+// Phase 6.1C.1 / 6.1C.2 â€” muscle-group navigation + timer intent sync
 const muscleGroupFilter = read('src/features/workout/components/MuscleGroupFilter.tsx');
 const muscleGroupFilterCss = read('src/features/workout/components/MuscleGroupFilter.module.css');
 const phase61c1Migration = read('supabase/migrations/20260819001000_oblique_muscle_group.sql');
@@ -440,13 +440,13 @@ ok(/start_or_resume_lifting_workout_intent/.test(workoutServicePhase61c2) && /pa
 ok(!/loadById/.test(workoutServicePhase61c2), 'start/pause/resume no longer require a second session-select round trip');
 ok(/startingAtMs/.test(workoutScreenPhase61c2) && /pauseIntentAtMs/.test(workoutScreenPhase61c2) && /resumeIntentAtMs/.test(workoutScreenPhase61c2), 'visible timer follows immediate start/pause/resume intent');
 ok(Number.isInteger(timerIntentPlan) && timerIntentPlan === 16 && timerIntentPlan === timerIntentCount, 'timer intent pgTAP plan matches 16 assertions');
-ok(/Picker drill-down \+ timer synchronization — DONE/.test(read('docs/ROADMAP.md')), 'roadmap records picker/timer cleanup completion');
-ok(/Set tracking — (?:NEXT|DONE)/.test(read('docs/ROADMAP.md')) && /every set is stored independently/.test(read('docs/ROADMAP.md')), 'roadmap retains the independent per-set requirement');
+ok(/Picker drill-down \+ timer synchronization â€” DONE/.test(read('docs/ROADMAP.md')), 'roadmap records picker/timer cleanup completion');
+ok(/Set tracking â€” (?:NEXT|DONE)/.test(read('docs/ROADMAP.md')) && /every set is stored independently/.test(read('docs/ROADMAP.md')), 'roadmap retains the independent per-set requirement');
 ok(!/muscleGroupFilter|selectedMark/.test(read('src/styles/global.css')), 'Phase 6.1C cleanup selectors are not added to global CSS');
 
 
 
-// Phase 6.3 — per-set workout logging
+// Phase 6.3 â€” per-set workout logging
 const setTrackingMigration = read('supabase/migrations/20260819001300_workout_set_tracking.sql');
 const setTrackingTest = read('supabase/tests/018_workout_set_tracking.test.sql');
 const workoutSetService = read('src/features/workout/workoutSetService.ts');
@@ -472,12 +472,12 @@ ok(/displayWeightToKg/.test(weightUnits) && /kgToDisplayWeight/.test(weightUnits
 ok(workoutSetCss.length > 1200, 'set-entry styling is substantial and colocated in a CSS Module');
 ok(!/WorkoutSetList|setRow|setStage|completeButton/.test(read('src/styles/global.css')), 'Phase 6.3 selectors are not added to global CSS');
 ok(Number.isInteger(phase63Plan) && phase63Plan === 34 && phase63Plan === phase63Count, 'Phase 6.3 pgTAP plan matches 34 assertions');
-ok(/Set tracking — DONE/.test(read('docs/ROADMAP.md')), 'roadmap records Phase 6.3 completion');
-ok(/Workout reliability — DONE/.test(read('docs/ROADMAP.md')), 'roadmap records Phase 6.4 reliability completion');
+ok(/Set tracking â€” DONE/.test(read('docs/ROADMAP.md')), 'roadmap records Phase 6.3 completion');
+ok(/Workout reliability â€” DONE/.test(read('docs/ROADMAP.md')), 'roadmap records Phase 6.4 reliability completion');
 ok(/does not add or change lifting-v1 XP reconciliation/i.test(read('docs/PHASE6.3-SET-TRACKING.md')), 'Phase 6.3 explicitly leaves XP persistence unchanged');
 
 
-// Phase 6.4A — local active-workout recovery
+// Phase 6.4A â€” local active-workout recovery
 for (const rel of [
   'src/features/workout/recovery/workoutRecoveryModel.ts',
   'src/features/workout/recovery/workoutRecoveryStorage.ts',
@@ -511,12 +511,12 @@ ok(/serverMutationsEnabled/.test(recoveryScreen) && /serverMutationsEnabled/.tes
 ok(/recoveryDrafts/.test(recoverySetList) && /onDraftChange/.test(recoverySetList), 'set entry hydrates and persists unsaved local drafts');
 ok(!/localStorage|supabase/i.test(recoveryScreen), 'workout presentation does not own persistence');
 ok(!/recoveryNotice/.test(read('src/styles/global.css')), 'Phase 6.4A recovery styling is not added to global CSS');
-ok(/6\.4A Local active-workout recovery — DONE/.test(read('docs/ROADMAP.md')), 'roadmap records Phase 6.4A completion');
-ok(/6\.4B Idempotent workout mutation queue — DONE/.test(read('docs/ROADMAP.md')), 'roadmap records Phase 6.4B queue completion');
+ok(/6\.4A Local active-workout recovery â€” DONE/.test(read('docs/ROADMAP.md')), 'roadmap records Phase 6.4A completion');
+ok(/6\.4B Idempotent workout mutation queue â€” DONE/.test(read('docs/ROADMAP.md')), 'roadmap records Phase 6.4B queue completion');
 ok(/no general mutation queue/i.test(recoveryDoc) && /no lifting-v1 scoring changes/i.test(recoveryDoc), 'Phase 6.4A documents its reliability non-goals');
 
 
-// Phase 6.4B — idempotent workout mutation queue
+// Phase 6.4B â€” idempotent workout mutation queue
 for (const rel of [
   'src/features/workout/mutations/workoutMutationModel.ts',
   'src/features/workout/mutations/workoutMutationStorage.ts',
@@ -566,13 +566,13 @@ ok(/request_payload <> v_payload/.test(mutationMigration), 'same idempotency key
 ok(/apply_lifting_workout_mutation/.test(mutationMigration) && /grant execute on function public\.apply_lifting_workout_mutation/.test(mutationMigration), 'authenticated clients receive the idempotent mutation gateway');
 ok(/add_lifting_workout_set/.test(mutationMigration) && /copy_lifting_workout_set/.test(mutationMigration) && /save_lifting_workout_set/.test(mutationMigration), 'idempotent gateway delegates set writes to guarded authoritative functions');
 ok(Number.isInteger(phase64bPlan) && phase64bPlan === 26 && phase64bPlan === phase64bCount, 'Phase 6.4B pgTAP plan matches 26 assertions');
-ok(/6\.4B Idempotent workout mutation queue — DONE/.test(read('docs/ROADMAP.md')), 'roadmap records Phase 6.4B completion');
-ok(/6\.4C Conflict and destructive-edit safety — DONE/.test(read('docs/ROADMAP.md')), 'roadmap records Phase 6.4C conflict safety completion');
+ok(/6\.4B Idempotent workout mutation queue â€” DONE/.test(read('docs/ROADMAP.md')), 'roadmap records Phase 6.4B completion');
+ok(/6\.4C Conflict and destructive-edit safety â€” DONE/.test(read('docs/ROADMAP.md')), 'roadmap records Phase 6.4C conflict safety completion');
 ok(/no scoring reconciliation/i.test(mutationDoc) && /no optimistic local exercise\/set creation/i.test(mutationDoc), 'Phase 6.4B documents scoring and conflict-safety non-goals');
 ok(/Phase 6\.4B/.test(mutationDoc), 'Phase 6.4B keeps its historical checkpoint documentation');
 
 
-// Phase 6.4C — conflict and destructive-edit safety
+// Phase 6.4C â€” conflict and destructive-edit safety
 for (const rel of [
   'supabase/migrations/20260820000200_workout_conflict_safety.sql',
   'supabase/tests/020_workout_conflict_safety.test.sql',
@@ -603,12 +603,12 @@ ok(/for update/.test(conflictMigration) && /v_current_revision <> v_expected_rev
 ok(/Workout is no longer active on the server/.test(conflictMigration), 'completed and cancelled workouts reject queued capture mutations as conflicts');
 ok(/receipt/.test(conflictDoc) && /Legacy v0\.5\.2/.test(conflictDoc), 'conflict policy preserves exact idempotent replay and handles legacy queued writes safely');
 ok(Number.isInteger(phase64cPlan) && phase64cPlan === 31 && phase64cPlan === phase64cCount, 'Phase 6.4C pgTAP plan matches 31 assertions');
-ok(/6\.4C Conflict and destructive-edit safety — DONE/.test(read('docs/ROADMAP.md')), 'roadmap records Phase 6.4C completion');
-ok(/6\.4D Reliability integration gate — DONE/.test(read('docs/ROADMAP.md')), 'roadmap records Phase 6.4D reliability integration completion');
+ok(/6\.4C Conflict and destructive-edit safety â€” DONE/.test(read('docs/ROADMAP.md')), 'roadmap records Phase 6.4C completion');
+ok(/6\.4D Reliability integration gate â€” DONE/.test(read('docs/ROADMAP.md')), 'roadmap records Phase 6.4D reliability integration completion');
 ok(/Phase 6\.4C/.test(conflictDoc), 'Phase 6.4C keeps its historical checkpoint documentation');
 
 
-// Phase 6.4D — reliability integration gate
+// Phase 6.4D â€” reliability integration gate
 for (const rel of [
   'tests/integration/workout-reliability-journey.test.tsx',
   'tests/e2e/workout-reliability.spec.ts',
@@ -637,12 +637,12 @@ ok(/scrollWidth - window\.innerWidth/.test(reliabilityE2e), 'phone reliability E
 ok(/ActiveWorkoutScreen/.test(reliabilityHarness) && /recoveryState=\{offline \? 'offline' : 'synced'\}/.test(reliabilityHarness), 'E2E harness renders the real workout recovery presentation');
 ok(Number.isInteger(phase64dPlan) && phase64dPlan === 17 && phase64dPlan === phase64dCount, 'Phase 6.4D pgTAP plan matches 17 assertions');
 ok(/no new migration/i.test(reliabilityDoc), 'Phase 6.4D remains a validation-only database slice');
-ok(/6\.4D Reliability integration gate — DONE/.test(read('docs/ROADMAP.md')), 'roadmap records Phase 6.4D completion');
-ok(/Phase 7 — Authoritative lifting-v1 scoring persistence — DONE/.test(read('docs/ROADMAP.md')), 'roadmap records Phase 7 authoritative scoring completion');
+ok(/6\.4D Reliability integration gate â€” DONE/.test(read('docs/ROADMAP.md')), 'roadmap records Phase 6.4D completion');
+ok(/Phase 7 â€” Authoritative lifting-v1 scoring persistence â€” DONE/.test(read('docs/ROADMAP.md')), 'roadmap records Phase 7 authoritative scoring completion');
 ok(versionAtLeast(packageJson.version, '0.8.0') && versionAtLeast(packageLockJson.version, '0.8.0'), 'project metadata is at or beyond the v0.8.0 weekly-consistency checkpoint');
 
 
-// Phase 7 — authoritative lifting-v1 scoring persistence
+// Phase 7 â€” authoritative lifting-v1 scoring persistence
 for (const rel of [
   'supabase/migrations/20260820000300_authoritative_lifting_scoring.sql',
   'supabase/tests/022_authoritative_lifting_scoring.test.sql',
@@ -673,12 +673,12 @@ ok(/after insert or update or delete on public\.workout_sessions/.test(phase7Mig
 ok(/w\.source = 'IN_APP'/.test(phase7Migration) && /MANUAL/.test(phase7Doc) && /EXTERNAL/.test(phase7Doc), 'Phase 7 documents and enforces conservative automatic-scoring source policy');
 ok(/best_weight_kg/.test(phase7Migration) && /best_reps/.test(phase7Migration), 'personal-best snapshots retain source weight and reps');
 ok(Number.isInteger(phase7Plan) && phase7Plan === 32 && phase7Plan === phase7Count, 'Phase 7 pgTAP plan matches 32 assertions');
-ok(/Phase 7 — Authoritative lifting-v1 scoring persistence — DONE/.test(read('docs/ROADMAP.md')), 'roadmap records Phase 7 completion');
-ok(/Phase 8 — Exercise progression engine \+ history — DONE/.test(read('docs/ROADMAP.md')), 'roadmap retains completed Phase 8 progression history');
+ok(/Phase 7 â€” Authoritative lifting-v1 scoring persistence â€” DONE/.test(read('docs/ROADMAP.md')), 'roadmap records Phase 7 completion');
+ok(/Phase 8 â€” Exercise progression engine \+ history â€” DONE/.test(read('docs/ROADMAP.md')), 'roadmap retains completed Phase 8 progression history');
 ok(/full history rebuild/i.test(phase7Doc) && /historical edits and deletes/i.test(phase7Doc), 'Phase 7 documents downstream-safe historical reconciliation');
 
 
-// Phase 8 — exercise progression engine + history
+// Phase 8 â€” exercise progression engine + history
 for (const rel of [
   'src/features/progress/model.ts',
   'src/features/progress/progressService.ts',
@@ -720,13 +720,13 @@ ok(/activeItem="progress"/.test(progressHistoryScreen), 'Progress destination is
 ok(/progressService\?: ExerciseProgressService/.test(progressProductController) && /activeSection === 'progress'/.test(progressProductController), 'ProductController composes the Progress section with injectable service boundary');
 ok(progressHistoryCss.length > 2500, 'Phase 8 Progress styling is substantial and colocated in a CSS Module');
 ok(!/exercisePanel|progressGrid|historyList/.test(read('src/styles/global.css')), 'Phase 8 Progress selectors are not added to global CSS');
-ok(/Phase 8 — Exercise progression engine \+ history — DONE/.test(read('docs/ROADMAP.md')), 'roadmap records Phase 8 progression history completion');
-ok(/Phase 9 — Weekly lifting consistency \+ badges — DONE/.test(read('docs/ROADMAP.md')), 'roadmap records Phase 9 weekly consistency and badges completion');
+ok(/Phase 8 â€” Exercise progression engine \+ history â€” DONE/.test(read('docs/ROADMAP.md')), 'roadmap records Phase 8 progression history completion');
+ok(/Phase 9 â€” Weekly lifting consistency \+ badges â€” DONE/.test(read('docs/ROADMAP.md')), 'roadmap records Phase 9 weekly consistency and badges completion');
 ok(/does not[\s\S]*change `lifting-v1` scoring/i.test(progressHistoryDoc), 'Phase 8 documentation preserves authoritative Phase 7 scoring rules');
 ok(/no cross-user/i.test(progressHistoryDoc), 'Phase 8 documents personal-only progression comparison');
 
 
-// Phase 9 — weekly lifting consistency + badges
+// Phase 9 â€” weekly lifting consistency + badges
 for (const rel of [
   'src/features/consistency/model.ts',
   'src/features/consistency/badges.ts',
@@ -772,13 +772,13 @@ ok(/createLiftingConsistencyService/.test(phase9DashboardService), 'dashboard co
 ok(/GOAL_STREAK_8/.test(badgeCatalog) && /CARDIO_BONUS_DAYS_10/.test(badgeCatalog), 'badge catalog includes capped consistency and accessory-cardio milestones');
 ok(/consistencySection/.test(phase9DashboardCss) && /badgeGrid/.test(phase9DashboardCss), 'Phase 9 dashboard styling remains colocated in its CSS Module');
 ok(!/consistencySection|badgeGrid|recentWeeks/.test(read('src/styles/global.css')), 'Phase 9 selectors are not added to global CSS');
-ok(/Phase 9 — Weekly lifting consistency \+ badges — DONE/.test(read('docs/ROADMAP.md')), 'roadmap records Phase 9 completion');
-ok(/Phase 10 — Group competition\/social — (?:NEXT|DONE)/.test(read('docs/ROADMAP.md')), 'roadmap retains Phase 10 group competition/social after Phase 9');
+ok(/Phase 9 â€” Weekly lifting consistency \+ badges â€” DONE/.test(read('docs/ROADMAP.md')), 'roadmap records Phase 9 completion');
+ok(/Phase 10 â€” Group competition\/social â€” (?:NEXT|DONE)/.test(read('docs/ROADMAP.md')), 'roadmap retains Phase 10 group competition/social after Phase 9');
 ok(/badges are derived recognition only/i.test(phase9Doc) && /never write `scoring_events`/i.test(phase9Doc), 'Phase 9 documentation keeps badges outside XP scoring');
 ok(versionAtLeast(packageJson.version, '0.8.0') && versionAtLeast(packageLockJson.version, '0.8.0'), 'project metadata is at or beyond v0.8.0');
 
 
-// Phase 10 — group competition/social
+// Phase 10 â€” group competition/social
 for (const rel of [
   'src/features/social/model.ts',
   'src/features/social/socialService.ts',
@@ -848,12 +848,12 @@ ok(/Individual sets, workout notes/.test(read('tests/e2e/group-social.spec.ts'))
 ok(/no level formula/i.test(phase10Doc) && /leaves levels undefined/i.test(phase10Doc), 'Phase 10 deliberately avoids inventing a level curve');
 ok(/never add XP|never affect XP|never add XP/i.test(phase10Doc) || /never add XP/i.test(phase10Doc), 'Phase 10 documentation keeps social mechanics outside XP');
 ok(/raw sets/i.test(phase10Doc) && /workout notes/i.test(phase10Doc), 'Phase 10 documentation locks privacy-safe feed summaries');
-ok(/Phase 10 — Group competition\/social — DONE/.test(read('docs/ROADMAP.md')), 'roadmap records Phase 10 competition/social completion');
-ok(/Phase 11 — Cardio accessory logging — (?:NEXT|DONE)/.test(read('docs/ROADMAP.md')), 'roadmap retains Phase 11 cardio accessory logging');
+ok(/Phase 10 â€” Group competition\/social â€” DONE/.test(read('docs/ROADMAP.md')), 'roadmap records Phase 10 competition/social completion');
+ok(/Phase 11 â€” Cardio accessory logging â€” (?:NEXT|DONE)/.test(read('docs/ROADMAP.md')), 'roadmap retains Phase 11 cardio accessory logging');
 ok(versionAtLeast(packageJson.version, '0.9.0') && versionAtLeast(packageLockJson.version, '0.9.0'), 'project metadata is at or beyond v0.9.0');
 
 
-// Phase 11 — cardio accessory logging
+// Phase 11 â€” cardio accessory logging
 for (const rel of [
   'src/features/cardio/model.ts',
   'src/features/cardio/cardioService.ts',
@@ -888,7 +888,7 @@ ok(Number.isInteger(phase11Plan) && phase11Plan === 34 && phase11Plan === phase1
 ok(/CARDIO_BONUS_MIN_ACTIVE_SECONDS/.test(phase11Model) && /cardioDurationTierXp/.test(phase11Model), 'cardio UI derives qualification minimums from the locked domain oracle');
 ok(/get_my_cardio_history/.test(phase11Service) && /get_my_cardio_summary/.test(phase11Service) && /log_cardio_activity/.test(phase11Service), 'cardio service uses only guarded Phase 11 RPCs');
 ok(/never counts as a lifting day/i.test(phase11Screen), 'cardio screen explicitly preserves lifting-day semantics');
-ok(/Only the day’s best eligible cardio bonus is awarded/.test(phase11Screen), 'cardio screen explains best-of-day bonus behavior');
+ok(/Only the dayâ€™s best eligible cardio bonus is awarded/.test(phase11Screen), 'cardio screen explains best-of-day bonus behavior');
 ok(/activeSection === 'cardio'/.test(phase11Product) && /cardioService\?: CardioService/.test(phase11Product), 'ProductController composes injectable accessory cardio navigation');
 const phase11Navigation = read('src/components/layout/navigation.ts');
 ok(/export type AppSection = [^\n]*'cardio'/.test(phase11Navigation), 'AppSection explicitly includes the Phase 11 cardio route');
@@ -897,12 +897,12 @@ ok(/Log cardio/.test(read('src/features/dashboard/components/DashboardScreen.tsx
 ok(/never counts as a lifting day/i.test(read('tests/integration/cardio-accessory-journey.test.tsx')) && /Delete Cycling/.test(read('tests/integration/cardio-accessory-journey.test.tsx')), 'Phase 11 integration journey covers accessory semantics and correction');
 ok(/does not add pace, distance, GPS routes, heart rate/i.test(phase11Doc), 'Phase 11 documentation keeps cardio scope deliberately lightweight');
 ok(/Cardio never creates `LIFTING_WORKOUT` events/.test(phase11Doc), 'Phase 11 documentation locks cardio outside lifting-day consistency');
-ok(/Phase 11 — Cardio accessory logging — DONE/.test(read('docs/ROADMAP.md')), 'roadmap records Phase 11 cardio accessory logging completion');
-ok(/Phase 12 — PWA\/offline hardening — (?:NEXT|IN PROGRESS|DONE)/.test(read('docs/ROADMAP.md')), 'roadmap retains Phase 12 PWA/offline hardening');
+ok(/Phase 11 â€” Cardio accessory logging â€” DONE/.test(read('docs/ROADMAP.md')), 'roadmap records Phase 11 cardio accessory logging completion');
+ok(/Phase 12 â€” PWA\/offline hardening â€” (?:NEXT|IN PROGRESS|DONE)/.test(read('docs/ROADMAP.md')), 'roadmap retains Phase 12 PWA/offline hardening');
 ok(versionAtLeast(packageJson.version, '0.10.0') && versionAtLeast(packageLockJson.version, '0.10.0'), 'project metadata is at or beyond v0.10.0');
 
 
-// Phase 12A — IndexedDB workout durability
+// Phase 12A â€” IndexedDB workout durability
 for (const rel of [
   'src/features/workout/storage/workoutIndexedDb.ts',
   'src/features/workout/recovery/workoutRecoveryStorage.ts',
@@ -957,12 +957,12 @@ ok(/reports loading immediately when the active workout identity changes/.test(r
 ok(/reports loading immediately when exercise identities change/.test(read('src/features/workout/hooks/useWorkoutSets.test.tsx')), 'set hook regression covers the empty-to-populated exercise loading boundary');
 ok(/snapshot\?\.exercises\.map[\s\S]*WORKOUT_EXERCISE_ID[\s\S]*snapshot\?\.sets\.map[\s\S]*SET_ID/.test(phase12ReliabilityIntegration), 'reliability integration waits for a complete canonical recovery snapshot before simulating offline loss');
 ok(/no Supabase migration/i.test(phase12Doc) && /no scoring\/XP changes/i.test(phase12Doc), 'Phase 12A documentation locks database and scoring non-goals');
-ok(/12A IndexedDB workout durability — DONE/.test(phase12Roadmap), 'roadmap records Phase 12A completion');
-ok(/12B Offline shell \+ install UX — (?:NEXT|DONE)/.test(phase12Roadmap), 'roadmap retains Phase 12B offline shell/install UX');
+ok(/12A IndexedDB workout durability â€” DONE/.test(phase12Roadmap), 'roadmap records Phase 12A completion');
+ok(/12B Offline shell \+ install UX â€” (?:NEXT|DONE)/.test(phase12Roadmap), 'roadmap retains Phase 12B offline shell/install UX');
 ok(versionAtLeast(packageJson.version, '0.11.0') && versionAtLeast(packageLockJson.version, '0.11.0'), 'project metadata is at or beyond v0.11.0');
 
 
-// Phase 12B — offline shell + install UX
+// Phase 12B â€” offline shell + install UX
 for (const rel of [
   'src/pwa/pwaService.ts',
   'src/pwa/usePwaLifecycle.ts',
@@ -981,7 +981,7 @@ const phase12bTest = read('src/pwa/PwaStatus.test.tsx');
 const phase12bE2e = read('tests/e2e/pwa-shell.spec.ts');
 const phase12bDoc = read('docs/PHASE12B-OFFLINE-SHELL-INSTALL-UX.md');
 const phase12bManifest = JSON.parse(read('public/manifest.webmanifest'));
-ok(/CACHE_PREFIX = 'workout-game-shell-'/.test(phase12bSw) && /const CACHE_VERSION = 'v13-2'/.test(phase12bSw), 'current service worker retains an explicit versioned shell cache');
+ok(/CACHE_PREFIX = 'workout-game-shell-'/.test(phase12bSw) && /const CACHE_VERSION = 'v14-0'/.test(phase12bSw), 'current service worker retains an explicit versioned shell cache');
 ok(/fetchForPrecache\('\/'\)/.test(phase12bSw) && /shellAssetPaths\(html\)/.test(phase12bSw), 'Phase 12B discovers and precaches built production shell assets from the deployed root HTML');
 ok(/manifest\.webmanifest/.test(phase12bSw) && /icon-192\.png/.test(phase12bSw) && /icon-512\.png/.test(phase12bSw), 'Phase 12B precaches install metadata and icons');
 ok(/url\.origin !== self\.location\.origin\) return/.test(phase12bSw), 'service worker ignores every cross-origin request rather than caching Supabase/auth/data traffic');
@@ -1014,12 +1014,12 @@ ok(!/page\.reload/.test(phase12bE2e), 'Phase 12B browser gate avoids unsupported
 ok(phase12bManifest.id === '/' && phase12bManifest.scope === '/' && phase12bManifest.display === 'standalone', 'manifest has stable root identity/scope and standalone display');
 ok(phase12bManifest.icons.every((icon) => /maskable/.test(icon.purpose || '')), 'install icons are declared maskable-capable');
 ok(/no Supabase migration/i.test(phase12bDoc) && /no scoring\/XP changes/i.test(phase12bDoc), 'Phase 12B documentation locks database and scoring non-goals');
-ok(/12B Offline shell \+ install UX — DONE/.test(phase12Roadmap), 'roadmap records Phase 12B completion');
-ok(/12C Reconnect \+ retry hardening — (?:NEXT|DONE)/.test(phase12Roadmap), 'roadmap contains the Phase 12C reconnect/retry slice');
+ok(/12B Offline shell \+ install UX â€” DONE/.test(phase12Roadmap), 'roadmap records Phase 12B completion');
+ok(/12C Reconnect \+ retry hardening â€” (?:NEXT|DONE)/.test(phase12Roadmap), 'roadmap contains the Phase 12C reconnect/retry slice');
 ok(versionAtLeast(packageJson.version, '0.11.1') && versionAtLeast(packageLockJson.version, '0.11.1'), 'project metadata is at or beyond v0.11.1');
 
 
-// Phase 12C — reconnect + retry hardening
+// Phase 12C â€” reconnect + retry hardening
 for (const rel of [
   'src/features/workout/mutations/workoutMutationRetry.ts',
   'src/features/workout/mutations/workoutMutationRetry.test.ts',
@@ -1052,12 +1052,12 @@ ok(/persistedBeforeRestart!\.idempotencyKey/.test(phase12cIntegration) && /backe
 ok(/createWorkoutMutationStorage\(\)\.load\(USER_ID\)\)\.toEqual\(\[\]\)/.test(phase12cIntegration), 'restart integration proves the durable mutation journal drains after reconciliation');
 ok(!/Background Sync/i.test(phase12cRetry) && !/supabase/i.test(phase12cRetry), 'Phase 12C retry policy is browser-local and does not introduce background-sync or Supabase coupling');
 ok(/No Supabase migration/i.test(phase12cDoc) && /no scoring\/XP changes/i.test(phase12cDoc), 'Phase 12C documentation locks database and scoring non-goals');
-ok(/12C Reconnect \+ retry hardening — DONE/.test(phase12Roadmap), 'roadmap records Phase 12C completion');
-ok(/12D Mobile PWA validation — (?:NEXT|DONE)/.test(phase12Roadmap), 'roadmap advances to Phase 12D');
+ok(/12C Reconnect \+ retry hardening â€” DONE/.test(phase12Roadmap), 'roadmap records Phase 12C completion');
+ok(/12D Mobile PWA validation â€” (?:NEXT|DONE)/.test(phase12Roadmap), 'roadmap advances to Phase 12D');
 ok(versionAtLeast(packageJson.version, '0.11.2') && versionAtLeast(packageLockJson.version, '0.11.2'), 'project metadata is at or beyond v0.11.2');
 
 
-// Phase 12D — mobile PWA validation
+// Phase 12D â€” mobile PWA validation
 for (const rel of [
   'src/pwa/pwaService.test.ts',
   'docs/PHASE12D-MOBILE-PWA-VALIDATION.md',
@@ -1077,7 +1077,7 @@ ok(/manualInstallAvailable/.test(phase12dService) && /platform === 'ios'/.test(p
 ok(/navigator\.storage\.persisted\(\)/.test(phase12dService) && /storagePersistence: persistent \? 'persistent' : 'best-effort'/.test(phase12dService), 'PWA lifecycle reports browser-authoritative persistent versus best-effort storage');
 ok(/navigator\.storage\.persist\(\)/.test(phase12dService) && /requestPersistentStorage/.test(phase12dService), 'installed PWA can explicitly request persistent origin storage when supported');
 ok(/visibilitychange/.test(phase12dService) && /pageshow/.test(phase12dService), 'PWA lifecycle refreshes runtime/storage state after mobile foreground and page restoration');
-ok(/Share → Add to Home Screen/.test(phase12dStatus) && /Open as Web App/.test(phase12dStatus), 'iOS install guidance matches the Home Screen workflow without rendering an Install button');
+ok(/Share â†’ Add to Home Screen/.test(phase12dStatus) && /Open as Web App/.test(phase12dStatus), 'iOS install guidance matches the Home Screen workflow without rendering an Install button');
 ok(/Protect offline workout data/.test(phase12dStatus) && /Protect data/.test(phase12dStatus), 'installed best-effort storage exposes an explicit persistence request instead of claiming local data cannot be evicted');
 ok(/manual Add to Home Screen guidance/.test(phase12dStatusTest) && /request persistent storage/.test(phase12dStatusTest), 'PWA status component covers iOS manual install and persistence-request UI');
 ok(/detects iOS/.test(phase12dServiceTest) && /reports best-effort storage/.test(phase12dServiceTest) && /returns visible/.test(phase12dServiceTest), 'PWA lifecycle unit coverage includes platform, storage persistence, and mobile resume refresh');
@@ -1089,12 +1089,12 @@ ok(/chromium-android/.test(phase12dE2e) && /display: 'standalone'/.test(phase12d
 ok(/physical-device release checklist/i.test(phase12dDoc) && /iPhone \/ iPad/.test(phase12dDoc) && /Android \/ Chrome/.test(phase12dDoc), 'Phase 12D documents explicit installed-device certification for iOS and Android');
 ok(/best-effort/i.test(phase12dDoc) && /evict/i.test(phase12dDoc) && /explicit user clearing/i.test(phase12dDoc), 'Phase 12D documentation does not overpromise browser storage durability');
 ok(/No Supabase migration/i.test(phase12dDoc) && /No scoring\/XP changes/i.test(phase12dDoc), 'Phase 12D documentation locks database and scoring non-goals');
-ok(/Phase 12 — PWA\/offline hardening — DONE/.test(phase12Roadmap) && /12D Mobile PWA validation — DONE/.test(phase12Roadmap), 'roadmap records completion of Phase 12 and 12D');
-ok(/Phase 13 — Lifting analytics — (?:NEXT|IN PROGRESS|DONE)/.test(phase12Roadmap), 'roadmap retains the Phase 13 UI-design-gated analytics slice');
+ok(/Phase 12 â€” PWA\/offline hardening â€” DONE/.test(phase12Roadmap) && /12D Mobile PWA validation â€” DONE/.test(phase12Roadmap), 'roadmap records completion of Phase 12 and 12D');
+ok(/Phase 13 â€” Lifting analytics â€” (?:NEXT|IN PROGRESS|DONE)/.test(phase12Roadmap), 'roadmap retains the Phase 13 UI-design-gated analytics slice');
 ok(versionAtLeast(packageJson.version, '0.11.3') && versionAtLeast(packageLockJson.version, '0.11.3'), 'project metadata is at or beyond v0.11.3');
 
 
-// Phase 13A — per-exercise lifting analytics
+// Phase 13A â€” per-exercise lifting analytics
 for (const rel of [
   'src/features/progress/exerciseAnalytics.ts',
   'src/features/progress/exerciseAnalytics.test.ts',
@@ -1131,12 +1131,12 @@ ok(/progress: resolve\(process\.cwd\(\), 'progress\.e2e\.html'\)/.test(phase13Vi
 ok(/Know your trend\. Beat your last\./.test(phase13E2e) && /e1RM trend/.test(phase13E2e) && /Volume history/.test(phase13E2e) && /scrollWidth - window\.innerWidth/.test(phase13E2e), 'Phase 13A browser gate covers analytics content and responsive overflow');
 ok(/findByRole\('heading',\{name:'Know your trend\. Beat your last\.'\}\)/.test(phase13Integration) && !/Your lift history/.test(phase13Integration), 'Phase 13A product integration journey follows the approved analytics heading');
 ok(/No Supabase migration/i.test(phase13Doc) && /No scoring\/XP changes/i.test(phase13Doc), 'Phase 13A documentation locks database and scoring non-goals');
-ok(/Phase 13 — Lifting analytics — (?:IN PROGRESS|DONE)/.test(phase13Roadmap) && /13A Per-exercise lifting analytics — DONE/.test(phase13Roadmap), 'roadmap preserves Phase 13A completion while Phase 13 advances');
-ok(/13B Weekly\/monthly lifting summaries — (?:NEXT|DONE)/.test(phase13Roadmap), 'roadmap preserves the Phase 13B weekly/monthly summary slice');
+ok(/Phase 13 â€” Lifting analytics â€” (?:IN PROGRESS|DONE)/.test(phase13Roadmap) && /13A Per-exercise lifting analytics â€” DONE/.test(phase13Roadmap), 'roadmap preserves Phase 13A completion while Phase 13 advances');
+ok(/13B Weekly\/monthly lifting summaries â€” (?:NEXT|DONE)/.test(phase13Roadmap), 'roadmap preserves the Phase 13B weekly/monthly summary slice');
 ok(versionAtLeast(packageJson.version, '0.12.0') && versionAtLeast(packageLockJson.version, '0.12.0'), 'project metadata is at or beyond v0.12.0');
 
 
-// Phase 13B — weekly/monthly lifting summaries
+// Phase 13B â€” weekly/monthly lifting summaries
 for (const rel of [
   'supabase/migrations/20260822000100_lifting_calendar_summaries.sql',
   'supabase/tests/027_lifting_calendar_summaries.test.sql',
@@ -1177,15 +1177,15 @@ ok(/orders weekly\/monthly buckets/.test(phase13bAnalyticsTest) && /null deltas/
 ok(/calendarStatus/.test(phase13bHook) && /calendarError/.test(phase13bHook) && /retryCalendar/.test(phase13bHook), 'Phase 13B summary loading and retry state is isolated from per-exercise analytics');
 ok(/Weekly &amp; monthly summary/.test(phase13bPanel) && /Sessions/.test(phase13bPanel) && /Exercises/.test(phase13bPanel) && /Working sets/.test(phase13bPanel) && /PRs/.test(phase13bPanel) && /Volume/.test(phase13bPanel), 'Phase 13B panel exposes all required weekly/monthly lifting metrics');
 ok(/Weekly volume/.test(phase13bPanel) && /Monthly volume/.test(phase13bPanel) && /never changes XP/.test(phase13bPanel), 'Phase 13B UI provides period trend context while keeping volume outside scoring');
-ok(/Weekly & monthly summary/.test(phase13bScreenTest) && /3,200 kg·reps vs prior week/.test(phase13bScreenTest), 'Phase 13B component coverage proves summary content and prior-period delta presentation');
+ok(/Weekly & monthly summary/.test(phase13bScreenTest) && /3,200 kgÂ·reps vs prior week/.test(phase13bScreenTest), 'Phase 13B component coverage proves summary content and prior-period delta presentation');
 ok(/Weekly & monthly summary/.test(phase13bE2e) && /Weekly volume/.test(phase13bE2e) && /Monthly volume/.test(phase13bE2e) && /scrollWidth - window\.innerWidth/.test(phase13bE2e), 'Phase 13B browser gate covers weekly/monthly analytics and responsive overflow');
 ok(/findByRole\('heading',\{name:'Weekly & monthly summary'\}\)/.test(phase13bIntegration), 'Phase 13B product integration journey reaches calendar analytics through the real Progress navigation');
 ok(/no scoring\/XP changes/i.test(phase13bDoc) && /no cross-user comparison/i.test(phase13bDoc) && /baseline, not a PR/i.test(phase13bDoc), 'Phase 13B documentation locks scoring, privacy, and PR-baseline semantics');
-ok(/Phase 13 — Lifting analytics — DONE/.test(phase13Roadmap) && /13B Weekly\/monthly lifting summaries — DONE/.test(phase13Roadmap), 'roadmap records completion of Phase 13 and Phase 13B');
+ok(/Phase 13 â€” Lifting analytics â€” DONE/.test(phase13Roadmap) && /13B Weekly\/monthly lifting summaries â€” DONE/.test(phase13Roadmap), 'roadmap records completion of Phase 13 and Phase 13B');
 ok(versionAtLeast(packageJson.version, '0.13.0') && versionAtLeast(packageLockJson.version, '0.13.0'), 'project metadata is at or beyond v0.13.0');
 
 
-// Phase 5.6.1 — targeted user invitations
+// Phase 5.6.1 â€” targeted user invitations
 const targetedInviteMigration = read('supabase/migrations/20260819001100_targeted_group_invitations.sql');
 const targetedInviteTest = read('supabase/tests/016_targeted_group_invitations.test.sql');
 const targetedInvitePlan = Number((targetedInviteTest.match(/select\s+plan\((\d+)\)/i)||[])[1]);
