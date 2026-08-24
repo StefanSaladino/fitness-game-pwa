@@ -1,6 +1,8 @@
 import { useState, type FormEvent } from 'react';
 import { Button, TextField } from '../../../components/ui';
 import { hasValidationErrors, validateSignIn, type SignInCredentials } from '../authValidation';
+import { EyeIcon, LockIcon, MailIcon } from './AuthIcons';
+import styles from './AuthForm.module.css';
 
 interface SignInFormProps {
   busy: boolean;
@@ -13,6 +15,7 @@ interface SignInFormProps {
 export function SignInForm({ busy, error, onSubmit, onCreateAccount, onForgotPassword }: SignInFormProps) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<Partial<Record<keyof SignInCredentials, string>>>({});
 
   async function submit(event: FormEvent) {
@@ -24,30 +27,50 @@ export function SignInForm({ busy, error, onSubmit, onCreateAccount, onForgotPas
   }
 
   return (
-    <form className="auth-form auth-form--production" onSubmit={submit} noValidate>
+    <form className={styles.form} onSubmit={submit} noValidate>
       <TextField
         autoComplete="email"
+        className={styles.field}
         error={fieldErrors.email}
         label="Email"
+        leadingIcon={<MailIcon />}
         onChange={(event) => setEmail(event.target.value)}
-        placeholder="you@example.com"
+        placeholder="you@yourmail.com"
         type="email"
         value={email}
       />
       <TextField
         autoComplete="current-password"
+        className={styles.field}
         error={fieldErrors.password}
         label="Password"
+        leadingIcon={<LockIcon />}
         onChange={(event) => setPassword(event.target.value)}
-        type="password"
+        placeholder="Enter your password"
+        trailingControl={(
+          <button
+            aria-label={showPassword ? 'Hide password' : 'Show password'}
+            className={styles.passwordToggle}
+            onClick={() => setShowPassword((current) => !current)}
+            type="button"
+          >
+            <EyeIcon hidden={showPassword} />
+          </button>
+        )}
+        type={showPassword ? 'text' : 'password'}
         value={password}
       />
-      {error ? <p className="form-error" role="alert">{error}</p> : null}
-      <Button disabled={busy} fullWidth type="submit">{busy ? 'Signing in…' : 'Sign in'}</Button>
-      <div className="auth-inline-actions">
-        <button className="text-button" type="button" onClick={onForgotPassword}>Forgot password?</button>
-        <button className="text-button" type="button" onClick={onCreateAccount}>Create an account</button>
+      <div className={styles.forgotRow}>
+        <button className={styles.textButton} type="button" onClick={onForgotPassword}>Forgot password?</button>
       </div>
+      {error ? <p className={`${styles.feedback} ${styles.error}`} role="alert">{error}</p> : null}
+      <Button className={styles.primaryButton} disabled={busy} fullWidth type="submit">
+        {busy ? 'Signing in…' : 'Sign in'}
+      </Button>
+      <div className={styles.divider} aria-hidden="true"><span>or</span></div>
+      <Button aria-label="Create an account" className={styles.secondaryButton} disabled={busy} fullWidth variant="secondary" onClick={onCreateAccount}>
+        Create account
+      </Button>
     </form>
   );
 }

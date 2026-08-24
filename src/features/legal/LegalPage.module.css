@@ -1,0 +1,148 @@
+.root {
+  min-height: 100vh;
+  min-height: 100dvh;
+  background: #090b0e;
+  color: #f5f5f2;
+}
+
+.header {
+  position: sticky;
+  z-index: 5;
+  top: 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  background: #090b0e;
+}
+
+.headerInner,
+.content {
+  width: min(100% - 32px, 820px);
+  margin: 0 auto;
+}
+
+.headerInner {
+  min-height: 72px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: #f5f5f2;
+  text-decoration: none;
+}
+
+.mark {
+  width: 46px;
+  height: auto;
+}
+
+.brand span {
+  font-size: 0.86rem;
+  font-weight: 760;
+  letter-spacing: 0.14em;
+}
+
+.back {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  color: #b5b9bd;
+  font-size: 0.84rem;
+  font-weight: 650;
+  text-decoration: none;
+}
+
+.back:hover {
+  color: #ff8a25;
+}
+
+.content {
+  padding: 48px 0 72px;
+}
+
+.eyebrow {
+  margin: 0 0 9px;
+  color: #ff8a25;
+  font-size: 0.74rem;
+  font-weight: 760;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.content h1 {
+  margin: 0;
+  font-size: clamp(2.25rem, 9vw, 4rem);
+  letter-spacing: -0.05em;
+  line-height: 0.98;
+}
+
+.updated {
+  margin: 14px 0 36px;
+  color: #8f949a;
+  font-size: 0.84rem;
+}
+
+.intro {
+  margin-bottom: 36px;
+  color: #c5c8cb;
+  font-size: 1.05rem;
+  line-height: 1.7;
+}
+
+.section {
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 28px 0;
+}
+
+.section h2 {
+  margin: 0 0 12px;
+  font-size: 1.22rem;
+  letter-spacing: -0.02em;
+}
+
+.section p,
+.section li {
+  color: #b7bbc0;
+  line-height: 1.72;
+}
+
+.section p {
+  margin: 0 0 12px;
+}
+
+.section p:last-child {
+  margin-bottom: 0;
+}
+
+.section ul {
+  margin: 0;
+  padding-left: 1.2rem;
+}
+
+.section li + li {
+  margin-top: 8px;
+}
+
+.notice {
+  margin: 28px 0 0;
+  border-left: 2px solid #ff861f;
+  padding: 2px 0 2px 16px;
+  color: #9da2a7;
+  font-size: 0.82rem;
+  line-height: 1.6;
+}
+
+@media (min-width: 700px) {
+  .headerInner,
+  .content {
+    width: min(100% - 56px, 820px);
+  }
+
+  .content {
+    padding-top: 64px;
+  }
+}

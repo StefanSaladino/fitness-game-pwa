@@ -9,21 +9,19 @@ import type { SignInCredentials, SignUpCredentials } from './authValidation';
 
 type Mode = 'signin' | 'signup' | 'forgot' | 'verify-email';
 
-const content: Record<Exclude<Mode, 'verify-email'>, { eyebrow: string; title: string; description: string }> = {
+const content: Record<Exclude<Mode, 'verify-email'>, { eyebrow?: string; title: string; description: string }> = {
   signin: {
-    eyebrow: 'WELCOME BACK',
     title: 'Sign in',
-    description: 'Pick up your streak, weekly target, and personal progress where you left off.',
+    description: 'Get back to your training.',
   },
   signup: {
-    eyebrow: 'CREATE ACCOUNT',
-    title: 'Start your run',
-    description: 'Create your account first. Your username, timezone, and weekly lifting target come next.',
+    title: 'Create account',
+    description: 'Set up your account. Your training profile comes next.',
   },
   forgot: {
     eyebrow: 'ACCOUNT RECOVERY',
     title: 'Reset password',
-    description: 'Enter your email and we will send a secure recovery link without revealing whether an account exists.',
+    description: 'Enter your email and we’ll send recovery instructions.',
   },
 };
 
@@ -42,12 +40,7 @@ export function AuthScreen() {
   }
 
   async function submitSignUp(input: SignUpCredentials) {
-    const result = await actions.signUp({
-      email: input.email,
-      password: input.password,
-      displayName: input.displayName,
-    });
-
+    const result = await actions.signUp({ email: input.email, password: input.password, displayName: input.displayName });
     if (result.ok && result.requiresEmailConfirmation) {
       setVerificationEmail(input.email);
       setMode('verify-email');
@@ -56,11 +49,7 @@ export function AuthScreen() {
 
   if (mode === 'verify-email') {
     return (
-      <AuthLayout
-        description="Email confirmation protects account ownership before onboarding begins."
-        eyebrow="VERIFY EMAIL"
-        title="One quick check"
-      >
+      <AuthLayout description="We sent a confirmation link so we can verify the address belongs to you." eyebrow="VERIFY EMAIL" title="Check your email">
         <VerifyEmailPanel email={verificationEmail} onBackToSignIn={() => move('signin')} />
       </AuthLayout>
     );
@@ -70,34 +59,9 @@ export function AuthScreen() {
 
   return (
     <AuthLayout description={copy.description} eyebrow={copy.eyebrow} title={copy.title}>
-      {mode === 'signin' ? (
-        <SignInForm
-          busy={actions.busy}
-          error={actions.error}
-          onCreateAccount={() => move('signup')}
-          onForgotPassword={() => move('forgot')}
-          onSubmit={submitSignIn}
-        />
-      ) : null}
-
-      {mode === 'signup' ? (
-        <SignUpForm
-          busy={actions.busy}
-          error={actions.error}
-          onBack={() => move('signin')}
-          onSubmit={submitSignUp}
-        />
-      ) : null}
-
-      {mode === 'forgot' ? (
-        <ForgotPasswordForm
-          busy={actions.busy}
-          error={actions.error}
-          message={actions.message}
-          onBack={() => move('signin')}
-          onSubmit={actions.requestPasswordReset}
-        />
-      ) : null}
+      {mode === 'signin' ? <SignInForm busy={actions.busy} error={actions.error} onCreateAccount={() => move('signup')} onForgotPassword={() => move('forgot')} onSubmit={submitSignIn} /> : null}
+      {mode === 'signup' ? <SignUpForm busy={actions.busy} error={actions.error} onBack={() => move('signin')} onSubmit={submitSignUp} /> : null}
+      {mode === 'forgot' ? <ForgotPasswordForm busy={actions.busy} error={actions.error} message={actions.message} onBack={() => move('signin')} onSubmit={actions.requestPasswordReset} /> : null}
     </AuthLayout>
   );
 }

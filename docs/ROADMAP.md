@@ -926,7 +926,7 @@ See `docs/PHASE16.0-VISUAL-INVENTORY-DIRECTION.md`.
 
 See `docs/PHASE16.1-APP-SHELL.md`.
 
-### 16.2 Authentication + password recovery — NEXT
+### 16.2 Authentication + password recovery — DONE
 
 - sign in;
 - create account;
@@ -935,7 +935,7 @@ See `docs/PHASE16.1-APP-SHELL.md`.
 - verification/confirmation states;
 - error and configuration-help states.
 
-### 16.3 Onboarding + optional group discovery
+### 16.3 Onboarding + optional group discovery — NEXT
 
 - profile onboarding;
 - weekly lifting target;

@@ -1,6 +1,8 @@
 import { useState, type FormEvent } from 'react';
 import { Button, TextField } from '../../../components/ui';
 import { normalizeEmail } from '../authValidation';
+import { MailIcon } from './AuthIcons';
+import styles from './AuthForm.module.css';
 
 interface ForgotPasswordFormProps {
   busy: boolean;
@@ -25,21 +27,22 @@ export function ForgotPasswordForm({ busy, error, message, onSubmit, onBack }: F
     await onSubmit(normalized);
   }
 
+  if (message) {
+    return (
+      <div className={styles.completion} role="status">
+        <p className={`${styles.feedback} ${styles.success}`}>{message}</p>
+        <p className={styles.metaLine}>Use the newest recovery email if you request more than one link.</p>
+        <Button className={styles.secondaryButton} fullWidth variant="secondary" onClick={onBack}>Back to sign in</Button>
+      </div>
+    );
+  }
+
   return (
-    <form className="auth-form auth-form--production" onSubmit={submit} noValidate>
-      <TextField
-        autoComplete="email"
-        error={emailError}
-        label="Email"
-        onChange={(event) => setEmail(event.target.value)}
-        placeholder="you@example.com"
-        type="email"
-        value={email}
-      />
-      {error ? <p className="form-error" role="alert">{error}</p> : null}
-      {message ? <p className="form-success" role="status">{message}</p> : null}
-      <Button disabled={busy} fullWidth type="submit">{busy ? 'Sending…' : 'Send reset email'}</Button>
-      <button className="text-button auth-back-button" type="button" onClick={onBack}>Back to sign in</button>
+    <form className={styles.form} onSubmit={submit} noValidate>
+      <TextField autoComplete="email" className={styles.field} error={emailError} label="Email" leadingIcon={<MailIcon />} onChange={(event) => setEmail(event.target.value)} placeholder="you@yourmail.com" type="email" value={email} />
+      {error ? <p className={`${styles.feedback} ${styles.error}`} role="alert">{error}</p> : null}
+      <Button className={styles.primaryButton} disabled={busy} fullWidth type="submit">{busy ? 'Sending…' : 'Send reset email'}</Button>
+      <button className={`${styles.textButton} ${styles.backButton}`} type="button" onClick={onBack}>Back to sign in</button>
     </form>
   );
 }

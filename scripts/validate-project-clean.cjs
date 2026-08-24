@@ -904,11 +904,13 @@ for (const signature of [
     fail('Phase 15.3B must revoke the browser-bypass RPC: ' + signature);
   }
 }
+const normalizedPhase153bMigration = phase153bMigration.replace(/\s+/g, ' ').trim();
 for (const signature of [
   'public.prepare_platform_account_auth_transition(uuid, uuid, text, text, timestamptz)',
   'public.complete_platform_account_auth_transition(uuid, uuid, bigint, boolean, text)',
 ]) {
-  if (!phase153bMigration.includes('grant execute on function ' + signature + '\nto service_role')) {
+  const expectedGrant = 'grant execute on function ' + signature + ' to service_role;';
+  if (!normalizedPhase153bMigration.includes(expectedGrant)) {
     fail('Phase 15.3B missing service-role-only coordination grant: ' + signature);
   }
 }
@@ -1673,19 +1675,53 @@ if (!String(currentPackageJson.scripts?.['db:test:ci'] || '').includes('validate
     || !String(currentPackageJson.scripts?.['db:test:ci'] || '').includes('validate-phase15-6c.cjs')) {
   fail('db:test:ci must retain the current static database contract validators');
 }
-for (const command of [
-  'npm ci',
+
+const executableCiWorkflow = ciWorkflow
+  .split(/\r?\n/)
+  .filter((line) => !line.trimStart().startsWith('#'))
+  .join('\n');
+
+if (!/^\s*pull_request\s*:/m.test(ciWorkflow)) {
+  fail('GitHub CI must retain the pull_request trigger');
+}
+if (!/^\s*workflow_dispatch\s*:/m.test(ciWorkflow)) {
+  fail('GitHub CI must retain manual workflow_dispatch');
+}
+if (/^\s*push\s*:/m.test(ciWorkflow)) {
+  fail('GitHub CI must not run automatically on push under the lightweight CI policy');
+}
+if (!/pull_request\s*:[\s\S]{0,240}?branches\s*:[\s\S]{0,100}?-\s*master\b/m.test(ciWorkflow)) {
+  fail('GitHub CI pull requests must target master');
+}
+for (const ignoredPath of ["'docs/**'", "'**/*.md'"]) {
+  if (!ciWorkflow.includes(ignoredPath)) {
+    fail('GitHub CI must ignore documentation-only pull requests: ' + ignoredPath);
+  }
+}
+if (!/permissions\s*:[\s\S]{0,80}?contents\s*:\s*read\b/m.test(ciWorkflow)) {
+  fail('GitHub CI must retain read-only contents permission');
+}
+if (!/cancel-in-progress\s*:\s*true\b/.test(ciWorkflow)) {
+  fail('GitHub CI must cancel superseded runs');
+}
+for (const command of ['npm ci', 'npm run build']) {
+  if (!executableCiWorkflow.includes(command)) {
+    fail('GitHub CI build-sanity workflow missing required command: ' + command);
+  }
+}
+for (const heavyweightCommand of [
   'npm run typecheck',
   'npm test',
   'npm run test:integration',
-  'npm run build',
   'npm run test:structure',
   'npm run test:internal',
-  'npx playwright install --with-deps chromium webkit',
+  'npx playwright install',
   'npm run test:e2e',
   'npm run db:test:ci',
 ]) {
-  if (!ciWorkflow.includes(command)) fail(`GitHub CI missing required gate command: ${command}`);
+  if (executableCiWorkflow.includes(heavyweightCommand)) {
+    fail('GitHub CI must keep heavyweight release validation local/hosted: ' + heavyweightCommand);
+  }
 }
 for (const staleCommand of [
   'npx supabase start',
@@ -1693,9 +1729,14 @@ for (const staleCommand of [
   'npm run db:test:local',
   'npx supabase db lint --level warning',
 ]) {
-  if (ciWorkflow.includes(staleCommand)) fail(`GitHub CI must not retain stale local-Supabase command text: ${staleCommand}`);
+  if (executableCiWorkflow.includes(staleCommand)) {
+    fail('GitHub CI must not retain stale local-Supabase command text: ' + staleCommand);
+  }
 }
-if (!/node-version:\s*24/.test(ciWorkflow)) fail('GitHub CI must match the Node 24 release environment');
+if (!/node-version:\s*24/.test(ciWorkflow)) {
+  fail('GitHub CI must match the Node 24 release environment');
+}
+
 if (!/project_id\s*=\s*"fitness-game-pwa"/.test(supabaseConfig)
     || !/major_version\s*=\s*17/.test(supabaseConfig)
     || !/site_url\s*=\s*"http:\/\/localhost:5173"/.test(supabaseConfig)) {

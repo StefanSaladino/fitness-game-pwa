@@ -1,13 +1,13 @@
 {
-  "name": "Workout Game",
-  "short_name": "Workout",
-  "description": "A lifting-first workout game for friends.",
+  "name": "Top Set",
+  "short_name": "Top Set",
+  "description": "Lifting-first workout tracking, progress, and friendly competition.",
   "id": "/",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
-  "background_color": "#10131a",
-  "theme_color": "#10131a",
+  "background_color": "#090b0e",
+  "theme_color": "#090b0e",
   "orientation": "any",
   "icons": [
     { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },

@@ -1,37 +1,53 @@
-import type { PropsWithChildren, ReactNode } from 'react';
+import type { MouseEvent, PropsWithChildren, ReactNode } from 'react';
+import { TopSetMark } from '../../../components/brand/TopSetMark';
+import { navigateToPath } from '../../../lib/appNavigation';
+import styles from './AuthLayout.module.css';
 
 interface AuthLayoutProps {
-  eyebrow: string;
+  eyebrow?: string;
   title: string;
   description: string;
   footer?: ReactNode;
 }
 
+function LegalLinks() {
+  function navigate(event: MouseEvent<HTMLAnchorElement>, pathname: string) {
+    event.preventDefault();
+    navigateToPath(pathname);
+  }
+
+  return (
+    <p className={styles.legalCopy}>
+      By continuing, you agree to our{' '}
+      <a href="/terms" onClick={(event) => navigate(event, '/terms')}>Terms of Service</a>{' '}
+      and{' '}
+      <a href="/privacy" onClick={(event) => navigate(event, '/privacy')}>Privacy Policy</a>.
+    </p>
+  );
+}
+
 export function AuthLayout({ eyebrow, title, description, footer, children }: PropsWithChildren<AuthLayoutProps>) {
   return (
-    <main className="auth-experience">
-      <section className="auth-brand-panel" aria-label="Workout Game introduction">
-        <div className="auth-brand-panel__mark" aria-hidden="true">WG</div>
-        <div className="auth-brand-panel__copy">
-          <p className="eyebrow">WORKOUT GAME</p>
-          <h2>Lift. Progress. Level up together.</h2>
-          <p>Lifting drives the score: complete real sessions, finish meaningful exercises, and improve your own lifts. Cardio stays a small bonus.</p>
-        </div>
-        <div className="auth-brand-panel__metrics" aria-hidden="true">
-          <span><strong>50</strong> lifting workout XP</span>
-          <span><strong>125</strong> max daily XP</span>
-        </div>
-      </section>
+    <main className={styles.root}>
+      <div className={styles.photo} aria-hidden="true" />
+      <div className={styles.frame}>
+        <header className={styles.brand} aria-label="Top Set">
+          <TopSetMark className={styles.mark} size={44} />
+          <p className={styles.name}>TOP SET</p>
+          <p className={styles.tagline}>See what you’ve got today.</p>
+        </header>
 
-      <section className="auth-form-panel">
-        <div className="auth-card auth-card--production">
-          <p className="eyebrow">{eyebrow}</p>
-          <h1>{title}</h1>
-          <p className="lead auth-lead">{description}</p>
+        <section className={styles.panel}>
+          <header className={styles.header}>
+            {eyebrow ? <p className={styles.context}>{eyebrow}</p> : null}
+            <h1 className={styles.title}>{title}</h1>
+            <p className={styles.description}>{description}</p>
+          </header>
           {children}
-          {footer ? <div className="auth-card__footer">{footer}</div> : null}
-        </div>
-      </section>
+          {footer ? <div className={styles.footer}>{footer}</div> : null}
+          <LegalLinks />
+        </section>
+      </div>
     </main>
   );
 }

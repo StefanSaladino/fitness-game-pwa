@@ -2,13 +2,21 @@
 
 ## Purpose
 
-GitHub Actions is the clean-environment regression gate for application, browser, and repository database contracts. The project does not require Docker for the normal developer workflow or for GitHub database validation.
+GitHub Actions is intentionally a **lightweight build-sanity check**, not the full release gate.
 
-Runtime database migrations and pgTAP execution remain authoritative on the hosted Supabase project.
+For pull requests targeting `master` (except documentation-only changes), and for manual `workflow_dispatch` runs, GitHub Actions uses Node 24, installs the locked dependency tree with `npm ci`, and runs:
 
-## Application gate
+```text
+npm run build
+```
 
-GitHub uses Node 24 and `npm ci`, then runs:
+The production build already includes TypeScript compilation and the JavaScript bundle-size guard. Keeping GitHub Actions bounded to this sanity check avoids spending Actions minutes duplicating the much broader local/hosted release gate.
+
+There is intentionally **no automatic `push` trigger**.
+
+## Full release gate
+
+Before a phase is committed/published, the supported local release gate remains:
 
 ```text
 npm run typecheck
@@ -17,11 +25,15 @@ npm run test:integration
 npm run build
 npm run test:structure
 npm run test:internal
+npm run db:test:ci
+npm run test:e2e
 ```
 
-## Browser gate
+These checks remain release requirements even though they are not duplicated in the lightweight GitHub Actions workflow.
 
-GitHub installs Chromium and WebKit through Playwright and runs:
+## Browser validation
+
+Playwright remains part of the local release gate through:
 
 ```text
 npm run test:e2e
@@ -31,15 +43,15 @@ The configured projects cover desktop Chromium, Android-class Chromium, and iPho
 
 Phase 15.3D includes a deterministic user-administration browser fixture that selects a suspended account, submits an audited restore reason, verifies the refreshed ACTIVE controls, and checks for horizontal overflow at every configured viewport.
 
-## Database gate
+## Database validation
 
-GitHub does not start a local Supabase stack and does not run Docker-backed database resets.
-
-The blocking repository database gate is:
+The repository database contract gate remains:
 
 ```text
 npm run db:test:ci
 ```
+
+It is intentionally run as part of the local release gate rather than duplicated in GitHub Actions.
 
 That gate validates:
 
@@ -48,12 +60,13 @@ That gate validates:
 - canonical numbered pgTAP suite discovery;
 - explicit pgTAP plans;
 - rollback-safe test transactions;
-- required Phase 15.3A through Phase 15.6A migration/test invariants;
-- the Phase 15.6B notification-persistence migration/service/test contract;
-- the 68-assertion Phase 15.3A, 52-assertion Phase 15.3B, 68-assertion Phase 15.3C, 88-assertion Phase 15.3E, 45-assertion Phase 15.3F, 96-assertion Phase 15.4, 27-assertion Phase 15.5, 31-assertion Phase 15.6A, and 37-assertion Phase 15.6B pgTAP contracts;
-- and that executable GitHub CI contains no Docker, `supabase start`, `supabase db reset`, or `supabase test db` dependency.
+- required Phase 15 database migration/test invariants;
+- notification-persistence and push-delivery database contracts;
+- and the static repository contracts that can be proven without starting a local Supabase stack.
 
-This repository gate is intentionally separate from runtime SQL execution. A migration or pgTAP suite is executed against hosted Supabase before its phase is considered database-validated.
+Runtime database migrations and pgTAP execution remain authoritative on the **hosted Supabase project**. The project does not require Docker, `supabase start`, or local database resets for the supported developer/release workflow.
+
+The database contract validator deliberately does not inspect GitHub Actions orchestration. Database correctness and CI scheduling are separate responsibilities.
 
 ## Canonical pgTAP discovery
 
@@ -75,7 +88,7 @@ For database-bearing slices:
 4. Deploy any phase Edge Function with JWT verification enabled.
 5. Regenerate committed database types from the hosted schema when the public schema changes.
 6. Run hosted security/performance advisors after DDL changes.
-7. Run the GitHub Database gate to validate repository structure and prevent local-stack/Docker regression.
+7. Run `npm run db:test:ci` locally to validate repository structure and prevent local-stack/Docker regression.
 
 No service-role secret, database password, or privileged Supabase credential belongs in GitHub workflow source merely to reproduce hosted validation.
 

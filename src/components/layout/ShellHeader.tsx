@@ -1,3 +1,4 @@
+import { TopSetMark } from '../brand/TopSetMark';
 import { Icon } from '../ui';
 import type { AppSection } from './navigation';
 import styles from './ShellHeader.module.css';
@@ -12,9 +13,9 @@ export function ShellHeader({ userLabel, onNavigate }: ShellHeaderProps) {
 
   return (
     <header className={styles.header}>
-      <div className={styles.brand} aria-label="Fitness Game">
-        <span className={styles.brandMark} aria-hidden="true">FG</span>
-        <span className={styles.brandName}>Fitness Game</span>
+      <div className={styles.brand} aria-label="Top Set">
+        <span className={styles.brandMark} aria-hidden="true"><TopSetMark size={17} /></span>
+        <span className={styles.brandName}>Top Set</span>
       </div>
 
       <button

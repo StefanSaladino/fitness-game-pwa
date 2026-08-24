@@ -4,7 +4,6 @@ const path = require('node:path');
 const root = path.resolve(__dirname, '..');
 const migrationsDir = path.join(root, 'supabase', 'migrations');
 const testsDir = path.join(root, 'supabase', 'tests');
-const ciPath = path.join(root, '.github', 'workflows', 'ci.yml');
 
 function fail(message) {
   throw new Error(`Database contract gate failed: ${message}`);
@@ -394,24 +393,9 @@ for (const coverage of [
   if (!test156a.includes(coverage)) fail(`Phase 15.6A pgTAP missing coverage: ${coverage}`);
 }
 
-const ci = fs.readFileSync(ciPath, 'utf8');
-const executableCi = ci
-  .split(/\r?\n/)
-  .filter((line) => !line.trimStart().startsWith('#'))
-  .join('\n');
-const forbiddenCiPatterns = [
-  [/\bsupabase\s+start\b/i, 'supabase start'],
-  [/\bsupabase\s+stop\b/i, 'supabase stop'],
-  [/\bsupabase\s+db\s+reset\b/i, 'supabase db reset'],
-  [/\bsupabase\s+test\s+db\b/i, 'supabase test db'],
-  [/\bdocker\b/i, 'Docker'],
-];
-for (const [pattern, label] of forbiddenCiPatterns) {
-  if (pattern.test(executableCi)) fail(`CI must not execute or depend on ${label}`);
-}
-if (!executableCi.includes('npm run db:test:ci')) {
-  fail('CI Database gate must run npm run db:test:ci');
-}
-
+// Database validation intentionally stops at repository database contracts.
+// GitHub Actions orchestration is a separate policy concern. Keeping those
+// responsibilities decoupled prevents a CI trigger/job change from weakening
+// or falsely failing the database contract gate.
 console.log(`Database contract gate passed: ${migrations.length} migrations, ${tests.length} canonical pgTAP suites.`);
-console.log('Runtime SQL execution remains hosted-Supabase authoritative; CI does not start Docker or a local Supabase stack.');
+console.log('Runtime SQL execution remains hosted-Supabase authoritative; this repository contract gate does not start Docker or a local Supabase stack.');

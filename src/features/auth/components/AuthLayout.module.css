@@ -1,0 +1,218 @@
+.root {
+  --auth-accent: #f58220;
+  --auth-accent-hover: #ff963b;
+  position: relative;
+  isolation: isolate;
+  min-height: 100vh;
+  min-height: 100dvh;
+  overflow-x: clip;
+  background: #07090b;
+  color: #f7f7f4;
+}
+
+.photo {
+  position: fixed;
+  z-index: -2;
+  inset: 0;
+  background-image: url('../../../assets/fitness/top-set-auth-gym.jpg');
+  background-position: 50% 44%;
+  background-size: cover;
+  filter: brightness(0.48) saturate(0.66) contrast(1.08);
+  transform: scale(1.015);
+  transform-origin: center;
+}
+
+.root::before {
+  position: fixed;
+  z-index: -1;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(180deg, rgba(3, 5, 7, 0.12) 0%, rgba(3, 5, 7, 0.24) 26%, rgba(3, 5, 7, 0.45) 48%, rgba(3, 5, 7, 0.64) 100%),
+    linear-gradient(90deg, rgba(3, 5, 7, 0.16), rgba(3, 5, 7, 0.04) 54%, rgba(3, 5, 7, 0.2));
+  content: '';
+}
+
+.frame {
+  position: relative;
+  z-index: 1;
+  width: min(100% - 24px, 440px);
+  margin: 0 auto;
+  padding: max(28px, env(safe-area-inset-top)) 0 max(24px, env(safe-area-inset-bottom));
+}
+
+.brand {
+  display: grid;
+  min-height: clamp(272px, 39svh, 342px);
+  place-items: center;
+  align-content: center;
+  padding: 18px 0 22px;
+  text-align: center;
+  text-shadow: 0 2px 22px rgba(0, 0, 0, 0.72);
+}
+
+.mark {
+  color: #f7f7f4;
+  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.34));
+}
+
+.name {
+  margin: 17px 0 0;
+  color: #ffffff;
+  font-size: clamp(1.34rem, 6vw, 1.72rem);
+  font-weight: 760;
+  letter-spacing: 0.22em;
+  line-height: 1;
+  text-indent: 0.22em;
+}
+
+.tagline {
+  margin: 15px 0 0;
+  color: rgba(247, 247, 244, 0.84);
+  font-size: 0.98rem;
+  line-height: 1.42;
+}
+
+.panel {
+  width: 100%;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 26px;
+  padding: clamp(24px, 6.8vw, 32px);
+  background: rgba(9, 11, 13, 0.87);
+  box-shadow: 0 24px 72px rgba(0, 0, 0, 0.42);
+}
+
+.header {
+  margin-bottom: 25px;
+}
+
+.context {
+  margin: 0 0 8px;
+  color: #a6aaae;
+  font-size: 0.7rem;
+  font-weight: 760;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+
+.title {
+  margin: 0;
+  color: #fbfbf8;
+  font-size: clamp(2rem, 8vw, 2.5rem);
+  font-weight: 720;
+  letter-spacing: -0.045em;
+  line-height: 1.02;
+}
+
+.description {
+  margin: 10px 0 0;
+  color: #b5b8bc;
+  font-size: 0.97rem;
+  line-height: 1.5;
+}
+
+.footer {
+  margin-top: 22px;
+  color: #9b9fa4;
+  font-size: 0.82rem;
+  line-height: 1.5;
+}
+
+.legalCopy {
+  margin: 24px 0 0;
+  color: #989ca1;
+  font-size: 0.75rem;
+  line-height: 1.56;
+  text-align: center;
+}
+
+.legalCopy a {
+  color: var(--auth-accent);
+  text-decoration: none;
+}
+
+.legalCopy a:hover {
+  color: var(--auth-accent-hover);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.legalCopy a:focus-visible {
+  outline: 3px solid rgba(245, 130, 32, 0.34);
+  outline-offset: 3px;
+  border-radius: 3px;
+}
+
+@media (max-width: 380px) {
+  .frame {
+    width: min(100% - 18px, 440px);
+  }
+
+  .brand {
+    min-height: 248px;
+  }
+
+  .panel {
+    border-radius: 22px;
+    padding: 22px 19px 24px;
+  }
+}
+
+@media (min-width: 700px) {
+  .frame {
+    width: min(100% - 48px, 500px);
+    padding-top: max(40px, env(safe-area-inset-top));
+  }
+
+  .brand {
+    min-height: clamp(300px, 42svh, 380px);
+  }
+
+  .panel {
+    padding: 34px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .photo {
+    background-position: center;
+    filter: brightness(0.43) saturate(0.66) contrast(1.08);
+  }
+
+  .root::before {
+    background:
+      linear-gradient(90deg, rgba(3, 5, 7, 0.24) 0%, rgba(3, 5, 7, 0.18) 42%, rgba(3, 5, 7, 0.58) 68%, rgba(3, 5, 7, 0.7) 100%),
+      linear-gradient(180deg, rgba(3, 5, 7, 0.08), rgba(3, 5, 7, 0.38));
+  }
+
+  .frame {
+    width: 100%;
+    max-width: none;
+    min-height: 100dvh;
+    display: grid;
+    grid-template-columns: minmax(0, 52%) minmax(0, 48%);
+    align-items: center;
+    padding: 0;
+  }
+
+  .brand {
+    min-height: 100dvh;
+    padding: 64px;
+  }
+
+  .panel {
+    width: min(calc(100% - 76px), 500px);
+    margin: 56px auto;
+    background: rgba(9, 11, 13, 0.91);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .root *,
+  .root *::before,
+  .root *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}

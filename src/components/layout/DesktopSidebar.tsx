@@ -1,3 +1,4 @@
+import { TopSetMark } from '../brand/TopSetMark';
 import { Icon } from '../ui';
 import type { AppSection, NavigationItem } from './navigation';
 import styles from './DesktopSidebar.module.css';
@@ -16,9 +17,9 @@ export function DesktopSidebar({ activeItem, items, userLabel, userMeta, onNavig
 
   return (
     <aside className={styles.sidebar} aria-label="Primary">
-      <div className={styles.brand} aria-label="Fitness Game">
-        <span className={styles.brandMark} aria-hidden="true">FG</span>
-        <span className={styles.brandName}>Fitness Game</span>
+      <div className={styles.brand} aria-label="Top Set">
+        <span className={styles.brandMark} aria-hidden="true"><TopSetMark size={18} /></span>
+        <span className={styles.brandName}>Top Set</span>
       </div>
 
       <nav className={styles.nav}>

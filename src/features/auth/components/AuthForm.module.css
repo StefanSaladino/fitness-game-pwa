@@ -1,0 +1,299 @@
+.form {
+  display: grid;
+  gap: 18px;
+}
+
+.field {
+  color-scheme: dark;
+}
+
+.field :global(.ui-field__label) {
+  color: #ecece8;
+  font-size: 0.88rem;
+  font-weight: 660;
+}
+
+.field :global(.ui-field__control) {
+  min-height: 56px;
+  overflow: hidden;
+  border-color: rgba(255, 255, 255, 0.17);
+  border-radius: 15px;
+  background: rgba(14, 17, 20, 0.72);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.025);
+}
+
+.field :global(.ui-field__control:focus-within) {
+  border-color: rgba(245, 130, 32, 0.84);
+  box-shadow: 0 0 0 3px rgba(245, 130, 32, 0.12);
+}
+
+.field :global(.ui-field__icon) {
+  color: #a4a9ae;
+}
+
+.field :global(.ui-field__control input) {
+  appearance: none;
+  -webkit-appearance: none;
+  border-radius: 0;
+  color: #f7f7f4 !important;
+  background: transparent !important;
+  background-color: transparent !important;
+  box-shadow: none !important;
+  caret-color: #f58220;
+  -webkit-text-fill-color: #f7f7f4;
+}
+
+.field :global(.ui-field__control input::placeholder) {
+  color: #7e848a;
+  opacity: 1;
+  -webkit-text-fill-color: #7e848a;
+}
+
+/* Keep browser/password-manager autofill from painting a white or blue rectangle inside the dark field. */
+.field :global(.ui-field__control input:-webkit-autofill),
+.field :global(.ui-field__control input:-webkit-autofill:hover),
+.field :global(.ui-field__control input:-webkit-autofill:focus),
+.field :global(.ui-field__control input:-webkit-autofill:active) {
+  border: 0;
+  -webkit-text-fill-color: #f7f7f4 !important;
+  -webkit-box-shadow: 0 0 0 1000px #15181b inset !important;
+  box-shadow: 0 0 0 1000px #15181b inset !important;
+  caret-color: #f58220;
+}
+
+.field :global(.ui-field__control input:autofill) {
+  color: #f7f7f4 !important;
+  background: #15181b !important;
+  box-shadow: 0 0 0 1000px #15181b inset !important;
+}
+
+.field :global(.ui-field__trailing) {
+  display: inline-grid;
+  flex: 0 0 auto;
+  margin-right: 10px;
+  place-items: center;
+}
+
+.passwordToggle {
+  display: inline-grid;
+  width: 40px;
+  height: 40px;
+  place-items: center;
+  border: 0;
+  border-radius: 10px;
+  padding: 0;
+  color: #a8adb2;
+  background: transparent;
+  cursor: pointer;
+}
+
+.passwordToggle:hover {
+  color: #f7f7f4;
+  background: rgba(255, 255, 255, 0.045);
+}
+
+.passwordToggle:focus-visible,
+.textButton:focus-visible,
+.actionLink:focus-visible {
+  outline: 3px solid rgba(245, 130, 32, 0.34);
+  outline-offset: 2px;
+}
+
+/* Two-class selectors deliberately outrank the shared blue Button primitive on auth surfaces. */
+:global(.ui-button).primaryButton,
+:global(.ui-button--primary).primaryButton {
+  min-height: 56px;
+  border-color: #f58220;
+  border-radius: 15px;
+  color: #101010;
+  background: #f58220;
+  box-shadow: none;
+  font-size: 0.98rem;
+  font-weight: 780;
+}
+
+:global(.ui-button).primaryButton:hover:not(:disabled),
+:global(.ui-button--primary).primaryButton:hover:not(:disabled) {
+  border-color: #ff963b;
+  background: #ff963b;
+  transform: none;
+}
+
+:global(.ui-button).primaryButton:focus-visible,
+:global(.ui-button).secondaryButton:focus-visible {
+  outline: 3px solid rgba(245, 130, 32, 0.38);
+  outline-offset: 2px;
+}
+
+:global(.ui-button).secondaryButton,
+:global(.ui-button--secondary).secondaryButton {
+  min-height: 54px;
+  border-color: rgba(255, 255, 255, 0.2);
+  border-radius: 15px;
+  color: #f5f5f1;
+  background: rgba(7, 9, 11, 0.34);
+  box-shadow: none;
+}
+
+:global(.ui-button).secondaryButton:hover:not(:disabled),
+:global(.ui-button--secondary).secondaryButton:hover:not(:disabled) {
+  border-color: rgba(255, 255, 255, 0.34);
+  background: rgba(255, 255, 255, 0.045);
+  transform: none;
+}
+
+.feedback {
+  margin: 0;
+  border-left: 2px solid currentColor;
+  padding: 9px 11px;
+  font-size: 0.84rem;
+  line-height: 1.48;
+}
+
+.error {
+  color: #ffb0b0;
+  background: rgba(255, 156, 156, 0.055);
+}
+
+.success {
+  color: #a6e7b7;
+  background: rgba(153, 239, 175, 0.05);
+}
+
+.forgotRow {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: -8px;
+}
+
+.textButton {
+  min-height: 44px;
+  border: 0;
+  padding: 0;
+  color: #f58a2c;
+  background: transparent;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.84rem;
+  font-weight: 650;
+  text-align: left;
+  text-decoration: none;
+}
+
+.textButton:hover {
+  color: #ffa04e;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.divider {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 14px;
+  color: #858a8f;
+  font-size: 0.78rem;
+  text-transform: lowercase;
+}
+
+.divider::before,
+.divider::after {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.12);
+  content: '';
+}
+
+.backButton {
+  justify-self: start;
+  color: #b9bdc1;
+}
+
+.completion {
+  display: grid;
+  gap: 18px;
+}
+
+.completionText {
+  margin: 0;
+  color: #c4c7ca;
+  line-height: 1.58;
+}
+
+.completionText strong {
+  color: #f7f7f4;
+  font-weight: 720;
+  overflow-wrap: anywhere;
+}
+
+.metaLine {
+  margin: -4px 0 0;
+  color: #92979c;
+  font-size: 0.8rem;
+  line-height: 1.45;
+}
+
+.configuration {
+  display: grid;
+  gap: 14px;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  padding-top: 18px;
+}
+
+.configuration p {
+  margin: 0;
+  color: #c4c7ca;
+  line-height: 1.55;
+}
+
+.configuration code {
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 6px;
+  padding: 0.08rem 0.3rem;
+  color: #f7f7f4;
+  background: #171a1d;
+  font-size: 0.86em;
+}
+
+.loading {
+  margin: 0;
+  color: #a6aaaf;
+  font-size: 0.9rem;
+}
+
+.actionLink {
+  display: inline-flex;
+  width: 100%;
+  min-height: 54px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid transparent;
+  border-radius: 15px;
+  padding: 0 18px;
+  font-size: 0.96rem;
+  font-weight: 760;
+  line-height: 1;
+  text-align: center;
+  text-decoration: none;
+}
+
+.primaryActionLink {
+  border-color: #f58220;
+  color: #101010;
+  background: #f58220;
+}
+
+.primaryActionLink:hover {
+  border-color: #ff963b;
+  background: #ff963b;
+}
+
+.secondaryActionLink {
+  border-color: rgba(255, 255, 255, 0.2);
+  color: #f5f5f1;
+  background: rgba(7, 9, 11, 0.34);
+}
+
+.secondaryActionLink:hover {
+  border-color: rgba(255, 255, 255, 0.34);
+  background: rgba(255, 255, 255, 0.045);
+}

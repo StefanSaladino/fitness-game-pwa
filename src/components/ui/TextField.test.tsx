@@ -12,4 +12,10 @@ describe('TextField', () => {
     expect(field).toHaveAttribute('aria-invalid', 'true');
     expect(field).toHaveAccessibleDescription('Username is already taken');
   });
+
+  it('supports an optional trailing control without changing input semantics', () => {
+    render(<TextField label="Password" trailingControl={<button type="button">Show password</button>} type="password" />);
+    expect(screen.getByLabelText('Password')).toHaveAttribute('type', 'password');
+    expect(screen.getByRole('button', { name: 'Show password' })).toBeInTheDocument();
+  });
 });

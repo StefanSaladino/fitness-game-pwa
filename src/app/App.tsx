@@ -3,7 +3,11 @@ import { Button } from '../components/ui';
 import { AuthProvider, useAuth } from '../features/auth/AuthProvider';
 import { AuthScreen } from '../features/auth/AuthScreen';
 import { ResetPasswordScreen } from '../features/auth/ResetPasswordScreen';
+import { AuthConfigurationPanel } from '../features/auth/components/AuthConfigurationPanel';
+import { AuthLayout } from '../features/auth/components/AuthLayout';
 import { GroupGate } from '../features/groups/components/GroupGate';
+import { PrivacyPolicyPage } from '../features/legal/PrivacyPolicyPage';
+import { TermsOfServicePage } from '../features/legal/TermsOfServicePage';
 import { OnboardingScreen, useOnboarding } from '../features/onboarding';
 import { ProductController } from '../features/product';
 import { UserMessageCenter } from '../features/messaging';
@@ -113,27 +117,31 @@ function AuthenticatedApp({ pathname }: { pathname: string }) {
 
 function ConfigurationHelp() {
   return (
-    <main className="auth-shell">
-      <section className="auth-card">
-        <p className="eyebrow">SETUP REQUIRED</p>
-        <h1>Connect Supabase</h1>
-        <p className="lead auth-lead">Copy <code>.env.example</code> to <code>.env.local</code>, add the hosted Supabase project URL and publishable key, and see README.md plus docs/SUPABASE-SETUP.md.</p>
-      </section>
-    </main>
+    <AuthLayout
+      description="This build is missing the public Supabase configuration required to start authentication."
+      eyebrow="CONFIGURATION"
+      title="Connect Supabase"
+    >
+      <AuthConfigurationPanel />
+    </AuthLayout>
   );
 }
 
-function RoutedApp() {
-  const pathname = usePathname();
+function RoutedApp({ pathname }: { pathname: string }) {
   if (pathname === '/reset-password') return <ResetPasswordScreen />;
   return <AuthenticatedApp pathname={pathname} />;
 }
 
 export function App() {
+  const pathname = usePathname();
+
+  if (pathname === '/terms') return <TermsOfServicePage />;
+  if (pathname === '/privacy') return <PrivacyPolicyPage />;
   if (!isSupabaseConfigured()) return <ConfigurationHelp />;
+
   return (
     <AuthProvider>
-      <RoutedApp />
+      <RoutedApp pathname={pathname} />
     </AuthProvider>
   );
 }

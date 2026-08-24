@@ -1,0 +1,12 @@
+Phase 16.2 — Top Set visual refinement patch
+
+- src/features/auth/components/AuthLayout.module.css
+  Full-viewport gym image, deeper mobile composition, restrained image-through-panel treatment.
+- src/features/auth/components/AuthForm.module.css
+  Dark field/autofill hardening, warm-only auth accents, higher-specificity button overrides.
+- src/features/auth/ResetPasswordScreen.tsx
+  Removes shared blue button classes from recovery completion/error links.
+- src/assets/fitness/top-set-plate-banner.jpg
+  Reserved for a later full-width banner; not rendered by Phase 16.2 auth.
+- docs/PHASE16.2-AUTHENTICATION-UI.md
+  Documents the approved refinement and reserved image.
