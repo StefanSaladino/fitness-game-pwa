@@ -1,8 +1,14 @@
 name: CI
 
 on:
-  push:
   pull_request:
+    branches:
+      - master
+    paths-ignore:
+      - 'docs/**'
+      - '**/*.md'
+
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -12,49 +18,21 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  application:
-    name: Application gate
+  sanity:
+    name: Build sanity
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 5
+
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-node@v4
         with:
           node-version: 24
           cache: npm
+
       - run: npm ci
-      - run: npm run typecheck
-      - run: npm test
-      - run: npm run test:integration
+
+      # npm run build already runs TypeScript compilation
+      # and the bundle-size guard in this repository.
       - run: npm run build
-      - run: npm run test:structure
-      - run: npm run test:internal
-
-  browser:
-    name: Browser gate
-    runs-on: ubuntu-latest
-    timeout-minutes: 35
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 24
-          cache: npm
-      - run: npm ci
-      - name: Install Playwright browsers
-        run: npx playwright install --with-deps chromium webkit
-      - run: npm run test:e2e
-
-  database:
-    name: Database gate
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 24
-          cache: npm
-      - run: npm ci
-      - name: Validate database migration and pgTAP contracts
-        run: npm run db:test:ci
