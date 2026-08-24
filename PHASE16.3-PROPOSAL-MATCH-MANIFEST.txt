@@ -1,0 +1,29 @@
+PHASE 16.3 PROPOSAL-MATCH REFINEMENT
+
+This ZIP is cumulative over the earlier Phase 16.3 patches.
+It preserves the green behavior/tests while replacing the remaining visual drift.
+
+Major refinements:
+- native/system UI font stack so Apple devices render SF Pro-like system typography
+- smaller semibold headings and regular body copy
+- deeper red-orange accent closer to the approved concept
+- smaller radii and flatter controls/cards
+- exact 16:9 mobile onboarding image band
+- tighter onboarding spacing, labels, hints, fields, weekly-target chips, CTA
+- simple outline Settings action in the Groups header instead of the heavy avatar
+- proposal-sized mobile nav typography/icons
+- smaller Groups empty-state icon and tighter vertical rhythm
+- compact create-group field/card/action
+- muted-violet invitation avatar
+- proposal-like invitation spacing/button sizing
+- refined Top Set loading screen
+- visual reconciliation documentation
+
+Grounded divergences from the static concept:
+- no fake iOS status bar/device chrome
+- no notification bell because no notification-center action exists
+- real persisted onboarding values are never cleared to mimic placeholders
+- solo copy does not claim group competition exists without group context
+
+No schema/RPC/RLS/scoring/workout/group-service behavior changes.
+Roadmap status remains unchanged until the visual and release gates pass.

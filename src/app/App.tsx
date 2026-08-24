@@ -1,5 +1,5 @@
 import { lazy, Suspense, useEffect } from 'react';
-import { Button } from '../components/ui';
+import { TopSetLoadingScreen } from '../components/feedback/TopSetLoadingScreen';
 import { AuthProvider, useAuth } from '../features/auth/AuthProvider';
 import { AuthScreen } from '../features/auth/AuthScreen';
 import { ResetPasswordScreen } from '../features/auth/ResetPasswordScreen';
@@ -8,7 +8,7 @@ import { AuthLayout } from '../features/auth/components/AuthLayout';
 import { GroupGate } from '../features/groups/components/GroupGate';
 import { PrivacyPolicyPage } from '../features/legal/PrivacyPolicyPage';
 import { TermsOfServicePage } from '../features/legal/TermsOfServicePage';
-import { OnboardingScreen, useOnboarding } from '../features/onboarding';
+import { OnboardingScreen, OnboardingStatusScreen, useOnboarding } from '../features/onboarding';
 import { ProductController } from '../features/product';
 import { UserMessageCenter } from '../features/messaging';
 import { isSupabaseConfigured } from '../lib/supabase';
@@ -25,7 +25,7 @@ const SettingsScreen = lazy(async () => {
 });
 
 function RouteLoading() {
-  return <main className="auth-shell"><p>Loading…</p></main>;
+  return <TopSetLoadingScreen />;
 }
 
 function UnknownAuthenticatedRoute() {
@@ -37,19 +37,16 @@ function ProfileGate({ userId, userEmail, memberSince, pathname }: { userId: str
   const onboarding = useOnboarding(userId);
 
   if (onboarding.status === 'loading') {
-    return <main className="auth-shell"><p>Loading your profile…</p></main>;
+    return <OnboardingStatusScreen status="loading" />;
   }
 
   if (onboarding.status === 'error' || !onboarding.profile) {
     return (
-      <main className="auth-shell">
-        <section className="auth-card">
-          <p className="eyebrow">PROFILE</p>
-          <h1>We couldn’t load your profile</h1>
-          <p className="lead auth-lead">{onboarding.error || 'Try loading your profile again.'}</p>
-          <Button fullWidth onClick={() => void onboarding.retry()}>Try again</Button>
-        </section>
-      </main>
+      <OnboardingStatusScreen
+        message={onboarding.error || 'Try loading your profile again.'}
+        onRetry={onboarding.retry}
+        status="error"
+      />
     );
   }
 
@@ -94,7 +91,7 @@ function ProfileGate({ userId, userEmail, memberSince, pathname }: { userId: str
 
 function AuthenticatedApp({ pathname }: { pathname: string }) {
   const { session, loading } = useAuth();
-  if (loading) return <main className="auth-shell"><p>Loading session…</p></main>;
+  if (loading) return <TopSetLoadingScreen label="Loading session…" />;
   if (!session) return <AuthScreen />;
 
   if (pathname === '/platform-admin' || pathname.startsWith('/platform-admin/')) {

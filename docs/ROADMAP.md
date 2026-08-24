@@ -935,7 +935,7 @@ See `docs/PHASE16.1-APP-SHELL.md`.
 - verification/confirmation states;
 - error and configuration-help states.
 
-### 16.3 Onboarding + optional group discovery — NEXT
+### 16.3 Onboarding + optional group discovery — DONE
 
 - profile onboarding;
 - weekly lifting target;
@@ -945,7 +945,7 @@ See `docs/PHASE16.1-APP-SHELL.md`.
 - additive multi-group membership and group-context switching;
 - first-run empty/error/loading states.
 
-### 16.4 Home / lifting dashboard
+### 16.4 Home / lifting dashboard — NEXT
 
 - weekly lifting goal and XP hierarchy;
 - recent lifts;

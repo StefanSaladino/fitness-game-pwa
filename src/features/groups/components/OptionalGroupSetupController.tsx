@@ -32,10 +32,12 @@ export function OptionalGroupSetupController({ activeItem, profile, onMembership
       createError={createState.error}
       creating={createState.submitting}
       inviteError={pending.error}
+      inviteStatus={pending.status}
       onAcceptInvite={pending.accept}
       onCreate={handleCreate}
       onDeclineInvite={pending.decline}
       onNavigate={onNavigate}
+      onRetryInvites={pending.retry}
       onSignOut={onSignOut}
       pendingInvites={pending.invites}
       profile={profile}

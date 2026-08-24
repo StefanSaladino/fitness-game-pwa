@@ -25,4 +25,10 @@ describe('CreateGroupForm', () => {
     expect(onSubmit).not.toHaveBeenCalled();
     expect(screen.getByText(/group name must be between/i)).toBeInTheDocument();
   });
+
+  it('supports the compact zero-group composition without duplicating section headings', () => {
+    render(<CreateGroupForm compact onSubmit={vi.fn()} />);
+    expect(screen.getByRole('textbox', { name: 'Group name' })).toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: 'Make the group yours.' })).not.toBeInTheDocument();
+  });
 });

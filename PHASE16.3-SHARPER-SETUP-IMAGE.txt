@@ -1,0 +1,7 @@
+Phase 16.3 sharper setup-page image replacement
+
+Replaces:
+  src/assets/fitness/top-set-bench-recovery.jpg
+
+No code or CSS changes are included.
+The existing onboarding/setup layout will automatically use this higher-resolution asset.

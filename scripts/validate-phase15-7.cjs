@@ -46,9 +46,9 @@ ok(/does not replace any group you already belong to/.test(dashboardMembership),
 ok(!/from\s+['"][^'"]*supabase|\.rpc\(|functions\.invoke/.test(dashboardMembership), 'dashboard group presentation must not call Supabase directly');
 
 ok(optionalGroupController.includes('useCreateGroup') && optionalGroupController.includes('usePendingGroupInvites'), 'voluntary group setup must reuse focused group hooks');
-ok(/Train solo or add a group when you want\./.test(optionalGroupScreen), 'Groups zero-state must be voluntary');
-ok(/Competition starts when you join a group\./.test(optionalGroupScreen), 'Competition zero-state must explain the real dependency');
-ok(/Nothing else is required/.test(optionalGroupScreen), 'solo continuation must be explicit');
+ok(optionalGroupScreen.includes('CreateGroupForm') && /onNavigate\('home'\)/.test(optionalGroupScreen), 'Groups zero-state must be voluntary');
+ok(/const\s+competitionMode\s*=\s*activeItem\s*===\s*['\"]compete['\"]/.test(optionalGroupScreen) && /shared competition/i.test(optionalGroupScreen), 'Competition zero-state must explain the real dependency');
+ok(/onNavigate\('home'\)/.test(optionalGroupScreen) && /Go to Home/.test(optionalGroupScreen), 'solo continuation must be explicit');
 ok(!/from\s+['"][^'"]*supabase|\.rpc\(|functions\.invoke/.test(optionalGroupScreen), 'voluntary group setup presentation must not call Supabase directly');
 
 ok(groupAdminController.includes('useCreateGroup'), 'existing members must be able to create another group');

@@ -2,10 +2,7 @@
   min-height: 100vh;
   display: grid;
   align-items: stretch;
-  background:
-    radial-gradient(circle at 14% 12%, rgba(61, 134, 255, 0.12), transparent 30rem),
-    radial-gradient(circle at 88% 82%, rgba(82, 216, 120, 0.06), transparent 26rem),
-    var(--color-bg);
+  background: var(--color-bg);
 }
 
 .hero,
@@ -36,16 +33,14 @@
   width: 34px;
   height: 34px;
   place-items: center;
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  border-radius: 11px;
-  color: var(--color-text);
-  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(245, 130, 32, 0.28);
+  border-radius: 10px;
+  color: var(--color-accent);
+  background: #141516;
   font-size: 0.95rem;
 }
 
-.heroCopy {
-  max-width: 760px;
-}
+.heroCopy { max-width: 760px; }
 
 .eyebrow,
 .kicker {
@@ -53,7 +48,7 @@
   color: var(--color-text-muted);
   font-size: 0.72rem;
   font-weight: 800;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
 }
 
@@ -105,11 +100,10 @@
   align-self: end;
   margin: 0 12px max(12px, env(safe-area-inset-bottom));
   border: 1px solid var(--color-border-strong);
-  border-radius: 26px;
+  border-radius: 18px;
   padding: 8px;
-  background: rgba(13, 24, 35, 0.92);
-  box-shadow: 0 28px 90px rgba(0, 0, 0, 0.38);
-  backdrop-filter: blur(20px);
+  background: #111315;
+  box-shadow: var(--shadow-card);
 }
 
 .modeSwitch {
@@ -117,15 +111,15 @@
   grid-template-columns: 1fr 1fr;
   gap: 5px;
   padding: 3px;
-  border-radius: 15px;
-  background: rgba(255, 255, 255, 0.035);
+  border-radius: 12px;
+  background: #0d0e0f;
 }
 
 .modeButton,
 .modeButtonActive {
   min-height: 42px;
   border: 0;
-  border-radius: 12px;
+  border-radius: 9px;
   cursor: pointer;
   font: inherit;
   font-size: 0.82rem;
@@ -138,9 +132,9 @@
 }
 
 .modeButtonActive {
-  color: var(--color-text);
-  background: rgba(255, 255, 255, 0.075);
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.055);
+  color: #111;
+  background: var(--color-accent);
+  box-shadow: none;
 }
 
 .modeButton:disabled,
@@ -179,11 +173,86 @@
 
 .privacyNote {
   margin: 4px 14px 12px;
-  padding-top: 14px;
   border-top: 1px solid var(--color-border);
+  padding-top: 14px;
   color: var(--color-text-muted);
   font-size: 0.72rem;
   line-height: 1.5;
+}
+
+
+.compactForm {
+  gap: 11px;
+}
+
+.compactField {
+  color-scheme: dark;
+}
+
+.compactField :global(.ui-field__label) {
+  color: #eeeeee;
+  font-size: 0.75rem;
+  font-weight: 500;
+  line-height: 1.25;
+}
+
+.compactField :global(.ui-field__control) {
+  min-height: 43px;
+  border-color: rgba(255, 255, 255, 0.15);
+  border-radius: 7px;
+  background: #090b0c;
+  box-shadow: none;
+}
+
+.compactField :global(.ui-field__control:focus-within) {
+  border-color: rgba(241, 90, 8, 0.86);
+  box-shadow: 0 0 0 2px rgba(241, 90, 8, 0.11);
+}
+
+.compactField :global(.ui-field__control input) {
+  color: #f4f4f4 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  caret-color: var(--color-accent);
+  font-size: 0.84rem;
+  -webkit-text-fill-color: #f4f4f4;
+}
+
+.compactField :global(.ui-field__control input::placeholder) {
+  color: #8d8f92;
+  -webkit-text-fill-color: #8d8f92;
+}
+
+.compactField :global(.ui-field__control input:-webkit-autofill),
+.compactField :global(.ui-field__control input:-webkit-autofill:hover),
+.compactField :global(.ui-field__control input:-webkit-autofill:focus),
+.compactField :global(.ui-field__control input:-webkit-autofill:active) {
+  -webkit-text-fill-color: #f4f4f4 !important;
+  -webkit-box-shadow: 0 0 0 1000px #090b0c inset !important;
+  box-shadow: 0 0 0 1000px #090b0c inset !important;
+}
+
+:global(.ui-button).compactPrimaryButton,
+:global(.ui-button--primary).compactPrimaryButton {
+  min-height: 44px;
+  border-color: var(--color-accent);
+  border-radius: 7px;
+  color: #ffffff;
+  background: var(--color-accent);
+  box-shadow: none;
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+:global(.ui-button).compactPrimaryButton:hover:not(:disabled),
+:global(.ui-button--primary).compactPrimaryButton:hover:not(:disabled) {
+  border-color: var(--color-accent-hover);
+  background: var(--color-accent-hover);
+}
+
+:global(.ui-button).compactPrimaryButton:focus-visible {
+  outline: 3px solid rgba(241, 90, 8, 0.36);
+  outline-offset: 2px;
 }
 
 @media (min-width: 780px) {
@@ -207,31 +276,25 @@
   }
 }
 
-@media (min-width: 1200px) {
-  .panel {
-    padding: 10px;
-  }
+.pendingSection { padding: 20px 14px 6px; }
+.pendingList { list-style: none; margin: 0; padding: 0; }
+.pendingRow { display: grid; gap: 12px; padding: 14px 0; border-top: 1px solid var(--color-border); }
+.pendingRow:last-child { border-bottom: 1px solid var(--color-border); }
+.pendingRow strong { display: block; }
+.pendingRow span { display: block; margin-top: 4px; color: var(--color-text-muted); font-size: 0.84rem; }
+.pendingActions { display: flex; gap: 8px; }
+.pendingActions button { border: 1px solid var(--color-border-strong); background: transparent; color: var(--color-text); border-radius: 9px; padding: 8px 12px; cursor: pointer; }
+.pendingActions button:last-child { color: #ff9b9b; }
+.pendingActions button:disabled { opacity: 0.45; cursor: default; }
 
-  .formStage {
-    padding: 34px 26px 22px;
-  }
-
-  .privacyNote {
-    margin-right: 26px;
-    margin-left: 26px;
-  }
+.profileCode {
+  margin: 8px 14px 4px;
+  color: var(--color-text-muted);
+  font-size: 0.86rem;
 }
 
-.pendingSection { padding: 20px 14px 6px; }
-.pendingList { list-style:none; margin:0; padding:0; }
-.pendingRow { display:grid; gap:12px; padding:14px 0; border-top:1px solid var(--color-border); }
-.pendingRow:last-child { border-bottom:1px solid var(--color-border); }
-.pendingRow strong { display:block; }
-.pendingRow span { display:block; margin-top:4px; color:var(--color-text-muted); font-size:.84rem; }
-.pendingActions { display:flex; gap:8px; }
-.pendingActions button { border:1px solid var(--color-border-strong); background:transparent; color:var(--color-text); border-radius:10px; padding:8px 12px; cursor:pointer; }
-.pendingActions button:last-child { color:#ff9b9b; }
-.pendingActions button:disabled { opacity:.45; cursor:default; }
-
-.profileCode { margin: 8px 14px 4px; color: var(--color-text-muted); font-size: .86rem; }
-.profileCode strong { color: var(--color-text); font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; letter-spacing: .04em; }
+.profileCode strong {
+  color: var(--color-text);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  letter-spacing: 0.04em;
+}

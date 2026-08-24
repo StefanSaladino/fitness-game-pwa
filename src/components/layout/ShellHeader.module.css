@@ -6,91 +6,61 @@
   min-height: calc(var(--shell-header-height) + env(safe-area-inset-top));
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
-  border-bottom: 1px solid var(--color-border);
-  padding: env(safe-area-inset-top) 16px 0;
-  background: #071019;
+  gap: 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.11);
+  padding: env(safe-area-inset-top) 17px 0;
+  background: #08090a;
 }
 
-.brand {
-  display: flex;
-  min-width: 0;
-  align-items: center;
-  gap: 9px;
+.titledHeader {
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr) 42px;
+  gap: 8px;
 }
 
-.brandMark {
-  display: inline-grid;
-  width: 32px;
-  height: 32px;
-  flex: 0 0 auto;
-  place-items: center;
-  border: 1px solid var(--color-border-strong);
-  border-radius: 9px;
-  color: var(--color-text);
-  background: var(--color-surface-strong);
-  font-size: 0.72rem;
-  font-weight: 850;
+.titleSpacer {
+  width: 42px;
+  height: 42px;
+}
+
+.pageTitle {
+  overflow: hidden;
+  color: #f8f8f8;
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1;
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .brandName {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  font-size: 0.94rem;
-  font-weight: 800;
-  letter-spacing: -0.02em;
+  color: #f8f8f8;
+  font-size: 0.96rem;
+  font-weight: 650;
 }
 
-.account {
-  display: inline-flex;
-  min-height: 44px;
-  align-items: center;
-  gap: 8px;
+.iconAccount {
+  display: grid;
+  width: 42px;
+  height: 42px;
+  place-items: center;
+  justify-self: end;
   border: 0;
-  border-radius: 10px;
-  padding: 4px 7px 4px 5px;
-  color: var(--color-text-soft);
+  border-radius: 8px;
+  padding: 0;
+  color: #f2f2f2;
   background: transparent;
   cursor: pointer;
 }
 
-.account:hover {
+.iconAccount:hover {
   background: rgba(255, 255, 255, 0.035);
 }
 
-.account:focus-visible {
-  outline: 3px solid rgba(61, 134, 255, 0.42);
+.iconAccount:focus-visible {
+  outline: 3px solid rgba(241, 90, 8, 0.38);
   outline-offset: 2px;
-}
-
-.avatar {
-  display: grid;
-  width: 34px;
-  height: 34px;
-  place-items: center;
-  border: 1px solid var(--color-border-strong);
-  border-radius: 50%;
-  color: var(--color-text);
-  background: var(--color-surface-strong);
-  font-size: 0.78rem;
-  font-weight: 800;
-}
-
-.accountLabel {
-  display: none;
-  max-width: 150px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  font-size: 0.78rem;
-  font-weight: 700;
-}
-
-@media (min-width: 520px) {
-  .accountLabel {
-    display: block;
-  }
 }
 
 @media (min-width: 1024px) {

@@ -17,6 +17,7 @@ import type {
   WorkoutService,
   WorkoutSetService,
 } from '../workout';
+import { persistSelectedGroupPreference, resolveSelectedGroupId } from './selectedGroupPreference';
 
 const DashboardController = lazy(async () => {
   const module = await import('../dashboard/components/DashboardController');
@@ -75,13 +76,38 @@ function initialProductSection(): AppSection {
     || requested === 'progress' || requested === 'compete' ? requested : 'home';
 }
 
-export function ProductController({ profile, groups, onGroupsChanged, groupService, dashboardService, workoutService, workoutExerciseService, exercisePickerService, workoutSetService, workoutMutationService, progressService, socialService, reportService, cardioService }: ProductControllerProps) {
+export function ProductController({
+  profile,
+  groups,
+  onGroupsChanged,
+  groupService,
+  dashboardService,
+  workoutService,
+  workoutExerciseService,
+  exercisePickerService,
+  workoutSetService,
+  workoutMutationService,
+  progressService,
+  socialService,
+  reportService,
+  cardioService,
+}: ProductControllerProps) {
   const [activeSection, setActiveSection] = useState<AppSection>(initialProductSection);
-  const [selectedGroupId, setSelectedGroupId] = useState(groups[0]?.id ?? '');
+  const [selectedGroupId, setSelectedGroupId] = useState(
+    () => resolveSelectedGroupId(profile.id, groups),
+  );
 
   useEffect(() => {
-    if (!groups.some((group) => group.id === selectedGroupId)) setSelectedGroupId(groups[0]?.id ?? '');
-  }, [groups, selectedGroupId]);
+    if (groups.some((group) => group.id === selectedGroupId)) return;
+    setSelectedGroupId(resolveSelectedGroupId(profile.id, groups));
+  }, [groups, profile.id, selectedGroupId]);
+
+  useEffect(() => {
+    const validSelection = groups.some((group) => group.id === selectedGroupId)
+      ? selectedGroupId
+      : '';
+    persistSelectedGroupPreference(profile.id, validSelection);
+  }, [groups, profile.id, selectedGroupId]);
 
   const selectedGroup = useMemo(
     () => groups.find((group) => group.id === selectedGroupId) ?? groups[0] ?? null,
@@ -93,8 +119,18 @@ export function ProductController({ profile, groups, onGroupsChanged, groupServi
       navigateToPath('/settings');
       return;
     }
-    if (section === 'home' || section === 'groups' || section === 'workouts' || section === 'cardio' || section === 'progress' || section === 'compete') setActiveSection(section);
+    if (
+      section === 'home'
+      || section === 'groups'
+      || section === 'workouts'
+      || section === 'cardio'
+      || section === 'progress'
+      || section === 'compete'
+    ) {
+      setActiveSection(section);
+    }
   };
+
   const onSignOut = () => { void signOut(); };
 
   let section: ReactNode;
@@ -113,7 +149,14 @@ export function ProductController({ profile, groups, onGroupsChanged, groupServi
       />
     );
   } else if (activeSection === 'cardio') {
-    section = <CardioController onNavigate={onNavigate} onSignOut={onSignOut} profile={profile} service={cardioService} />;
+    section = (
+      <CardioController
+        onNavigate={onNavigate}
+        onSignOut={onSignOut}
+        profile={profile}
+        service={cardioService}
+      />
+    );
   } else if (activeSection === 'progress') {
     section = (
       <ExerciseProgressController

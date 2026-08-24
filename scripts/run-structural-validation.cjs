@@ -26,7 +26,8 @@ for (const heading of [
   '16.0 Visual inventory + mobile design-system direction — DONE',
   '16.1 App shell + primary navigation — DONE',
   '16.2 Authentication + password recovery — DONE',
-  '16.3 Onboarding + optional group discovery — NEXT',
+  '16.3 Onboarding + optional group discovery — DONE',
+  '16.4 Home / lifting dashboard — NEXT',
 ]) {
   if (!actualRoadmap.includes(heading)) {
     throw new Error(`Release validation failed: current roadmap missing release status: ${heading}`);

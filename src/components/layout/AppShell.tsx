@@ -10,6 +10,7 @@ interface AppShellProps {
   navigationItems?: NavigationItem[];
   userLabel: string;
   userMeta?: string;
+  mobileTitle?: string;
   onNavigate?: (item: AppSection) => void;
   onSignOut?: () => void;
 }
@@ -20,6 +21,7 @@ export function AppShell({
   navigationItems = primaryNavigation,
   userLabel,
   userMeta,
+  mobileTitle,
   onNavigate,
   onSignOut,
 }: PropsWithChildren<AppShellProps>) {
@@ -34,7 +36,7 @@ export function AppShell({
         userMeta={userMeta}
       />
       <div className={styles.viewport}>
-        <ShellHeader onNavigate={onNavigate} userLabel={userLabel} />
+        <ShellHeader onNavigate={onNavigate} title={mobileTitle} userLabel={userLabel} />
         <main className={styles.main}>{children}</main>
       </div>
       <MobileNav activeItem={activeItem} items={navigationItems} onNavigate={onNavigate} />

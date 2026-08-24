@@ -1,3 +1,5 @@
+import styles from './WeeklyTargetPicker.module.css';
+
 interface WeeklyTargetPickerProps {
   value: number;
   onChange: (value: number) => void;
@@ -7,14 +9,19 @@ interface WeeklyTargetPickerProps {
 
 export function WeeklyTargetPicker({ value, onChange, error, disabled = false }: WeeklyTargetPickerProps) {
   return (
-    <fieldset className="weekly-target-field" aria-describedby={error ? 'weekly-target-error' : 'weekly-target-hint'}>
+    <fieldset
+      className={styles.fieldset}
+      aria-describedby={error ? 'weekly-target-error' : 'weekly-target-hint'}
+    >
       <legend>Weekly lifting target</legend>
-      <p className="ui-field__hint" id="weekly-target-hint">Choose how many days you plan to lift each Monday–Sunday week. Cardio does not count toward this target.</p>
-      <div className="weekly-target-picker" role="group" aria-label="Weekly lifting target">
+      <p className={styles.hint} id="weekly-target-hint">
+        How many days per week do you plan to lift? Cardio days do not count.
+      </p>
+      <div className={styles.options}>
         {[1, 2, 3, 4, 5, 6, 7].map((target) => (
           <button
             aria-pressed={value === target}
-            className={`weekly-target-picker__option${value === target ? ' weekly-target-picker__option--selected' : ''}`}
+            className={`${styles.option}${value === target ? ` ${styles.selected}` : ''}`}
             disabled={disabled}
             key={target}
             onClick={() => onChange(target)}
@@ -24,7 +31,7 @@ export function WeeklyTargetPicker({ value, onChange, error, disabled = false }:
           </button>
         ))}
       </div>
-      {error ? <p className="ui-field__error" id="weekly-target-error">{error}</p> : null}
+      {error ? <p className={styles.error} id="weekly-target-error">{error}</p> : null}
     </fieldset>
   );
 }

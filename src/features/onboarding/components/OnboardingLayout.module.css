@@ -1,0 +1,64 @@
+.root {
+  min-height: 100vh;
+  min-height: 100dvh;
+  overflow-x: clip;
+  color: var(--color-text);
+  background: #070709;
+}
+
+.visual {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border-bottom: 2px solid var(--color-accent);
+  background:
+    linear-gradient(180deg, rgba(5, 5, 5, 0.02) 0%, rgba(5, 5, 5, 0.07) 60%, rgba(5, 5, 5, 0.22) 100%),
+    url('../../../assets/fitness/top-set-bench-recovery.jpg') center 55% / cover no-repeat;
+}
+
+.content {
+  width: 100%;
+  margin: 0 auto;
+  padding: 27px 20px max(28px, env(safe-area-inset-bottom));
+}
+
+@media (max-width: 360px) {
+  .content {
+    padding-inline: 17px;
+  }
+}
+
+@media (min-width: 520px) and (max-width: 1023px) {
+  .visual {
+    max-height: 320px;
+    aspect-ratio: 16 / 7;
+  }
+
+  .content {
+    width: min(100% - 56px, 560px);
+    padding: 34px 0 44px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .root {
+    display: grid;
+    grid-template-columns: minmax(380px, 46%) minmax(0, 54%);
+  }
+
+  .visual {
+    position: sticky;
+    top: 0;
+    height: 100dvh;
+    max-height: none;
+    aspect-ratio: auto;
+    border-right: 1px solid rgba(255, 255, 255, 0.08);
+    border-bottom: 0;
+    background-position: center;
+  }
+
+  .content {
+    width: min(100% - 84px, 520px);
+    align-self: center;
+    padding: 56px 0;
+  }
+}

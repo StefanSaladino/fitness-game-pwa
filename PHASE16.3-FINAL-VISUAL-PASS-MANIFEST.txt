@@ -1,0 +1,27 @@
+PHASE 16.3 FINAL VISUAL PASS
+
+Cumulative over all earlier Phase 16.3 patches.
+
+Adds:
+- user-scoped persistent selected-group UI context
+- pure selected-group preference tests
+- new supplied battle-rope image asset
+- one compact photo banner for zero-group and pending-invitation states
+- tightened banner copy grounded in real group semantics
+- onboarding image/form boundary accent
+- slight loading indicator refinement
+- final visual-pass documentation
+
+Does not add:
+- database/schema/RPC/RLS changes
+- fake group discovery
+- public group search
+- notification center
+- device chrome
+- decorative banners on transient loading states
+- dashboard redesign
+- full group administration redesign
+
+Expected focused validation:
+  npm run typecheck
+  npx vitest run src/components/layout src/components/feedback src/features/onboarding src/features/product/selectedGroupPreference.test.ts src/features/groups/components/CreateGroupForm.test.tsx src/features/groups/components/OptionalGroupSetupScreen.test.tsx src/app/App.test.tsx

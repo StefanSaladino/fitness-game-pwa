@@ -262,9 +262,9 @@ describe('group-to-product integration journey', () => {
     const user = userEvent.setup();
     const service = createMemoryGroupService();
     render(<OnboardingToGroupHarness service={service} />);
-    expect(await screen.findByRole('heading', { name: 'Build your lifting identity.' })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: 'Set up your profile.' })).toBeInTheDocument();
     await user.type(screen.getByRole('textbox', { name: 'Username' }), 'stefan');
-    await user.click(screen.getByRole('button', { name: 'Complete onboarding' }));
+    await user.click(screen.getByRole('button', { name: 'Complete setup' }));
     expect(await screen.findByRole('heading', { name: 'Your lifting week' })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Groups are optional.' })).toBeInTheDocument();
     expect(screen.queryByRole('heading', { name: /build the crew/i })).not.toBeInTheDocument();
@@ -290,7 +290,7 @@ describe('group-to-product integration journey', () => {
     render(<JourneyHarness service={service} />);
     expect(await screen.findByRole('heading', { name: 'Your lifting week' })).toBeInTheDocument();
     await user.click(screen.getAllByRole('button', { name: 'Groups' })[0]!);
-    expect(await screen.findByRole('heading', { name: 'Train solo or add a group when you want.' })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: 'Groups are optional.' })).toBeInTheDocument();
     await user.type(screen.getByRole('textbox', { name: 'Group name' }), 'Iron Crew');
     await user.click(screen.getByRole('button', { name: 'Create group' }));
     expect(await screen.findByRole('heading', { name: 'Members' })).toBeInTheDocument();

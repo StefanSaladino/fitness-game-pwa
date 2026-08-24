@@ -6,5 +6,7 @@ export * from './timezones';
 export * from './validation';
 export * from './hooks/useOnboarding';
 export * from './components/OnboardingForm';
+export * from './components/OnboardingLayout';
 export * from './components/OnboardingScreen';
+export * from './components/OnboardingStatusScreen';
 export * from './components/WeeklyTargetPicker';

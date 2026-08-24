@@ -35,7 +35,13 @@ describe('GroupAdministrationScreen', () => {
     expect(screen.getByRole('heading',{name:'Invites'})).toBeInTheDocument();
     expect(screen.getByRole('heading',{name:'Your groups'})).toBeInTheDocument();
     expect(screen.getByText(/join or own more than one/i)).toBeInTheDocument();
-    expect(screen.getByRole('textbox',{name:'Username or invite ID'})).toBeInTheDocument();
+    const inviteRecipientField=screen.getByRole('textbox',{name:'Invite someone'});
+    expect(inviteRecipientField).toBeInTheDocument();
+    expect(inviteRecipientField).toHaveValue('');
+    expect(inviteRecipientField).toHaveAttribute('placeholder','Username or invite ID');
+    expect(inviteRecipientField).toHaveAttribute('autocomplete','off');
+    expect(inviteRecipientField).toHaveAttribute('name','groupInviteRecipient');
+    expect(inviteRecipientField.getAttribute('placeholder')).not.toMatch(/stefan|FG-/i);
     expect(screen.getByText(/FG-1A2B3C4D5E/)).toBeInTheDocument();
     expect(screen.getByRole('button',{name:'Make admin'})).toBeInTheDocument();
     expect(screen.getAllByRole('button',{name:'Transfer ownership'})).toHaveLength(2);
@@ -57,7 +63,7 @@ describe('GroupAdministrationScreen', () => {
   it('sends a targeted invitation and never exposes a reusable copy-code action', async () => {
     const user=userEvent.setup(); const p=props(ownerGroup);
     render(<GroupAdministrationScreen {...p} />);
-    await user.type(screen.getByRole('textbox',{name:'Username or invite ID'}),'@alex');
+    await user.type(screen.getByRole('textbox',{name:'Invite someone'}),'@alex');
     await user.click(screen.getByRole('button',{name:'Send invite'}));
     expect(p.onCreateInvite).toHaveBeenCalledWith('@alex');
     expect(screen.queryByText(/copy code/i)).not.toBeInTheDocument();

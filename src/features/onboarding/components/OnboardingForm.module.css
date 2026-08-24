@@ -1,0 +1,114 @@
+.form {
+  display: grid;
+  gap: 16px;
+}
+
+.field {
+  color-scheme: dark;
+}
+
+.field :global(.ui-field__label) {
+  color: #f0f0f0;
+  font-size: 0.78rem;
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+.field :global(.ui-field__control) {
+  min-height: 46px;
+  overflow: hidden;
+  border-color: rgba(255, 255, 255, 0.17);
+  border-radius: 8px;
+  background: #090b0c;
+  box-shadow: none;
+}
+
+.field :global(.ui-field__control:focus-within) {
+  border-color: rgba(241, 90, 8, 0.9);
+  box-shadow: 0 0 0 2px rgba(241, 90, 8, 0.12);
+}
+
+.field :global(.ui-field__control input),
+.field :global(.ui-field__control select) {
+  appearance: none;
+  -webkit-appearance: none;
+  color: #f6f6f6 !important;
+  background: transparent !important;
+  background-color: transparent !important;
+  box-shadow: none !important;
+  caret-color: var(--color-accent);
+  font-size: 0.86rem;
+  -webkit-text-fill-color: #f6f6f6;
+}
+
+.field :global(.ui-field__control select) {
+  appearance: auto;
+  -webkit-appearance: menulist;
+}
+
+.field :global(.ui-field__control input::placeholder) {
+  color: #8f9194;
+  opacity: 1;
+  -webkit-text-fill-color: #8f9194;
+}
+
+.field :global(.ui-field__hint) {
+  color: #939598;
+  font-size: 0.72rem;
+  font-weight: 400;
+  line-height: 1.38;
+}
+
+.field :global(.ui-field__error) {
+  color: #ffb0b0;
+  font-size: 0.74rem;
+}
+
+.field :global(.ui-field__control input:-webkit-autofill),
+.field :global(.ui-field__control input:-webkit-autofill:hover),
+.field :global(.ui-field__control input:-webkit-autofill:focus),
+.field :global(.ui-field__control input:-webkit-autofill:active) {
+  -webkit-text-fill-color: #f6f6f6 !important;
+  -webkit-box-shadow: 0 0 0 1000px #090b0c inset !important;
+  box-shadow: 0 0 0 1000px #090b0c inset !important;
+  caret-color: var(--color-accent);
+}
+
+.field :global(.ui-field__control input:autofill) {
+  color: #f6f6f6 !important;
+  background: #090b0c !important;
+  box-shadow: 0 0 0 1000px #090b0c inset !important;
+}
+
+.error {
+  margin: 0;
+  border-left: 2px solid currentColor;
+  padding: 8px 10px;
+  color: #ffb0b0;
+  background: rgba(255, 156, 156, 0.045);
+  font-size: 0.78rem;
+  line-height: 1.42;
+}
+
+:global(.ui-button).primaryButton,
+:global(.ui-button--primary).primaryButton {
+  min-height: 48px;
+  border-color: var(--color-accent);
+  border-radius: 8px;
+  color: #ffffff;
+  background: var(--color-accent);
+  box-shadow: none;
+  font-size: 0.86rem;
+  font-weight: 650;
+}
+
+:global(.ui-button).primaryButton:hover:not(:disabled),
+:global(.ui-button--primary).primaryButton:hover:not(:disabled) {
+  border-color: var(--color-accent-hover);
+  background: var(--color-accent-hover);
+}
+
+:global(.ui-button).primaryButton:focus-visible {
+  outline: 3px solid rgba(241, 90, 8, 0.38);
+  outline-offset: 2px;
+}

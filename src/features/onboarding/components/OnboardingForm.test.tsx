@@ -26,7 +26,7 @@ describe('OnboardingForm', () => {
 
     await user.type(username, 'IronWolf_23');
     await user.click(screen.getByRole('button', { name: '5' }));
-    await user.click(screen.getByRole('button', { name: 'Complete onboarding' }));
+    await user.click(screen.getByRole('button', { name: 'Complete setup' }));
 
     expect(onSubmit).toHaveBeenCalledWith({
       username: 'ironwolf_23',
@@ -42,7 +42,7 @@ describe('OnboardingForm', () => {
     render(<OnboardingForm busy={false} onSubmit={onSubmit} profile={profile} />);
 
     await user.type(screen.getByRole('textbox', { name: 'Username' }), '!!');
-    await user.click(screen.getByRole('button', { name: 'Complete onboarding' }));
+    await user.click(screen.getByRole('button', { name: 'Complete setup' }));
 
     expect(onSubmit).not.toHaveBeenCalled();
     expect(screen.getByText(/username must be 3-32/i)).toBeInTheDocument();

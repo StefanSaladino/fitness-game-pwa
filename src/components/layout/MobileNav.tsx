@@ -21,7 +21,7 @@ export function MobileNav({ activeItem, items, onNavigate }: MobileNavProps) {
             onClick={() => onNavigate?.(item.id)}
             type="button"
           >
-            <Icon name={item.icon} size={20} />
+            <Icon name={item.icon} size={19} />
             <span>{item.label}</span>
           </button>
         );
