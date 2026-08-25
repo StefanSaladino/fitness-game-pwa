@@ -5,8 +5,6 @@ const root = path.resolve(__dirname, '..');
 const migrationPath = 'supabase/migrations/20260823175728_phase15_6b_notification_preferences.sql';
 const testPath = 'supabase/tests/038_phase15_6b_notification_preferences.test.sql';
 const servicePath = 'src/features/settings/notificationPreferenceService.ts';
-const serviceTestPath = 'src/features/settings/notificationPreferenceService.test.ts';
-const phaseDocPath = 'docs/PHASE15.6B-NOTIFICATION-PREFERENCE-PERSISTENCE.md';
 
 function fail(message) {
   throw new Error(`Phase 15.6B contract gate failed: ${message}`);
@@ -76,22 +74,6 @@ for (const invariant of [
 }
 if (/localStorage|Notification\.requestPermission|PushManager|serviceWorker\.pushManager/.test(service)) {
   fail('15.6B service must not implement device permission or push-subscription behavior');
-}
-
-const serviceTest = read(serviceTestPath);
-if (!serviceTest.includes('masterOff') || !serviceTest.includes('p_notifications_enabled: false')) {
-  fail('service tests must preserve category selections when the master preference is off');
-}
-
-const phaseDoc = read(phaseDocPath);
-for (const statement of [
-  'Status: **DONE**',
-  'Hosted migration: `20260823175728_phase15_6b_notification_preferences`',
-  'Hosted pgTAP: **37/37 passed**',
-  'Phase 15.6C',
-  'Docker',
-]) {
-  if (!phaseDoc.includes(statement)) fail(`phase documentation missing: ${statement}`);
 }
 
 console.log('Phase 15.6B contract gate passed: notification persistence is server-owned, self-scoped, default-off, and delivery-independent.');

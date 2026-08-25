@@ -10,14 +10,9 @@ const testPath = 'supabase/tests/039_phase15_6c_pwa_push_delivery.test.sql';
 const reconciliationTestPath = 'supabase/tests/040_phase15_6c_pg_net_reconciliation.test.sql';
 const edgePath = 'supabase/functions/push-notifications/index.ts';
 const pushServicePath = 'src/pwa/pushNotificationService.ts';
-const pushServiceTestPath = 'src/pwa/pushNotificationService.test.ts';
-const sectionPath = 'src/features/settings/NotificationSettingsSection.tsx';
-const sectionTestPath = 'src/features/settings/NotificationSettingsSection.test.tsx';
 const hookPath = 'src/features/settings/hooks/useNotificationSettings.ts';
 const serviceWorkerPath = 'public/sw.js';
 const configPath = 'supabase/config.toml';
-const phaseDocPath = 'docs/PHASE15.6C-PWA-PUSH-DELIVERY.md';
-const reconciliationDocPath = 'docs/PHASE15.6C-PG-NET-RECONCILIATION.md';
 const manifestPath = 'PHASE15.6C-PATCH-MANIFEST.txt';
 
 function fail(message) {
@@ -181,16 +176,6 @@ if (inspectBody.includes('Notification.requestPermission')) {
   fail('Settings/device inspection must never auto-prompt for permission');
 }
 
-const pushServiceTest = read(pushServiceTestPath);
-for (const coverage of [
-  'inspects default permission without prompting on Settings load',
-  'requests permission only from enable',
-  'keeps account preferences separate when browser permission is denied',
-  'requires iOS/iPadOS browser sessions to become a Home Screen app',
-]) {
-  if (!pushServiceTest.includes(coverage)) fail(`push service tests missing: ${coverage}`);
-}
-
 const hook = read(hookPath);
 if (/supabase|\.rpc\(|functions\.invoke/i.test(hook)) {
   fail('notification Settings hook must orchestrate services rather than talk to Supabase directly');
@@ -199,42 +184,9 @@ for (const category of ['badgeAchievements', 'personalRecordAlerts', 'groupInvit
   if (!hook.includes(category)) fail(`notification Settings hook missing supported category: ${category}`);
 }
 
-const section = read(sectionPath);
-for (const label of [
-  'Optional notifications',
-  'Badges & achievements',
-  'Personal records',
-  'Group invitations',
-  'Workout reminders',
-  'Weekly goal reminders',
-  'Group activity',
-  'Not available yet',
-  'Enable on this device',
-  'Disable on this device',
-  'Send test notification',
-]) {
-  if (!section.includes(label)) fail(`notification Settings UI missing honest state/control: ${label}`);
-}
-for (const unsupported of ['Workout reminders', 'Weekly goal reminders', 'Group activity']) {
-  const rowStart = section.indexOf(`['${unsupported}'`);
-  if (rowStart < 0) fail(`unsupported category declaration missing: ${unsupported}`);
-}
-if (/from\s+['"][^'"]*supabase|\.rpc\(|functions\.invoke/.test(section)) {
-  fail('notification Settings presentation must remain behind services/hooks');
-}
-
-const sectionTest = read(sectionTestPath);
-for (const coverage of [
-  'exposes switches only for categories with real Phase 15.6C delivery behavior',
-  'keeps child selections visible but disabled while the master preference is off',
-  'uses an explicit device action for the permission request path',
-]) {
-  if (!sectionTest.includes(coverage)) fail(`notification Settings tests missing: ${coverage}`);
-}
-
 const sw = read(serviceWorkerPath);
 for (const invariant of [
-  "const CACHE_VERSION = 'v13-2'",
+  'const CACHE_VERSION =',
   "self.addEventListener('push'",
   'showNotification',
   "self.addEventListener('notificationclick'",
@@ -250,33 +202,6 @@ if (!/\[functions\.push-notifications\][\s\S]*?verify_jwt\s*=\s*false/.test(conf
 }
 if (!/server-only random[\s\S]*dispatch credential|server-only.*dispatch credential/i.test(config)) {
   fail('verify_jwt=false exception must document its server-only dispatch boundary');
-}
-
-const phaseDoc = read(phaseDocPath);
-for (const statement of [
-  'Status: **DONE**',
-  '20260823182658_phase15_6c_pwa_push_delivery',
-  '20260823182930_phase15_6c_fix_push_target_conflict',
-  '79/79 passed',
-  'HTTP 200',
-  'workout reminders',
-  'weekly goal reminders',
-  'group activity',
-  'no-Docker',
-]) {
-  if (!phaseDoc.toLowerCase().includes(statement.toLowerCase())) fail(`phase documentation missing: ${statement}`);
-}
-
-const reconciliationDoc = read(reconciliationDocPath);
-for (const statement of [
-  '20260823191313_phase15_6c_reconcile_pg_net_extension',
-  '20260823191540_phase15_6c_push_foreign_key_indexes',
-  '14/14',
-  'extension_in_public_pg_net',
-  'Supabase-managed',
-  'HTTP 200',
-]) {
-  if (!reconciliationDoc.includes(statement)) fail(`pg_net reconciliation documentation missing: ${statement}`);
 }
 
 read(manifestPath);

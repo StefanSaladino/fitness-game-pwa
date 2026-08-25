@@ -121,8 +121,8 @@ describe('WorkoutSetList', () => {
     expect(screen.getByLabelText('Set 2 reps')).toHaveValue(6);
   });
 
-  it('keeps existing set fields editable while structural offline actions remain gated', async () => {
-    const onSaveSet = vi.fn(async (_id: string, _input: WorkoutSetInput) => false);
+  it('keeps existing set fields and queued completion editable while structural offline actions remain gated', async () => {
+    const onSaveSet = vi.fn(async (_id: string, _input: WorkoutSetInput) => true);
     const onDraftChange = vi.fn();
     render(<WorkoutSetList {...props({ serverMutationsEnabled: false, setEditsEnabled: true, onSaveSet, onDraftChange })} />);
 
@@ -132,7 +132,11 @@ describe('WorkoutSetList', () => {
 
     expect(onDraftChange).toHaveBeenLastCalledWith('set-2', expect.objectContaining({ weight: '107.5', reps: '3' }));
     await waitFor(() => expect(onSaveSet).toHaveBeenCalledWith('set-2', expect.objectContaining({ weightKg: 107.5, reps: 3 })));
-    expect(screen.getByRole('button', { name: 'Mark set 2 complete' })).toBeDisabled();
+
+    expect(screen.getByRole('button', { name: 'Mark set 2 complete' })).toBeEnabled();
+    fireEvent.click(screen.getByRole('button', { name: 'Mark set 2 complete' }));
+    await waitFor(() => expect(onSaveSet).toHaveBeenCalledWith('set-2', expect.objectContaining({ completed: true, weightKg: 107.5, reps: 3 })));
+
     expect(screen.getByRole('button', { name: 'Copy last set' })).toBeDisabled();
   });
 
@@ -141,6 +145,7 @@ describe('WorkoutSetList', () => {
 
     expect(screen.getByLabelText('Set 2 weight in kg')).toBeDisabled();
     expect(screen.getByLabelText('Set 2 reps')).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Mark set 2 complete' })).toBeDisabled();
   });
 
   it('notifies recovery state outside the child state updater', () => {
@@ -165,5 +170,4 @@ describe('WorkoutSetList', () => {
     ).toBe(false);
     consoleError.mockRestore();
   });
-
 });

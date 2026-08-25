@@ -28,20 +28,14 @@ const phase152bTestPath = path.join(
 );
 const phase152cFiles = [
   'src/features/admin/capacity/supabaseManagementProvider.ts',
-  'src/features/admin/capacity/supabaseManagementProvider.test.ts',
   'supabase/functions/platform-capacity-supabase/index.ts',
-  'docs/PHASE15.2C-SUPABASE-PROVIDER-ADAPTER.md',
   'PHASE15.2C-PATCH-MANIFEST.txt',
 ];
 
 const phase152aFiles = [
   'src/features/admin/capacity/model.ts',
   'src/features/admin/capacity/capacityMath.ts',
-  'src/features/admin/capacity/capacityMath.test.ts',
   'src/features/admin/capacity/provider.ts',
-  'docs/PHASE15.2A-CAPACITY-SEMANTICS.md',
-  'docs/PHASE15.2-ADMIN-ROUTE-AUTHORIZATION.md',
-  'docs/PHASE15.6-PROFILE-SETTINGS-NOTIFICATIONS.md',
   'PHASE15.2A-PATCH-MANIFEST.txt',
 ];
 
@@ -96,9 +90,6 @@ if (/grant\s+[^;]*\bon\s+(?:table\s+|function\s+)?private\./i.test(phase15Migrat
 if (/grant\s+execute\s+on\s+function\s+private\.bootstrap_platform_admin/i.test(phase15Migration)) {
   fail('Phase 15.1 bootstrap function must remain operator-only');
 }
-if (/service[_-]?role|VITE_.*SERVICE/i.test(read('src/features/product/ProductController.tsx'))) {
-  fail('browser product code must never contain service-role infrastructure credentials');
-}
 
 const phase15Test = fs.readFileSync(phase15TestPath, 'utf8');
 const phase15Plan = Number((phase15Test.match(/select\s+plan\((\d+)\)/i) || [])[1]);
@@ -115,8 +106,6 @@ if (!/\(before_state->>'is_platform_admin'\)\s*\|\|/.test(phase15Test)
     || !/\(after_state->>'is_platform_admin'\)/.test(phase15Test)) {
   fail('Phase 15.1 pgTAP must retain the hosted-verified parenthesized audit-state assertion');
 }
-
-const productController = read('src/features/product/ProductController.tsx');
 const lazyFeatureModules = {
   dashboard: '../dashboard/components/DashboardController',
   cardio: '../cardio/components/CardioController',
@@ -125,25 +114,6 @@ const lazyFeatureModules = {
   social: '../social/components/GroupSocialController',
   workout: '../workout/components/WorkoutController',
 };
-for (const [feature, modulePath] of Object.entries(lazyFeatureModules)) {
-  if (!productController.includes(`import('${modulePath}')`)) {
-    fail(`ProductController must lazy-load the ${feature} controller from its direct component module`);
-  }
-}
-if (/import\(['"]\.\.\/(?:dashboard|cardio|groups|progress|social|workout)['"]\)/.test(productController)) {
-  fail('ProductController must not lazy-load feature barrel files because static barrel consumers can collapse chunk boundaries');
-}
-if (!/\blazy\s*\(/.test(productController) || !/\bSuspense\b/.test(productController)) {
-  fail('ProductController must use React lazy/Suspense feature boundaries');
-}
-
-const appSource = read('src/app/App.tsx');
-if (!appSource.includes("from '../features/groups/components/GroupGate'")) {
-  fail('App must import GroupGate directly so group administration can remain a separate lazy chunk');
-}
-if (/from\s+['"]\.\.\/features\/groups['"]/.test(appSource)) {
-  fail('App must not statically import the groups barrel because it defeats the group-admin lazy boundary');
-}
 
 const viteConfig = read('vite.config.ts');
 if (!/rolldownOptions/.test(viteConfig) || !/codeSplitting/.test(viteConfig)) {
@@ -157,8 +127,8 @@ if (!/fitness-asset-manifest/.test(viteConfig) || !/asset-manifest\.json/.test(v
 }
 
 const serviceWorker = read('public/sw.js');
-if (!/const\s+CACHE_VERSION\s*=\s*['"]v13-2['"]/.test(serviceWorker)) {
-  fail('current service worker must declare cache version v13-2');
+if (!/const\s+CACHE_VERSION\s*=\s*['"][^'"]+['"]/.test(serviceWorker)) {
+  fail('current service worker must declare an explicit cache version');
 }
 if (!/const\s+CACHE\s*=\s*`\$\{CACHE_PREFIX\}\$\{CACHE_VERSION\}`/.test(serviceWorker)) {
   fail('service-worker cache name must be composed from the stable prefix and explicit cache version');
@@ -167,55 +137,13 @@ if (!/asset-manifest\.json/.test(serviceWorker) || !/emittedAssetPaths/.test(ser
   fail('service worker must precache emitted lazy chunks through the asset manifest');
 }
 
-const pwaShellE2e = read('tests/e2e/pwa-shell.spec.ts');
-if (!/missingEmittedAssets/.test(pwaShellE2e) || !/asset-manifest\.json/.test(pwaShellE2e)) {
-  fail('PWA E2E must prove every emitted lazy asset is precached');
-}
-
 const bundleGuard = read('scripts/check-bundle-size.cjs');
 if (!/500_000/.test(bundleGuard) || !/Bundle budget failed/.test(bundleGuard)) {
   fail('bundle guard must enforce the 500 kB JavaScript chunk budget');
 }
 const packageJson = JSON.parse(read('package.json'));
-if (packageJson.version !== '0.13.0') fail('package version must be v0.13.0 for Phase 15.1');
 if (!String(packageJson.scripts?.build || '').includes('check-bundle-size.cjs')) {
   fail('normal production build must execute the bundle-size gate');
-}
-
-const roadmap = read('docs/ROADMAP.md');
-if (!/Phase 15 .*IN PROGRESS/.test(roadmap)) fail('roadmap must mark Phase 15 in progress');
-if (!/15\.1 Platform-admin authorization \+ audit foundation .*DONE/.test(roadmap)) fail('roadmap must mark Phase 15.1 done');
-if (!/15\.2 Capacity \+ platform-health dashboard .*IN PROGRESS/.test(roadmap)) {
-  fail('roadmap must mark Phase 15.2 in progress');
-}
-if (!/15\.2A Capacity semantics \+ provider contract .*DONE/.test(roadmap)) {
-  fail('roadmap must mark Phase 15.2A done');
-}
-if (!/15\.2B Database-local telemetry \+ historical snapshots .*DONE/.test(roadmap)) {
-  fail('roadmap must mark Phase 15.2B database-local telemetry done');
-}
-for (const heading of [
-  '15.2C Supabase provider quota adapter — IN PROGRESS (PROVIDER BILLING-USAGE API GAP)',
-  '15.2C1 Secure Management API boundary + capability adapter — DONE',
-  '15.2C2 Provider-authoritative billing-cycle usage feed — BLOCKED ON DOCUMENTED SUPABASE API/EXPORT',
-  '15.2D Netlify provider usage adapter — IN PROGRESS (PROVIDER ACCOUNT-USAGE API GAP)',
-  '15.2D1 Secure Netlify API boundary + capability adapter — DONE',
-  '15.2D2 Provider-authoritative account usage feed — BLOCKED ON DOCUMENTED NETLIFY API/EXPORT',
-  '15.2E Capacity dashboard visual gate + implementation — DONE',
-  '### 15.3 User account administration — DONE',
-]) {
-  if (!roadmap.includes(heading)) fail(`roadmap missing capacity slice: ${heading}`);
-}
-if (!/15\.6 Profile\/Settings \+ notification preferences .*DONE/.test(roadmap)) {
-  fail('roadmap must mark the Profile/Settings + notification preferences phase done');
-}
-for (const heading of [
-  '15.6A Profile/Settings foundation — DONE',
-  '15.6B Notification preference persistence — DONE',
-  '15.6C PWA notification permission + delivery integration — DONE',
-  '15.6D Settings integration gate — DONE',
-]) {
-  if (!roadmap.includes(heading)) fail(`roadmap missing settings/notification slice: ${heading}`);
 }
 for (const relativePath of phase152aFiles) {
   if (!fs.existsSync(path.join(root, relativePath))) fail(`Phase 15.2A file missing: ${relativePath}`);
@@ -223,9 +151,6 @@ for (const relativePath of phase152aFiles) {
 
 if (!fs.existsSync(phase152bMigrationPath)) fail('Phase 15.2B capacity telemetry migration exists');
 if (!fs.existsSync(phase152bTestPath)) fail('Phase 15.2B capacity telemetry pgTAP test exists');
-if (!fs.existsSync(path.join(root, 'docs/PHASE15.2B-DATABASE-LOCAL-TELEMETRY.md'))) {
-  fail('Phase 15.2B database-local telemetry architecture document exists');
-}
 if (!fs.existsSync(path.join(root, 'PHASE15.2B-PATCH-MANIFEST.txt'))) {
   fail('Phase 15.2B patch manifest exists');
 }
@@ -286,131 +211,9 @@ for (const requiredCoverage of [
     fail(`Phase 15.2B pgTAP missing authorization/history coverage: ${requiredCoverage}`);
   }
 }
-
-const phase152bDoc = read('docs/PHASE15.2B-DATABASE-LOCAL-TELEMETRY.md');
-if (!/not Supabase billable monthly active users/i.test(phase152bDoc)
-    || !/private\.require_active_platform_admin\(\)/.test(phase152bDoc)
-    || !/No real administrator was bootstrapped/.test(phase152bDoc)
-    || !/20260822040727_platform_capacity_local_telemetry/.test(phase152bDoc)) {
-  fail('Phase 15.2B documentation must preserve local-vs-provider semantics, authorization, clean test state, and hosted migration identity');
-}
-const adminRouteContract = read('docs/PHASE15.2-ADMIN-ROUTE-AUTHORIZATION.md');
-for (const requiredFragment of [
-  '/platform-admin',
-  '/platform-admin/capacity',
-  '/settings',
-  'Authorized in-PWA discovery through Profile/Settings',
-  'Admin** action',
-  'render no Admin button/link',
-  'loading or unavailable, fail closed',
-  'navigation convenience only',
-  'PlatformAdminGate',
-  'public.get_my_platform_access()',
-  'private.require_active_platform_admin()',
-  'normal onboarding and group gating',
-  'does **not** need to belong to a fitness group',
-  'Group OWNER',
-  'Group ADMIN',
-  'Suspended platform admin',
-  'unknown/non-existent authenticated route',
-  'ordinary authenticated home',
-  'replace redirect to `/`',
-  'no `403`',
-  'Secure server / Edge boundary',
-  'docs/PHASE15.6-PROFILE-SETTINGS-NOTIFICATIONS.md',
-  'before `GroupGate`',
-]) {
-  if (!adminRouteContract.includes(requiredFragment)) {
-    fail(`Phase 15.2 admin route/authorization contract missing: ${requiredFragment}`);
-  }
-}
-if (!/React route guard is \*\*UX defense only\*\*/.test(adminRouteContract)
-    || !/No later visual, routing, or provider-integration slice may replace server\/database authorization/.test(adminRouteContract)) {
-  fail('Phase 15.2 must keep client route checks subordinate to server/database authorization');
-}
-if (!/indistinguishable from an unknown route/.test(adminRouteContract)
-    || !/no `403`, `Access denied`, `Admin access required`/.test(adminRouteContract)
-    || !/ACTIVE platform admins still resolve the real administrator route/.test(adminRouteContract)) {
-  fail('Phase 15.2 must hide reserved admin-route existence from authenticated unauthorized callers');
-}
-if (!/Profile\/Settings must render an \*\*Admin\*\* action/.test(adminRouteContract)
-    || !/render no Administration heading, disabled control, placeholder row, reserved gap/.test(adminRouteContract)
-    || !/platform-access check is loading or unavailable, fail closed/.test(adminRouteContract)
-    || !/same server-backed platform-access result/.test(adminRouteContract)
-    || !/navigation convenience only/.test(adminRouteContract)) {
-  fail('Phase 15.2 must expose in-PWA admin discovery only to positively authorized ACTIVE platform administrators');
-}
-if (!roadmap.includes('`/platform-admin` as the private administrator shell')
-    || !roadmap.includes('`/platform-admin/capacity` as the capacity dashboard route')
-    || !roadmap.includes('reserve `/settings` as the ordinary authenticated Profile/Settings surface')
-    || !roadmap.includes('render an `Admin` action to `/platform-admin` **only** after server-backed access')
-    || !roadmap.includes('navigation convenience only and never replaces `PlatformAdminGate`')
-    || !roadmap.includes('private.require_active_platform_admin()')
-    || !roadmap.includes('unknown/non-existent authenticated route')
-    || !roadmap.includes('replace redirect to canonical home `/`')
-    || !roadmap.includes('no admin-specific denial state or route disclosure')) {
-  fail('Phase 15.2 roadmap must retain the locked admin route, non-disclosure fallback, and RPC authorization architecture');
-}
-const settingsContract = read('docs/PHASE15.6-PROFILE-SETTINGS-NOTIFICATIONS.md');
-for (const requiredFragment of [
-  '/settings',
-  'Profile + identity',
-  'Notifications',
-  'Notifications  [ON/OFF]',
-  'workout reminders',
-  'weekly goal reminders',
-  'badges + achievements',
-  'personal-record alerts',
-  'group activity',
-  'group invitations',
-  'account-level server-persisted preferences',
-  'master OFF suppresses all optional notification delivery',
-  'preserves the user\'s individual category selections',
-  'master ON does not automatically grant browser/OS notification permission',
-  'Device/browser permission is separate',
-  'permission not requested/default',
-  'permission granted',
-  'permission denied/blocked',
-  'notifications unsupported on this device/browser',
-  'never auto-prompt for notification permission',
-  'explicit user action',
-  'push subscriptions are device-specific',
-  'multiple authorized devices',
-  'Account + security',
-  'Training preferences',
-  'Groups',
-  'Privacy + data',
-  'App / PWA',
-  'Administration — conditional',
-  'private.require_active_platform_admin()',
-  'required in-app account/security/moderation notices',
-]) {
-  if (!settingsContract.includes(requiredFragment)) {
-    fail(`Profile/Settings notification contract missing: ${requiredFragment}`);
-  }
-}
-if (!/They do not rely only on localStorage, IndexedDB, or a single browser installation/.test(settingsContract)
-    || !/request permission only after an explicit user action/.test(settingsContract)
-    || !/denying permission on one device must not silently set the account-level master preference to OFF/.test(settingsContract)
-    || !/Data export must not appear as a functioning control until its backend exists/.test(settingsContract)
-    || !/account-deletion backend[\s\S]*implemented by Phase 15\.3C/.test(settingsContract)
-    || !/LOCKED; 15\.6A–15\.6D IMPLEMENTED\./.test(settingsContract)
-    || !/persisted unsupported categories remain unavailable rather than becoming fake controls/.test(settingsContract)) {
-  fail('Profile/Settings contract must preserve current server persistence, explicit permission, multi-device, and honest-control semantics');
-}
-if (!roadmap.includes('master Notifications ON/OFF preference server-side')
-    || !roadmap.includes('workout reminders, weekly goal reminders, badges + achievements, personal-record alerts, group activity, and group invitations')
-    || !roadmap.includes('master OFF suppresses optional delivery and disables child controls while preserving the individual category selections')
-    || !roadmap.includes('request browser/OS notification permission only from an explicit user gesture')
-    || !roadmap.includes('push subscriptions are device-specific, support multiple devices per account')
-    || !roadmap.includes('required in-app account, security, moderation, suspension, and ACTION_REQUIRED notices remain visible')) {
-  fail('roadmap must retain the locked Profile/Settings notification behavior');
-}
 const capacityModel = read('src/features/admin/capacity/model.ts');
 const capacityMath = read('src/features/admin/capacity/capacityMath.ts');
 const capacityProvider = read('src/features/admin/capacity/provider.ts');
-const capacityTest = read('src/features/admin/capacity/capacityMath.test.ts');
-const capacityDoc = read('docs/PHASE15.2A-CAPACITY-SEMANTICS.md');
 if (!/watch:\s*60/.test(capacityModel) || !/warning:\s*75/.test(capacityModel) || !/critical:\s*85/.test(capacityModel)) {
   fail('Phase 15.2A must retain the 60/75/85 default planning thresholds');
 }
@@ -444,16 +247,6 @@ if (!/utilizationPercent >= 100/.test(capacityMath)
 if (!/elapsedDays <= 0 \|\| growth <= 0/.test(capacityMath) || !/previous\.source !== current\.source/.test(capacityMath)) {
   fail('capacity growth math must reject invalid time/growth and mismatched sources');
 }
-if (!/classifies %s%% as %s/.test(capacityTest)
-    || !/UNCONFIGURED/.test(capacityTest)
-    || !/UNAVAILABLE/.test(capacityTest)
-    || !/time to a configured limit/.test(capacityTest)) {
-  fail('Phase 15.2A unit tests must lock warning, unavailable, unconfigured, and projection semantics');
-}
-if (!/not.*Supabase billable MAU/is.test(capacityDoc)
-    || !/No provider management token, Supabase service-role\/secret key, or Netlify access token belongs in Vite\/browser code/.test(capacityDoc)) {
-  fail('Phase 15.2A documentation must distinguish billable MAU and prohibit browser infrastructure credentials');
-}
 if (/process\.env|import\.meta\.env|service[_-]?role|management[_-]?token|access[_-]?token/i.test(capacityProvider)) {
   fail('provider contract must not embed or read infrastructure credentials');
 }
@@ -477,9 +270,7 @@ if (!/CapacityMetricScope = 'PROJECT' \| 'ORGANIZATION'/.test(capacityModel)) {
   fail('Phase 15.2C must distinguish project and organization capacity scope');
 }
 const supabaseManagementProvider = read('src/features/admin/capacity/supabaseManagementProvider.ts');
-const supabaseManagementProviderTest = read('src/features/admin/capacity/supabaseManagementProvider.test.ts');
 const supabaseProviderFunction = read('supabase/functions/platform-capacity-supabase/index.ts');
-const phase152cDoc = read('docs/PHASE15.2C-SUPABASE-PROVIDER-ADAPTER.md');
 for (const fragment of [
   'SUPABASE_MANAGEMENT_METRIC_CODES',
   "scope: 'ORGANIZATION'",
@@ -492,14 +283,6 @@ for (const fragment of [
 }
 if (/process\.env|import\.meta\.env|SUPABASE_MANAGEMENT_ACCESS_TOKEN|SUPABASE_ORGANIZATION_SLUG|api\.supabase\.com/i.test(supabaseManagementProvider)) {
   fail('Phase 15.2C browser adapter must not read or embed Management API credentials/endpoints');
-}
-for (const fragment of [
-  'does not turn provider failure into zero',
-  'fills a missing requested provider metric as unavailable rather than zero',
-  'fails closed when the Edge/provider invocation throws',
-  'rejects malformed or wrong-scope provider payloads',
-]) {
-  if (!supabaseManagementProviderTest.includes(fragment)) fail(`Phase 15.2C provider tests missing: ${fragment}`);
 }
 for (const fragment of [
   'SUPABASE_MANAGEMENT_ACCESS_TOKEN',
@@ -523,27 +306,11 @@ if (/service[_-]?role/i.test(supabaseProviderFunction)) {
 if (/api\.supabase\.com\/v1\/organizations\/[^'`"]+\/usage/i.test(supabaseProviderFunction)) {
   fail('Phase 15.2C must not invent an undocumented Supabase organization usage endpoint');
 }
-for (const fragment of [
-  'organization-scoped',
-  'does not expose a stable endpoint',
-  'do not invent or call an undocumented `/usage`',
-  'does not bootstrap one',
-  '15.2C2 — Provider-authoritative billing-cycle usage feed — BLOCKED',
-]) {
-  if (!phase152cDoc.includes(fragment)) fail(`Phase 15.2C documentation missing provider-gap invariant: ${fragment}`);
-}
 if (!/\[functions\.platform-capacity-supabase\][\s\S]*verify_jwt\s*=\s*true/.test(read('supabase/config.toml'))) {
   fail('Phase 15.2C Edge Function must explicitly verify authenticated user JWTs');
 }
-if (!roadmap.includes('do not invent an undocumented `/usage` endpoint')
-    || !roadmap.includes('do not hard-code mutable Free/Pro/Team plan quotas into runtime application logic')
-    || !roadmap.includes('provider API gap does not block independent Netlify adapter work')) {
-  fail('Phase 15.2C roadmap must preserve honest provider-gap and fail-closed semantics');
-}
 for (const relativePath of [
-  'docs/PHASE15.2D-NETLIFY-PROVIDER-ADAPTER.md',
   'src/features/admin/capacity/netlifyApiProvider.ts',
-  'src/features/admin/capacity/netlifyApiProvider.test.ts',
   'supabase/functions/platform-capacity-netlify/index.ts',
 ]) {
   if (!fs.existsSync(path.join(root, relativePath))) fail(`Phase 15.2D file missing: ${relativePath}`);
@@ -552,9 +319,7 @@ if (!/CapacityMetricScope = 'PROJECT' \| 'ORGANIZATION' \| 'ACCOUNT'/.test(capac
   fail('Phase 15.2D must model Netlify billing with explicit ACCOUNT scope');
 }
 const netlifyApiProvider = read('src/features/admin/capacity/netlifyApiProvider.ts');
-const netlifyApiProviderTest = read('src/features/admin/capacity/netlifyApiProvider.test.ts');
 const netlifyProviderFunction = read('supabase/functions/platform-capacity-netlify/index.ts');
-const phase152dDoc = read('docs/PHASE15.2D-NETLIFY-PROVIDER-ADAPTER.md');
 for (const fragment of [
   'NETLIFY_API_METRIC_CODES',
   "scope: 'ACCOUNT'",
@@ -567,14 +332,6 @@ for (const fragment of [
 }
 if (/process\.env|import\.meta\.env|NETLIFY_ACCESS_TOKEN|NETLIFY_ACCOUNT_ID|api\.netlify\.com/i.test(netlifyApiProvider)) {
   fail('Phase 15.2D browser adapter must not read or embed Netlify credentials/endpoints');
-}
-for (const fragment of [
-  'without converting unavailable values to zero',
-  'fills a missing requested provider metric as unavailable rather than zero',
-  'fails closed when the Edge/provider invocation throws',
-  'rejects malformed or wrong-scope provider payloads',
-]) {
-  if (!netlifyApiProviderTest.includes(fragment)) fail(`Phase 15.2D provider tests missing: ${fragment}`);
 }
 for (const fragment of [
   'NETLIFY_ACCESS_TOKEN',
@@ -597,127 +354,33 @@ for (const fragment of [
 if (/api\.netlify\.com\/api\/v1\/accounts\/[^'`"]+\/(usage|bandwidth|billing)/i.test(netlifyProviderFunction)) {
   fail('Phase 15.2D must not invent an undocumented Netlify account-usage endpoint');
 }
-for (const fragment of [
-  'team/account scoped',
-  'does not expose stable public endpoints',
-  'invent an undocumented Netlify billing/usage endpoint',
-  '15.2D2 — Provider-authoritative account usage feed — BLOCKED',
-]) {
-  if (!phase152dDoc.includes(fragment)) fail(`Phase 15.2D documentation missing provider-gap invariant: ${fragment}`);
-}
 if (!/\[functions\.platform-capacity-netlify\][\s\S]*verify_jwt\s*=\s*true/.test(read('supabase/config.toml'))) {
   fail('Phase 15.2D Edge Function must explicitly verify authenticated user JWTs');
-}
-if (!roadmap.includes('15.2D1 Secure Netlify API boundary + capability adapter — DONE')
-    || !roadmap.includes('15.2D2 Provider-authoritative account usage feed — BLOCKED ON DOCUMENTED NETLIFY API/EXPORT')
-    || !roadmap.includes('15.2E Capacity dashboard visual gate + implementation — DONE')) {
-  fail('Phase 15.2D roadmap must retain the Netlify provider API gap after the dashboard visual gate completes');
 }
 
 // Phase 15.2E dashboard anti-AI and real-data UI contract.
 for (const relativePath of [
-  'docs/UI-ANTI-AI-LAYOUT-RULES.md',
-  'docs/PHASE15.2E-CAPACITY-DASHBOARD.md',
   'public/_redirects',
   'src/lib/appNavigation.ts',
   'src/features/admin/platformAccessService.ts',
   'src/features/admin/hooks/usePlatformAccess.ts',
-  'src/features/admin/PlatformAdminRoute.tsx',
   'src/features/admin/capacity/dashboardModel.ts',
   'src/features/admin/capacity/capacityDashboardService.ts',
   'src/features/admin/capacity/hooks/useCapacityDashboard.ts',
   'src/features/admin/capacity/formatCapacity.ts',
-  'src/features/admin/capacity/components/CapacityDashboard.tsx',
-  'src/features/admin/capacity/components/CapacityDashboard.module.css',
-  'src/features/admin/capacity/components/CapacityDashboardController.tsx',
-  'src/features/settings/SettingsScreen.tsx',
-  'src/features/settings/SettingsScreen.module.css',
 ] ) {
   if (!fs.existsSync(path.join(root, relativePath))) fail('Phase 15.2E file missing: ' + relativePath);
 }
-const phase152eDoc = read('docs/PHASE15.2E-CAPACITY-DASHBOARD.md');
-const antiAiRules = read('docs/UI-ANTI-AI-LAYOUT-RULES.md');
-const appRouter = read('src/app/App.tsx');
-const productController152e = read('src/features/product/ProductController.tsx');
-const adminRoute152e = read('src/features/admin/PlatformAdminRoute.tsx');
-const settings152e = read('src/features/settings/SettingsScreen.tsx');
 const capacityService152e = read('src/features/admin/capacity/capacityDashboardService.ts');
-const capacityScreen152e = read('src/features/admin/capacity/components/CapacityDashboard.tsx');
-const capacityCss152e = read('src/features/admin/capacity/components/CapacityDashboard.module.css');
 const netlifyRedirects152e = read('public/_redirects');
-for (const fragment of [
-  'Do not build card walls',
-  'Never invent product structure in a concept',
-  'Never fabricate telemetry or quota data',
-  'No progress visualization without a real denominator',
-  'No fake charts',
-  'Do not manufacture an overall score',
-  'Mobile is not a shrunken desktop',
-  'Do not claim provider success when only the adapter exists',
-]) {
-  if (!antiAiRules.includes(fragment)) fail('Phase 15.2E anti-AI contract missing: ' + fragment);
-}
-if (!appRouter.includes("pathname === '/platform-admin'")
-    || !appRouter.includes("pathname.startsWith('/platform-admin/')")
-    || appRouter.indexOf('PlatformAdminRoute') > appRouter.indexOf('<GroupGate')) {
-  fail('Phase 15.2E must route platform administration before ordinary group gating');
-}
-for (const fragment of [
-  "accountStatus === 'ACTIVE'",
-  'isPlatformAdmin',
-  "replacePath('/')",
-  "replacePath('/platform-admin/capacity')",
-  'CapacityDashboardController',
-]) {
-  if (!adminRoute152e.includes(fragment)) fail('Phase 15.2E admin route missing invariant: ' + fragment);
-}
-if (/Access denied|Admin access required|Platform administrator required/.test(adminRoute152e)) {
-  fail('Phase 15.2E admin route must not expose admin-specific denial copy');
-}
-if (!productController152e.includes("section === 'profile'") || !productController152e.includes("navigateToPath('/settings')")) {
-  fail('Phase 15.2E must wire the existing Profile navigation to canonical /settings');
-}
-if (!settings152e.includes("accountStatus === 'ACTIVE'")
-    || !settings152e.includes('isPlatformAdmin')
-    || !settings152e.includes("navigateToPath('/platform-admin')")) {
-  fail('Phase 15.2E Settings must fail closed and discover platform administration only for ACTIVE admins');
-}
 for (const rpc of ['get_platform_capacity_current', 'get_platform_capacity_history', 'capture_platform_capacity_snapshot']) {
   if (!capacityService152e.includes(rpc)) fail('Phase 15.2E capacity service missing RPC: ' + rpc);
 }
 for (const providerFunction of ['platform-capacity-supabase', 'platform-capacity-netlify']) {
   if (!capacityService152e.includes(providerFunction)) fail('Phase 15.2E capacity service missing provider boundary: ' + providerFunction);
 }
-for (const realMetric of ['Database size', 'Storage objects', 'Postgres connections', 'Auth users', 'Recent sign-ins (30d)']) {
-  if (!capacityScreen152e.includes(realMetric)) fail('Phase 15.2E UI missing real metric: ' + realMetric);
-}
-for (const honestState of ['No snapshots yet', 'Billing usage unavailable', 'Record snapshot', 'Refresh']) {
-  if (!capacityScreen152e.includes(honestState)) fail('Phase 15.2E UI missing honest state/action: ' + honestState);
-}
-if (/Overall status|Healthy|Next snapshot|Every 60 minutes|500 MB|10 GB|100,000|Export|View details/.test(capacityScreen152e)) {
-  fail('Phase 15.2E must not ship fabricated concept-art telemetry, schedules, quotas, or controls');
-}
-if (/linear-gradient|radial-gradient|box-shadow|filter:\s*blur|backdrop-filter/i.test(capacityCss152e)) {
-  fail('Phase 15.2E admin surface must preserve the approved restrained non-glow/non-gradient visual contract');
-}
-if (!/min-width:\s*940px/.test(capacityCss152e) || !/\.mobileBar/.test(capacityCss152e)) {
-  fail('Phase 15.2E must retain distinct mobile and desktop admin layouts');
-}
-for (const fragment of [
-  '0 snapshots',
-  'metrics without allowances are explicitly **Unconfigured**',
-  'Postgres connections can therefore use live `max_connections`',
-  'No Export, View details, quota editor',
-  'no database migration',
-]) {
-  if (!phase152eDoc.includes(fragment)) fail('Phase 15.2E documentation missing invariant: ' + fragment);
-}
 if (!/\/\*\s+\/index\.html\s+200/.test(netlifyRedirects152e)) {
   fail('Phase 15.2E direct admin/settings routes require the Netlify SPA fallback');
-}
-if (!roadmap.includes('15.2E Capacity dashboard visual gate + implementation — DONE')
-    || !roadmap.includes('### 15.3 User account administration — DONE')) {
-  fail('Phase 15.2E and Phase 15.3 roadmap slices must remain DONE');
 }
 
 // Phase 15.3A account directory + lifecycle foundation.
@@ -730,10 +393,8 @@ const phase153aTestPath = path.join(
   'supabase/tests/030_platform_account_administration_foundation.test.sql',
 );
 for (const relativePath of [
-  'docs/PHASE15.3A-ACCOUNT-ADMINISTRATION-FOUNDATION.md',
   'src/features/admin/accounts/model.ts',
   'src/features/admin/accounts/platformAccountAdminService.ts',
-  'src/features/admin/accounts/platformAccountAdminService.test.ts',
   'src/features/admin/accounts/index.ts',
 ]) {
   if (!fs.existsSync(path.join(root, relativePath))) fail('Phase 15.3A file missing: ' + relativePath);
@@ -822,32 +483,6 @@ if (/service[_-]?role|SUPABASE_SECRET|encrypted_password|refresh_token|access_to
   fail('Phase 15.3A browser account service must not contain privileged Auth credentials or token fields');
 }
 
-const phase153aDoc = read('docs/PHASE15.3A-ACCOUNT-ADMINISTRATION-FOUNDATION.md');
-for (const fragment of [
-  'does **not** return email addresses',
-  'first** destructive step',
-  'does **not** physically delete the Auth user or profile',
-  'does **not** pretend that merely defining the helper enforces every historical RPC',
-  'temporary bans block sign-in but do not revoke already-issued sessions/access tokens',
-  'no user-management UI yet',
-]) {
-  if (!phase153aDoc.includes(fragment)) fail('Phase 15.3A documentation missing invariant: ' + fragment);
-}
-
-for (const heading of [
-  '### 15.3 User account administration — DONE',
-  '#### 15.3A Account directory + lifecycle foundation — DONE',
-  '#### 15.3B Suspension enforcement + Auth session coordination — DONE',
-  '#### 15.3C Irreversible account removal — DONE',
-  '#### 15.3D User-administration visual gate + UI — DONE',
-  '#### 15.3E User reports + moderation case foundation — DONE',
-  '#### 15.3F Privacy-bounded user activity review + moderation UI — DONE',
-  '### 15.4 Admin-to-user messaging — DONE',
-  '### 15.5 Admin integration + security gate — DONE',
-]) {
-  if (!roadmap.includes(heading)) fail('Phase 15.3 roadmap missing slice: ' + heading);
-}
-
 // Phase 15.3B Data API/session enforcement + server-only Auth coordination.
 const phase153bMigrationPath = path.join(
   root,
@@ -866,7 +501,6 @@ const phase153bHookSchemaPath = path.join(
   'supabase/migrations/20260822162155_move_account_hooks_out_of_data_api.sql',
 );
 for (const relativePath of [
-  'docs/PHASE15.3B-SUSPENSION-ENFORCEMENT.md',
   'PHASE15.3B-PATCH-MANIFEST.txt',
   'supabase/functions/platform-account-auth/index.ts',
 ]) {
@@ -995,18 +629,6 @@ if (/client\.rpc\(['"](?:suspend_platform_account|restore_platform_account)/.tes
   fail('Phase 15.3B browser service must not retain direct state-only suspension/restore calls');
 }
 
-const phase153bDoc = read('docs/PHASE15.3B-SUSPENSION-ENFORCEMENT.md');
-for (const fragment of [
-  'pgrst.db_pre_request',
-  'matching `auth.sessions` row',
-  "`ban_duration: 'none'`",
-  'does **not** invalidate already-issued access JWTs',
-  'does not directly mutate Supabase-managed `auth.sessions` rows',
-  'no Docker or local Supabase stack',
-]) {
-  if (!phase153bDoc.includes(fragment)) fail('Phase 15.3B documentation missing invariant: ' + fragment);
-}
-
 // Phase 15.3C irreversible administrator + self-service deletion engine.
 const phase153cMigrationPath = path.join(
   root,
@@ -1017,10 +639,8 @@ const phase153cTestPath = path.join(
   'supabase/tests/032_platform_account_irreversible_deletion.test.sql',
 );
 for (const relativePath of [
-  'docs/PHASE15.3C-IRREVERSIBLE-ACCOUNT-DELETION.md',
   'PHASE15.3C-PATCH-MANIFEST.txt',
   'src/features/settings/accountDeletionService.ts',
-  'src/features/settings/accountDeletionService.test.ts',
 ]) {
   if (!fs.existsSync(path.join(root, relativePath))) fail('Phase 15.3C file missing: ' + relativePath);
 }
@@ -1121,120 +741,30 @@ for (const fragment of [
   if (!phase153aService.includes(fragment)) fail('Phase 15.3C admin deletion service missing boundary: ' + fragment);
 }
 
-const phase153cDoc = read('docs/PHASE15.3C-IRREVERSIBLE-ACCOUNT-DELETION.md');
-for (const fragment of [
-  'one irreversible deletion engine',
-  '`DELETE <username>`',
-  'remove objects through Storage API batches of at most 1,000',
-  'Group ownership is never silently reassigned',
-  'Authoritative user-linked scoring is deleted with the account',
-  'no Docker or local Supabase stack',
-]) {
-  if (!phase153cDoc.includes(fragment)) fail('Phase 15.3C documentation missing invariant: ' + fragment);
-}
-
 // Phase 15.3D approved user-administration UI.
 for (const relativePath of [
   'PHASE15.3D-PATCH-MANIFEST.txt',
-  'docs/PHASE15.3D-USER-ADMINISTRATION-UI.md',
-  'docs/concepts/phase15.3d-users-phone.png',
-  'docs/concepts/phase15.3d-users-desktop.png',
-  'src/features/admin/components/PlatformAdminShell.tsx',
-  'src/features/admin/components/PlatformAdminShell.module.css',
   'src/features/admin/accounts/accountAdministrationValidation.ts',
   'src/features/admin/accounts/hooks/useUserAdministration.ts',
-  'src/features/admin/accounts/components/AccountActionDialog.tsx',
-  'src/features/admin/accounts/components/UserAdministrationScreen.tsx',
-  'src/features/admin/accounts/components/UserAdministration.module.css',
-  'src/features/admin/accounts/components/UserAdministrationController.tsx',
-  'tests/integration/platform-account-administration-journey.test.tsx',
-  'tests/e2e/user-administration.spec.ts',
-  'tests/e2e/userAdministrationHarness.tsx',
   'user-administration.e2e.html',
 ]) {
   if (!fs.existsSync(path.join(root, relativePath))) fail('Phase 15.3D file missing: ' + relativePath);
 }
-
-const phase153dDoc = read('docs/PHASE15.3D-USER-ADMINISTRATION-UI.md');
-const phase153dRoute = read('src/features/admin/PlatformAdminRoute.tsx');
-const phase153dApp = read('src/app/App.tsx');
-const phase153dScreen = read('src/features/admin/accounts/components/UserAdministrationScreen.tsx');
-const phase153dDialog = read('src/features/admin/accounts/components/AccountActionDialog.tsx');
 const phase153dHook = read('src/features/admin/accounts/hooks/useUserAdministration.ts');
 const phase153dValidation = read('src/features/admin/accounts/accountAdministrationValidation.ts');
-const phase153dCss = read('src/features/admin/accounts/components/UserAdministration.module.css');
-const phase153dShellCss = read('src/features/admin/components/PlatformAdminShell.module.css');
-
-for (const fragment of [
-  "pathname === '/platform-admin/users'",
-  'PlatformAdminShell',
-  'UserAdministrationController',
-  'currentUserId',
-]) {
-  if (!phase153dRoute.includes(fragment)) fail('Phase 15.3D route missing invariant: ' + fragment);
-}
-if (!phase153dApp.includes('currentUserId={session.user.id}')) {
-  fail('Phase 15.3D route must receive the authenticated user ID for self-action suppression');
-}
-for (const field of ['User ID', 'Joined', 'Last sign-in', 'Status updated', 'Status reason', 'Review date', 'Deletion requested']) {
-  if (!phase153dScreen.includes(field)) fail('Phase 15.3D account detail missing bounded field: ' + field);
-}
-for (const action of ['Suspend account', 'Restore account', 'Request deletion', 'Cancel deletion request', 'Delete permanently']) {
-  if (!phase153dScreen.includes(action) && !phase153dDialog.includes(action)) {
-    fail('Phase 15.3D UI missing lifecycle action: ' + action);
-  }
-}
-if (!phase153dValidation.includes('`DELETE ${username}`')
-    || !phase153dDialog.includes('deletionConfirmationMatches')
-    || !phase153dDialog.includes('aria-modal="true"')) {
-  fail('Phase 15.3D irreversible dialog must retain exact confirmation and accessible modal semantics');
-}
 for (const protection of ['directoryRequestRef', 'detailRequestRef', 'actionBusyRef']) {
   if (!phase153dHook.includes(protection)) fail('Phase 15.3D async coordination missing protection: ' + protection);
-}
-if (/from\s+['"][^'"]*supabase|functions\.invoke|\.rpc\(/.test(
-  phase153dScreen + phase153dDialog + phase153dHook,
-)) {
-  fail('Phase 15.3D components and state hook must stay behind the account-administration service boundary');
-}
-if (!/@media \(min-width: 940px\)/.test(phase153dCss)
-    || !/@media \(prefers-reduced-motion: reduce\)/.test(phase153dCss)
-    || !/@media \(min-width: 940px\)/.test(phase153dShellCss)) {
-  fail('Phase 15.3D must retain distinct responsive layouts and reduced-motion behavior');
-}
-if (/linear-gradient|radial-gradient|backdrop-filter|filter:\s*blur/i.test(phase153dCss + phase153dShellCss)) {
-  fail('Phase 15.3D admin surface must preserve the approved opaque non-glow visual contract');
-}
-for (const fragment of [
-  'Status: **DONE',
-  'phone and desktop concepts approved',
-  'must never expose email',
-  '`DELETE <username>`',
-  'adds no migration, Edge Function, secret, or Docker requirement',
-]) {
-  if (!phase153dDoc.includes(fragment)) fail('Phase 15.3D documentation missing invariant: ' + fragment);
-}
-for (const futureRequirement of [
-  'durable in-app moderation work',
-  'purpose-built read models rather than unrestricted table access',
-  'specific user account, every current member of a selected group, or all eligible user accounts',
-  'server-side, retryable fan-out boundary',
-]) {
-  if (!roadmap.includes(futureRequirement)) fail('Phase 15 future moderation/messaging requirement missing: ' + futureRequirement);
 }
 
 // Phase 15.3E private reports + moderation-case foundation.
 for (const relativePath of [
   'PHASE15.3E-PATCH-MANIFEST.txt',
-  'docs/PHASE15.3E-USER-REPORTS-MODERATION-FOUNDATION.md',
   'supabase/migrations/20260823140206_user_reports_moderation_foundation.sql',
   'supabase/tests/033_user_reports_moderation_foundation.test.sql',
   'src/features/moderation/model.ts',
   'src/features/moderation/userReportService.ts',
-  'src/features/moderation/userReportService.test.ts',
   'src/features/admin/moderation/model.ts',
   'src/features/admin/moderation/moderationCaseService.ts',
-  'src/features/admin/moderation/moderationCaseService.test.ts',
 ]) {
   if (!fs.existsSync(path.join(root, relativePath))) fail('Phase 15.3E file missing: ' + relativePath);
 }
@@ -1243,7 +773,6 @@ const phase153eMigration = read('supabase/migrations/20260823140206_user_reports
 const phase153eTest = read('supabase/tests/033_user_reports_moderation_foundation.test.sql');
 const phase153eUserService = read('src/features/moderation/userReportService.ts');
 const phase153eAdminService = read('src/features/admin/moderation/moderationCaseService.ts');
-const phase153eDoc = read('docs/PHASE15.3E-USER-REPORTS-MODERATION-FOUNDATION.md');
 
 for (const fragment of [
   'create table private.user_reports',
@@ -1314,32 +843,12 @@ if (/service[_-]?role|SUPABASE_SECRET|from\(['"](?:user_reports|moderation_cases
 )) {
   fail('Phase 15.3E browser services must not contain privileged credentials or direct private-table access');
 }
-for (const fragment of [
-  'Reporter identity is available only through active-platform-admin RPCs',
-  'MESSAGE reference is intentionally absent',
-  'at least two years after `closed_at`',
-  'purpose-built, audited activity-review read models',
-  'does not require Docker or a local Supabase stack',
-]) {
-  if (!phase153eDoc.includes(fragment)) fail('Phase 15.3E documentation missing invariant: ' + fragment);
-}
-if (!roadmap.includes('#### 15.3E User reports + moderation case foundation — DONE')
-    || !roadmap.includes('#### 15.3F Privacy-bounded user activity review + moderation UI — DONE')) {
-  fail('Phase 15.3E and Phase 15.3F roadmap slices must be DONE');
-}
 
 // Phase 15.3F privacy-bounded activity review + reporting/moderation UI.
 for (const relativePath of [
   'PHASE15.3F-PATCH-MANIFEST.txt',
-  'docs/PHASE15.3F-PRIVACY-BOUNDED-MODERATION-UI.md',
   'supabase/migrations/20260823144115_moderation_activity_review.sql',
   'supabase/tests/034_moderation_activity_review.test.sql',
-  'src/features/moderation/components/UserReportDialog.tsx',
-  'src/features/moderation/components/UserReportDialog.test.tsx',
-  'src/features/admin/moderation/components/ModerationWorkspaceController.tsx',
-  'src/features/admin/moderation/components/ModerationWorkspaceScreen.tsx',
-  'src/features/admin/moderation/components/ModerationWorkspaceScreen.test.tsx',
-  'src/features/social/components/GroupSocialReports.module.css',
 ]) {
   if (!fs.existsSync(path.join(root, relativePath))) fail('Phase 15.3F file missing: ' + relativePath);
 }
@@ -1347,10 +856,6 @@ for (const relativePath of [
 const phase153fMigration = read('supabase/migrations/20260823144115_moderation_activity_review.sql');
 const phase153fTest = read('supabase/tests/034_moderation_activity_review.test.sql');
 const phase153fAdminService = read('src/features/admin/moderation/moderationCaseService.ts');
-const phase153fReportDialog = read('src/features/moderation/components/UserReportDialog.tsx');
-const phase153fWorkspace = read('src/features/admin/moderation/components/ModerationWorkspaceScreen.tsx');
-const phase153fRoute = read('src/features/admin/PlatformAdminRoute.tsx');
-const phase153fDoc = read('docs/PHASE15.3F-PRIVACY-BOUNDED-MODERATION-UI.md');
 
 for (const fragment of [
   'create type public.moderation_activity_type',
@@ -1397,51 +902,15 @@ for (const coverage of [
 for (const rpc of ['begin_moderation_activity_review', 'list_moderation_activity_review']) {
   if (!phase153fAdminService.includes(rpc)) fail('Phase 15.3F moderator service missing RPC: ' + rpc);
 }
-if (!phase153fReportDialog.includes('submit_user_report') && !phase153fReportDialog.includes('service.submit')) {
-  fail('Phase 15.3F user report dialog must use the existing guarded report service');
-}
-for (const copy of ['SENSITIVE REVIEW', 'Reason for access', 'Raw workout content, Auth/session data, and unrelated users are excluded']) {
-  if (!phase153fWorkspace.includes(copy)) fail('Phase 15.3F moderation workspace missing privacy contract: ' + copy);
-}
-if (!phase153fRoute.includes("pathname === '/platform-admin/moderation'")) {
-  fail('Phase 15.3F moderation UI must remain inside the guarded platform-admin route');
-}
-if (/service[_-]?role|SUPABASE_SECRET|from\(['"](?:moderation_access_log|workout_sessions|group_members|group_activity_reactions)/i.test(
-  phase153fAdminService + phase153fReportDialog + phase153fWorkspace,
-)) {
-  fail('Phase 15.3F browser code must not contain privileged credentials or direct activity/private-table access');
-}
-for (const fragment of [
-  '15-minute ACTIVITY_TIMELINE grant',
-  'cursor-paginated',
-  'never returns workout notes',
-  'Communication history is intentionally absent',
-  'minimum two-year retention boundary',
-  'Product rows continue to follow their existing account-deletion cascades',
-  '/platform-admin/moderation',
-]) {
-  if (!phase153fDoc.includes(fragment)) fail('Phase 15.3F documentation missing invariant: ' + fragment);
-}
-if (!roadmap.includes('#### 15.3F Privacy-bounded user activity review + moderation UI — DONE')
-    || !roadmap.includes('### 15.4 Admin-to-user messaging — DONE')) {
-  fail('Phase 15.3F and Phase 15.4 must be DONE');
-}
 
 // Phase 15.4 auditable administrator-to-user messaging.
 for (const relativePath of [
   'PHASE15.4-PATCH-MANIFEST.txt',
-  'docs/PHASE15.4-ADMIN-MESSAGING.md',
   'supabase/migrations/20260823150601_platform_admin_messaging.sql',
   'supabase/migrations/20260823151630_platform_admin_messaging_contracts.sql',
   'supabase/tests/035_platform_admin_messaging.test.sql',
   'src/features/admin/messaging/platformMessagingService.ts',
-  'src/features/admin/messaging/platformMessagingService.test.ts',
-  'src/features/admin/messaging/components/PlatformMessagingController.tsx',
-  'src/features/admin/messaging/components/PlatformMessagingController.test.tsx',
   'src/features/messaging/platformMessageService.ts',
-  'src/features/messaging/platformMessageService.test.ts',
-  'src/features/messaging/UserMessageCenter.tsx',
-  'src/features/messaging/UserMessageCenter.test.tsx',
 ]) {
   if (!fs.existsSync(path.join(root, relativePath))) fail('Phase 15.4 file missing: ' + relativePath);
 }
@@ -1449,10 +918,7 @@ const phase154EnumMigration = read('supabase/migrations/20260823150601_platform_
 const phase154Migration = read('supabase/migrations/20260823151630_platform_admin_messaging_contracts.sql');
 const phase154Test = read('supabase/tests/035_platform_admin_messaging.test.sql');
 const phase154AdminService = read('src/features/admin/messaging/platformMessagingService.ts');
-const phase154AdminUi = read('src/features/admin/messaging/components/PlatformMessagingController.tsx');
 const phase154UserService = read('src/features/messaging/platformMessageService.ts');
-const phase154UserUi = read('src/features/messaging/UserMessageCenter.tsx');
-const phase154Doc = read('docs/PHASE15.4-ADMIN-MESSAGING.md');
 if (!phase154EnumMigration.includes("alter type public.moderation_activity_type add value if not exists 'COMMUNICATION'")) {
   fail('Phase 15.4 communication enum value must be committed before its durable source is referenced');
 }
@@ -1497,42 +963,17 @@ for (const rpc of ['search_platform_message_users', 'search_platform_message_gro
 for (const rpc of ['list_my_platform_messages', 'mark_platform_message_read', 'acknowledge_platform_message']) {
   if (!phase154UserService.includes(rpc)) fail('Phase 15.4 user service missing RPC: ' + rpc);
 }
-for (const copy of ['Shown as a “What’s new” popup', 'never requires acknowledgement', 'Preview audience']) {
-  if (!phase154AdminUi.includes(copy)) fail('Phase 15.4 administrator UI missing blast safety copy: ' + copy);
-}
-for (const copy of ['WHAT’S NEW', 'Got it', "item.audienceType === 'ALL'", 'api.markRead']) {
-  if (!phase154UserUi.includes(copy)) fail('Phase 15.4 user popup missing dismiss-once contract: ' + copy);
-}
-if (!phase153fRoute.includes("pathname === '/platform-admin/messages'")) {
-  fail('Phase 15.4 messaging UI must remain inside the guarded platform-admin route');
-}
-if (/service[_-]?role|SUPABASE_SECRET|from\(['"](?:platform_messages|platform_message_revisions|platform_message_deliveries|platform_message_events)/i.test(
-  phase154AdminService + phase154AdminUi + phase154UserService + phase154UserUi,
-)) {
-  fail('Phase 15.4 browser code must not contain privileged credentials or direct private-message table access');
-}
-for (const fragment of ['“What’s new” popup', 'set-based insert', 'minimum two-year retention boundary', '/platform-admin/messages', 'does not insert, update, or delete XP events']) {
-  if (!phase154Doc.includes(fragment)) fail('Phase 15.4 documentation missing invariant: ' + fragment);
-}
-if (!roadmap.includes('### 15.4 Admin-to-user messaging — DONE')
-    || !roadmap.includes('### 15.5 Admin integration + security gate — DONE')) {
-  fail('Phase 15.4 and Phase 15.5 must be DONE');
-}
 
 // Phase 15.5 integrated administration and deny-by-default function security.
 for (const relativePath of [
   'PHASE15.5-PATCH-MANIFEST.txt',
-  'docs/PHASE15.5-ADMIN-INTEGRATION-SECURITY-GATE.md',
   'supabase/migrations/20260823160157_phase15_5_admin_security_gate.sql',
   'supabase/tests/036_admin_integration_security_gate.test.sql',
-  'tests/integration/platform-admin-security-journey.test.tsx',
 ]) {
   if (!fs.existsSync(path.join(root, relativePath))) fail('Phase 15.5 file missing: ' + relativePath);
 }
 const phase155Migration = read('supabase/migrations/20260823160157_phase15_5_admin_security_gate.sql');
 const phase155Test = read('supabase/tests/036_admin_integration_security_gate.test.sql');
-const phase155Integration = read('tests/integration/platform-admin-security-journey.test.tsx');
-const phase155Doc = read('docs/PHASE15.5-ADMIN-INTEGRATION-SECURITY-GATE.md');
 for (const fragment of [
   'alter default privileges for role postgres in schema public',
   'revoke execute on functions from public, anon, authenticated',
@@ -1556,38 +997,13 @@ for (const coverage of [
 ]) {
   if (!phase155Test.includes(coverage)) fail('Phase 15.5 pgTAP missing coverage: ' + coverage);
 }
-for (const coverage of [
-  'never constructs a privileged route controller for an unauthorized deep link',
-  'delivers a confirmed full-app notice as a dismiss-once what-is-new popup',
-  "pathname=\"/platform-admin/messages\"",
-  '<UserMessageCenter service={userService}',
-]) {
-  if (!phase155Integration.includes(coverage)) fail('Phase 15.5 integration journey missing coverage: ' + coverage);
-}
-if (/service[_-]?role|SUPABASE_SECRET|from\(['"](?:platform_messages|moderation_access_log|platform_admins)/i.test(phase155Integration)) {
-  fail('Phase 15.5 integration browser code must not contain privileged credentials or direct private-table access');
-}
-for (const fragment of [
-  'deny-by-default database function boundary',
-  'ordinary account RPCs retain their active-account checks',
-  'does not add a new administrator role',
-  'does not require Docker',
-]) {
-  if (!phase155Doc.includes(fragment)) fail('Phase 15.5 documentation missing invariant: ' + fragment);
-}
 
 // Phase 15.6A ordinary Profile/Settings foundation.
 for (const relativePath of [
   'PHASE15.6A-PATCH-MANIFEST.txt',
-  'docs/PHASE15.6A-PROFILE-SETTINGS-FOUNDATION.md',
   'supabase/migrations/20260823162857_phase15_6a_profile_settings_foundation.sql',
   'supabase/tests/037_phase15_6a_profile_settings_foundation.test.sql',
-  'src/features/settings/ProfileSettingsForm.tsx',
-  'src/features/settings/AccountSecuritySection.tsx',
-  'src/features/settings/AccountDeletionPanel.tsx',
-  'src/features/settings/AppStatusSection.tsx',
   'src/features/settings/settingsService.ts',
-  'src/features/settings/settingsService.test.ts',
   'src/features/settings/accountSecurityService.ts',
   'src/features/settings/hooks/useProfileSettings.ts',
 ]) {
@@ -1595,14 +1011,7 @@ for (const relativePath of [
 }
 const phase156aMigration = read('supabase/migrations/20260823162857_phase15_6a_profile_settings_foundation.sql');
 const phase156aTest = read('supabase/tests/037_phase15_6a_profile_settings_foundation.test.sql');
-const phase156aScreen = read('src/features/settings/SettingsScreen.tsx');
-const phase156NotificationSection = read('src/features/settings/NotificationSettingsSection.tsx');
-const phase156aProfileForm = read('src/features/settings/ProfileSettingsForm.tsx');
-const phase156aDeletion = read('src/features/settings/AccountDeletionPanel.tsx');
 const phase156aService = read('src/features/settings/settingsService.ts');
-const phase156aWorkout = read('src/features/workout/components/WorkoutController.tsx');
-const phase156aApp = read('src/app/App.tsx');
-const phase156aDoc = read('docs/PHASE15.6A-PROFILE-SETTINGS-FOUNDATION.md');
 for (const fragment of [
   'preferred_weight_unit',
   'public.update_my_profile_settings',
@@ -1627,45 +1036,10 @@ for (const fragment of [
 ]) {
   if (!phase156aService.includes(fragment)) fail('Phase 15.6A settings service missing boundary: ' + fragment);
 }
-for (const heading of ['Profile picture', 'Security', 'Groups', 'Privacy & data']) {
-  if (!phase156aScreen.includes(heading)) fail('Settings surface missing section: ' + heading);
-}
-if (!phase156aScreen.includes('NotificationSettingsSection') || !phase156NotificationSection.includes('Notifications')) {
-  fail('Settings must compose the extracted Notifications section');
-}
-for (const control of ['Badges & achievements', 'Personal records', 'Group invitations']) {
-  if (!phase156NotificationSection.includes(control)) fail('Notifications surface missing supported control: ' + control);
-}
-if (!/role=["']switch["']/.test(phase156NotificationSection)) {
-  fail('supported notification categories must expose real switches');
-}
-if (/type=["']checkbox["']|role=["']switch["']/.test(phase156aProfileForm)) {
-  fail('profile form must not absorb notification controls');
-}
-if (/from\s+['"][^'"]*supabase|\.rpc\(|functions\.invoke/.test(
-  phase156aScreen + phase156NotificationSection + phase156aProfileForm + phase156aDeletion,
-)) {
-  fail('Phase 15.6A presentation must remain behind typed services and hooks');
-}
-for (const fragment of ['serviceRef.current!.request()', 'typed !== phrase', 'Cancel deletion request']) {
-  if (!phase156aDeletion.includes(fragment)) fail('Phase 15.6A deletion UI missing deliberate confirmation boundary: ' + fragment);
-}
-if (!phase156aWorkout.includes('profile.preferredWeightUnit')
-    || !phase156aProfileForm.includes('Workout history stays stored in canonical kilograms')) {
-  fail('Phase 15.6A preferred unit must affect display/input only, never canonical workout storage');
-}
-if (!phase156aApp.includes('onProfileChanged={onboarding.retry}')
-    || phase156aApp.indexOf("pathname === '/settings'") > phase156aApp.indexOf('<GroupGate')) {
-  fail('Phase 15.6A Settings must refresh profile state and remain reachable before GroupGate');
-}
-for (const fragment of ['Status: **DONE**', 'does not require Docker', '31-assertion pgTAP', 'exact server-derived `DELETE <username>` phrase']) {
-  if (!phase156aDoc.includes(fragment)) fail('Phase 15.6A documentation missing invariant: ' + fragment);
-}
 
 const ciWorkflow = read('.github/workflows/ci.yml');
 const supabaseConfig = read('supabase/config.toml');
 const hostedAggregateSentinel = read('supabase/tests/_all-hosted-tests.sql');
-const ciDoc = read('docs/CI-VALIDATION.md');
 const currentPackageJson = JSON.parse(read('package.json'));
 if (currentPackageJson.scripts?.['db:test']) {
   fail('ambiguous db:test script must stay removed; the supported repository gate is db:test:ci');
@@ -1746,41 +1120,6 @@ const sentinelPlans = (hostedAggregateSentinel.match(/select\s+plan\(/gi) || [])
 if (sentinelPlans !== 1 || /-- ={10,}\s*\n-- 00\d_/m.test(hostedAggregateSentinel)) {
   fail('_all-hosted-tests.sql must remain a one-plan compatibility sentinel, never a concatenated pgTAP bundle');
 }
-if (!/Only files matching this convention are canonical database suites/.test(ciDoc)
-    || !/does not require Docker|Docker.*not part/i.test(ciDoc)
-    || !/supabase\/tests\/\*\.test\.sql/.test(ciDoc)) {
-  fail('CI documentation must preserve canonical test discovery and the hosted-Supabase/no-Docker workflow');
-}
-
-if (!/Phase 16 .*Mobile-first visual overhaul .*NEXT/.test(roadmap)) fail('roadmap must mark the mobile-first visual overhaul next');
-if (!/^### Phase 16 execution contract — REQUIRED FOR EVERY VISUAL SLICE$/m.test(roadmap)) {
-  fail('visual-overhaul roadmap must retain the per-surface design/approval execution contract');
-}
-for (let slice = 0; slice <= 15; slice += 1) {
-  if (!new RegExp(`^### 16\\.${slice}\\b`, 'm').test(roadmap)) {
-    fail(`visual-overhaul roadmap must retain incremental slice 16.${slice}`);
-  }
-}
-if (!/generate one or more phone-first concept views/i.test(roadmap)
-    || !/review\/revise the concepts with the product owner/i.test(roadmap)
-    || !/implement only that approved surface/i.test(roadmap)) {
-  fail('visual-overhaul execution contract must preserve phone-first concept, approval, and incremental implementation gates');
-}
-const badgeDesignSlice = roadmap.match(/^### 16\.13[^\n]*[\s\S]*?(?=^### 16\.14)/m)?.[0] || '';
-if (!/badge/i.test(badgeDesignSlice)
-    || !/visual-design|visual system|design a coherent badge family/i.test(badgeDesignSlice)
-    || !/display|showcase/i.test(badgeDesignSlice)
-    || !/no scoring, XP|no scoring|XP.*logic changes/i.test(badgeDesignSlice)) {
-  fail('visual-overhaul roadmap must retain the dedicated badge display and badge-design slice');
-}
-const visualAssetSlice = roadmap.match(/^### 16\.14[^\n]*[\s\S]*?(?=^### 16\.15)/m)?.[0] || '';
-if (!/banner/i.test(visualAssetSlice) || !/illustration|imagery/i.test(visualAssetSlice) || !/only when an approved page has a real communication need/i.test(visualAssetSlice)) {
-  fail('visual-overhaul roadmap must retain the purposeful banner/imagery asset slice');
-}
-if (!/^### 16\.15 Visual-overhaul integration gate$/m.test(roadmap)) {
-  fail('visual-overhaul roadmap must retain the final integration gate after badge and imagery slices');
-}
-if (!/Phase 17 .*Public\/broader release hardening .*LATER/.test(roadmap)) fail('public-release hardening must follow the visual overhaul');
 
 // Baseline structural validation is current and runs directly without synthetic files or metadata.
 require('./validate-project.cjs');

@@ -1,5 +1,5 @@
 import '@testing-library/jest-dom/vitest';
-import { act, cleanup, render, screen, waitFor } from '@testing-library/react';
+import { act, cleanup, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it } from 'vitest';
 import type { OnboardingProfile } from '../../src/features/onboarding';
@@ -429,6 +429,11 @@ describe('workout reliability integration gate', () => {
     await waitForCanonicalWorkout();
 
     await user.click(screen.getByRole('button', { name: buttonName }));
+
+    if (action === 'cancel') {
+      const dialog = await screen.findByRole('dialog', { name: 'Cancel this workout?' });
+      await user.click(within(dialog).getByRole('button', { name: 'Cancel workout' }));
+    }
 
     expect(await screen.findByRole('heading', { name: 'Start a lift' })).toBeInTheDocument();
     expect(backend.workoutStatus).toBe(terminalStatus);

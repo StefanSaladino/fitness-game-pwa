@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import type { ComponentProps } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import type { OnboardingProfile } from '../../onboarding';
@@ -89,6 +89,7 @@ describe('workout session presentation', () => {
     expect(screen.getByRole('heading', { name: 'Workout in progress' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Pause timer' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Finish workout' })).toBeInTheDocument();
+    expect(screen.getByRole('status')).toHaveTextContent('Synced');
   });
 
   it('shows resume instead of pause when the session is persisted as paused', () => {
@@ -170,7 +171,7 @@ describe('workout session presentation', () => {
     expect(screen.getByRole('button', { name: 'Search all exercises' })).toBeInTheDocument();
   });
 
-  it('renders ordered canonical exercises with restrained move and remove controls', () => {
+  it('renders ordered canonical exercises with approved icon slots and collapsible set sections', () => {
     const onMoveExercise = vi.fn(async () => true);
     const onRemoveExercise = vi.fn(async () => true);
     render(activeScreen({ exercises, onMoveExercise, onRemoveExercise }));
@@ -178,15 +179,25 @@ describe('workout session presentation', () => {
     expect(screen.getByRole('heading', { name: '2 in this lift' })).toBeInTheDocument();
     expect(screen.getByText('Barbell Bench Press')).toBeInTheDocument();
     expect(screen.getByText('Pull Up')).toBeInTheDocument();
+    expect(screen.getByText('Barbell Bench Press').closest('button')).toHaveAttribute('aria-expanded', 'true');
+    expect(screen.getByText('Pull Up').closest('button')).toHaveAttribute('aria-expanded', 'false');
+    expect(screen.queryByRole('button', { name: 'Move Pull Up up' })).not.toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole('button', { name: 'Move Pull Up up' }));
+    fireEvent.click(screen.getByText('Barbell Bench Press').closest('button') as HTMLButtonElement);
+    expect(screen.getByText('Barbell Bench Press').closest('button')).toHaveAttribute('aria-expanded', 'false');
+    expect(screen.getByText('Pull Up').closest('button')).toHaveAttribute('aria-expanded', 'false');
+    expect(screen.queryByRole('button', { name: 'Move Barbell Bench Press down' })).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByText('Barbell Bench Press').closest('button') as HTMLButtonElement);
     fireEvent.click(screen.getByRole('button', { name: 'Remove Barbell Bench Press' }));
-
-    expect(onMoveExercise).toHaveBeenCalledWith('we-2', 0);
     expect(onRemoveExercise).toHaveBeenCalledWith('we-1');
+
+    fireEvent.click(screen.getByText('Pull Up').closest('button') as HTMLButtonElement);
+    fireEvent.click(screen.getByRole('button', { name: 'Move Pull Up up' }));
+    expect(onMoveExercise).toHaveBeenCalledWith('we-2', 0);
   });
 
-  it('renders independent per-set entry for weighted exercises', () => {
+  it('renders independent dense per-set entry for weighted exercises without invented RPE or notes fields', () => {
     render(activeScreen({
       exercises: [exercises[0]],
       workoutSets: [
@@ -199,9 +210,50 @@ describe('workout session presentation', () => {
     expect(screen.getByLabelText('Set 1 weight in kg')).toHaveValue(60);
     expect(screen.getByLabelText('Set 2 weight in kg')).toHaveValue(100);
     expect(screen.getByRole('button', { name: 'Copy last set' })).toBeInTheDocument();
+    expect(screen.queryByText('RPE')).not.toBeInTheDocument();
+    expect(screen.queryByText('Notes')).not.toBeInTheDocument();
   });
 
+  it('requires explicit confirmation before cancelling and keeps the safe action primary', async () => {
+    const onCancel = vi.fn(async () => undefined);
+    render(activeScreen({ onCancel }));
 
+    const cancelButton = screen.getByRole('button', { name: 'Cancel workout' });
+    fireEvent.click(cancelButton);
+    expect(screen.getByRole('dialog', { name: 'Cancel this workout?' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Keep workout' })).toHaveFocus();
+    expect(document.querySelector('[inert][aria-hidden="true"]')).not.toBeNull();
+    expect(onCancel).not.toHaveBeenCalled();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Keep workout' }));
+    expect(screen.queryByRole('dialog', { name: 'Cancel this workout?' })).not.toBeInTheDocument();
+    expect(onCancel).not.toHaveBeenCalled();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Cancel workout' }));
+    const dialog = screen.getByRole('dialog', { name: 'Cancel this workout?' });
+    fireEvent.click(dialog.querySelector('button:last-child') as HTMLButtonElement);
+    await waitFor(() => expect(onCancel).toHaveBeenCalledTimes(1));
+  });
+
+  it('traps keyboard focus inside the cancel dialog and restores it on escape', () => {
+    render(activeScreen());
+
+    const cancelButton = screen.getByRole('button', { name: 'Cancel workout' });
+    fireEvent.click(cancelButton);
+    const keepButton = screen.getByRole('button', { name: 'Keep workout' });
+    const confirmButton = screen.getByRole('dialog', { name: 'Cancel this workout?' }).querySelector('button:last-child') as HTMLButtonElement;
+
+    keepButton.focus();
+    fireEvent.keyDown(window, { key: 'Tab', shiftKey: true });
+    expect(confirmButton).toHaveFocus();
+
+    confirmButton.focus();
+    fireEvent.keyDown(window, { key: 'Tab' });
+    expect(keepButton).toHaveFocus();
+
+    fireEvent.keyDown(window, { key: 'Escape' });
+    expect(screen.queryByRole('dialog', { name: 'Cancel this workout?' })).not.toBeInTheDocument();
+  });
 
   it('gates new structural actions while a mutation is pending and exposes an explicit retry', () => {
     const onRetryMutationQueue = vi.fn(async () => undefined);
@@ -218,6 +270,16 @@ describe('workout session presentation', () => {
     expect(onRetryMutationQueue).toHaveBeenCalledTimes(1);
   });
 
+  it('keeps the offline-copy identity visible while also showing queued workout changes', () => {
+    render(activeScreen({
+      recoveryState: 'offline',
+      mutationQueuePendingCount: 1,
+      mutationQueueStatus: 'idle',
+    }));
+
+    expect(screen.getByRole('status')).toHaveTextContent('Offline workout copy');
+    expect(screen.getByRole('status')).toHaveTextContent('1 workout change queued');
+  });
 
   it('blocks workout edits on a revision conflict and offers the explicit server-version recovery action', () => {
     const onDiscardMutationConflict = vi.fn(async () => undefined);
@@ -254,8 +316,10 @@ describe('workout session presentation', () => {
     expect(onUseServerVersion).toHaveBeenCalledTimes(1);
   });
 
-  it('keeps the recovered workout visible while clearly gating server-only actions offline', () => {
+  it('keeps the recovered workout visible while gating structural actions but allowing queued set completion offline', () => {
+    const onSaveSet = vi.fn(async () => true);
     render(activeScreen({
+      onSaveSet,
       recoveryState: 'offline',
       initialWeightUnit: 'LB',
       recoveryDrafts: {
@@ -271,9 +335,12 @@ describe('workout session presentation', () => {
     expect(screen.getByText('Barbell Bench Press')).toBeInTheDocument();
     expect(screen.getByLabelText('Set 1 weight in lb')).toHaveValue(225);
     expect(screen.getByLabelText('Set 1 weight in lb')).toBeEnabled();
+    expect(screen.getByRole('button', { name: 'Mark set 1 complete' })).toBeEnabled();
+    fireEvent.click(screen.getByRole('button', { name: 'Mark set 1 complete' }));
+    expect(onSaveSet).toHaveBeenCalledWith('set-1', expect.objectContaining({ completed: true, reps: 6 }));
+
     expect(screen.getByRole('button', { name: 'Add exercise' })).toBeDisabled();
     expect(screen.getByRole('button', { name: 'Pause timer' })).toBeDisabled();
     expect(screen.getByRole('button', { name: 'Finish workout' })).toBeDisabled();
   });
-
 });

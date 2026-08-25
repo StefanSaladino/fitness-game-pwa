@@ -1,0 +1,103 @@
+Phase 16.5 — Active workout + set logging
+
+Baseline:
+- master commit 647e5bed9d74f6c27deec9e7f4f94d5ab00642df
+
+Replacement files:
+- src/features/workout/components/ExercisePicker.tsx
+- src/features/workout/components/ExercisePicker.module.css
+- src/features/workout/components/ExercisePicker.test.tsx
+- src/features/workout/components/WorkoutSessionScreen.tsx
+- src/features/workout/components/WorkoutSessionScreen.module.css
+- src/features/workout/components/WorkoutSessionScreen.test.tsx
+- src/features/workout/components/WorkoutSetList.tsx
+- src/features/workout/components/WorkoutSetList.module.css
+- src/features/workout/components/WorkoutSetList.test.tsx
+
+New component/test:
+- src/features/workout/components/ExerciseMiniIcon.tsx
+- src/features/workout/components/ExerciseMiniIcon.test.tsx
+
+New approved exercise-icon assets:
+- src/assets/fitness/exercise-icons/bench-press.png
+- src/assets/fitness/exercise-icons/incline-press.png
+- src/assets/fitness/exercise-icons/back-squat.png
+- src/assets/fitness/exercise-icons/overhead-press.png
+- src/assets/fitness/exercise-icons/deadlift.png
+- src/assets/fitness/exercise-icons/dumbbell-curl.png
+- src/assets/fitness/exercise-icons/generic-weight.png
+
+New documentation/validation:
+- docs/PHASE16.5-ACTIVE-WORKOUT-SET-LOGGING.md
+- scripts/validate-phase16-5.cjs
+- PHASE16.5-PATCH-MANIFEST.txt
+
+Additional replacement file:
+- scripts/validate-phase16-4.cjs
+
+Patched in place by apply-phase16.5.ps1:
+- docs/ROADMAP.md
+- package.json
+- scripts/run-structural-validation.cjs
+- scripts/validate-project-clean.cjs
+- public/sw.js
+- tests/e2e/pwa-shell.spec.ts
+
+Important:
+- reuses existing src/assets/fitness/top-set-dumbbell-grip.jpg
+- no database migration
+- no hosted SQL mutation
+- no scoring/XP/badge/ranking change
+- no GitHub write is performed by the patch script
+
+
+Final UI/UX audit corrections included in this consolidated handoff:
+- full-width in-column workout banner with improved crop/brightness;
+- compact Elapsed / Started / Scoring date strip with no redundant Timer field;
+- quiet normal Synced acknowledgement; explicit banners remain for exceptional reliability states;
+- clean collapsed exercise rows with management actions only when expanded;
+- no exercise-number badge over the approved silhouette artwork;
+- conservative dedicated-icon matching with generic fallback for ambiguous variants;
+- roughly 44px set completion/copy/delete touch targets on phone;
+- orange focus-within state for the set being edited;
+- filled-orange Add working set action and an unambiguous trash icon for delete;
+- sticky expanded exercise header on phone;
+- offline complete/reopen uses the same queued set-save pathway as weight/reps edits;
+- cancel dialog focus containment, inert background content, Escape dismissal, and focus restoration;
+- wider desktop active-workout canvas without adding any new analytics or routes.
+
+Final exercise-picker alignment correction:
+- exercise results now use the same icon / identity / action card structure as Active Workout;
+- approved exercise silhouettes and the generic-weight fallback appear inside picker results;
+- Add/Added controls retain at least a 44px target and align vertically with the card;
+- picker drawer/header surfaces use shared Top Set charcoal tokens and orange, not the legacy off-palette drawer/green accent.
+
+Handoff v4 robustness:
+- safely recovers known partial writes from earlier failed Phase 16.5 handoffs;
+- picker component, CSS, and tests are shipped as complete replacements with no picker text patching;
+- remaining guarded metadata/roadmap/cache edits normalize CRLF/LF;
+- uses punctuation-tolerant Phase 16.4 validator reconciliation;
+- never resets or cleans unrelated local changes.
+
+Deep mobile interaction correction (v5):
+- mobile active-workout layout no longer compresses desktop set-table columns;
+- weighted and bodyweight sets render as labeled mobile logging cards with stable load/reps/action rows;
+- long active-workout exercise names wrap instead of clipping;
+- expanded exercise management is separated from the identity header and uses readable mobile action labels;
+- expanded exercise identity remains sticky while set logging scrolls beneath it;
+- exercise toolbar gets a dedicated full-width mobile control row;
+- phone session summary reflows Elapsed above Started / Scoring date;
+- picker result identity gets the full available text width with Add/Added on a stable second row;
+- picker title and long result names wrap safely on narrow screens;
+- no horizontal overflow masking is used to hide broken card geometry.
+
+v6/v7 UI/UX correction carried into v8:
+- complete desktop/mobile exercise-card composition rework
+- mobile-native set logging cards and readable action labels
+- dedicated non-set tracking state
+
+v8 clean-baseline reliability correction:
+- installer requires the verified clean Phase 16.4 baseline before writing
+- queued offline complete/reopen is restored through the existing set-save pathway
+- structural add/copy/delete remain server-gated
+- WorkoutSessionScreen and WorkoutSetList regression tests cover the offline boundary

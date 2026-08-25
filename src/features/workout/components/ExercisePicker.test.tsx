@@ -38,13 +38,15 @@ describe('ExercisePicker', () => {
     expect(screen.getByRole('button', { name: 'Open Chest exercises' })).toBeInTheDocument();
   });
 
-  it('keeps a separate Search all exercises path with alias search', () => {
+  it('keeps a separate Search all exercises path with alias search and matching result-card icon', () => {
     const onAdd = vi.fn(async () => true);
     render(picker({ onAdd }));
 
     fireEvent.click(screen.getByRole('button', { name: 'Search all exercises' }));
     expect(screen.getByRole('heading', { name: 'All exercises' })).toBeInTheDocument();
     fireEvent.change(screen.getByLabelText('Search all exercises'), { target: { value: 'rdl' } });
+    const rdlRow = screen.getByText('Romanian Deadlift').closest('li');
+    expect(rdlRow?.querySelector('img')).not.toBeNull();
     fireEvent.click(screen.getByRole('button', { name: 'Add Romanian Deadlift' }));
     expect(onAdd).toHaveBeenCalledWith('rdl');
   });
@@ -62,6 +64,8 @@ describe('ExercisePicker', () => {
   it('marks exercises already in the active workout instead of offering a duplicate add', () => {
     render(picker({ selectedExerciseIds: ['bench-bb'] }));
     fireEvent.click(screen.getByRole('button', { name: 'Search all exercises' }));
-    expect(screen.getByRole('button', { name: 'Barbell Bench Press already added' })).toBeDisabled();
+    const added = screen.getByRole('button', { name: 'Barbell Bench Press already added' });
+    expect(added).toBeDisabled();
+    expect(added).toHaveTextContent('Added');
   });
 });

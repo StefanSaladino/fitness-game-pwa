@@ -11,6 +11,7 @@ import {
 import type { ExerciseMuscleGroup, ExercisePickerItem, ExerciseWorkoutType } from '../model';
 import type { ExercisePickerStatus } from '../hooks/useExercisePickerCatalog';
 import { MuscleGroupSelector } from './MuscleGroupFilter';
+import { ExerciseMiniIcon } from './ExerciseMiniIcon';
 import styles from './ExercisePicker.module.css';
 
 interface ExercisePickerProps {
@@ -35,7 +36,8 @@ function ExerciseRow({ exercise, added, disabled, onAdd }: {
 }) {
   return (
     <li className={styles.resultRow}>
-      <div>
+      <ExerciseMiniIcon canonicalName={exercise.canonicalName} className={styles.resultIcon} />
+      <div className={styles.resultIdentity}>
         <strong>{exercise.canonicalName}</strong>
         <span>{MUSCLE_GROUP_LABELS[exercise.primaryMuscleGroup]} · {WORKOUT_TYPE_LABELS[exercise.workoutType]}</span>
       </div>

@@ -1,5 +1,5 @@
 const CACHE_PREFIX = 'workout-game-shell-';
-const CACHE_VERSION = 'v14-0';
+const CACHE_VERSION = 'v14-1';
 const CACHE = `${CACHE_PREFIX}${CACHE_VERSION}`;
 const ASSET_MANIFEST = '/asset-manifest.json';
 const CORE_SHELL = [

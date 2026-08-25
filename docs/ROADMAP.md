@@ -955,7 +955,7 @@ See `docs/PHASE16.1-APP-SHELL.md`.
 - reserve a compact badge/achievement showcase area that can surface earned badges without competing with Start Lift;
 - Start Lift as the primary action without turning the page into a collection of equal-weight cards.
 
-### 16.5 Active workout + set logging â€” NEXT
+### 16.5 Active workout + set logging — DONE
 
 - workout timer and lifecycle controls;
 - exercise sections;
@@ -964,7 +964,7 @@ See `docs/PHASE16.1-APP-SHELL.md`.
 - offline/recovering/conflict states;
 - finish/cancel flows and destructive confirmation.
 
-### 16.6 Exercise picker + exercise library
+### 16.6 Exercise picker + exercise library — NEXT
 
 - selector shell;
 - muscle-group navigation;
