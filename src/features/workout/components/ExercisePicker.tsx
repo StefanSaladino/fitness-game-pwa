@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useRef, useState, type ChangeEvent } from 'react';
-import { SelectField } from '../../../components/ui';
 import {
   filterAndRankExercises,
   groupExercises,
@@ -75,6 +74,27 @@ function PickerHeader({ title, eyebrow, canGoBack, onBack, onClose }: {
       </div>
       <button aria-label="Close exercise picker" className={styles.close} onClick={onClose} type="button">Close</button>
     </header>
+  );
+}
+
+function WorkoutTypeFilter({ value, onChange }: {
+  value: ExerciseWorkoutType | '';
+  onChange: (value: ExerciseWorkoutType | '') => void;
+}) {
+  return (
+    <div aria-label="Filter by workout type" className={styles.typeFilter} role="group">
+      <button aria-pressed={value === ''} onClick={() => onChange('')} type="button">All</button>
+      {WORKOUT_TYPE_ORDER.map((type) => (
+        <button
+          aria-pressed={value === type}
+          key={type}
+          onClick={() => onChange(type)}
+          type="button"
+        >
+          {WORKOUT_TYPE_LABELS[type]}
+        </button>
+      ))}
+    </div>
   );
 }
 
@@ -172,13 +192,34 @@ export function ExercisePicker(props: ExercisePickerProps) {
   return (
     <div className={styles.backdrop}>
       <section aria-labelledby="exercise-picker-title" aria-modal="true" className={styles.picker} role="dialog">
-        <PickerHeader
-          canGoBack={view !== 'home'}
-          eyebrow={view === 'home' ? 'EXERCISE LIBRARY' : 'BROWSE EXERCISES'}
-          onBack={goHome}
-          onClose={props.onClose}
-          title={title}
-        />
+        <div className={styles.chrome}>
+          <PickerHeader
+            canGoBack={view !== 'home'}
+            eyebrow={view === 'home' ? 'EXERCISE LIBRARY' : 'BROWSE EXERCISES'}
+            onBack={goHome}
+            onClose={props.onClose}
+            title={title}
+          />
+
+          {props.status === 'ready' && view !== 'home' && (
+            <div className={styles.detailToolbar}>
+              <div className={styles.searchBlock}>
+                <label htmlFor="exercise-search">
+                  {view === 'muscle' && muscleGroup ? `Search ${MUSCLE_GROUP_LABELS[muscleGroup]} exercises` : 'Search all exercises'}
+                </label>
+                <input
+                  autoFocus
+                  id="exercise-search"
+                  onChange={(event: ChangeEvent<HTMLInputElement>) => setQuery(event.target.value)}
+                  placeholder="Bench, RDL, OHP…"
+                  type="search"
+                  value={query}
+                />
+              </div>
+              <WorkoutTypeFilter onChange={setWorkoutType} value={workoutType} />
+            </div>
+          )}
+        </div>
 
         {props.status === 'loading' && <p className={styles.messageStandalone} role="status">Loading exercise library…</p>}
         {props.status === 'error' && (
@@ -191,14 +232,13 @@ export function ExercisePicker(props: ExercisePickerProps) {
         {props.status === 'ready' && view === 'home' && (
           <div className={styles.home}>
             <button aria-label="Search all exercises" className={styles.searchAllButton} onClick={openAll} type="button">
-              <span>
+              <span aria-hidden="true" className={styles.searchGlyph} />
+              <span className={styles.searchAllIdentity}>
                 <strong>Search all exercises</strong>
-                <small>Search the full canonical exercise library.</small>
+                <small>Bench, RDL, OHP…</small>
               </span>
-              <span aria-hidden="true">→</span>
+              <span aria-hidden="true" className={styles.searchArrow}>→</span>
             </button>
-
-            <MuscleGroupSelector onSelect={openMuscle} />
 
             {recents.length > 0 && (
               <section className={styles.homeRecents} aria-labelledby="recent-exercises-heading">
@@ -215,66 +255,45 @@ export function ExercisePicker(props: ExercisePickerProps) {
                 />
               </section>
             )}
+
+            <MuscleGroupSelector onSelect={openMuscle} />
           </div>
         )}
 
         {props.status === 'ready' && view !== 'home' && (
-          <>
-            <div className={styles.detailToolbar}>
-              <div className={styles.searchBlock}>
-                <label htmlFor="exercise-search">{view === 'muscle' && muscleGroup ? `Search ${MUSCLE_GROUP_LABELS[muscleGroup]} exercises` : 'Search all exercises'}</label>
-                <input
-                  autoFocus
-                  id="exercise-search"
-                  onChange={(event: ChangeEvent<HTMLInputElement>) => setQuery(event.target.value)}
-                  placeholder="Bench, RDL, OHP…"
-                  type="search"
-                  value={query}
+          <div className={styles.results}>
+            {view === 'muscle' && muscleGroup ? (
+              <section className={styles.group} aria-labelledby="muscle-results-heading">
+                <div className={styles.groupHeading}>
+                  <h3 id="muscle-results-heading">{MUSCLE_GROUP_LABELS[muscleGroup]}</h3>
+                  <span>{filtered.length}</span>
+                </div>
+                <ExerciseResults
+                  emptyMessage="No exercises match that muscle group, search, and workout type."
+                  isAdding={props.isAdding}
+                  items={filtered}
+                  onAdd={props.onAdd}
+                  selected={selected}
                 />
-              </div>
-
-              <div className={styles.typeFilter}>
-                <SelectField label="Workout type" onChange={(event: ChangeEvent<HTMLSelectElement>) => setWorkoutType(event.target.value as ExerciseWorkoutType | '')} value={workoutType}>
-                  <option value="">All workout types</option>
-                  {WORKOUT_TYPE_ORDER.map((type) => <option key={type} value={type}>{WORKOUT_TYPE_LABELS[type]}</option>)}
-                </SelectField>
-              </div>
-            </div>
-
-            <div className={styles.results}>
-              {view === 'muscle' && muscleGroup ? (
-                <section className={styles.group} aria-labelledby="muscle-results-heading">
-                  <div className={styles.groupHeading}>
-                    <h3 id="muscle-results-heading">{MUSCLE_GROUP_LABELS[muscleGroup]}</h3>
-                    <span>{filtered.length}</span>
-                  </div>
-                  <ExerciseResults
-                    emptyMessage="No exercises match that muscle group, search, and workout type."
-                    isAdding={props.isAdding}
-                    items={filtered}
-                    onAdd={props.onAdd}
-                    selected={selected}
-                  />
-                </section>
-              ) : (
-                <>
-                  {filtered.length === 0 && <p className={styles.message}>No exercises match that search and workout type.</p>}
-                  {allGroups.map((group) => (
-                    <section className={styles.group} key={group.key}>
-                      <div className={styles.groupHeading}><h3>{group.label}</h3><span>{group.exercises.length}</span></div>
-                      <ExerciseResults
-                        emptyMessage=""
-                        isAdding={props.isAdding}
-                        items={group.exercises}
-                        onAdd={props.onAdd}
-                        selected={selected}
-                      />
-                    </section>
-                  ))}
-                </>
-              )}
-            </div>
-          </>
+              </section>
+            ) : (
+              <>
+                {filtered.length === 0 && <p className={styles.message}>No exercises match that search and workout type.</p>}
+                {allGroups.map((group) => (
+                  <section className={styles.group} key={group.key}>
+                    <div className={styles.groupHeading}><h3>{group.label}</h3><span>{group.exercises.length}</span></div>
+                    <ExerciseResults
+                      emptyMessage=""
+                      isAdding={props.isAdding}
+                      items={group.exercises}
+                      onAdd={props.onAdd}
+                      selected={selected}
+                    />
+                  </section>
+                ))}
+              </>
+            )}
+          </div>
         )}
       </section>
     </div>

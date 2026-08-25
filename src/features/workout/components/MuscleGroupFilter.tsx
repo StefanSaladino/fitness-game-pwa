@@ -44,8 +44,8 @@ export function MuscleGroupSelector({ disabled = false, onSelect }: MuscleGroupS
   return (
     <section aria-labelledby="muscle-group-selector-title" className={styles.filter}>
       <div className={styles.heading}>
-        <h3 id="muscle-group-selector-title">Browse by muscle group</h3>
-        <span>Select a group to open its exercise library.</span>
+        <h3 id="muscle-group-selector-title">Browse by muscle</h3>
+        <span>Open a focused exercise list.</span>
       </div>
 
       <div className={styles.grid}>
@@ -60,20 +60,10 @@ export function MuscleGroupSelector({ disabled = false, onSelect }: MuscleGroupS
           >
             <img alt="" aria-hidden="true" src={ICONS[group]} />
             <span className={styles.label}>{MUSCLE_GROUP_LABELS[group]}</span>
-            <span aria-hidden="true" className={styles.arrow}>›</span>
           </button>
         ))}
       </div>
 
-      <button
-        className={styles.other}
-        disabled={disabled}
-        onClick={() => onSelect('OTHER')}
-        type="button"
-      >
-        Other / uncategorized
-        <span aria-hidden="true">›</span>
-      </button>
     </section>
   );
 }

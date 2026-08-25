@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, within } from '@testing-library/react';
 import type { ComponentProps } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import type { ExercisePickerItem } from '../model';
@@ -23,7 +23,8 @@ describe('ExercisePicker', () => {
     expect(screen.getByRole('heading', { name: 'Chest exercises' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Back to exercise library' })).toBeInTheDocument();
 
-    fireEvent.change(screen.getByLabelText('Workout type'), { target: { value: 'DUMBBELL' } });
+    const typeFilter = screen.getByRole('group', { name: 'Filter by workout type' });
+    fireEvent.click(within(typeFilter).getByRole('button', { name: 'Dumbbell' }));
     expect(screen.getByText('Dumbbell Bench Press')).toBeInTheDocument();
     expect(screen.queryByText('Barbell Bench Press')).not.toBeInTheDocument();
     expect(screen.queryByText('Romanian Deadlift')).not.toBeInTheDocument();
@@ -38,7 +39,7 @@ describe('ExercisePicker', () => {
     expect(screen.getByRole('button', { name: 'Open Chest exercises' })).toBeInTheDocument();
   });
 
-  it('keeps a separate Search all exercises path with alias search and matching result-card icon', () => {
+  it('keeps a separate Search all exercises path with alias search and matching result icon', () => {
     const onAdd = vi.fn(async () => true);
     render(picker({ onAdd }));
 
@@ -51,14 +52,14 @@ describe('ExercisePicker', () => {
     expect(onAdd).toHaveBeenCalledWith('rdl');
   });
 
-  it('uses icon-and-label muscle navigation while keeping workout type text-first on detail screens', () => {
+  it('uses icon-and-label muscle navigation while keeping workout type filtering on detail screens', () => {
     render(picker());
     expect(screen.getByRole('button', { name: 'Open Chest exercises' }).querySelector('img')).not.toBeNull();
     expect(screen.getByRole('button', { name: 'Open Obliques exercises' })).toBeInTheDocument();
-    expect(screen.queryByLabelText('Workout type')).not.toBeInTheDocument();
+    expect(screen.queryByRole('group', { name: 'Filter by workout type' })).not.toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('button', { name: 'Open Chest exercises' }));
-    expect(screen.getByLabelText('Workout type')).toBeInTheDocument();
+    expect(screen.getByRole('group', { name: 'Filter by workout type' })).toBeInTheDocument();
   });
 
   it('marks exercises already in the active workout instead of offering a duplicate add', () => {
@@ -67,5 +68,14 @@ describe('ExercisePicker', () => {
     const added = screen.getByRole('button', { name: 'Barbell Bench Press already added' });
     expect(added).toBeDisabled();
     expect(added).toHaveTextContent('Added');
+  });
+
+  it('shows recent exercises on the library home without changing their canonical add behavior', () => {
+    const onAdd = vi.fn(async () => true);
+    render(picker({ onAdd }));
+
+    expect(screen.getByRole('heading', { name: 'Recent' })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Add Barbell Bench Press' }));
+    expect(onAdd).toHaveBeenCalledWith('bench-bb');
   });
 });
