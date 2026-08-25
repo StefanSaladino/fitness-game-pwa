@@ -1,7 +1,7 @@
 .chartCard {
   min-width: 0;
   padding: 16px 0 4px;
-  border-top: 1px solid var(--color-border);
+  border-top: 1px solid #242529;
 }
 
 .chartHeader {
@@ -14,8 +14,8 @@
 
 .chartHeader p {
   margin: 0;
-  color: var(--color-text-muted);
-  font-size: 0.68rem;
+  color: #a0a1a4;
+  font-size: 0.66rem;
   font-weight: 750;
   letter-spacing: 0.09em;
   text-transform: uppercase;
@@ -23,16 +23,16 @@
 
 .chartHeader h3 {
   margin: 4px 0 0;
-  color: var(--color-text);
-  font-size: 1.06rem;
+  color: #f7f7f7;
+  font-size: 1.04rem;
   letter-spacing: -0.025em;
 }
 
 .chartHeader > span,
 .empty,
 .chartFooter {
-  color: var(--color-text-muted);
-  font-size: 0.72rem;
+  color: #a0a1a4;
+  font-size: 0.7rem;
 }
 
 .chartHeader > span { text-align: right; }
@@ -41,13 +41,13 @@
 .chart {
   display: block;
   width: 100%;
-  min-height: 160px;
-  color: var(--color-green);
+  min-height: 150px;
+  color: #f15a08;
   overflow: visible;
 }
 
 .gridLine {
-  stroke: rgba(205, 225, 242, 0.1);
+  stroke: #242529;
   stroke-width: 1;
 }
 
@@ -59,14 +59,14 @@
 }
 
 .point {
-  fill: var(--color-surface);
+  fill: #070709;
   stroke: currentColor;
   stroke-width: 4;
 }
 
 .bar {
-  fill: var(--color-blue);
-  opacity: 0.82;
+  fill: #f15a08;
+  opacity: 0.92;
 }
 
 .chartFooter {
@@ -78,14 +78,19 @@
 }
 
 .chartFooter strong {
-  color: var(--color-text-soft);
+  color: #f15a08;
   font-size: 0.78rem;
 }
 
 .chartFooter span:last-child { text-align: right; }
 
 @media (max-width: 560px) {
-  .chartHeader { align-items: flex-start; flex-direction: column; gap: 5px; }
+  .chartHeader {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 5px;
+  }
+
   .chartHeader > span { text-align: left; }
-  .chart { min-height: 145px; }
+  .chart { min-height: 140px; }
 }

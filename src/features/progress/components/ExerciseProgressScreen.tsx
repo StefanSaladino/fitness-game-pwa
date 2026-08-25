@@ -1,6 +1,7 @@
 import type { AppSection } from '../../../components/layout';
-import { AppShell, PageHeader } from '../../../components/layout';
+import { AppShell } from '../../../components/layout';
 import { Button } from '../../../components/ui';
+import progressLogImage from '../../../assets/fitness/top-set-progress-log.jpg';
 import type { OnboardingProfile } from '../../onboarding';
 import type { ExerciseAnalyticsSnapshot, ExercisePrTimelineEntry } from '../exerciseAnalytics';
 import type { LiftingCalendarAnalytics } from '../liftingCalendarAnalytics';
@@ -36,7 +37,10 @@ function formatDate(value: string): string {
 }
 
 function formatNumber(value: number, digits = 1): string {
-  return value.toLocaleString('en-CA', { maximumFractionDigits: digits, minimumFractionDigits: Number.isInteger(value) ? 0 : digits });
+  return value.toLocaleString('en-CA', {
+    maximumFractionDigits: digits,
+    minimumFractionDigits: Number.isInteger(value) ? 0 : digits,
+  });
 }
 
 function metricLabel(metric: ExerciseProgressMetricType | null): string {
@@ -64,7 +68,9 @@ function bestSetDetail(metric: ExerciseProgressMetricType | null, weightKg: numb
 }
 
 function frequencyLabel(exercise: ExerciseProgressSummary): string {
-  if (exercise.sessionCount <= 1 || exercise.averageDaysBetweenSessions === null) return `${exercise.sessionCount} session${exercise.sessionCount === 1 ? '' : 's'}`;
+  if (exercise.sessionCount <= 1 || exercise.averageDaysBetweenSessions === null) {
+    return `${exercise.sessionCount} session${exercise.sessionCount === 1 ? '' : 's'}`;
+  }
   return `${exercise.sessionCount} sessions · every ${formatNumber(exercise.averageDaysBetweenSessions)} days avg`;
 }
 
@@ -101,12 +107,18 @@ function ExerciseList({ exercises, selectedExerciseId, onSelectExercise }: {
   selectedExerciseId: string | null;
   onSelectExercise: (exerciseId: string) => void;
 }) {
+  const totalSessions = exercises.reduce((total, exercise) => total + exercise.sessionCount, 0);
+
   return (
     <section className={styles.exercisePanel} aria-labelledby="tracked-exercises-heading">
       <div className={styles.panelHeading}>
-        <p>Exercise library</p>
-        <h2 id="tracked-exercises-heading">Tracked lifts</h2>
+        <div>
+          <p>Exercise progress</p>
+          <h2 id="tracked-exercises-heading">Tracked lifts</h2>
+        </div>
+        <span>{exercises.length} lifts · {totalSessions} sessions</span>
       </div>
+
       <div className={styles.exerciseList}>
         {exercises.map((exercise) => {
           const selected = exercise.exerciseId === selectedExerciseId;
@@ -133,44 +145,46 @@ function ExerciseList({ exercises, selectedExerciseId, onSelectExercise }: {
 
 function AnalyticsSummary({ exercise, analytics }: { exercise: ExerciseProgressSummary; analytics: ExerciseAnalyticsSnapshot }) {
   return (
-    <dl className={styles.prGrid}>
-      <div>
-        <dt>Current PR</dt>
-        <dd>{formatMetric(exercise.metricType, exercise.bestValue)}</dd>
-        <small>{bestSetDetail(exercise.metricType, exercise.bestWeightKg, exercise.bestReps)}</small>
-      </div>
-      <div>
-        <dt>Previous PR</dt>
-        <dd>{formatMetric(exercise.metricType, exercise.previousPrValue)}</dd>
-        <small>{exercise.previousPrValue === null ? 'First baseline is still the best' : 'PR immediately before current best'}</small>
-      </div>
-      <div>
-        <dt>Best weight</dt>
-        <dd>{analytics.bestWeightKg === null ? '—' : `${formatNumber(analytics.bestWeightKg)} kg`}</dd>
-        <small>{exercise.measurementType === 'BODYWEIGHT_REPS' ? 'External load is analytics-only for bodyweight progression' : 'Heaviest completed working-set load'}</small>
-      </div>
-      <div>
-        <dt>Best reps</dt>
-        <dd>{analytics.bestReps === null ? '—' : analytics.bestReps}</dd>
-        <small>Highest completed working-set rep count</small>
-      </div>
-      <div>
-        <dt>Frequency</dt>
-        <dd>{exercise.sessionCount}</dd>
-        <small>{exercise.averageDaysBetweenSessions === null ? 'One completed session' : `Every ${formatNumber(exercise.averageDaysBetweenSessions)} days on average`}</small>
-      </div>
-      <div>
-        <dt>Total volume</dt>
-        <dd>{analytics.totalVolumeKgReps > 0 ? `${formatNumber(analytics.totalVolumeKgReps, 0)} kg·reps` : '—'}</dd>
-        <small>Analytics only. Volume never awards XP.</small>
-      </div>
-    </dl>
+    <>
+      <dl className={styles.prSummary} aria-label="Personal record summary">
+        <div className={styles.currentPr}>
+          <dt>Current PR</dt>
+          <dd>{formatMetric(exercise.metricType, exercise.bestValue)}</dd>
+          <small>{bestSetDetail(exercise.metricType, exercise.bestWeightKg, exercise.bestReps)}</small>
+        </div>
+        <div>
+          <dt>Previous PR</dt>
+          <dd>{formatMetric(exercise.metricType, exercise.previousPrValue)}</dd>
+          <small>{exercise.previousPrValue === null ? 'First baseline is still the best' : 'PR immediately before current best'}</small>
+        </div>
+      </dl>
+
+      <dl className={styles.factStrip} aria-label="Exercise analytics facts">
+        <div>
+          <dt>Best weight</dt>
+          <dd>{analytics.bestWeightKg === null ? '—' : `${formatNumber(analytics.bestWeightKg)} kg`}</dd>
+        </div>
+        <div>
+          <dt>Best reps</dt>
+          <dd>{analytics.bestReps === null ? '—' : analytics.bestReps}</dd>
+        </div>
+        <div>
+          <dt>Frequency</dt>
+          <dd>{exercise.averageDaysBetweenSessions === null ? `${exercise.sessionCount} session${exercise.sessionCount === 1 ? '' : 's'}` : `${formatNumber(exercise.averageDaysBetweenSessions)} day avg`}</dd>
+        </div>
+        <div>
+          <dt>Total volume</dt>
+          <dd>{analytics.totalVolumeKgReps > 0 ? `${formatNumber(analytics.totalVolumeKgReps, 0)} kg·reps` : '—'}</dd>
+        </div>
+      </dl>
+    </>
   );
 }
 
 function ExerciseCharts({ exercise, analytics }: { exercise: ExerciseProgressSummary; analytics: ExerciseAnalyticsSnapshot }) {
   const metricPoints = analytics.metricTrend.map((point) => ({ id: point.workoutId, observedAt: point.observedAt, value: point.value }));
   const volumePoints = analytics.volumeTrend.map((point) => ({ id: point.workoutId, observedAt: point.observedAt, value: point.value }));
+
   return (
     <div className={styles.chartGrid} aria-label="Exercise analytics charts">
       <ExerciseTrendChart
@@ -198,14 +212,16 @@ function PrTimeline({ entries }: { entries: ExercisePrTimelineEntry[] }) {
           <p>Milestones</p>
           <h3 id="pr-timeline-heading">PR timeline</h3>
         </div>
-        <span>Only your own comparable progression observations appear here.</span>
+        <span>Comparable progression observations only.</span>
       </div>
+
       {entries.length === 0 ? (
         <p className={styles.stateText}>No comparable baseline or PR has been recorded yet.</p>
       ) : (
         <ol className={styles.prTimelineList}>
           {entries.map((entry) => (
             <li key={entry.workoutId}>
+              <span className={styles.timelineDot} data-pr={entry.kind !== 'baseline'} aria-hidden="true" />
               <time dateTime={entry.observedAt}>{formatDate(entry.observedAt)}</time>
               <span className={entry.kind === 'baseline' ? styles.statusBadge : styles.prBadge}>{prKindLabel(entry)}</span>
               <strong>{formatMetric(entry.metricType, entry.metricValue)}</strong>
@@ -265,7 +281,9 @@ function ExerciseDetail({ exercise, analytics, history, historyStatusValue, hist
             <span>{exercise.observationCount} comparable observation{exercise.observationCount === 1 ? '' : 's'} · volume is analytics-only.</span>
           </div>
 
-          {history.length === 0 ? <p className={styles.stateText}>No completed session history is available yet.</p> : (
+          {history.length === 0 ? (
+            <p className={styles.stateText}>No completed session history is available yet.</p>
+          ) : (
             <ol className={styles.historyList}>
               {history.map((entry) => (
                 <li key={entry.workoutId}>
@@ -310,23 +328,17 @@ export function ExerciseProgressScreen({
   onNavigate,
   onSignOut,
 }: ExerciseProgressScreenProps) {
-  const totalExerciseSessions = exercises.reduce((total, exercise) => total + exercise.sessionCount, 0);
-  const comparable = exercises.filter((exercise) => exercise.metricType !== null).length;
-
   return (
     <AppShell activeItem="progress" onNavigate={onNavigate} onSignOut={onSignOut} userLabel={profile.displayName} userMeta={`@${profile.username}`}>
       <div className={styles.progressPage}>
-        <PageHeader
-          eyebrow="Lifting analytics"
-          title="Know your trend. Beat your last."
-          description="Weekly/monthly training load plus lift-by-lift strength, volume, frequency, and PR history from your own completed sessions. Analytics never changes XP."
-        />
-
-        <section className={styles.summary} aria-label="Progress summary">
-          <div><span>Tracked exercises</span><strong>{exercises.length}</strong></div>
-          <div><span>Exercise sessions</span><strong>{totalExerciseSessions}</strong></div>
-          <div><span>Comparable lifts</span><strong>{comparable}</strong></div>
-        </section>
+        <header className={styles.hero}>
+          <div className={styles.heroCopy}>
+            <p>Lifting analytics</p>
+            <h1>Your lifting trend</h1>
+            <span>Strength, volume, frequency, and PR history from your completed sessions. Analytics never changes XP.</span>
+          </div>
+          <img alt="Training log beside a loaded barbell" className={styles.heroImage} src={progressLogImage} />
+        </header>
 
         <LiftingCalendarSummaryPanel
           analytics={calendarAnalytics}

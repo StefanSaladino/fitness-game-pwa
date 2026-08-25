@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Button } from '../../../components/ui';
 import type { LiftingCalendarAnalytics, LiftingCalendarDelta } from '../liftingCalendarAnalytics';
 import type { ExerciseProgressStatus } from '../hooks/useExerciseProgress';
@@ -11,6 +12,8 @@ interface LiftingCalendarSummaryProps {
   error: string;
   onRetry: () => void;
 }
+
+type PeriodSelection = 'week' | 'month';
 
 function formatNumber(value: number, digits = 0): string {
   return value.toLocaleString('en-CA', { maximumFractionDigits: digits });
@@ -40,61 +43,63 @@ function volumeDeltaText(value: number | null, noun: string): string {
   return `${sign}${formatNumber(value)} kg·reps vs prior ${noun}`;
 }
 
-function PeriodCard({
-  title,
-  row,
-  delta,
-  priorLabel,
-}: {
-  title: string;
+function PeriodSummary({ row, delta, priorLabel }: {
   row: LiftingCalendarSummaryRow | null;
   delta: LiftingCalendarDelta;
   priorLabel: 'week' | 'month';
 }) {
+  if (!row) {
+    return <p className={styles.empty}>Complete a lifting session to start calendar summaries.</p>;
+  }
+
   return (
-    <article className={styles.periodCard}>
-      <header>
-        <p>{title}</p>
-        <h3>{row ? formatPeriod(row) : 'No calendar data yet'}</h3>
+    <div className={styles.periodSummary}>
+      <header className={styles.periodHeader}>
+        <div>
+          <p>{priorLabel === 'week' ? 'This week' : 'This month'}</p>
+          <h3>{formatPeriod(row)}</h3>
+        </div>
+        <span>{row.exerciseCount} exercise{row.exerciseCount === 1 ? '' : 's'}</span>
       </header>
-      {row ? (
-        <dl className={styles.metricGrid}>
-          <div>
-            <dt>Sessions</dt>
-            <dd>{row.completedLiftingSessions}</dd>
-            <small>{deltaText(delta.completedLiftingSessions, priorLabel)}</small>
-          </div>
-          <div>
-            <dt>Exercises</dt>
-            <dd>{row.exerciseCount}</dd>
-            <small>{deltaText(delta.exerciseCount, priorLabel)}</small>
-          </div>
-          <div>
-            <dt>Working sets</dt>
-            <dd>{row.completedWorkingSets}</dd>
-            <small>{deltaText(delta.completedWorkingSets, priorLabel)}</small>
-          </div>
-          <div>
-            <dt>PRs</dt>
-            <dd>{row.prCount}</dd>
-            <small>{deltaText(delta.prCount, priorLabel)}</small>
-          </div>
-          <div className={styles.volumeMetric}>
-            <dt>Volume</dt>
-            <dd>{formatNumber(row.volumeKgReps)} kg·reps</dd>
-            <small>{volumeDeltaText(delta.volumeKgReps, priorLabel)}</small>
-          </div>
-        </dl>
-      ) : (
-        <p className={styles.empty}>Complete a lifting session to start calendar summaries.</p>
-      )}
-    </article>
+
+      <dl className={styles.metricGrid}>
+        <div>
+          <dt>Sessions</dt>
+          <dd>{row.completedLiftingSessions}</dd>
+          <small>{deltaText(delta.completedLiftingSessions, priorLabel)}</small>
+        </div>
+        <div>
+          <dt>Working sets</dt>
+          <dd>{row.completedWorkingSets}</dd>
+          <small>{deltaText(delta.completedWorkingSets, priorLabel)}</small>
+        </div>
+        <div>
+          <dt>PRs</dt>
+          <dd>{row.prCount}</dd>
+          <small>{deltaText(delta.prCount, priorLabel)}</small>
+        </div>
+        <div>
+          <dt>Volume</dt>
+          <dd>{formatNumber(row.volumeKgReps)} kg·reps</dd>
+          <small>{volumeDeltaText(delta.volumeKgReps, priorLabel)}</small>
+        </div>
+      </dl>
+    </div>
   );
 }
 
 export function LiftingCalendarSummaryPanel({ analytics, status, error, onRetry }: LiftingCalendarSummaryProps) {
-  const weeklyVolume = analytics.weekly.map((row) => ({ id: `week-${row.periodStart}`, observedAt: row.periodStart, value: row.volumeKgReps }));
-  const monthlyVolume = analytics.monthly.map((row) => ({ id: `month-${row.periodStart}`, observedAt: row.periodStart, value: row.volumeKgReps }));
+  const [period, setPeriod] = useState<PeriodSelection>('week');
+  const weekly = period === 'week';
+  const rows = weekly ? analytics.weekly : analytics.monthly;
+  const row = weekly ? analytics.currentWeek : analytics.currentMonth;
+  const delta = weekly ? analytics.weekDelta : analytics.monthDelta;
+  const priorLabel = weekly ? 'week' as const : 'month' as const;
+  const volumePoints = rows.map((item) => ({
+    id: `${period}-${item.periodStart}`,
+    observedAt: item.periodStart,
+    value: item.volumeKgReps,
+  }));
 
   return (
     <section className={styles.calendarSection} aria-labelledby="lifting-calendar-heading">
@@ -106,6 +111,11 @@ export function LiftingCalendarSummaryPanel({ analytics, status, error, onRetry 
         <span>Completed strength sessions only. Volume is analytics-only and never changes XP.</span>
       </div>
 
+      <div aria-label="Progress summary period" className={styles.periodToggle} role="group">
+        <button aria-pressed={weekly} onClick={() => setPeriod('week')} type="button">Week</button>
+        <button aria-pressed={!weekly} onClick={() => setPeriod('month')} type="button">Month</button>
+      </div>
+
       {status === 'loading' && <p className={styles.state}>Loading calendar summaries…</p>}
       {status === 'error' && (
         <div className={styles.error} role="alert">
@@ -115,28 +125,16 @@ export function LiftingCalendarSummaryPanel({ analytics, status, error, onRetry 
       )}
 
       {status === 'ready' && (
-        <>
-          <div className={styles.periodGrid}>
-            <PeriodCard delta={analytics.weekDelta} priorLabel="week" row={analytics.currentWeek} title="This week" />
-            <PeriodCard delta={analytics.monthDelta} priorLabel="month" row={analytics.currentMonth} title="This month" />
-          </div>
-          <div className={styles.chartGrid} aria-label="Calendar lifting volume charts">
-            <ExerciseTrendChart
-              description={`${analytics.weekly.length} calendar weeks · analytics only`}
-              formatValue={(value) => `${formatNumber(value)} kg·reps`}
-              points={weeklyVolume}
-              title="Weekly volume"
-              variant="bars"
-            />
-            <ExerciseTrendChart
-              description={`${analytics.monthly.length} calendar months · analytics only`}
-              formatValue={(value) => `${formatNumber(value)} kg·reps`}
-              points={monthlyVolume}
-              title="Monthly volume"
-              variant="bars"
-            />
-          </div>
-        </>
+        <div className={styles.analyticsLayout}>
+          <PeriodSummary delta={delta} priorLabel={priorLabel} row={row} />
+          <ExerciseTrendChart
+            description={`${rows.length} calendar ${weekly ? 'week' : 'month'}${rows.length === 1 ? '' : 's'} · analytics only`}
+            formatValue={(value) => `${formatNumber(value)} kg·reps`}
+            points={volumePoints}
+            title={weekly ? 'Weekly volume' : 'Monthly volume'}
+            variant="bars"
+          />
+        </div>
       )}
     </section>
   );

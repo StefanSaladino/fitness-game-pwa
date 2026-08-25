@@ -14,8 +14,8 @@ export const WORKOUT_TYPE_LABELS: Record<ExerciseWorkoutType, string> = {
   SPECIALTY: 'Specialty / accessory', OTHER: 'Other',
 };
 
-export const MUSCLE_GROUP_ORDER = Object.keys(MUSCLE_GROUP_LABELS) as ExerciseMuscleGroup[];
-export const WORKOUT_TYPE_ORDER = Object.keys(WORKOUT_TYPE_LABELS) as ExerciseWorkoutType[];
+export const MUSCLE_GROUP_ORDER = (Object.keys(MUSCLE_GROUP_LABELS) as ExerciseMuscleGroup[]).filter((group) => group !== 'OTHER');
+export const WORKOUT_TYPE_ORDER = (Object.keys(WORKOUT_TYPE_LABELS) as ExerciseWorkoutType[]).filter((type) => type !== 'OTHER');
 
 export interface ExerciseSearchFilters {
   query: string;

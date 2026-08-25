@@ -1,7 +1,7 @@
 .calendarSection {
   display: grid;
-  gap: 20px;
-  margin: 8px 0 34px;
+  gap: 18px;
+  margin: 24px 0 38px;
 }
 
 .heading {
@@ -10,55 +10,93 @@
   justify-content: space-between;
   gap: 18px;
   padding-bottom: 12px;
-  border-bottom: 1px solid var(--color-border);
+  border-bottom: 1px solid #242529;
 }
 
 .heading p,
-.periodCard header p {
+.periodHeader p {
   margin: 0;
-  color: var(--color-text-muted);
-  font-size: 0.7rem;
+  color: #a0a1a4;
+  font-size: 0.68rem;
   font-weight: 750;
   letter-spacing: 0.09em;
   text-transform: uppercase;
 }
 
 .heading h2,
-.periodCard header h3 {
+.periodHeader h3 {
   margin: 4px 0 0;
-  color: var(--color-text);
+  color: #f7f7f7;
   letter-spacing: -0.035em;
 }
 
-.heading h2 { font-size: 1.3rem; }
+.heading h2 { font-size: 1.25rem; }
 .heading > span {
   max-width: 380px;
-  color: var(--color-text-muted);
-  font-size: 0.74rem;
+  color: #a0a1a4;
+  font-size: 0.72rem;
   line-height: 1.45;
   text-align: right;
 }
 
-.periodGrid,
-.chartGrid {
+.periodToggle {
   display: grid;
-  gap: 18px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  width: min(100%, 420px);
+  padding: 4px;
+  background: #0e0f11;
+  border: 1px solid #242529;
+  border-radius: 10px;
 }
 
-.periodCard {
+.periodToggle button {
+  min-height: 42px;
+  padding: 0 18px;
+  color: #c7c8ca;
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 750;
+  background: transparent;
+  border: 0;
+  border-radius: 7px;
+  cursor: pointer;
+}
+
+.periodToggle button[aria-pressed='true'] {
+  color: #f7f7f7;
+  background: #f15a08;
+}
+
+.periodToggle button:focus-visible {
+  outline: 2px solid #ff670d;
+  outline-offset: 2px;
+}
+
+.analyticsLayout {
+  display: grid;
+  gap: 24px;
   min-width: 0;
-  padding: 18px;
-  background: rgba(205, 225, 242, 0.035);
-  border: 1px solid rgba(205, 225, 242, 0.08);
-  border-radius: 14px;
 }
 
-.periodCard header {
-  padding-bottom: 14px;
-  border-bottom: 1px solid rgba(205, 225, 242, 0.07);
+.periodSummary {
+  min-width: 0;
 }
 
-.periodCard header h3 { font-size: 1.05rem; }
+.periodHeader {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 14px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #242529;
+}
+
+.periodHeader h3 { font-size: 1rem; }
+.periodHeader > span {
+  color: #a0a1a4;
+  font-size: 0.7rem;
+  white-space: nowrap;
+}
 
 .metricGrid {
   display: grid;
@@ -71,52 +109,70 @@
   align-content: start;
   gap: 4px;
   min-width: 0;
-  padding: 14px 0;
-  border-bottom: 1px solid rgba(205, 225, 242, 0.06);
+  padding: 15px 0;
+  border-bottom: 1px solid #1f2023;
 }
 
-.metricGrid > div:nth-child(odd) { padding-right: 12px; }
-.metricGrid > div:nth-child(even) { padding-left: 12px; border-left: 1px solid rgba(205, 225, 242, 0.06); }
-.metricGrid dt { color: var(--color-text-muted); font-size: 0.68rem; letter-spacing: 0.06em; text-transform: uppercase; }
-.metricGrid dd { margin: 0; color: var(--color-text); font-size: 1.32rem; font-weight: 720; letter-spacing: -0.03em; }
-.metricGrid small { color: var(--color-text-muted); font-size: 0.68rem; line-height: 1.35; }
+.metricGrid > div:nth-child(odd) { padding-right: 14px; }
+.metricGrid > div:nth-child(even) {
+  padding-left: 14px;
+  border-left: 1px solid #1f2023;
+}
 
-.metricGrid .volumeMetric {
-  grid-column: 1 / -1;
-  padding-right: 0;
-  border-left: 0;
-  border-bottom: 0;
+.metricGrid dt {
+  color: #a0a1a4;
+  font-size: 0.67rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.metricGrid dd {
+  margin: 0;
+  color: #f7f7f7;
+  font-size: clamp(1.35rem, 7vw, 1.9rem);
+  font-weight: 760;
+  letter-spacing: -0.04em;
+}
+
+.metricGrid small {
+  color: #a0a1a4;
+  font-size: 0.68rem;
+  line-height: 1.35;
 }
 
 .state,
 .empty,
 .error p {
   margin: 0;
-  color: var(--color-text-muted);
+  color: #a0a1a4;
   line-height: 1.5;
 }
 
 .state,
 .error { padding: 14px 0; }
 .error { display: grid; justify-items: start; gap: 12px; }
-.empty { padding-top: 16px; }
+.empty { padding: 16px 0; }
 
-@media (min-width: 760px) {
-  .periodGrid,
-  .chartGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+@media (min-width: 900px) {
+  .analyticsLayout {
+    grid-template-columns: minmax(300px, 0.8fr) minmax(0, 1.35fr);
+    align-items: stretch;
+    gap: 32px;
+  }
+
+  .periodToggle { width: 360px; }
 }
 
 @media (max-width: 560px) {
-  .heading { align-items: flex-start; flex-direction: column; }
-  .heading > span { max-width: none; text-align: left; }
-  .metricGrid { grid-template-columns: 1fr; }
-  .metricGrid > div:nth-child(odd),
-  .metricGrid > div:nth-child(even),
-  .metricGrid .volumeMetric {
-    grid-column: auto;
-    padding-inline: 0;
-    border-left: 0;
-    border-bottom: 1px solid rgba(205, 225, 242, 0.06);
+  .heading {
+    align-items: flex-start;
+    flex-direction: column;
   }
-  .metricGrid > div:last-child { border-bottom: 0; }
+
+  .heading > span {
+    max-width: none;
+    text-align: left;
+  }
+
+  .periodToggle { width: 100%; }
 }

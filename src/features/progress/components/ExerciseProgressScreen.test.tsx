@@ -41,7 +41,6 @@ const bodyweightHistory: ExerciseProgressHistoryEntry[] = [
   },
 ];
 
-
 const calendarSummaries: LiftingCalendarSummary[] = [
   { periodKind: 'WEEK', periodStart: '2026-08-10', periodEnd: '2026-08-16', completedLiftingSessions: 2, exerciseCount: 5, completedWorkingSets: 20, volumeKgReps: 10000, prCount: 1 },
   { periodKind: 'WEEK', periodStart: '2026-08-17', periodEnd: '2026-08-23', completedLiftingSessions: 3, exerciseCount: 6, completedWorkingSets: 28, volumeKgReps: 13200, prCount: 2 },
@@ -50,9 +49,10 @@ const calendarSummaries: LiftingCalendarSummary[] = [
 ];
 
 describe('ExerciseProgressScreen', () => {
-  it('renders personal PR context and keeps added-weight bodyweight work analytics-only', async () => {
+  it('keeps real progress analytics complete while switching the summary period one surface at a time', async () => {
     const user = userEvent.setup();
     const onSelectExercise = vi.fn();
+
     render(
       <ExerciseProgressScreen
         analytics={buildExerciseAnalytics(exercises[1]!, bodyweightHistory)}
@@ -73,13 +73,19 @@ describe('ExerciseProgressScreen', () => {
       />,
     );
 
-    expect(screen.getByRole('heading', { name: 'Know your trend. Beat your last.' })).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: 'Pull Up' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Your lifting trend' })).toBeInTheDocument();
+    expect(screen.getByRole('img', { name: /training log beside a loaded barbell/i })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Weekly & monthly summary' })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Weekly volume' })).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: 'Monthly volume' })).toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: 'Monthly volume' })).not.toBeInTheDocument();
     expect(screen.getByText('+3,200 kg·reps vs prior week')).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Month' }));
+    expect(screen.getByRole('heading', { name: 'Monthly volume' })).toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: 'Weekly volume' })).not.toBeInTheDocument();
     expect(screen.getByText('+7,500 kg·reps vs prior month')).toBeInTheDocument();
+
+    expect(screen.getByRole('heading', { name: 'Pull Up' })).toBeInTheDocument();
     const currentPr = screen.getByText('Current PR', { selector: 'dt' }).closest('div');
     const previousPr = screen.getByText('Previous PR', { selector: 'dt' }).closest('div');
     expect(currentPr).not.toBeNull();
@@ -92,6 +98,7 @@ describe('ExerciseProgressScreen', () => {
     expect(screen.getByRole('heading', { name: 'Rep trend' })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Volume history' })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'PR timeline' })).toBeInTheDocument();
+
     const bestWeight = screen.getByText('Best weight', { selector: 'dt' }).closest('div');
     const bestReps = screen.getByText('Best reps', { selector: 'dt' }).closest('div');
     expect(bestWeight).not.toBeNull();

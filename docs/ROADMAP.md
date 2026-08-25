@@ -974,8 +974,7 @@ See `docs/PHASE16.1-APP-SHELL.md`.
 - exercise-result density and selected/duplicate states;
 - keep anatomy artwork purposeful rather than decorative.
 
-### 16.7 Progress + lifting analytics
-
+### 16.7 Progress + lifting analytics � DONE â€” IN PROGRESS
 - exercise selection and overview;
 - e1RM/bodyweight trend presentation;
 - volume and PR timelines;
