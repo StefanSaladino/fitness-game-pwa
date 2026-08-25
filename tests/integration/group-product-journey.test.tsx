@@ -280,8 +280,8 @@ describe('group-to-product integration journey', () => {
     await user.click(screen.getByRole('button', { name: 'Accept' }));
     await waitFor(() => expect(screen.getAllByText('Night Crew').length).toBeGreaterThan(0));
     await user.click(screen.getAllByRole('button', { name: 'Groups' })[0]!);
-    expect(await screen.findByRole('heading', { name: 'Members' })).toBeInTheDocument();
-    expect(screen.getByText(/currently belong to 1 group/i)).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: 'Your crew' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Competition' })).toBeInTheDocument();
   });
 
   it('lets a solo user create a group later from Groups without blocking personal training first', async () => {
@@ -293,9 +293,9 @@ describe('group-to-product integration journey', () => {
     expect(await screen.findByRole('heading', { name: 'Groups are optional.' })).toBeInTheDocument();
     await user.type(screen.getByRole('textbox', { name: 'Group name' }), 'Iron Crew');
     await user.click(screen.getByRole('button', { name: 'Create group' }));
-    expect(await screen.findByRole('heading', { name: 'Members' })).toBeInTheDocument();
-    expect(screen.getByText(/currently belong to 1 group/i)).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: 'Your groups' })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: 'Your crew' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Send invite' })).toBeInTheDocument();
+    expect(screen.queryByRole('group', { name: 'Select group' })).not.toBeInTheDocument();
   });
 
   it('keeps memberships additive when an existing owner accepts another invitation', async () => {
@@ -306,10 +306,10 @@ describe('group-to-product integration journey', () => {
     expect(await screen.findByText(/does not replace any group you already belong to/i)).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Accept' }));
     await user.click(screen.getAllByRole('button', { name: 'Groups' })[0]!);
-    expect(await screen.findByRole('heading', { name: 'Members' })).toBeInTheDocument();
-    expect(screen.getByText(/currently belong to 2 groups/i)).toBeInTheDocument();
-    expect(screen.getByRole('combobox', { name: 'Group' })).toBeInTheDocument();
-    expect(within(screen.getByRole('combobox', { name: 'Group' })).getByRole('option', { name: 'Weekend Crew' })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: 'Your crew' })).toBeInTheDocument();
+    const groupRail = screen.getByRole('group', { name: 'Select group' });
+    expect(within(groupRail).getByRole('button', { name: /^Iron Crew\b/i })).toBeInTheDocument();
+    expect(within(groupRail).getByRole('button', { name: /^Weekend Crew\b/i })).toBeInTheDocument();
   });
 
   it('retains owner administration across the integrated journey', async () => {
@@ -322,7 +322,12 @@ describe('group-to-product integration journey', () => {
     await screen.findByRole('heading', { name: 'Your lifting week' });
     expect(screen.getByRole('heading', { name: 'Completed weeks & badges' })).toBeInTheDocument();
     await user.click(screen.getAllByRole('button', { name: 'Groups' })[0]!);
-    expect(await screen.findByRole('button', { name: 'Make admin' })).toBeInTheDocument();
+    const manageAlex = await screen.findByRole('button', { name: 'Manage Alex' });
+    await user.click(manageAlex);
+    const memberDialog = screen.getByRole('dialog', { name: 'Alex' });
+    expect(within(memberDialog).getByRole('button', { name: 'Make admin' })).toBeInTheDocument();
+    await user.click(within(memberDialog).getByRole('button', { name: 'Done' }));
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Send invite' })).toBeInTheDocument();
   });
 
@@ -336,9 +341,11 @@ describe('group-to-product integration journey', () => {
     expect(await screen.findByRole('heading', { name: 'Your lifting week' })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Completed weeks & badges' })).toBeInTheDocument();
     await user.click(screen.getAllByRole('button', { name: 'Groups' })[0]!);
-    expect(await screen.findByRole('button', { name: 'Leave group' })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: 'Your crew' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /^Manage / })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Send invite' })).not.toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: 'Make admin' })).not.toBeInTheDocument();
+    await user.click(screen.getByText('Name, ownership and membership'));
+    expect(screen.getByRole('button', { name: 'Leave group' })).toBeInTheDocument();
   });
 
   it('still keeps group competition and personal progress behind their proper product boundaries', async () => {
@@ -350,7 +357,7 @@ describe('group-to-product integration journey', () => {
     expect(await screen.findByRole('heading', { name: 'Crew standings' })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Highlights, not surveillance' })).toBeInTheDocument();
     await user.click(screen.getAllByRole('button', { name: 'Progress' })[0]!);
-    expect(await screen.findByRole('heading',{name:'Know your trend. Beat your last.'})).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: 'Your lifting trend' })).toBeInTheDocument();
     expect(await screen.findByRole('heading',{name:'Weekly & monthly summary'})).toBeInTheDocument();
   });
 });

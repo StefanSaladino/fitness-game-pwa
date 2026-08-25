@@ -871,7 +871,7 @@ Functional content added before the visual overhaul resumes:
 
 See `docs/PHASE15.8-TRAINING-TIPS-PRESETS.md`.
 
-## Phase 16 — Mobile-first visual overhaul — NEXT
+## Phase 16 — Mobile-first visual overhaul — IN PROGRESS
 
 Objective: redesign the existing user-facing product **page by page** so it feels purpose-built as a polished mobile application while preserving authoritative behavior, accessibility, reliability, and responsive desktop support.
 
@@ -964,7 +964,7 @@ See `docs/PHASE16.1-APP-SHELL.md`.
 - offline/recovering/conflict states;
 - finish/cancel flows and destructive confirmation.
 
-### 16.6 Exercise picker + exercise library — NEXT
+### 16.6 Exercise picker + exercise library — DONE
 
 - selector shell;
 - muscle-group navigation;
@@ -974,14 +974,14 @@ See `docs/PHASE16.1-APP-SHELL.md`.
 - exercise-result density and selected/duplicate states;
 - keep anatomy artwork purposeful rather than decorative.
 
-### 16.7 Progress + lifting analytics � DONE â€” IN PROGRESS
+### 16.7 Progress + lifting analytics — DONE
 - exercise selection and overview;
 - e1RM/bodyweight trend presentation;
 - volume and PR timelines;
 - weekly/monthly summaries;
 - charts optimized for narrow touch screens without sacrificing readable desktop analysis.
 
-### 16.8 Groups + invitations + member administration
+### 16.8 Groups + invitations + member administration — DONE
 
 - group switcher;
 - member roster and roles;

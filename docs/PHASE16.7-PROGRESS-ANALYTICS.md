@@ -1,6 +1,6 @@
 # Phase 16.7 — Progress + lifting analytics
 
-Status: **IN PROGRESS**
+Status: **DONE**
 
 This document records the approved visual contract for the Progress redesign. It is maintained documentation and is intentionally not an executable release gate.
 

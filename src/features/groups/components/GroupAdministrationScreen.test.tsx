@@ -1,5 +1,5 @@
 import '@testing-library/jest-dom/vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import type { OnboardingProfile } from '../../onboarding';
@@ -29,56 +29,119 @@ function props(group: GroupSummary) {
 }
 
 describe('GroupAdministrationScreen', () => {
-  it('shows owner-only role controls and targeted invite administration without decorative filler', () => {
+  it('keeps owner actions behind one focused Manage affordance', async () => {
+    const user = userEvent.setup();
     render(<GroupAdministrationScreen {...props(ownerGroup)} />);
-    expect(screen.getByRole('heading',{name:'Members'})).toBeInTheDocument();
-    expect(screen.getByRole('heading',{name:'Invites'})).toBeInTheDocument();
-    expect(screen.getByRole('heading',{name:'Your groups'})).toBeInTheDocument();
-    expect(screen.getByText(/join or own more than one/i)).toBeInTheDocument();
-    const inviteRecipientField=screen.getByRole('textbox',{name:'Invite someone'});
-    expect(inviteRecipientField).toBeInTheDocument();
-    expect(inviteRecipientField).toHaveValue('');
-    expect(inviteRecipientField).toHaveAttribute('placeholder','Username or invite ID');
-    expect(inviteRecipientField).toHaveAttribute('autocomplete','off');
-    expect(inviteRecipientField).toHaveAttribute('name','groupInviteRecipient');
-    expect(inviteRecipientField.getAttribute('placeholder')).not.toMatch(/stefan|FG-/i);
+
+    expect(screen.getByRole('heading',{name:'Your crew'})).toBeInTheDocument();
+    expect(screen.getByRole('heading',{name:'Invite someone'})).toBeInTheDocument();
     expect(screen.getByText(/FG-1A2B3C4D5E/)).toBeInTheDocument();
-    expect(screen.getByRole('button',{name:'Make admin'})).toBeInTheDocument();
-    expect(screen.getAllByRole('button',{name:'Transfer ownership'})).toHaveLength(2);
-    expect(screen.getByRole('button',{name:'Save name'})).toBeInTheDocument();
+    expect(screen.queryByRole('button',{name:'Make admin'})).not.toBeInTheDocument();
+    expect(screen.queryByRole('button',{name:'Transfer ownership'})).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Manage Alex' }));
+    const dialog = screen.getByRole('dialog');
+    expect(within(dialog).getByRole('button',{name:'Make member'})).toBeInTheDocument();
+    expect(within(dialog).getByRole('button',{name:'Transfer ownership'})).toBeInTheDocument();
+    expect(within(dialog).getByRole('button',{name:'Remove from group'})).toBeInTheDocument();
     expect(screen.queryByRole('button',{name:'Leave group'})).not.toBeInTheDocument();
+  });
+
+  it('switches groups with pressed buttons instead of a mobile select', async () => {
+    const user = userEvent.setup();
+    const second: GroupSummary = { ...ownerGroup, id:'group-2', name:'Sunday Crew', memberCount:5, role:'MEMBER' };
+    const p = { ...props(ownerGroup), groups:[ownerGroup, second] };
+    render(<GroupAdministrationScreen {...p} />);
+
+    expect(screen.queryByRole('combobox', { name: 'Group' })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Iron Crew/i })).toHaveAttribute('aria-pressed', 'true');
+    await user.click(screen.getByRole('button', { name: /Sunday Crew/i }));
+    expect(p.onSelectGroup).toHaveBeenCalledWith('group-2');
   });
 
   it('creates an additional group without replacing the current membership', async () => {
     const user = userEvent.setup();
     const p = props(ownerGroup);
     render(<GroupAdministrationScreen {...p} />);
-    await user.click(screen.getByText('Create another group'));
+    await user.click(screen.getByText('Name, ownership and membership'));
     await user.type(screen.getByRole('textbox', { name: 'Group name' }), 'Sunday Crew');
     await user.click(screen.getByRole('button', { name: 'Create group' }));
     expect(p.onCreateGroup).toHaveBeenCalledWith({ name: 'Sunday Crew' });
-    expect(screen.getByText(/currently belong to 1 group/i)).toBeInTheDocument();
   });
 
   it('sends a targeted invitation and never exposes a reusable copy-code action', async () => {
     const user=userEvent.setup(); const p=props(ownerGroup);
     render(<GroupAdministrationScreen {...p} />);
-    await user.type(screen.getByRole('textbox',{name:'Invite someone'}),'@alex');
+    await user.type(screen.getByRole('textbox',{name:'Username or invite ID'}),'@alex');
     await user.click(screen.getByRole('button',{name:'Send invite'}));
     expect(p.onCreateInvite).toHaveBeenCalledWith('@alex');
     expect(screen.queryByText(/copy code/i)).not.toBeInTheDocument();
   });
 
-  it('keeps ordinary members read-only except for their invite ID, incoming invites, multi-group creation, and leaving', () => {
-    const memberProps={...props({...ownerGroup,role:'MEMBER'}),pendingInvites:[{id:'incoming-1',groupId:'group-2',groupName:'Night Crew',invitedByUserId:'other',invitedByUsername:'jordan',invitedByDisplayName:'Jordan',createdAt:'x'}]};
+  it('keeps ordinary members read-only while preserving incoming invites, group creation, and leaving', async () => {
+    const user = userEvent.setup();
+    const memberGroup = {...ownerGroup, role:'MEMBER' as const};
+    const memberProps={...props(memberGroup),pendingInvites:[{id:'incoming-1',groupId:'group-2',groupName:'Night Crew',invitedByUserId:'other',invitedByUsername:'jordan',invitedByDisplayName:'Jordan',createdAt:'x'}]};
     render(<GroupAdministrationScreen {...memberProps} />);
-    expect(screen.getByText(/FG-1A2B3C4D5E/)).toBeInTheDocument();
-    expect(screen.getByRole('heading',{name:'Pending invitations'})).toBeInTheDocument();
-    expect(screen.getByText(/adds that group to your account/i)).toBeInTheDocument();
-    expect(screen.getByText('Create another group')).toBeInTheDocument();
-    expect(screen.queryByRole('heading',{name:'Invites'})).not.toBeInTheDocument();
-    expect(screen.queryByRole('button',{name:'Make admin'})).not.toBeInTheDocument();
-    expect(screen.queryByRole('button',{name:'Save name'})).not.toBeInTheDocument();
+
+    expect(screen.getByRole('heading',{name:'For you'})).toBeInTheDocument();
+    expect(screen.queryByRole('heading',{name:'Invite someone'})).not.toBeInTheDocument();
+    expect(screen.queryByRole('button',{name:/Manage /})).not.toBeInTheDocument();
+
+    await user.click(screen.getByText('Name, ownership and membership'));
     expect(screen.getByRole('button',{name:'Leave group'})).toBeInTheDocument();
+    expect(screen.queryByRole('button',{name:'Save name'})).not.toBeInTheDocument();
+  });
+
+  it('limits an admin to removing ordinary members from the focused sheet', async () => {
+    const user = userEvent.setup();
+    const adminGroup = { ...ownerGroup, role:'ADMIN' as const };
+    render(<GroupAdministrationScreen {...props(adminGroup)} />);
+
+    expect(screen.queryByRole('button', { name: 'Manage Alex' })).not.toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Manage Sam' }));
+    const dialog = screen.getByRole('dialog');
+    expect(within(dialog).getByRole('button', { name: 'Remove from group' })).toBeInTheDocument();
+    expect(within(dialog).queryByRole('button', { name: 'Make admin' })).not.toBeInTheDocument();
+    expect(within(dialog).queryByRole('button', { name: 'Transfer ownership' })).not.toBeInTheDocument();
+  });
+
+  it('requires explicit confirmation before removing a member', async () => {
+    const user = userEvent.setup();
+    const p = props(ownerGroup);
+    render(<GroupAdministrationScreen {...p} />);
+
+    await user.click(screen.getByRole('button', { name: 'Manage Sam' }));
+    await user.click(screen.getByRole('button', { name: 'Remove from group' }));
+    expect(screen.getByRole('heading', { name: 'Remove Sam from Iron Crew?' })).toBeInTheDocument();
+    expect(p.onRemoveMember).not.toHaveBeenCalled();
+
+    await user.click(screen.getByRole('button', { name: 'Remove Sam' }));
+    expect(p.onRemoveMember).toHaveBeenCalledWith('member-1');
+  });
+
+  it('requires explicit confirmation before transferring ownership', async () => {
+    const user = userEvent.setup();
+    const p = props(ownerGroup);
+    render(<GroupAdministrationScreen {...p} />);
+
+    await user.click(screen.getByRole('button', { name: 'Manage Alex' }));
+    await user.click(screen.getByRole('button', { name: 'Transfer ownership' }));
+    expect(screen.getByRole('heading', { name: 'Transfer ownership to Alex?' })).toBeInTheDocument();
+    expect(p.onTransferOwnership).not.toHaveBeenCalled();
+
+    await user.click(screen.getByRole('button', { name: 'Transfer ownership' }));
+    expect(p.onTransferOwnership).toHaveBeenCalledWith('admin-1');
+  });
+
+  it('closes member management with Escape and restores focus to the trigger', async () => {
+    const user = userEvent.setup();
+    render(<GroupAdministrationScreen {...props(ownerGroup)} />);
+    const trigger = screen.getByRole('button', { name: 'Manage Alex' });
+    await user.click(trigger);
+    expect(screen.getByRole('dialog')).toBeInTheDocument();
+    await user.keyboard('{Escape}');
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    expect(trigger).toHaveFocus();
   });
 });
