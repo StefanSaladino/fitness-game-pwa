@@ -997,7 +997,7 @@ See `docs/PHASE16.1-APP-SHELL.md`.
 - profile identity and badge display using the shared badge presentation contract from 16.13;
 - preserve privacy-safe summaries and avoid turning the feed into raw workout logs.
 
-### 16.10 Cardio accessory surface
+### 16.10 Cardio accessory surface — DONE
 
 - quick logging;
 - duration/tier context;
