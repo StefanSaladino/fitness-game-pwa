@@ -989,7 +989,7 @@ See `docs/PHASE16.1-APP-SHELL.md`.
 - promote/demote/remove/leave/transfer controls;
 - make destructive/privileged actions clear without overwhelming ordinary group members.
 
-### 16.9 Competition + social activity
+### 16.9 Competition + social activity — DONE
 
 - leaderboard hierarchy and period switching;
 - activity feed;
