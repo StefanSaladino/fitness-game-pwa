@@ -30,11 +30,26 @@
 
   --shadow-card: 0 10px 30px rgba(0, 0, 0, 0.2);
   --radius-sm: 7px;
-  --radius-md: 8px;
-  --radius-lg: 12px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
   --radius-xl: 16px;
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+
+  --app-page-gutter: clamp(16px, 4vw, 24px);
+  --app-content-max: 1180px;
+  --app-section-gap: 16px;
+  --app-category-gap: 24px;
+  --app-surface-padding: clamp(16px, 3vw, 24px);
+  --app-row-min-height: 56px;
 
   --desktop-sidebar-width: 216px;
   --shell-header-height: 58px;
-  --mobile-nav-height: 70px;
+  --mobile-nav-height: 72px;
 }

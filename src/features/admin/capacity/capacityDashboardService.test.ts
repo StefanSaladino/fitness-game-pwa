@@ -67,4 +67,21 @@ describe('capacity dashboard service', () => {
     await service.captureSnapshot();
     expect(client.rpc).toHaveBeenCalledWith('capture_platform_capacity_snapshot');
   });
+
+  it('loads Supabase project data without calling Netlify until its adapter is enabled', async () => {
+    vi.stubEnv('VITE_NETLIFY_CAPACITY_ENABLED', 'false');
+    const client = fakeClient();
+    const invoke = vi.spyOn(client.functions, 'invoke');
+    const service = createCapacityDashboardService(client, {
+      supabaseProvider: provider('SUPABASE_MANAGEMENT'),
+    });
+
+    const snapshot = await service.load();
+
+    expect(client.rpc).toHaveBeenCalledWith('get_platform_capacity_current');
+    expect(snapshot.current.length).toBeGreaterThan(0);
+    expect(snapshot.netlify.metrics.every((metric) => !metric.available)).toBe(true);
+    expect(invoke).not.toHaveBeenCalledWith('platform-capacity-netlify', expect.anything());
+    vi.unstubAllEnvs();
+  });
 });

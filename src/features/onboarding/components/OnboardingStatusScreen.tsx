@@ -1,4 +1,5 @@
 import { TopSetLoadingScreen } from '../../../components/feedback/TopSetLoadingScreen';
+import { AppStateSurface } from '../../../components/feedback/AppStateSurface';
 import { Button } from '../../../components/ui';
 import { OnboardingLayout } from './OnboardingLayout';
 import styles from './OnboardingStatusScreen.module.css';
@@ -16,16 +17,15 @@ export function OnboardingStatusScreen({ status, message, onRetry }: OnboardingS
 
   return (
     <OnboardingLayout>
-      <section className={styles.state}>
-        <p className={styles.eyebrow}>Profile unavailable</p>
-        <h1>We couldn’t load your profile.</h1>
-        <p role="alert">{message || 'Try loading your profile again.'}</p>
-        {onRetry ? (
-          <Button className={styles.primaryButton} onClick={() => void onRetry()}>
-            Try again
-          </Button>
-        ) : null}
-      </section>
+      <AppStateSurface
+        action={onRetry ? <Button className={styles.primaryButton} onClick={() => void onRetry()}>Try again</Button> : undefined}
+        description={message || 'Try loading your profile again.'}
+        eyebrow="Profile unavailable"
+        headingLevel={1}
+        role="alert"
+        title="We couldn’t load your profile."
+        tone="error"
+      />
     </OnboardingLayout>
   );
 }

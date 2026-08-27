@@ -1,30 +1,62 @@
-.start,
-.active {
-  width: min(1280px, 100%);
+.statePage,
+.active,
+.start {
+  width: 100%;
+  min-width: 0;
   margin: 0 auto;
-  padding: 34px 20px 116px;
+  box-sizing: border-box;
 }
 
+.statePage,
 .start {
-  min-height: 68vh;
+  min-height: min(68vh, 680px);
   display: grid;
   align-content: center;
-  justify-items: start;
-  gap: 16px;
-  max-width: 860px;
+}
+
+.startPanel,
+.recoveryPanel,
+.start {
+  width: min(100%, 680px);
+  display: grid;
+  gap: var(--space-4);
+  margin: 0 auto;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--app-surface-padding);
+  background: var(--color-surface-strong);
+}
+
+.startPanel { border-color: rgba(241, 90, 8, 0.3); }
+.recoveryPanel { border-left: 4px solid var(--color-danger); }
+.startCopy { display: grid; gap: var(--space-2); }
+
+.start h1,
+.startPanel h1,
+.recoveryPanel h1,
+.activeHeader h1,
+.exerciseStage h2,
+.lifecycleDialog h2 {
+  margin: 0;
+  color: var(--color-text);
+  letter-spacing: -0.035em;
 }
 
 .start h1,
-.activeHeader h1,
-.exerciseStage h2,
-.cancelDialog h2 {
-  margin: 0;
-  color: var(--color-text);
-  letter-spacing: -0.04em;
+.startPanel h1,
+.recoveryPanel h1 {
+  font-size: clamp(2rem, 9vw, 3.25rem);
+  line-height: 1.03;
 }
 
-.start h1 { font-size: clamp(2.7rem, 10vw, 5.8rem); }
-.start > p:not(.kicker):not(.error) { max-width: 570px; margin: 0 0 8px; color: var(--color-text-muted); line-height: 1.6; }
+.start > p:not(.kicker):not(.error),
+.startCopy > p:not(.kicker),
+.recoveryPanel > p:not(.kicker) {
+  max-width: 570px;
+  margin: 0;
+  color: var(--color-text-soft);
+  line-height: 1.55;
+}
 
 .kicker {
   margin: 0;
@@ -32,39 +64,84 @@
   font-size: 0.68rem;
   font-weight: 780;
   letter-spacing: 0.1em;
+  text-transform: uppercase;
 }
 
-.workoutContent {
+.startingClock {
+  display: flex;
+  min-height: 52px;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  border-radius: var(--radius-md);
+  padding: 0 var(--space-4);
+  color: var(--color-text-soft);
+  background: var(--color-bg-elevated);
+}
+
+.startingClock time {
+  color: var(--color-text);
+  font-size: 1.1rem;
+  font-weight: 760;
+  font-variant-numeric: tabular-nums;
+}
+
+.startActions {
   display: grid;
-  gap: 14px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-2);
+}
+
+.active { max-width: var(--app-content-max); }
+
+.workoutContent {
+  min-width: 0;
+  display: grid;
+  gap: var(--app-category-gap);
+}
+
+.sessionPanel,
+.exerciseStage {
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+}
+
+.sessionPanel {
+  border-color: rgba(241, 90, 8, 0.3);
+  background: var(--color-surface-strong);
 }
 
 .activeHeader {
   display: flex;
+  min-width: 0;
   align-items: center;
   justify-content: space-between;
-  gap: 20px;
-  padding-bottom: 2px;
+  gap: var(--space-4);
+  padding: var(--space-4) var(--app-surface-padding);
 }
 
 .activeTitle {
   min-width: 0;
   display: grid;
-  gap: 5px;
+  gap: var(--space-1);
 }
 
 .activeHeader h1 {
-  font-size: clamp(1.65rem, 3.6vw, 2.45rem);
+  font-size: clamp(1.4rem, 4vw, 2.15rem);
+  line-height: 1.12;
 }
 
 .timerControl {
+  min-width: 92px;
+  min-height: 46px;
   flex: 0 0 auto;
-  min-width: 96px;
-  min-height: 44px;
-  padding: 0 14px;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md, 8px);
-  background: var(--color-surface-strong);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+  padding: 0 var(--space-3);
+  background: var(--color-bg-elevated);
   color: var(--color-accent);
   cursor: pointer;
   font: inherit;
@@ -72,46 +149,26 @@
   font-weight: 760;
 }
 
-.timerControl:hover:not(:disabled) {
-  border-color: var(--color-accent);
-}
-
-.timerControl:disabled {
-  cursor: not-allowed;
-  opacity: 0.45;
-}
-
-.workoutHero {
-  width: 100%;
-  height: clamp(148px, 13vw, 178px);
-  display: block;
-  box-sizing: border-box;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg, 12px);
-  object-fit: cover;
-  object-position: center 54%;
-  filter: brightness(0.76) saturate(0.8);
-}
+.timerControl:hover:not(:disabled) { border-color: var(--color-accent); }
+.timerControl:disabled { cursor: not-allowed; opacity: 0.45; }
 
 .sessionMeta {
   display: grid;
   grid-template-columns: minmax(190px, 1.35fr) repeat(2, minmax(150px, 0.8fr));
-  border-top: 1px solid var(--color-border);
-  border-bottom: 1px solid var(--color-border);
+  border-top: 8px solid var(--color-bg);
 }
 
 .sessionMeta > div {
   min-width: 0;
+  min-height: 78px;
   display: grid;
   align-content: center;
-  gap: 5px;
-  min-height: 82px;
-  padding: 12px 18px;
+  gap: var(--space-1);
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-bg-elevated);
 }
 
-.sessionMeta > div + div {
-  border-left: 1px solid var(--color-border);
-}
+.sessionMeta > div + div { border-left: 1px solid var(--color-border); }
 
 .sessionMeta span {
   color: var(--color-text-muted);
@@ -127,13 +184,11 @@
   font-variant-numeric: tabular-nums;
 }
 
-.elapsedMeta {
-  gap: 2px !important;
-}
+.elapsedMeta { gap: 2px !important; }
 
 .timer {
   color: var(--color-text);
-  font-size: clamp(2rem, 4vw, 3.3rem);
+  font-size: clamp(2.1rem, 5vw, 3.2rem);
   font-weight: 680;
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.055em;
@@ -141,190 +196,136 @@
 }
 
 .syncQuiet {
-  width: fit-content;
+  min-height: 40px;
   display: inline-flex;
   align-items: center;
   gap: 7px;
-  min-height: 28px;
+  padding: 0 var(--app-surface-padding);
+  border-top: 1px solid var(--color-border);
   color: var(--color-text-muted);
   font-size: 0.72rem;
 }
 
-.syncQuiet > span {
-  color: var(--color-green);
-  font-size: 0.76rem;
-}
-
-.syncQuiet strong {
-  color: var(--color-text-soft);
-  font-size: inherit;
-  font-weight: 680;
-}
+.syncQuiet > span { color: var(--color-green); }
+.syncQuiet strong { color: var(--color-text-soft); font-size: inherit; font-weight: 680; }
 
 .syncNotice {
+  min-width: 0;
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
-  gap: 12px;
-  padding: 11px 14px;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md, 8px);
-  background: var(--color-surface);
+  gap: var(--space-3);
+  border: 1px solid var(--color-border-strong);
+  border-left-width: 4px;
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+  background: var(--color-surface-strong);
 }
 
-.syncNotice > div {
-  display: flex;
-  align-items: baseline;
-  flex-wrap: wrap;
-  gap: 6px 12px;
-}
-
-.syncNotice strong {
-  color: var(--color-text);
-  font-size: 0.8rem;
-  font-weight: 760;
-}
-
-.syncNotice span {
-  color: var(--color-text-muted);
-  font-size: 0.76rem;
-  line-height: 1.4;
-}
+.syncNotice > div { min-width: 0; display: grid; gap: var(--space-1); }
+.syncNotice strong { color: var(--color-text); font-size: 0.86rem; font-weight: 760; }
+.syncNotice span { color: var(--color-text-muted); font-size: 0.78rem; line-height: 1.45; }
 
 .syncNotice button {
-  min-height: 36px;
-  padding: 0 11px;
-  border: 1px solid var(--color-border);
-  border-radius: 7px;
-  background: transparent;
-  color: var(--color-text-soft);
+  min-height: 44px;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+  padding: 0 var(--space-3);
+  background: var(--color-bg-elevated);
+  color: var(--color-text);
   cursor: pointer;
   font: inherit;
-  font-size: 0.74rem;
-  font-weight: 700;
+  font-size: 0.76rem;
+  font-weight: 720;
 }
 
-.syncNeutral {
-  border-color: var(--color-border-strong, var(--color-border));
-}
-
-.syncWarning {
-  border-color: rgba(241, 90, 8, 0.48);
-  background: rgba(241, 90, 8, 0.055);
-}
-
+.syncNeutral { border-left-color: var(--color-text-muted); }
+.syncWarning { border-left-color: var(--color-accent); }
 .syncWarning strong { color: var(--color-accent); }
-
-.syncDanger {
-  border-color: rgba(255, 130, 123, 0.5);
-  background: rgba(255, 130, 123, 0.05);
-}
-
-.syncDanger strong { color: var(--color-danger, #ff827b); }
-
-.queueError {
-  grid-column: 1 / -1;
-  color: var(--color-danger, #ff827b) !important;
-  font-size: 0.72rem !important;
-}
+.syncDanger { border-left-color: var(--color-danger); }
+.syncDanger strong { color: var(--color-danger); }
+.queueError { color: var(--color-danger) !important; }
 
 .exerciseStage {
-  min-width: 0;
-  max-width: 100%;
   display: grid;
-  gap: 12px;
-  padding-top: 10px;
-  box-sizing: border-box;
+  gap: var(--space-4);
+  padding: var(--app-surface-padding);
 }
 
 .exerciseHeading {
   display: flex;
-  align-items: center;
+  min-width: 0;
+  align-items: end;
   justify-content: space-between;
-  gap: 16px;
-  flex-wrap: wrap;
+  gap: var(--space-4);
 }
 
-.exerciseHeading > div:first-child {
-  display: grid;
-  gap: 6px;
-}
-
-.exerciseStage h2 {
-  font-size: 1.5rem;
-}
+.exerciseHeading > div:first-child { min-width: 0; display: grid; gap: var(--space-1); }
+.exerciseStage h2 { font-size: 1.45rem; line-height: 1.15; }
 
 .exerciseHeadingActions {
   display: flex;
+  flex: 0 0 auto;
   align-items: center;
-  gap: 8px;
-  flex-wrap: nowrap;
+  gap: var(--space-2);
 }
 
 .unitSwitch {
   display: inline-flex;
-  border: 1px solid var(--color-border);
-  border-radius: 7px;
   overflow: hidden;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-md);
 }
 
 .unitSwitch button {
-  min-width: 42px;
-  min-height: 38px;
+  min-width: 46px;
+  min-height: 44px;
   border: 0;
-  background: var(--color-surface);
+  background: var(--color-bg-elevated);
   color: var(--color-text-muted);
   cursor: pointer;
   font: inherit;
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   font-weight: 760;
 }
 
-.unitSwitch button + button {
-  border-left: 1px solid var(--color-border);
-}
-
-.unitSwitch button[aria-pressed='true'] {
-  background: var(--color-surface-strong);
-  color: var(--color-accent);
-}
+.unitSwitch button + button { border-left: 1px solid var(--color-border); }
+.unitSwitch button[aria-pressed='true'] { background: var(--color-accent-soft); color: var(--color-accent); }
 
 .addExerciseButton {
-  min-height: 40px;
-  padding: 0 12px;
+  min-height: 44px;
   border: 1px solid var(--color-accent);
-  border-radius: 7px;
+  border-radius: var(--radius-md);
+  padding: 0 var(--space-4);
   background: transparent;
   color: var(--color-accent);
   cursor: pointer;
   font: inherit;
-  font-size: 0.76rem;
+  font-size: 0.78rem;
   font-weight: 760;
 }
 
-.addExerciseButton:hover:not(:disabled) {
-  border-color: var(--color-accent-hover);
-  color: var(--color-accent-hover);
-}
-
-.addExerciseButton:disabled {
-  cursor: not-allowed;
-  opacity: 0.4;
-}
+.addExerciseButton:hover:not(:disabled) { background: var(--color-accent-soft); }
+.addExerciseButton:disabled { cursor: not-allowed; opacity: 0.4; }
 
 .exerciseMessage {
-  max-width: 560px;
-  margin: 6px 0 0;
+  min-height: 96px;
+  display: grid;
+  place-items: center;
+  margin: 0;
+  border-radius: var(--radius-md);
+  padding: var(--space-5);
+  background: var(--color-bg-elevated);
   color: var(--color-text-muted);
-  line-height: 1.55;
+  line-height: 1.5;
+  text-align: center;
 }
 
 .exerciseList {
   min-width: 0;
   width: 100%;
-  max-width: 100%;
   display: grid;
-  gap: 14px;
+  gap: var(--app-section-gap);
   margin: 0;
   padding: 0;
   list-style: none;
@@ -333,40 +334,34 @@
 .exerciseRow {
   min-width: 0;
   width: 100%;
-  max-width: 100%;
+  overflow: hidden;
   box-sizing: border-box;
   border: 1px solid var(--color-border);
-  border-radius: var(--radius-xl);
-  background: var(--color-surface);
-  overflow: hidden;
+  border-radius: var(--radius-lg);
+  background: var(--color-bg-elevated);
 }
 
-.exerciseExpanded {
-  border-color: var(--color-border-strong);
-}
+.exerciseExpanded { border-color: var(--color-border-strong); }
 
 .exerciseTopline {
   min-width: 0;
   width: 100%;
-  max-width: 100%;
-  min-height: 88px;
-  display: block;
+  min-height: 82px;
   box-sizing: border-box;
-  padding: 14px 16px;
-  background: var(--color-surface);
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-surface-strong);
 }
 
 .exerciseToggle {
   min-width: 0;
   width: 100%;
-  max-width: 100%;
-  min-height: 58px;
+  min-height: 56px;
   display: grid;
-  grid-template-columns: 58px minmax(0, 1fr) 36px;
+  grid-template-columns: 52px minmax(0, 1fr) 40px;
   align-items: center;
-  gap: 16px;
-  padding: 0;
+  gap: var(--space-3);
   border: 0;
+  padding: 0;
   background: transparent;
   color: inherit;
   cursor: pointer;
@@ -374,62 +369,47 @@
 }
 
 .exerciseIconFrame {
-  width: 58px;
-  height: 58px;
+  width: 52px;
+  height: 52px;
   display: grid;
   place-items: center;
-  border: 1px solid var(--color-border);
-  border-radius: 12px;
-  background: var(--color-surface-strong);
+  border-radius: var(--radius-md);
+  background: var(--color-bg-elevated);
 }
 
-.exerciseIcon {
-  width: 44px;
-  height: 44px;
-  display: block;
-  object-fit: contain;
-  opacity: 0.9;
-}
+.exerciseIcon { width: 40px; height: 40px; display: block; object-fit: contain; opacity: 0.92; }
 
 .exerciseIdentity {
   min-width: 0;
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
-  gap: 12px;
+  gap: var(--space-3);
 }
 
 .exerciseIdentity strong {
   min-width: 0;
   color: var(--color-text);
-  font-size: 1.05rem;
-  font-weight: 720;
+  font-size: 1.02rem;
   line-height: 1.25;
   overflow-wrap: anywhere;
 }
 
 .exerciseIdentity span {
   justify-self: end;
-  width: fit-content;
-  padding: 6px 9px;
-  border: 1px solid var(--color-border);
-  border-radius: 999px;
-  background: var(--color-bg-elevated);
   color: var(--color-text-muted);
-  font-size: 0.68rem;
-  font-weight: 700;
-  line-height: 1;
+  font-size: 0.7rem;
+  line-height: 1.25;
   white-space: nowrap;
 }
 
 .exerciseChevron {
-  width: 36px;
+  width: 40px;
   height: 44px;
   display: grid;
   place-items: center;
   justify-self: end;
   color: var(--color-text-soft);
-  font-size: 1rem;
 }
 
 .exerciseActions {
@@ -437,22 +417,22 @@
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  gap: 8px;
-  padding: 9px 16px;
-  border-top: 1px solid var(--color-border);
-  background: var(--color-bg-elevated);
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  border-top: 8px solid var(--color-bg);
+  background: var(--color-surface-strong);
 }
 
 .exerciseActions button {
   min-width: 44px;
-  min-height: 42px;
+  min-height: 44px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 7px;
-  padding: 0 12px;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
+  padding: 0 var(--space-3);
   background: transparent;
   color: var(--color-text-soft);
   cursor: pointer;
@@ -461,37 +441,16 @@
   font-weight: 680;
 }
 
-.exerciseActionLabel {
-  display: inline;
-}
-
-.exerciseActions button:hover:not(:disabled) {
-  border-color: var(--color-border-strong);
-  background: var(--color-surface-strong);
-  color: var(--color-text);
-}
-
-.exerciseActions button:disabled {
-  cursor: not-allowed;
-  opacity: 0.32;
-}
-
-.exerciseActions .removeExercise {
-  margin-left: 4px;
-  color: var(--color-text-muted);
-}
-
-.exerciseActions .removeExercise:hover:not(:disabled) {
-  border-color: var(--color-danger);
-  color: var(--color-danger);
-}
+.exerciseActions button:hover:not(:disabled) { border-color: var(--color-border-strong); background: var(--color-bg-elevated); color: var(--color-text); }
+.exerciseActions button:disabled { cursor: not-allowed; opacity: 0.32; }
+.exerciseActions .removeExercise { margin-left: var(--space-1); color: var(--color-text-muted); }
+.exerciseActions .removeExercise:hover:not(:disabled) { border-color: var(--color-danger); color: var(--color-danger); }
 
 .exerciseSets {
   min-width: 0;
   width: 100%;
-  max-width: 100%;
-  padding: 16px;
   box-sizing: border-box;
+  padding: var(--space-4);
   border-top: 1px solid var(--color-border);
   background: var(--color-bg-elevated);
 }
@@ -500,47 +459,38 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
-  width: 100%;
-  margin-top: 6px;
+  gap: var(--space-4);
+  border-left: 4px solid var(--color-danger);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+  background: rgba(255, 156, 156, 0.06);
 }
 
-.exerciseError p {
-  margin: 0;
-  color: var(--color-danger, #ff827b);
-  font-size: 0.82rem;
-}
-
-.exerciseError button {
-  border: 0;
-  background: transparent;
-  color: var(--color-text);
-  cursor: pointer;
-  font: inherit;
-  font-size: 0.76rem;
-  text-decoration: underline;
-  text-underline-offset: 3px;
-}
+.exerciseError p { margin: 0; color: var(--color-danger); font-size: 0.82rem; }
+.exerciseError button { min-height: 44px; border: 0; background: transparent; color: var(--color-text); cursor: pointer; font: inherit; text-decoration: underline; text-underline-offset: 3px; }
 
 .lifecycleActions {
+  position: sticky;
+  z-index: 8;
+  bottom: calc(var(--mobile-nav-height) + env(safe-area-inset-bottom));
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
-  align-items: stretch;
-  gap: 10px;
-  padding-top: 6px;
+  gap: var(--space-2);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-lg);
+  padding: var(--space-2);
+  background: var(--color-surface-strong);
+  box-shadow: 0 -10px 28px rgba(0, 0, 0, 0.34);
 }
 
-.lifecycleActions :global(.ui-button) {
-  width: 100%;
-  min-height: 50px;
-}
+.lifecycleActions :global(.ui-button) { width: 100%; min-height: 52px; }
 
 .cancelButton {
-  min-width: 150px;
-  min-height: 50px;
-  padding: 0 18px;
-  border: 1px solid var(--color-border-strong, var(--color-border));
-  border-radius: var(--radius-md, 8px);
+  min-width: 132px;
+  min-height: 52px;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+  padding: 0 var(--space-4);
   background: transparent;
   color: var(--color-text-soft);
   cursor: pointer;
@@ -549,502 +499,158 @@
   font-weight: 730;
 }
 
-.cancelButton:hover:not(:disabled) {
-  border-color: var(--color-danger, #ff827b);
-  color: var(--color-danger, #ff827b);
-}
+.cancelButton:hover:not(:disabled) { border-color: var(--color-danger); color: var(--color-danger); }
+.cancelButton:disabled { cursor: not-allowed; opacity: 0.45; }
 
-.cancelButton:disabled {
-  cursor: not-allowed;
-  opacity: 0.45;
-}
-
-.cancelBackdrop {
+.lifecycleBackdrop {
   position: fixed;
   inset: 0;
-  z-index: 80;
+  z-index: 100;
   display: grid;
   place-items: center;
-  padding: 20px;
-  background: rgba(0, 0, 0, 0.76);
+  padding: var(--space-5);
+  background: rgba(0, 0, 0, 0.78);
 }
 
-.cancelDialog {
-  width: min(430px, 100%);
+.lifecycleDialog {
+  width: min(440px, 100%);
   display: grid;
-  gap: 14px;
-  padding: 24px;
-  border: 1px solid var(--color-border-strong, var(--color-border));
-  border-radius: var(--radius-xl, 16px);
+  gap: var(--space-3);
+  box-sizing: border-box;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-lg);
+  padding: var(--app-surface-padding);
   background: var(--color-surface-strong);
 }
 
-.cancelDialog h2 {
-  font-size: 1.55rem;
-}
-
-.cancelDialog > p:not(.kicker) {
-  margin: 0;
-  color: var(--color-text-muted);
-  font-size: 0.88rem;
-  line-height: 1.5;
-}
-
-.cancelDialogActions {
-  display: grid;
-  gap: 9px;
-  margin-top: 4px;
-}
+.dialogHandle { display: none; }
+.lifecycleDialog h2 { font-size: 1.55rem; line-height: 1.15; }
+.lifecycleDialog > p:not(.kicker) { margin: 0; color: var(--color-text-soft); font-size: 0.9rem; line-height: 1.5; }
+.lifecycleDialogActions { display: grid; gap: var(--space-2); margin-top: var(--space-1); }
 
 .keepWorkoutButton,
-.confirmCancelButton {
-  min-height: 48px;
-  border-radius: var(--radius-md, 8px);
+.confirmCancelButton,
+.confirmFinishButton {
+  min-height: 50px;
+  border-radius: var(--radius-md);
   cursor: pointer;
   font: inherit;
   font-size: 0.82rem;
   font-weight: 760;
 }
 
-.keepWorkoutButton {
-  border: 1px solid var(--color-accent);
-  background: var(--color-accent);
-  color: #fff;
-}
-
-.keepWorkoutButton:hover:not(:disabled) {
-  background: var(--color-accent-hover);
-  border-color: var(--color-accent-hover);
-}
-
-.confirmCancelButton {
-  border: 1px solid rgba(255, 130, 123, 0.45);
-  background: rgba(255, 130, 123, 0.055);
-  color: var(--color-danger, #ff827b);
-}
-
-.confirmCancelButton:hover:not(:disabled) {
-  border-color: var(--color-danger, #ff827b);
-}
-
+.keepWorkoutButton { border: 1px solid var(--color-border-strong); background: var(--color-bg-elevated); color: var(--color-text); }
+.keepWorkoutButton:hover:not(:disabled) { border-color: var(--color-text-muted); }
+.confirmFinishButton { border: 1px solid var(--color-accent); background: var(--color-accent); color: #111; }
+.confirmFinishButton:hover:not(:disabled) { border-color: var(--color-accent-hover); background: var(--color-accent-hover); }
+.confirmCancelButton { border: 1px solid rgba(255, 156, 156, 0.48); background: rgba(255, 156, 156, 0.06); color: var(--color-danger); }
+.confirmCancelButton:hover:not(:disabled) { border-color: var(--color-danger); }
 .keepWorkoutButton:disabled,
-.confirmCancelButton:disabled {
-  cursor: not-allowed;
-  opacity: 0.5;
-}
+.confirmCancelButton:disabled,
+.confirmFinishButton:disabled { cursor: not-allowed; opacity: 0.5; }
 
 .error {
-  margin: 4px 0 0;
-  color: var(--color-danger, #ff827b);
+  margin: 0;
+  border-left: 4px solid var(--color-danger);
+  border-radius: var(--radius-sm);
+  padding: var(--space-3);
+  background: rgba(255, 156, 156, 0.06);
+  color: var(--color-danger);
   font-size: 0.82rem;
 }
 
-.startingClock {
-  width: min(260px, 100%);
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 18px;
-  padding: 10px 0;
-  border-top: 1px solid var(--color-border);
-  border-bottom: 1px solid var(--color-border);
-  color: var(--color-text-muted);
-  font-size: 0.76rem;
+@media (min-width: 700px) {
+  .lifecycleActions { position: static; grid-template-columns: minmax(0, 1fr) auto; box-shadow: none; }
 }
 
-.startingClock time {
-  color: var(--color-text);
-  font-size: 1.05rem;
-  font-weight: 720;
-  font-variant-numeric: tabular-nums;
-}
+@media (max-width: 699px) {
+  .statePage,
+  .start { min-height: calc(100dvh - var(--shell-header-height) - var(--mobile-nav-height) - (2 * var(--space-4))); }
 
-.startActions {
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-}
+  .startPanel,
+  .recoveryPanel,
+  .start { margin: 0; }
 
-@media (max-width: 860px) {
-  .active {
-    padding-inline: 16px;
-  }
+  .startActions { grid-template-columns: 1fr; }
 
-  .workoutHero {
-    height: 152px;
-  }
-
-  .sessionMeta {
-    grid-template-columns: minmax(170px, 1.2fr) repeat(2, minmax(130px, 0.8fr));
-  }
-
-  .sessionMeta > div {
-    min-height: 76px;
-    padding: 11px 14px;
-  }
-}
-
-@media (max-width: 620px) {
-  .start,
-  .active {
-    width: 100%;
-    max-width: 100%;
-    padding-inline: 12px;
-    box-sizing: border-box;
-  }
-
-  .workoutContent {
-    min-width: 0;
-    width: 100%;
-    max-width: 100%;
-    gap: 12px;
-  }
-
-  .activeHeader {
-    align-items: center;
-    gap: 10px;
-  }
-
-  .activeTitle {
-    min-width: 0;
-  }
-
-  .activeHeader h1 {
-    font-size: 1.38rem;
-    line-height: 1.12;
-  }
-
-  .timerControl {
-    min-width: 82px;
-    min-height: 44px;
-    padding-inline: 11px;
-  }
-
-  .workoutHero {
-    width: 100%;
-    height: auto;
-    aspect-ratio: 16 / 5;
-    min-height: 112px;
-    max-height: 136px;
-    object-position: center 56%;
-  }
-
-  .sessionMeta {
-    grid-template-columns: 1fr 1fr;
-  }
-
-  .sessionMeta > div {
-    min-height: 58px;
-    padding: 9px 10px;
-  }
-
-  .sessionMeta > div + div {
-    border-left: 0;
-  }
-
-  .elapsedMeta {
-    grid-column: 1 / -1;
-    min-height: 66px !important;
-    border-bottom: 1px solid var(--color-border);
-  }
-
-  .sessionMeta > div:nth-child(3) {
-    border-left: 1px solid var(--color-border);
-  }
-
-  .timer {
-    font-size: 2.15rem;
-  }
-
-  .sessionMeta span {
-    font-size: 0.57rem;
-    letter-spacing: 0.045em;
-  }
-
-  .sessionMeta strong {
-    font-size: 0.79rem;
-  }
-
-  .syncQuiet {
-    min-height: 24px;
-    font-size: 0.69rem;
-  }
-
-  .syncNotice {
-    grid-template-columns: 1fr;
-    gap: 8px;
-    padding: 10px 11px;
-  }
-
-  .syncNotice > div {
-    display: grid;
-    gap: 3px;
-  }
-
-  .syncNotice button {
-    min-height: 44px;
-    width: fit-content;
-  }
-
-  .exerciseStage {
-    min-width: 0;
-    width: 100%;
-    max-width: 100%;
-    gap: 10px;
-    padding-top: 6px;
-  }
-
-  .exerciseHeading {
-    display: grid;
-    grid-template-columns: 1fr;
-    align-items: start;
-    gap: 10px;
-  }
-
-  .exerciseHeadingActions {
-    width: 100%;
-    min-width: 0;
-    display: grid;
-    grid-template-columns: auto minmax(0, 1fr);
-    align-items: stretch;
-    gap: 8px;
-  }
-
-  .unitSwitch {
-    min-width: 94px;
-  }
-
-  .unitSwitch button {
-    min-width: 46px;
-    min-height: 44px;
-  }
-
-  .addExerciseButton {
-    width: 100%;
-    min-width: 0;
-    min-height: 44px;
-  }
-
-  .exerciseStage h2 {
-    font-size: 1.34rem;
-  }
-
-  .exerciseList {
-    min-width: 0;
-    width: 100%;
-    max-width: 100%;
-    gap: 12px;
-  }
-
-  .exerciseRow {
-    min-width: 0;
-    width: 100%;
-    max-width: 100%;
-    overflow: visible;
-    box-sizing: border-box;
-    border-radius: 14px;
-  }
-
-  .exerciseExpanded {
-    overflow: visible;
-  }
-
-  .exerciseExpanded .exerciseTopline {
+  .sessionPanel {
     position: sticky;
-    top: calc(var(--shell-header-height) + 4px);
-    z-index: 4;
-    border-bottom: 1px solid var(--color-border);
-    border-radius: 14px 14px 0 0;
+    top: calc(var(--shell-header-height) + var(--space-2));
+    z-index: 6;
   }
 
-  .exerciseTopline {
-    min-width: 0;
-    width: 100%;
-    max-width: 100%;
-    min-height: 78px;
-    padding: 11px 12px;
-    box-sizing: border-box;
-    border-radius: 14px;
+  .activeHeader { padding: var(--space-3) var(--space-4); }
+  .activeHeader h1 { font-size: 1.32rem; }
+  .timerControl { min-width: 80px; min-height: 44px; padding-inline: 10px; }
+
+  .sessionMeta {
+    grid-template-columns: minmax(0, 1.2fr) repeat(2, minmax(0, 0.8fr));
+    border-top-width: 6px;
   }
 
-  .exerciseToggle {
-    min-width: 0;
-    width: 100%;
-    max-width: 100%;
-    min-height: 54px;
-    grid-template-columns: 50px minmax(0, 1fr) 36px;
-    gap: 11px;
-  }
+  .sessionMeta > div { min-height: 58px; padding: 9px var(--space-3); }
+  .timer { font-size: clamp(1.65rem, 8.5vw, 2.15rem); }
+  .sessionMeta span { font-size: 0.56rem; letter-spacing: 0.045em; }
+  .sessionMeta strong { overflow: hidden; font-size: 0.74rem; text-overflow: ellipsis; white-space: nowrap; }
+  .syncQuiet { min-height: 34px; padding-inline: var(--space-4); }
 
-  .exerciseIconFrame {
-    width: 50px;
-    height: 50px;
-    border-radius: 11px;
-  }
+  .syncNotice { grid-template-columns: 1fr; }
+  .syncNotice button { width: 100%; }
 
-  .exerciseIcon {
-    width: 38px;
-    height: 38px;
-  }
+  .exerciseStage { padding: var(--space-4); }
+  .exerciseHeading { display: grid; align-items: start; }
+  .exerciseHeadingActions { width: 100%; display: grid; grid-template-columns: auto minmax(0, 1fr); }
+  .addExerciseButton { width: 100%; min-width: 0; }
 
-  .exerciseIdentity {
-    min-width: 0;
-    grid-template-columns: 1fr;
-    justify-items: start;
-    gap: 7px;
-  }
-
-  .exerciseIdentity strong {
-    min-width: 0;
-    color: var(--color-text);
-    font-size: 1rem;
-    line-height: 1.24;
-    overflow-wrap: anywhere;
-  }
-
-  .exerciseIdentity span {
-    justify-self: start;
-    max-width: 100%;
-    padding: 5px 8px;
-    font-size: 0.64rem;
-    white-space: normal;
-    line-height: 1.15;
-  }
-
-  .exerciseChevron {
-    width: 36px;
-    min-height: 48px;
-  }
+  .exerciseTopline { min-height: 76px; padding: 10px var(--space-3); }
+  .exerciseToggle { min-height: 54px; grid-template-columns: 48px minmax(0, 1fr) 34px; gap: 10px; }
+  .exerciseIconFrame { width: 48px; height: 48px; }
+  .exerciseIcon { width: 37px; height: 37px; }
+  .exerciseIdentity { grid-template-columns: 1fr; justify-items: start; gap: 5px; }
+  .exerciseIdentity strong { font-size: 0.96rem; }
+  .exerciseIdentity span { justify-self: start; white-space: normal; }
+  .exerciseChevron { width: 34px; }
 
   .exerciseActions {
     display: grid;
-    grid-template-columns: 48px 48px minmax(0, 1fr);
-    align-items: center;
-    gap: 8px;
-    padding: 9px 12px;
-    border-top: 1px solid var(--color-border);
+    grid-template-columns: 44px 44px minmax(0, 1fr);
+    gap: var(--space-2);
+    padding: var(--space-2) var(--space-3);
+    border-top-width: 6px;
   }
 
-  .exerciseActions button {
-    width: 48px;
-    min-width: 48px;
-    min-height: 44px;
-    padding: 0;
-  }
+  .exerciseActions button { width: 44px; padding: 0; }
+  .exerciseActionLabel { display: none; }
+  .exerciseActions .removeExercise { width: auto; min-width: 88px; justify-self: end; margin-left: 0; padding-inline: var(--space-3); }
+  .exerciseSets { padding: var(--space-3); }
 
-  .exerciseActionLabel {
-    display: none;
-  }
+  .exerciseError { align-items: stretch; flex-direction: column; }
+  .exerciseError button { align-self: stretch; }
 
-  .exerciseActions .removeExercise {
-    width: auto;
-    min-width: 96px;
-    justify-self: end;
-    margin-left: 0;
-    padding-inline: 14px;
-    color: var(--color-text-muted);
-  }
-
-  .exerciseSets {
-    min-width: 0;
+  .lifecycleBackdrop { align-items: end; padding: 0; }
+  .lifecycleDialog {
     width: 100%;
-    max-width: 100%;
-    padding: 12px;
-    box-sizing: border-box;
-    overflow: visible;
-    border-radius: 0 0 14px 14px;
-  }
-
-  .exerciseError {
-    align-items: stretch;
-    flex-direction: column;
-    gap: 8px;
-  }
-
-  .exerciseError button {
-    min-height: 44px;
-    align-self: flex-start;
-  }
-
-  .lifecycleActions {
-    grid-template-columns: 1fr;
-    gap: 9px;
-  }
-
-  .lifecycleActions :global(.ui-button),
-  .cancelButton {
-    width: 100%;
-    min-height: 50px;
-  }
-
-  .cancelBackdrop {
-    align-items: end;
-    padding: 12px;
-  }
-
-  .cancelDialog {
-    width: 100%;
-    max-height: calc(100dvh - 24px);
+    max-height: calc(100dvh - env(safe-area-inset-top));
     overflow-y: auto;
-    padding: 20px;
+    border-width: 1px 0 0;
+    border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+    padding: var(--space-4) var(--app-page-gutter) calc(var(--space-5) + env(safe-area-inset-bottom));
   }
+
+  .dialogHandle { width: 38px; height: 4px; display: block; justify-self: center; border-radius: 999px; background: var(--color-border-strong); }
 }
 
-@media (max-width: 390px) {
-  .activeHeader {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
-  }
-
-  .activeHeader h1 {
-    font-size: 1.28rem;
-  }
-
-  .timerControl {
-    min-width: 76px;
-    padding-inline: 8px;
-  }
-
-  .workoutHero {
-    min-height: 108px;
-  }
-
-  .exerciseTopline {
-    padding-inline: 10px;
-  }
-
-  .exerciseToggle {
-    grid-template-columns: 46px minmax(0, 1fr) 32px;
-    gap: 9px;
-  }
-
-  .exerciseIconFrame {
-    width: 46px;
-    height: 46px;
-  }
-
-  .exerciseIcon {
-    width: 35px;
-    height: 35px;
-  }
-
-  .exerciseActions {
-    grid-template-columns: 44px 44px minmax(0, 1fr);
-    gap: 7px;
-    padding-inline: 10px;
-  }
-
-  .exerciseActions button {
-    width: 44px;
-    min-width: 44px;
-  }
-
-  .exerciseActions .removeExercise {
-    width: auto;
-    min-width: 88px;
-  }
-
-  .exerciseSets {
-    padding: 10px;
-  }
+@media (max-width: 360px) {
+  .activeHeader { gap: var(--space-2); padding-inline: var(--space-3); }
+  .activeHeader h1 { font-size: 1.18rem; }
+  .timerControl { min-width: 72px; padding-inline: 8px; }
+  .sessionMeta > div { padding-inline: 8px; }
+  .sessionMeta strong { font-size: 0.68rem; }
+  .exerciseStage { padding: var(--space-3); }
+  .exerciseTopline { padding-inline: 10px; }
+  .exerciseToggle { grid-template-columns: 44px minmax(0, 1fr) 30px; gap: 8px; }
+  .exerciseIconFrame { width: 44px; height: 44px; }
+  .exerciseIcon { width: 34px; height: 34px; }
+  .lifecycleActions { grid-template-columns: minmax(0, 1fr) auto; }
+  .cancelButton { min-width: 96px; padding-inline: 10px; }
 }

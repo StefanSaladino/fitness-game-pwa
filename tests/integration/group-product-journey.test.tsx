@@ -12,6 +12,7 @@ import {
   type GroupSummary,
   type ManagedGroupInvite,
   type PendingGroupInvite,
+  type GroupChatService,
 } from '../../src/features/groups';
 import { OnboardingScreen, type OnboardingInput, type OnboardingProfile } from '../../src/features/onboarding';
 import type { ExerciseProgressService } from '../../src/features/progress';
@@ -86,6 +87,21 @@ const socialService: GroupSocialService = {
     };
   },
   async setReaction() {},
+};
+
+const groupChatService: GroupChatService = {
+  loadMessages: vi.fn(async () => ({
+    items: [{
+      id: 'chat-integration', authorUserId: TEAMMATE_ID, username: 'alex', displayName: 'Alex', profilePictureUrl: null,
+      body: 'See you at the gym.', createdAt: '2026-08-23T21:00:00Z', deletedAt: null, canDelete: true,
+      reactions: { FIRE: 0, STRONG: 0, CLAP: 0, HEART: 0, LAUGH: 0 }, myReaction: null,
+    }],
+    nextCursor: null,
+  })),
+  postMessage: vi.fn(async () => 'chat-new'),
+  setReaction: vi.fn(async () => undefined),
+  deleteMessage: vi.fn(async () => undefined),
+  subscribe: vi.fn(() => () => undefined),
 };
 
 const snapshot: DashboardSnapshot = {
@@ -205,6 +221,7 @@ function JourneyHarness({ service, initialProfile = profile }: { service: GroupS
       {(groups, refreshGroups) => (
         <ProductController
           dashboardService={dashboardService}
+          groupChatService={groupChatService}
           groupService={service}
           groups={groups}
           onGroupsChanged={refreshGroups}
@@ -262,8 +279,10 @@ describe('group-to-product integration journey', () => {
     const user = userEvent.setup();
     const service = createMemoryGroupService();
     render(<OnboardingToGroupHarness service={service} />);
-    expect(await screen.findByRole('heading', { name: 'Set up your profile.' })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: 'Set up your profile' })).toBeInTheDocument();
     await user.type(screen.getByRole('textbox', { name: 'Username' }), 'stefan');
+    await user.click(screen.getByRole('button', { name: 'Continue' }));
+    await user.click(screen.getByRole('button', { name: 'Continue' }));
     await user.click(screen.getByRole('button', { name: 'Complete setup' }));
     expect(await screen.findByRole('heading', { name: 'Your lifting week' })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Groups are optional.' })).toBeInTheDocument();
@@ -281,7 +300,7 @@ describe('group-to-product integration journey', () => {
     await waitFor(() => expect(screen.getAllByText('Night Crew').length).toBeGreaterThan(0));
     await user.click(screen.getAllByRole('button', { name: 'Groups' })[0]!);
     expect(await screen.findByRole('heading', { name: 'Your crew' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Competition' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Open competition' })).toBeInTheDocument();
   });
 
   it('lets a solo user create a group later from Groups without blocking personal training first', async () => {
@@ -294,8 +313,9 @@ describe('group-to-product integration journey', () => {
     await user.type(screen.getByRole('textbox', { name: 'Group name' }), 'Iron Crew');
     await user.click(screen.getByRole('button', { name: 'Create group' }));
     expect(await screen.findByRole('heading', { name: 'Your crew' })).toBeInTheDocument();
+    await user.click(screen.getByRole('tab', { name: /Invites/ }));
     expect(screen.getByRole('button', { name: 'Send invite' })).toBeInTheDocument();
-    expect(screen.queryByRole('group', { name: 'Select group' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('combobox', { name: 'Group' })).not.toBeInTheDocument();
   });
 
   it('keeps memberships additive when an existing owner accepts another invitation', async () => {
@@ -307,9 +327,10 @@ describe('group-to-product integration journey', () => {
     await user.click(screen.getByRole('button', { name: 'Accept' }));
     await user.click(screen.getAllByRole('button', { name: 'Groups' })[0]!);
     expect(await screen.findByRole('heading', { name: 'Your crew' })).toBeInTheDocument();
-    const groupRail = screen.getByRole('group', { name: 'Select group' });
-    expect(within(groupRail).getByRole('button', { name: /^Iron Crew\b/i })).toBeInTheDocument();
-    expect(within(groupRail).getByRole('button', { name: /^Weekend Crew\b/i })).toBeInTheDocument();
+    const groupSelect = screen.getByRole('combobox', { name: 'Group' });
+    await user.click(groupSelect);
+    expect(screen.getByRole('option', { name: /^Iron Crew\b/i })).toBeInTheDocument();
+    expect(screen.getByRole('option', { name: /^Weekend Crew\b/i })).toBeInTheDocument();
   });
 
   it('retains owner administration across the integrated journey', async () => {
@@ -328,6 +349,9 @@ describe('group-to-product integration journey', () => {
     expect(within(memberDialog).getByRole('button', { name: 'Make admin' })).toBeInTheDocument();
     await user.click(within(memberDialog).getByRole('button', { name: 'Done' }));
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    await user.click(screen.getByRole('tab', { name: 'Chat' }));
+    expect(await screen.findByText('See you at the gym.')).toBeInTheDocument();
+    await user.click(screen.getByRole('tab', { name: /Invites/ }));
     expect(screen.getByRole('button', { name: 'Send invite' })).toBeInTheDocument();
   });
 
@@ -344,7 +368,7 @@ describe('group-to-product integration journey', () => {
     expect(await screen.findByRole('heading', { name: 'Your crew' })).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /^Manage / })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Send invite' })).not.toBeInTheDocument();
-    await user.click(screen.getByText('Name, ownership and membership'));
+    await user.click(screen.getByRole('tab', { name: 'Settings' }));
     expect(screen.getByRole('button', { name: 'Leave group' })).toBeInTheDocument();
   });
 
@@ -355,6 +379,7 @@ describe('group-to-product integration journey', () => {
     await screen.findByRole('heading', { name: 'Your lifting week' });
     await user.click(screen.getAllByRole('button', { name: 'Compete' })[0]!);
     expect(await screen.findByRole('heading', { name: 'Crew standings' })).toBeInTheDocument();
+    await user.click(screen.getByRole('tab', { name: 'Activity' }));
     expect(screen.getByRole('heading', { name: 'Highlights, not surveillance' })).toBeInTheDocument();
     await user.click(screen.getAllByRole('button', { name: 'Progress' })[0]!);
     expect(await screen.findByRole('heading', { name: 'Your lifting trend' })).toBeInTheDocument();

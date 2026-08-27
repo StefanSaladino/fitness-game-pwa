@@ -62,6 +62,10 @@ describe('CardioScreen', () => {
     expect(screen.getByRole('heading', { name: 'Log cardio' })).toBeInTheDocument();
     expect(screen.getByText(/never counts as a lifting day/i)).toBeInTheDocument();
     expect(screen.queryByRole('combobox', { name: 'Activity' })).not.toBeInTheDocument();
+    expect(document.querySelector('[data-cardio-surface="identity"]')).toHaveAttribute('data-app-surface', 'primary');
+    expect(document.querySelector('[data-cardio-surface="quick-log"]')).toHaveAttribute('data-app-surface', 'primary');
+    expect(document.querySelector('[data-cardio-surface="summary"]')).toHaveAttribute('data-app-surface', 'category');
+    expect(document.querySelector('[data-cardio-surface="history"]')).toHaveAttribute('data-app-surface', 'category');
 
     const activityRail = screen.getByRole('group', { name: 'Cardio activity' });
     expect(activityRail).toBeInTheDocument();

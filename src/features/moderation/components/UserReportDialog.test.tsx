@@ -20,7 +20,8 @@ describe('UserReportDialog', () => {
       />,
     );
 
-    await user.selectOptions(screen.getByLabelText('Category'), 'SAFETY');
+    await user.click(screen.getByRole('combobox', { name: 'Category' }));
+    await user.click(screen.getByRole('option', { name: 'Safety concern' }));
     await user.type(screen.getByLabelText('What happened?'), 'This concrete activity creates a safety concern.');
     await user.click(screen.getByRole('button', { name: 'Submit report' }));
 

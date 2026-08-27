@@ -148,6 +148,7 @@ function requiredMessageService(): PlatformMessageService {
     })),
     markRead: vi.fn(async () => undefined),
     acknowledge: vi.fn(async () => undefined),
+    deleteMessage: vi.fn(async () => undefined),
   };
 }
 
@@ -155,6 +156,7 @@ afterEach(() => cleanup());
 
 describe('Phase 15.6D Settings integration gate', () => {
   it('keeps ordinary Settings usable with zero group memberships and no admin route clue', async () => {
+    const user = userEvent.setup();
     const preferences = preferenceService({ ...basePreferences, notificationsEnabled: false });
     const push = pushService({ capability: 'unsupported', permission: 'unsupported', subscribed: false, activeDeviceCount: 0 });
 
@@ -174,9 +176,13 @@ describe('Phase 15.6D Settings integration gate', () => {
       />,
     );
 
-    expect(screen.getByRole('heading', { name: 'Profile & settings' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Settings' })).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Groups' }));
     expect(await screen.findByText(/You are not currently in a group/)).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: 'Notifications' })).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Back' }));
+    await user.click(screen.getByRole('button', { name: 'Notifications' }));
+    expect(screen.getByRole('heading', { name: 'Notifications', level: 1 })).toBeInTheDocument();
+    expect(await screen.findByRole('switch', { name: 'Optional notifications' })).toBeInTheDocument();
     expect(screen.queryByRole('heading', { name: 'Administration' })).not.toBeInTheDocument();
     expect(screen.queryByText(/Platform administration is available/)).not.toBeInTheDocument();
   });
@@ -193,6 +199,7 @@ describe('Phase 15.6D Settings integration gate', () => {
       </>,
     );
 
+    await user.click(await screen.findByRole('button', { name: 'Messages, 1 unread' }));
     expect(await screen.findByText('Security action required')).toBeInTheDocument();
     const master = await screen.findByRole('switch', { name: 'Optional notifications' });
     const badge = screen.getByRole('switch', { name: 'Badges & achievements' });

@@ -31,3 +31,15 @@ test('phone conflict locks edits until the user explicitly chooses the server ve
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
   expect(overflow).toBeLessThanOrEqual(1);
 });
+
+test('320px workout rows and recovery actions remain contained', async ({ page }) => {
+  await page.setViewportSize({ width: 320, height: 720 });
+  await page.goto('/reliability.e2e.html?state=offline');
+
+  await expect(page.getByRole('heading', { name: 'Workout in progress' })).toBeVisible();
+  await expect(page.getByRole('spinbutton', { name: 'Set 1 weight in kg' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Mark set 1 complete' })).toBeVisible();
+
+  const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+  expect(overflow).toBeLessThanOrEqual(1);
+});

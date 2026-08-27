@@ -109,8 +109,8 @@
 
 .home {
   display: grid;
-  gap: 30px;
-  padding: 20px 26px 40px;
+  gap: var(--app-category-gap);
+  padding: var(--space-5) 26px 40px;
 }
 
 .searchAllButton {
@@ -121,9 +121,9 @@
   align-items: center;
   gap: 10px;
   padding: 10px 14px;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm);
-  background: var(--color-surface);
+  border: 1px solid rgba(241, 90, 8, 0.3);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-strong);
   color: var(--color-text);
   cursor: pointer;
   font: inherit;
@@ -181,6 +181,18 @@
 
 .homeRecents {
   min-width: 0;
+  overflow: hidden;
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+  background: var(--color-surface);
+}
+
+.browseSurface {
+  min-width: 0;
+  overflow: hidden;
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+  background: var(--color-surface);
 }
 
 .detailToolbar {
@@ -270,17 +282,22 @@
 .results {
   min-width: 0;
   flex: 0 0 auto;
+  display: grid;
+  gap: var(--app-section-gap);
   overflow-x: hidden;
-  padding: 2px 26px 36px;
+  padding: var(--space-4) 26px 36px;
 }
 
 .group {
-  padding-top: 20px;
+  min-width: 0;
+  overflow: hidden;
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+  background: var(--color-surface);
 }
 
 .group + .group {
-  margin-top: 10px;
-  border-top: 1px solid var(--color-border);
+  margin-top: 0;
 }
 
 .groupHeading {
@@ -471,7 +488,7 @@
 
   .home {
     min-width: 0;
-    gap: 26px;
+    gap: var(--app-category-gap);
     padding: 14px 12px calc(28px + env(safe-area-inset-bottom));
   }
 
@@ -501,13 +518,14 @@
     max-width: 100%;
     overflow-x: visible;
     box-sizing: border-box;
-    padding: 2px 12px calc(30px + env(safe-area-inset-bottom));
+    gap: var(--app-section-gap);
+    padding: var(--space-3) 12px calc(30px + env(safe-area-inset-bottom));
   }
 
   .group {
     min-width: 0;
     width: 100%;
-    padding-top: 16px;
+    padding: var(--space-3);
   }
 
   .flatResults {
@@ -583,6 +601,10 @@
   .results {
     padding-inline: 10px;
   }
+
+  .homeRecents,
+  .browseSurface,
+  .group { padding: 10px; }
 
 
   .resultRow {

@@ -32,7 +32,7 @@ export function AppStatusSection({ service }: Props) {
   };
 
   return (
-    <section className={styles.section} aria-labelledby="settings-app-heading">
+    <section className={styles.section} aria-labelledby="settings-app-heading" data-app-surface="category">
       <div className={styles.sectionHeading}>
         <div>
           <p className={styles.eyebrow}>PWA</p>

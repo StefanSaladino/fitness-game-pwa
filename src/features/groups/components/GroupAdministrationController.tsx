@@ -5,6 +5,7 @@ import type { GroupService } from '../groupService';
 import { useCreateGroup } from '../hooks/useCreateGroup';
 import { useGroupAdministration } from '../hooks/useGroupAdministration';
 import type { CreateGroupInput, GroupSummary } from '../model';
+import type { GroupChatService } from '../chat';
 import { GroupAdministrationScreen } from './GroupAdministrationScreen';
 import styles from './GroupAdministrationScreen.module.css';
 
@@ -18,6 +19,7 @@ interface GroupAdministrationControllerProps {
   onNavigate: (section: AppSection) => void;
   onSignOut: () => void;
   service?: GroupService;
+  chatService?: GroupChatService;
 }
 
 export function GroupAdministrationController(props: GroupAdministrationControllerProps) {
@@ -62,6 +64,7 @@ export function GroupAdministrationController(props: GroupAdministrationControll
   return (
     <GroupAdministrationScreen
       busyAction={administration.busyAction}
+      chatService={props.chatService}
       createGroupError={createState.error}
       creatingGroup={createState.submitting}
       error={administration.error}

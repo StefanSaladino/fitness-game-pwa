@@ -4,12 +4,13 @@ This document is the source of truth for environment configuration in the Fitnes
 
 ## 1. What the React PWA needs
 
-The browser application needs only three environment variables:
+The browser application needs three core environment variables and one optional public feature switch:
 
 ```env
 VITE_SUPABASE_URL=https://YOUR_PROJECT_REF.supabase.co
 VITE_SUPABASE_PUBLISHABLE_KEY=sb_publishable_REPLACE_ME
 VITE_APP_URL=http://localhost:5173
+VITE_NETLIFY_CAPACITY_ENABLED=false
 ```
 
 ### `VITE_SUPABASE_URL`
@@ -52,6 +53,10 @@ VITE_APP_URL=https://example.com
 
 Do not include a trailing path such as `/reset-password`; the app adds that route when required.
 
+### `VITE_NETLIFY_CAPACITY_ENABLED`
+
+Leave this `false` until the server-side Netlify capacity Edge Function and its server-only provider credentials are configured. When deliberately enabled, the browser may invoke that authenticated server boundary; the value itself is only a public boolean and must never contain a Netlify access token.
+
 ## 2. Create your local environment file
 
 From the project root:
@@ -74,6 +79,7 @@ Then open `.env.local` and replace the placeholders with your hosted Supabase va
 VITE_SUPABASE_URL=https://YOUR_PROJECT_REF.supabase.co
 VITE_SUPABASE_PUBLISHABLE_KEY=sb_publishable_YOUR_REAL_KEY
 VITE_APP_URL=http://localhost:5173
+VITE_NETLIFY_CAPACITY_ENABLED=false
 ```
 
 Restart `npm run dev` whenever you change Vite environment variables.
@@ -162,9 +168,10 @@ When we deploy to a host, add these values through the hosting provider's enviro
 VITE_SUPABASE_URL
 VITE_SUPABASE_PUBLISHABLE_KEY
 VITE_APP_URL
+VITE_NETLIFY_CAPACITY_ENABLED
 ```
 
-The production build will receive them from the deployment environment.
+The production build will receive them from the deployment environment. Keep the Netlify switch `false` or omit it until that server adapter is intentionally configured.
 
 ## 7. If a secret is accidentally committed
 

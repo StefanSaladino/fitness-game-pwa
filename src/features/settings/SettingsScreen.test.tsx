@@ -8,7 +8,7 @@ import type { GroupService } from '../groups/groupService';
 import type { ProfilePictureService } from '../profile-picture/profilePictureService';
 import type { AccountDeletionService } from './accountDeletionService';
 import type { NotificationPreferenceService, NotificationPreferences } from './notificationPreferenceService';
-import type { SettingsService } from './settingsService';
+import type { ProfileSettingsInput, SettingsService } from './settingsService';
 import { SettingsScreen } from './SettingsScreen';
 
 const profile = {
@@ -102,13 +102,18 @@ const shared = {
 };
 
 describe('SettingsScreen foundation', () => {
-  it('shows all real ordinary-account sections and account identity', async () => {
+  it('shows an app-style category index and drills into real account sections', async () => {
+    const user = userEvent.setup();
     render(<SettingsScreen {...shared} accessService={access(false)} memberSince="2026-01-01T00:00:00Z" profile={profile} userEmail="stefan@example.com" />);
 
-    for (const heading of ['Profile picture', 'Profile', 'Training', 'Notifications', 'Security', 'Groups', 'Privacy & data', 'App status']) {
-      expect(screen.getByRole('heading', { name: heading })).toBeInTheDocument();
+    for (const destination of ['Profile', 'Security', 'Training', 'Notifications', 'Groups', 'Privacy & data', 'App status']) {
+      expect(screen.getByRole('button', { name: destination })).toBeInTheDocument();
     }
     expect(screen.getByText('stefan@example.com')).toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: 'Profile picture' })).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Groups' }));
+    expect(screen.getByRole('heading', { name: 'Groups', level: 1 })).toBeInTheDocument();
     expect(await screen.findByText('Iron Crew')).toBeInTheDocument();
     expect(screen.queryByRole('checkbox')).not.toBeInTheDocument();
     expect(screen.queryByText(/Export data/i)).not.toBeInTheDocument();
@@ -116,16 +121,30 @@ describe('SettingsScreen foundation', () => {
 
   it('persists validated profile and training choices through the settings service', async () => {
     const user = userEvent.setup();
-    const update = vi.fn(async () => ({ ...profile, displayName: 'Stefan Saladino', preferredWeightUnit: 'LB' as const }));
+    const update = vi.fn(async (input: ProfileSettingsInput) => ({
+      ...profile,
+      displayName: input.displayName,
+      preferredWeightUnit: input.preferredWeightUnit,
+      timezone: input.timezone,
+      username: input.username,
+      weeklyWorkoutTarget: input.weeklyTarget,
+    }));
     const settingsService = { load: vi.fn(), update } as SettingsService;
     render(<SettingsScreen {...shared} accessService={access(false)} profile={profile} settingsService={settingsService} />);
 
+    await user.click(screen.getByRole('button', { name: 'Profile' }));
     await user.clear(screen.getByLabelText('Display name'));
     await user.type(screen.getByLabelText('Display name'), 'Stefan Saladino');
-    await user.selectOptions(screen.getByLabelText('Preferred weight unit'), 'LB');
-    await user.click(screen.getByRole('button', { name: 'Save profile & training' }));
+    await user.click(screen.getByRole('button', { name: 'Save profile' }));
+    await waitFor(() => expect(update).toHaveBeenCalledWith(expect.objectContaining({ displayName: 'Stefan Saladino' })));
 
-    await waitFor(() => expect(update).toHaveBeenCalledWith(expect.objectContaining({
+    await user.click(screen.getByRole('button', { name: 'Back' }));
+    await user.click(screen.getByRole('button', { name: 'Training' }));
+    await user.click(screen.getByRole('combobox', { name: 'Preferred weight unit' }));
+    await user.click(screen.getByRole('option', { name: 'Pounds (lb)' }));
+    await user.click(screen.getByRole('button', { name: 'Save training preferences' }));
+
+    await waitFor(() => expect(update).toHaveBeenLastCalledWith(expect.objectContaining({
       displayName: 'Stefan Saladino', preferredWeightUnit: 'LB', weeklyTarget: 4,
     })));
     expect(await screen.findByText('Profile settings saved.')).toBeInTheDocument();
@@ -139,6 +158,7 @@ describe('SettingsScreen foundation', () => {
     };
     render(<SettingsScreen {...shared} accessService={access(false)} deletionService={deletionService} profile={profile} />);
 
+    fireEvent.click(screen.getByRole('button', { name: 'Privacy & data' }));
     fireEvent.click(screen.getByRole('button', { name: 'Start account deletion' }));
     expect(await screen.findByText('DELETE stefan')).toBeInTheDocument();
     const permanent = screen.getByRole('button', { name: 'Delete permanently' });
@@ -151,23 +171,26 @@ describe('SettingsScreen foundation', () => {
   });
 
   it('shows the Administration entry only after positive ACTIVE platform-admin authorization', async () => {
+    const user = userEvent.setup();
     render(<SettingsScreen {...shared} accessService={access(true)} profile={profile} />);
-    expect(await screen.findByRole('heading', { name: 'Administration' })).toBeInTheDocument();
+    await user.click(await screen.findByRole('button', { name: 'Administration' }));
+    expect(await screen.findByRole('heading', { name: 'Administration', level: 1 })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Platform administration' })).toBeInTheDocument();
   });
 
   it('leaves no admin heading or placeholder for ordinary users', async () => {
     render(<SettingsScreen {...shared} accessService={access(false)} profile={profile} />);
-    await screen.findByText('Weekly lifting target');
+    await screen.findByRole('button', { name: 'Training' });
     expect(screen.queryByRole('heading', { name: 'Administration' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Administration' })).not.toBeInTheDocument();
     expect(screen.queryByText(/Platform administration is available/)).not.toBeInTheDocument();
   });
 
   it('keeps ordinary Settings usable and hides Administration when the access check fails', async () => {
     const failed: PlatformAccessService = { load: async () => { throw new Error('offline'); } };
     render(<SettingsScreen {...shared} accessService={failed} profile={profile} />);
-    expect(screen.getByRole('heading', { name: 'Profile & settings' })).toBeInTheDocument();
-    await screen.findByText('Weekly lifting target');
+    expect(screen.getByRole('heading', { name: 'Settings' })).toBeInTheDocument();
+    await screen.findByRole('button', { name: 'Training' });
     expect(screen.queryByRole('heading', { name: 'Administration' })).not.toBeInTheDocument();
   });
 });

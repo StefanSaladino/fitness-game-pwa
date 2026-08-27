@@ -1,9 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
-import { AppShell, type AppSection } from '../../../components/layout';
-import { Button, TextField } from '../../../components/ui';
+import groupBanner from '../../../assets/fitness/top-set-dumbbell-grip.jpg';
+import { AppShell, DestinationBanner, type AppSection } from '../../../components/layout';
+import { Button, SelectField, TextField } from '../../../components/ui';
 import type { OnboardingProfile } from '../../onboarding';
 import { ProfilePicture } from '../../profile-picture';
 import type { CreateGroupInput, GroupMember, GroupSummary, ManagedGroupInvite, PendingGroupInvite } from '../model';
+import { GroupChatPanel, type GroupChatService } from '../chat';
 import { CreateGroupForm } from './CreateGroupForm';
 import styles from './GroupAdministrationScreen.module.css';
 
@@ -31,9 +33,11 @@ interface Props {
   onRemoveMember: (id: string) => Promise<unknown>;
   onTransferOwnership: (id: string) => Promise<unknown>;
   onLeaveGroup: () => Promise<unknown>;
+  chatService?: GroupChatService;
 }
 
 type ConfirmAction = 'remove' | 'transfer' | null;
+type GroupView = 'members' | 'chat' | 'invites' | 'settings';
 
 function canRemove(actor: GroupSummary['role'], target: GroupMember) {
   if (target.role === 'OWNER') return false;
@@ -76,10 +80,12 @@ export function GroupAdministrationScreen(props: Props) {
     onRemoveMember,
     onTransferOwnership,
     onLeaveGroup,
+    chatService,
   } = props;
 
   const [name, setName] = useState(group.name);
   const [recipient, setRecipient] = useState('');
+  const [view, setView] = useState<GroupView>('members');
   const [managedMemberId, setManagedMemberId] = useState<string | null>(null);
   const [confirmAction, setConfirmAction] = useState<ConfirmAction>(null);
   const pageContentRef = useRef<HTMLDivElement | null>(null);
@@ -186,22 +192,24 @@ export function GroupAdministrationScreen(props: Props) {
       userLabel={profile.displayName}
       userMeta={`@${profile.username} · ${profile.weeklyWorkoutTarget} lift days`}
     >
-      <div className={styles.page}>
+      <div className={styles.page} data-groups-composition>
         <div ref={pageContentRef} aria-hidden={manageOpen || undefined} className={styles.pageContent}>
-          <header className={styles.header}>
-            <div>
+          <DestinationBanner className={styles.headerSurface} data-groups-surface="identity" imagePosition="center 54%" imageSrc={groupBanner}>
+            <div className={styles.headerCopy}>
               <p className={styles.kicker}>GROUPS</p>
               <h1>{group.name}</h1>
-              <p className={styles.groupMeta}>{members.length} active member{members.length === 1 ? '' : 's'} · {group.role.toLowerCase()}</p>
+              <p>{members.length} active member{members.length === 1 ? '' : 's'} · {group.role.toLowerCase()}</p>
             </div>
-            <button className={styles.competitionLink} onClick={() => onNavigate('compete')} type="button">Competition</button>
-          </header>
+            <Button className={styles.competitionLink} onClick={() => onNavigate('compete')} variant="secondary">
+              Open competition
+            </Button>
+          </DestinationBanner>
 
-          <section className={styles.groupIdentity} aria-label={`${group.name} identity`}>
+          <section className={styles.contextSurface} aria-label={`${group.name} context`} data-groups-surface="context">
             <span className={styles.groupMonogram} aria-hidden="true">{initials(group.name)}</span>
-            <div className={styles.groupIdentityCopy}>
+            <div className={styles.contextIdentity}>
               <strong>{group.name}</strong>
-              <span>Selected group</span>
+              <span>{group.memberCount} member{group.memberCount === 1 ? '' : 's'} · {group.role.toLowerCase()}</span>
             </div>
             <div className={styles.memberPreview} aria-label={`${members.length} active members`}>
               <div className={styles.memberAvatarStack}>
@@ -216,184 +224,212 @@ export function GroupAdministrationScreen(props: Props) {
               </div>
               <span>{members.length} active</span>
             </div>
+            {groups.length > 1 && (
+              <SelectField
+                className={styles.groupSelect}
+                compact
+                label="Group"
+                labelHidden
+                onChange={(event) => onSelectGroup(event.target.value)}
+                value={group.id}
+              >
+                {groups.map((item) => (
+                  <option key={item.id} value={item.id}>
+                    {item.name} · {item.memberCount} · {item.role.toLowerCase()}
+                  </option>
+                ))}
+              </SelectField>
+            )}
           </section>
-
-          {groups.length > 1 && (
-            <section className={styles.groupSwitcher} aria-labelledby="your-groups-heading">
-              <div className={styles.sectionHeadingCompact}>
-                <p className={styles.sectionLabel} id="your-groups-heading">Your groups</p>
-              </div>
-              <div aria-label="Select group" className={styles.groupRail} role="group">
-                {groups.map((item) => {
-                  const selected = item.id === group.id;
-                  return (
-                    <button
-                      aria-pressed={selected}
-                      className={styles.groupRailButton}
-                      key={item.id}
-                      onClick={() => onSelectGroup(item.id)}
-                      type="button"
-                    >
-                      <strong>{item.name}</strong>
-                      <span>{item.memberCount} · {item.role.toLowerCase()}</span>
-                    </button>
-                  );
-                })}
-              </div>
-            </section>
-          )}
 
           {error && <p className={styles.error} role="alert">{error}</p>}
 
-          {pendingInvites.length > 0 && (
-            <section className={styles.section} aria-labelledby="incoming-heading">
-              <div className={styles.sectionHeadingCompact}>
-                <p className={styles.sectionLabel}>Pending invitation{pendingInvites.length === 1 ? '' : 's'}</p>
-                <h2 id="incoming-heading">For you</h2>
+          <nav className={styles.viewTabs} aria-label="Group sections">
+            {([
+              ['members', 'Members', members.length],
+              ['chat', 'Chat', null],
+              ['invites', 'Invites', pendingInvites.length + invites.length],
+              ['settings', 'Settings', null],
+            ] as const).map(([nextView, label, count]) => (
+              <button
+                aria-selected={view === nextView}
+                key={nextView}
+                onClick={() => setView(nextView)}
+                role="tab"
+                type="button"
+              >
+                <span>{label}</span>{count !== null && count > 0 ? <b>{count}</b> : null}
+              </button>
+            ))}
+          </nav>
+
+          {view === 'members' && (
+            <section className={styles.sectionSurface} aria-labelledby="members-heading" data-groups-surface="members" role="tabpanel">
+              <div className={styles.sectionHeadingRow}>
+                <div>
+                  <p className={styles.sectionLabel}>Members</p>
+                  <h2 id="members-heading">Your crew</h2>
+                </div>
+                <span>{members.length} active</span>
               </div>
-              <ul className={styles.inviteList}>
-                {pendingInvites.map((invite) => (
-                  <li className={styles.inviteRow} key={invite.id}>
-                    <div className={styles.inviteMeta}>
-                      <strong>{invite.groupName}</strong>
-                      <span>From {invite.invitedByDisplayName} (@{invite.invitedByUsername})</span>
-                    </div>
-                    <div className={styles.inviteActions}>
-                      <button disabled={busyAction !== null} onClick={() => void onDeclineInvite(invite.id)} type="button">Decline</button>
-                      <button className={styles.primaryTextAction} disabled={busyAction !== null} onClick={() => void onAcceptInvite(invite.id)} type="button">Accept</button>
-                    </div>
-                  </li>
-                ))}
+              <ul className={styles.memberList}>
+                {members.map((member) => {
+                  const self = member.userId === profile.id;
+                  const manageable = !self && (isOwner || canRemove(group.role, member));
+                  const busy = busyAction?.includes(member.userId) ?? false;
+                  return (
+                    <li className={styles.memberRow} key={member.userId}>
+                      <ProfilePicture displayName={member.displayName} size="sm" src={member.profilePictureUrl} />
+                      <div className={styles.identity}>
+                        <strong>{member.displayName}{self ? ' · You' : ''}</strong>
+                        <span>@{member.username}</span>
+                      </div>
+                      <span className={styles.role}>{member.role}</span>
+                      {manageable && (
+                        <button
+                          aria-label={`Manage ${member.displayName}`}
+                          className={styles.manageButton}
+                          disabled={busy}
+                          onClick={(event) => openMemberManagement(member, event.currentTarget)}
+                          type="button"
+                        >
+                          <span>Manage</span><span aria-hidden="true">›</span>
+                        </button>
+                      )}
+                    </li>
+                  );
+                })}
               </ul>
             </section>
           )}
 
-          <section className={styles.section} aria-labelledby="members-heading">
-            <div className={styles.sectionHeadingRow}>
-              <div>
-                <p className={styles.sectionLabel}>Members</p>
-                <h2 id="members-heading">Your crew</h2>
-              </div>
-              <span>{members.length}</span>
-            </div>
-            <ul className={styles.memberList}>
-              {members.map((member) => {
-                const self = member.userId === profile.id;
-                const manageable = !self && (isOwner || canRemove(group.role, member));
-                const busy = busyAction?.includes(member.userId) ?? false;
-                return (
-                  <li className={styles.memberRow} key={member.userId}>
-                    <ProfilePicture displayName={member.displayName} size="sm" src={member.profilePictureUrl} />
-                    <div className={styles.identity}>
-                      <strong>{member.displayName}{self ? ' · You' : ''}</strong>
-                      <span>@{member.username}</span>
-                    </div>
-                    <span className={styles.role}>{member.role}</span>
-                    {manageable && (
-                      <button
-                        aria-label={`Manage ${member.displayName}`}
-                        className={styles.manageButton}
-                        disabled={busy}
-                        onClick={(event) => openMemberManagement(member, event.currentTarget)}
-                        type="button"
-                      >
-                        <span>Manage</span><span aria-hidden="true">›</span>
-                      </button>
-                    )}
-                  </li>
-                );
-              })}
-            </ul>
-          </section>
+          {view === 'chat' && <GroupChatPanel group={group} profile={profile} service={chatService} />}
 
-          {canManage && (
-            <section className={styles.section} aria-labelledby="invites-heading">
-              <div className={styles.sectionHeadingCompact}>
-                <p className={styles.sectionLabel}>Invitations</p>
-                <h2 id="invites-heading">Invite someone</h2>
-              </div>
-              <form
-                className={styles.inviteForm}
-                onSubmit={(event) => {
-                  event.preventDefault();
-                  if (!recipient.trim()) return;
-                  void onCreateInvite(recipient).then(() => setRecipient(''));
-                }}
-              >
-                <TextField
-                  autoCapitalize="none"
-                  autoComplete="off"
-                  hint={inviteCode ? `Your invite ID: ${inviteCode}` : 'Enter their username or invite ID.'}
-                  label="Username or invite ID"
-                  name="groupInviteRecipient"
-                  placeholder="Username or invite ID"
-                  spellCheck={false}
-                  value={recipient}
-                  onChange={(event) => setRecipient(event.target.value)}
-                />
-                <Button disabled={busyAction === 'invite:create' || !recipient.trim()} type="submit">
-                  {busyAction === 'invite:create' ? 'Sending…' : 'Send invite'}
-                </Button>
-              </form>
-
-              {invites.length > 0 && (
-                <div className={styles.outgoingInvites}>
-                  <p className={styles.outgoingLabel}>Pending outgoing</p>
+          {view === 'invites' && (
+            <div className={styles.viewStack} role="tabpanel">
+              {pendingInvites.length > 0 && (
+                <section className={styles.sectionSurface} aria-labelledby="incoming-heading" data-groups-surface="incoming-invites">
+                  <div className={styles.sectionHeadingCompact}>
+                    <p className={styles.sectionLabel}>Pending invitations</p>
+                    <h2 id="incoming-heading">For you</h2>
+                  </div>
                   <ul className={styles.inviteList}>
-                    {invites.map((invite) => (
+                    {pendingInvites.map((invite) => (
                       <li className={styles.inviteRow} key={invite.id}>
                         <div className={styles.inviteMeta}>
-                          <strong>{invite.invitedDisplayName}</strong>
-                          <span>@{invite.invitedUsername}</span>
+                          <strong>{invite.groupName}</strong>
+                          <span>From {invite.invitedByDisplayName} (@{invite.invitedByUsername})</span>
                         </div>
-                        <button
-                          className={styles.revokeButton}
-                          disabled={busyAction === `invite:${invite.id}`}
-                          onClick={() => void onRevokeInvite(invite.id)}
-                          type="button"
-                        >Revoke</button>
+                        <div className={styles.inviteActions}>
+                          <button disabled={busyAction !== null} onClick={() => void onDeclineInvite(invite.id)} type="button">Decline</button>
+                          <button className={styles.primaryTextAction} disabled={busyAction !== null} onClick={() => void onAcceptInvite(invite.id)} type="button">Accept</button>
+                        </div>
                       </li>
                     ))}
                   </ul>
-                </div>
+                </section>
               )}
-            </section>
+
+              {canManage ? (
+                <section className={styles.sectionSurface} aria-labelledby="invites-heading" data-groups-surface="outgoing-invites">
+                  <div className={styles.sectionHeadingCompact}>
+                    <p className={styles.sectionLabel}>Invitations</p>
+                    <h2 id="invites-heading">Invite someone</h2>
+                    <span>Invitations are person-specific and never expose a reusable join code.</span>
+                  </div>
+                  <form
+                    className={styles.inviteForm}
+                    onSubmit={(event) => {
+                      event.preventDefault();
+                      if (!recipient.trim()) return;
+                      void onCreateInvite(recipient).then(() => setRecipient(''));
+                    }}
+                  >
+                    <TextField
+                      autoCapitalize="none"
+                      autoComplete="off"
+                      hint={inviteCode ? `Your invite ID: ${inviteCode}` : 'Enter their username or invite ID.'}
+                      label="Username or invite ID"
+                      name="groupInviteRecipient"
+                      placeholder="Username or invite ID"
+                      spellCheck={false}
+                      value={recipient}
+                      onChange={(event) => setRecipient(event.target.value)}
+                    />
+                    <Button disabled={busyAction === 'invite:create' || !recipient.trim()} type="submit">
+                      {busyAction === 'invite:create' ? 'Sending…' : 'Send invite'}
+                    </Button>
+                  </form>
+
+                  <div className={styles.outgoingInvites}>
+                    <p className={styles.outgoingLabel}>Pending outgoing · {invites.length}</p>
+                    {invites.length > 0 ? (
+                      <ul className={styles.inviteList}>
+                        {invites.map((invite) => (
+                          <li className={styles.inviteRow} key={invite.id}>
+                            <div className={styles.inviteMeta}>
+                              <strong>{invite.invitedDisplayName}</strong>
+                              <span>@{invite.invitedUsername}</span>
+                            </div>
+                            <button
+                              className={styles.revokeButton}
+                              disabled={busyAction === `invite:${invite.id}`}
+                              onClick={() => void onRevokeInvite(invite.id)}
+                              type="button"
+                            >Revoke</button>
+                          </li>
+                        ))}
+                      </ul>
+                    ) : <p className={styles.emptyState}>No outgoing invitations are waiting.</p>}
+                  </div>
+                </section>
+              ) : pendingInvites.length === 0 ? (
+                <section className={styles.sectionSurface} data-groups-surface="member-invites" role="status">
+                  <p className={styles.sectionLabel}>Invitations</p>
+                  <h2>No invitations waiting</h2>
+                  <p className={styles.emptyState}>Group owners and administrators can invite new members.</p>
+                </section>
+              ) : null}
+            </div>
           )}
 
-          <section className={styles.settingsSection} aria-labelledby="group-settings-heading">
-            <details className={styles.settingsDetails}>
-              <summary>
-                <span>
-                  <span className={styles.sectionLabel}>Group settings</span>
-                  <strong id="group-settings-heading">Name, ownership and membership</strong>
-                </span>
-                <span aria-hidden="true">›</span>
-              </summary>
-              <div className={styles.settingsBody}>
-                {canManage && (
+          {view === 'settings' && (
+            <div className={styles.viewStack} role="tabpanel">
+              {canManage && (
+                <section className={styles.sectionSurface} data-groups-surface="group-name">
+                  <div className={styles.sectionHeadingCompact}>
+                    <p className={styles.sectionLabel}>Group identity</p>
+                    <h2>Name</h2>
+                  </div>
                   <form className={styles.renameForm} onSubmit={(event) => { event.preventDefault(); void onRename(name); }}>
                     <TextField label="Current group name" maxLength={80} onChange={(event) => setName(event.target.value)} value={name} />
                     <Button disabled={busyAction === 'rename' || name.trim() === group.name} type="submit" variant="secondary">Save name</Button>
                   </form>
-                )}
+                </section>
+              )}
 
+              <section className={styles.sectionSurface} data-groups-surface="new-group">
                 <div className={styles.createGroupBlock}>
-                  <h3>Create another group</h3>
+                  <p className={styles.sectionLabel}>Your groups</p>
+                  <h2>Create another group</h2>
                   <p>You can belong to or own more than one group at the same time.</p>
                   <CreateGroupForm busy={creatingGroup} compact error={createGroupError} onSubmit={onCreateGroup} />
                 </div>
+              </section>
 
+              <section className={styles.sectionSurface} data-groups-surface="membership">
                 <div className={styles.membershipBlock}>
-                  <h3>Your membership</h3>
+                  <p className={styles.sectionLabel}>Membership</p>
+                  <h2>Your role</h2>
                   <p>{isOwner ? 'Transfer ownership before leaving this group.' : 'Leaving removes only this group membership. Your other groups stay unchanged.'}</p>
                   <div className={styles.membershipRow}>
-                    {!isOwner && <Button disabled={busyAction === 'leave'} onClick={() => void onLeaveGroup()} variant="ghost">Leave group</Button>}
                     <span>Role: {group.role}</span>
+                    {!isOwner && <Button disabled={busyAction === 'leave'} onClick={() => void onLeaveGroup()} variant="ghost">Leave group</Button>}
                   </div>
                 </div>
-              </div>
-            </details>
-          </section>
+              </section>
+            </div>
+          )}
         </div>
 
         {manageOpen && managedMember && (

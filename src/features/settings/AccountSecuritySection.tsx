@@ -54,7 +54,7 @@ export function AccountSecuritySection({ email, memberSince, service, onSignOut 
   };
 
   return (
-    <section className={styles.section} aria-labelledby="settings-account-heading">
+    <section className={styles.section} aria-labelledby="settings-account-heading" data-app-surface="category">
       <div className={styles.sectionHeading}>
         <div>
           <p className={styles.eyebrow}>ACCOUNT</p>

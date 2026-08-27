@@ -1,6 +1,46 @@
 # Changelog
 
-## Unreleased — Phase 15.3E user reports + moderation foundation
+## Unreleased — Phase 15.9 recipient inbox deletion + member-only group chat
+
+- Added recipient-only deletion for received platform messages without rewriting shared message content, other deliveries, revision history, or administrator audit.
+- Required the current acknowledgement-required revision to be acknowledged before inbox deletion.
+- Added a dedicated Groups Chat tab with a persistent plain-text composer, cursor-paginated conversation, emoji reactions, live refresh, and explicit delete confirmation.
+- Added author self-delete plus group OWNER/ADMIN moderation using body-free retained tombstones.
+- Kept chat separate from the automated Competition activity feed and completely outside scoring, XP, badges, rankings, and workout privacy.
+- Added RPC-only public chat tables with RLS, explicit direct-table denial, private Realtime membership authorization, content-free Broadcast invalidation, duplicate protection, and a ten-message rolling-minute rate limit.
+- Added covering indexes for both group-chat reaction foreign keys after the hosted Performance advisor identified the missing access paths.
+- Added focused service/component coverage, 27 inbox-deletion pgTAP assertions, 45 group-chat pgTAP assertions, and static database/composition regression guards.
+- Applied and recorded the three hosted migrations, passed 27/27 plus 45/45 rollback-safe pgTAP, regenerated hosted TypeScript database types, and reviewed Security/Performance advisors.
+- Made no Realtime setting change, application deployment, GitHub push, or secret change; public-channel access still requires an operator Dashboard check before release.
+
+## Unreleased — Phase 16.10A application-composition reset
+
+- Established one authenticated shell gutter, content-width, scroll-owner, mobile scrollbar, and horizontal-overflow contract.
+- Replaced browser-default selects with one accessible app-owned control: desktop popover, mobile bottom sheet, long-list search, and retained native form semantics.
+- Rebuilt Home into bounded training, weekly status, history/progression, consistency, and group-rank regions; retired the oversized plate-banner hero composition.
+- Rebuilt Settings as a category index with focused drill-in panels while preserving all profile, training, notification, security, group, privacy, app-status, and conditional administrator behavior.
+- Rebuilt the Lift start and active-session hierarchy around contained task surfaces; removed the decorative workout banner and consolidated timer/session/sync context into one mobile task rail.
+- Reworked phone set logging into one bounded vertical list with labeled fields, touch-sized controls, and verified 320px containment without horizontal scrolling.
+- Made the exercise picker an opaque full-height mobile route with substantial Recent/Browse/result-group regions, focus containment/restoration, Escape back/close behavior, and locked background scroll.
+- Added explicit, focus-managed Finish and Cancel confirmation sheets while retaining the existing lifecycle RPC and terminal-race protections.
+- Rebuilt Progress into contained identity, calendar summary, tracked-lift, selected-lift, trend, milestone, and session-history regions; retired its oversized photo hero composition and added 320px chart/list containment.
+- Rebuilt Cardio around one primary accessory quick-log task with separate summary and recent-history surfaces, touch-sized activity choices/actions, and 320px row reflow.
+- Rebuilt Groups around one selected-group context plus focused Members, Invites, and Settings views; replaced the horizontal group rail with the shared app selector and retained role-gated member/invite actions.
+- Split Competition into Standings and Activity views, retained a pinned current-user standing and privacy boundary, and contained leaderboard, feed, reaction, and report rows at 320px.
+- Compressed the mobile authentication brand region so sign-in, registration, recovery, verification, configuration, and password-reset tasks remain immediately actionable without removing the photographic identity.
+- Rebuilt onboarding as focused Identity, Training preferences, and Goal steps with per-step validation and a safe-area-aware mobile action rail while retaining one atomic profile submission.
+- Aligned public legal pages and every platform-administration surface with the Top Set charcoal/orange composition system, one-pane phone/two-pane desktop workspaces, and non-scrolling mobile filters.
+- Added shared bounded application-state geometry, moved PWA notices to one top notice language, and moved platform messages behind an app-chrome inbox trigger plus mobile sheet/desktop dialog instead of a competing unread bottom banner.
+- Added deterministic Auth/Onboarding/Legal/Admin browser fixtures and explicit 320px horizontal-overflow coverage.
+- Added a shared compact destination-banner system using existing optimized imagery on Home, Lift start, Cardio, Progress, Groups, and Compete while keeping focused task/operational screens image-free.
+- Added canonical direct product paths, retained legacy query-link redirects, and corrected same-path query navigation.
+- Moved Messages into explicit mobile/desktop shell slots, kept Settings unobscured, and added a one-tap mobile Sign out action plus a visible Settings account action.
+- Renamed the admin landing surface to Overview, labeled its guarded Supabase RPC data as connected, and deferred Netlify invocation until explicitly enabled.
+- Repaired the reported Playwright failures by aligning the workout fixture state with its completion-control assertion and updating stale PWA product copy.
+- Added component and structural regression coverage plus a documented route-by-route cumulative migration queue.
+- Added no scoring, authorization, persistence, database, Edge Function, hosted-environment, or release-version change.
+
+### Earlier unreleased platform work
 
 - Added a private, durable user-report and moderation-case queue without inventing a browser-only moderator role.
 - Added active-account report submission with self-report protection, required category/reason, rolling rate limits, normalized duplicate protection, and current group/workout/social-activity reference validation.

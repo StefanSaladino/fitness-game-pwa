@@ -74,7 +74,10 @@ describe('ExerciseProgressScreen', () => {
     );
 
     expect(screen.getByRole('heading', { name: 'Your lifting trend' })).toBeInTheDocument();
-    expect(screen.getByRole('img', { name: /training log beside a loaded barbell/i })).toBeInTheDocument();
+    expect(screen.queryByRole('img', { name: /training log beside a loaded barbell/i })).not.toBeInTheDocument();
+    expect(document.querySelector('[data-progress-surface="identity"]')).toHaveAttribute('data-app-surface', 'primary');
+    expect(document.querySelector('[data-progress-surface="calendar-summary"]')).toHaveAttribute('data-app-surface', 'category');
+    expect(document.querySelector('[data-progress-surface="lift-picker"]')).toHaveAttribute('data-app-surface', 'category');
     expect(screen.getByRole('heading', { name: 'Weekly & monthly summary' })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Weekly volume' })).toBeInTheDocument();
     expect(screen.queryByRole('heading', { name: 'Monthly volume' })).not.toBeInTheDocument();
@@ -97,7 +100,10 @@ describe('ExerciseProgressScreen', () => {
     expect(screen.getAllByText(/400 kg·reps/).length).toBeGreaterThan(0);
     expect(screen.getByRole('heading', { name: 'Rep trend' })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Volume history' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Exercise trends' })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'PR timeline' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Session history' })).toBeInTheDocument();
+    expect(document.querySelector('[data-progress-surface="history"]')).not.toBeNull();
 
     const bestWeight = screen.getByText('Best weight', { selector: 'dt' }).closest('div');
     const bestReps = screen.getByText('Best reps', { selector: 'dt' }).closest('div');

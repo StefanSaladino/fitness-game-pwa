@@ -1,4 +1,5 @@
-import { AppShell, type AppSection } from '../../../components/layout';
+import groupBanner from '../../../assets/fitness/top-set-dumbbell-grip.jpg';
+import { AppShell, DestinationBanner, type AppSection } from '../../../components/layout';
 import { Button } from '../../../components/ui';
 import type { OnboardingProfile } from '../../onboarding';
 import type { CreateGroupInput, PendingGroupInvite } from '../model';
@@ -72,14 +73,14 @@ export function OptionalGroupSetupScreen({
       userLabel={profile.displayName}
       userMeta={`@${profile.username} · ${profile.weeklyWorkoutTarget} lift days`}
     >
-      <div className={styles.page}>
-        <section className={styles.photoBanner} aria-labelledby="group-state-heading">
-          <div className={styles.photoBannerCopy}>
+      <div className={styles.page} data-groups-setup>
+        <DestinationBanner aria-labelledby="group-state-heading" className={styles.headerSurface} data-groups-surface="empty-identity" imagePosition="center 54%" imageSrc={groupBanner}>
+          <div className={styles.headerCopy}>
             <span>{hasInvites ? 'INVITATIONS' : competitionMode ? 'COMPETE' : 'GROUPS'}</span>
             <h1 id="group-state-heading">{bannerTitle}</h1>
             <p>{bannerCopy}</p>
           </div>
-        </section>
+        </DestinationBanner>
 
         {inviteStatus === 'loading' && !hasInvites ? (
           <section className={styles.inlineStatus} role="status">
@@ -98,7 +99,7 @@ export function OptionalGroupSetupScreen({
         ) : null}
 
         {hasInvites ? (
-          <section className={styles.invitationState}>
+          <section className={styles.invitationState} data-groups-surface="pending-invitations">
             {inviteError ? <p className={styles.error} role="alert">{inviteError}</p> : null}
 
             <ul className={styles.inviteList}>
@@ -134,8 +135,6 @@ export function OptionalGroupSetupScreen({
               ))}
             </ul>
 
-            <div className={styles.sectionDivider} />
-
             <section className={styles.soloSection} aria-labelledby="no-thanks-heading">
               <h2 id="no-thanks-heading">No thanks</h2>
               <p>Groups are optional. You can keep training without accepting this invitation.</p>
@@ -150,23 +149,25 @@ export function OptionalGroupSetupScreen({
             </section>
           </section>
         ) : (
-          <section className={styles.zeroState}>
+          <section className={styles.zeroState} data-groups-surface="create-group">
             <section className={styles.createCard} aria-labelledby="create-group-heading">
               <h2 id="create-group-heading">Create your group</h2>
               <p>Start your own crew and invite specific people after it is created.</p>
               <CreateGroupForm busy={creating} compact error={createError} onSubmit={onCreate} />
             </section>
 
-            <div className={styles.orDivider}><span>or</span></div>
-
-            <Button
-              className={styles.fullSecondaryButton}
-              fullWidth
-              onClick={() => onNavigate('home')}
-              variant="secondary"
-            >
-              Go to Home
-            </Button>
+            <section className={styles.soloSection} aria-labelledby="train-solo-heading">
+              <h2 id="train-solo-heading">Keep training solo</h2>
+              <p>Your personal lifts, progress, and cardio remain available without a group.</p>
+              <Button
+                className={styles.fullSecondaryButton}
+                fullWidth
+                onClick={() => onNavigate('home')}
+                variant="secondary"
+              >
+                Go to Home
+              </Button>
+            </section>
           </section>
         )}
       </div>

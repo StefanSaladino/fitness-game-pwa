@@ -1,41 +1,9 @@
-.state {
-  display: grid;
-  min-height: 290px;
-  align-content: center;
-  gap: 12px;
-}
-
-.eyebrow {
-  margin: 0;
-  color: var(--color-accent) !important;
-  font-size: 0.74rem;
-  font-weight: 720;
-}
-
-.state h1 {
-  max-width: 16ch;
-  margin: 0;
-  color: #f7f7f4;
-  font-size: clamp(1.85rem, 8vw, 2.45rem);
-  letter-spacing: -0.04em;
-  line-height: 1.05;
-}
-
-.state > p:not(.eyebrow) {
-  max-width: 44ch;
-  margin: 0;
-  color: var(--color-text-muted);
-  line-height: 1.52;
-}
-
 :global(.ui-button).primaryButton,
 :global(.ui-button--primary).primaryButton {
-  width: min(100%, 220px);
-  min-height: 50px;
-  margin-top: 7px;
+  min-height: 48px;
   border-color: var(--color-accent);
-  border-radius: 9px;
-  color: #111;
+  border-radius: var(--radius-md);
+  color: #fff;
   background: var(--color-accent);
   box-shadow: none;
 }
@@ -44,9 +12,4 @@
 :global(.ui-button--primary).primaryButton:hover:not(:disabled) {
   border-color: var(--color-accent-hover);
   background: var(--color-accent-hover);
-}
-
-:global(.ui-button).primaryButton:focus-visible {
-  outline: 3px solid rgba(245, 130, 32, 0.38);
-  outline-offset: 2px;
 }

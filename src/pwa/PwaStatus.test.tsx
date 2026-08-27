@@ -38,8 +38,10 @@ function fakeService(initial: Partial<PwaSnapshot> = {}) {
 describe('PwaStatus', () => {
   it('offers install only when the browser exposes an install prompt', async () => {
     const fake = fakeService({ installAvailable: true });
-    render(<PwaStatus service={fake.service} />);
+    const { container } = render(<PwaStatus service={fake.service} />);
 
+    expect(container.querySelector('[data-system-notice][data-kind="install"]')).toBeInTheDocument();
+    expect(screen.getByText('Install Top Set')).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'Install' }));
     await waitFor(() => expect(fake.service.requestInstall).toHaveBeenCalledTimes(1));
   });
@@ -71,7 +73,7 @@ describe('PwaStatus', () => {
     const fake = fakeService({ platform: 'ios', manualInstallAvailable: true });
     render(<PwaStatus service={fake.service} />);
 
-    expect(screen.getByText('Add Workout Game to Home Screen')).toBeInTheDocument();
+    expect(screen.getByText('Add Top Set to Home Screen')).toBeInTheDocument();
     expect(screen.getByText(/Share → Add to Home Screen/)).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Install' })).not.toBeInTheDocument();
   });

@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
-import plateBannerUrl from '../../../assets/fitness/top-set-plate-banner.jpg';
-import { AppShell, type AppSection } from '../../../components/layout';
+import plateBanner from '../../../assets/fitness/top-set-plate-banner.jpg';
+import { AppShell, DestinationBanner, type AppSection } from '../../../components/layout';
 import { Button } from '../../../components/ui';
 import { liftingBadgeDefinition } from '../../consistency';
 import type { GroupSummary } from '../../groups';
@@ -68,6 +68,7 @@ function DashboardShell({ profile, children, onNavigate, onSignOut, weeklyTarget
       onSignOut={onSignOut}
       userLabel={profile.displayName}
       userMeta={`@${profile.username} · ${weeklyTarget} lift days`}
+      mobileTitle="Home"
     >
       {children}
     </AppShell>
@@ -107,30 +108,28 @@ export function DashboardScreen({ profile, group, groupNotice, snapshot, onNavig
   return (
     <DashboardShell profile={profile} onNavigate={onNavigate} onSignOut={onSignOut} weeklyTarget={snapshot.weeklyTarget}>
       <div className={styles.dashboard}>
-        <header className={styles.hero}>
-          <img alt="" aria-hidden="true" className={styles.heroMedia} src={plateBannerUrl} />
-          <div className={styles.heroShade} aria-hidden="true" />
+        <DestinationBanner className={styles.hero} imagePosition="center 46%" imageSrc={plateBanner}>
           <div className={styles.heroContent}>
             <div className={styles.heroCopy}>
               <p className={styles.kicker}>{group?.name ?? 'SOLO TRAINING'}</p>
               <h1>Your lifting week</h1>
               <p>Completed lifts and authoritative lifting-v1 scoring.</p>
             </div>
+            <div className={styles.heroIdentity}>
+              <ProfilePicture displayName={profile.displayName} size="md" src={snapshot.currentUserProfilePictureUrl} />
+              <div>
+                <strong>{profile.displayName}</strong>
+                <span>@{profile.username}</span>
+              </div>
+            </div>
             <div className={styles.heroActions}>
               <Button onClick={() => onNavigate('workouts')}>Start Lift</Button>
               <Button variant="secondary" onClick={() => onNavigate('cardio')}>Log cardio</Button>
             </div>
           </div>
-          <div className={styles.heroIdentity}>
-            <ProfilePicture displayName={profile.displayName} size="lg" src={snapshot.currentUserProfilePictureUrl} />
-            <div>
-              <strong>{profile.displayName}</strong>
-              <span>@{profile.username}</span>
-            </div>
-          </div>
-        </header>
+        </DestinationBanner>
 
-        <section className={styles.overview} aria-labelledby="weekly-progress-heading">
+        <section className={styles.overview} aria-labelledby="weekly-progress-heading" data-app-surface="category">
           <div className={styles.weekPrimary}>
             <p className={styles.sectionLabel} id="weekly-progress-heading">Weekly lifting target</p>
             <div className={styles.weekCount}>
@@ -165,7 +164,7 @@ export function DashboardScreen({ profile, group, groupNotice, snapshot, onNavig
         </section>
 
         <div className={styles.trainingColumns}>
-          <section className={styles.dataSection} aria-labelledby="recent-lifts-heading">
+          <section className={styles.dataSection} aria-labelledby="recent-lifts-heading" data-app-surface="category">
             <div className={styles.sectionHeadingCompact}>
               <div>
                 <p className={styles.sectionLabel}>Recent lifts</p>
@@ -190,7 +189,7 @@ export function DashboardScreen({ profile, group, groupNotice, snapshot, onNavig
             )}
           </section>
 
-          <section className={styles.dataSection} aria-labelledby="recent-prs-heading">
+          <section className={styles.dataSection} aria-labelledby="recent-prs-heading" data-app-surface="category">
             <div className={styles.sectionHeadingCompact}>
               <div>
                 <p className={styles.sectionLabel}>Personal records</p>
@@ -220,7 +219,7 @@ export function DashboardScreen({ profile, group, groupNotice, snapshot, onNavig
         </div>
 
         <section className={styles.lowerGrid}>
-          <div className={styles.consistencyBlock} aria-labelledby="consistency-heading">
+          <section className={styles.consistencyBlock} aria-labelledby="consistency-heading" data-app-surface="category">
             <div className={styles.sectionHeadingCompact}>
               <div>
                 <p className={styles.sectionLabel}>Consistency</p>
@@ -255,9 +254,9 @@ export function DashboardScreen({ profile, group, groupNotice, snapshot, onNavig
                 })}
               </ul>
             )}
-          </div>
+          </section>
 
-          <div className={styles.rankBlock} aria-labelledby="group-rank-heading">
+          <section className={styles.rankBlock} aria-labelledby="group-rank-heading" data-app-surface="category">
             <div className={styles.sectionHeadingCompact}>
               <div>
                 <p className={styles.sectionLabel}>{group?.name ?? 'Group competition'}</p>
@@ -294,7 +293,7 @@ export function DashboardScreen({ profile, group, groupNotice, snapshot, onNavig
                 </div>
               </>
             )}
-          </div>
+          </section>
         </section>
 
         {groupNotice && <div className={styles.supportingContent}>{groupNotice}</div>}

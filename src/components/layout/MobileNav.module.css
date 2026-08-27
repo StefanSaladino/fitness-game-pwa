@@ -8,19 +8,20 @@
   grid-template-columns: repeat(5, minmax(0, 1fr));
   min-height: var(--mobile-nav-height);
   border-top: 1px solid rgba(255, 255, 255, 0.1);
-  padding: 7px 8px max(6px, env(safe-area-inset-bottom));
-  background: #08090a;
+  padding: 6px 8px max(6px, env(safe-area-inset-bottom));
+  background: var(--color-bg-elevated);
 }
 
 .item {
   display: grid;
   min-width: 0;
-  min-height: 51px;
+  min-height: 52px;
   place-items: center;
   align-content: center;
   gap: 2px;
   border: 0;
-  padding: 4px 2px;
+  border-radius: var(--radius-md);
+  padding: 5px 2px;
   color: #777a7e;
   background: transparent;
   cursor: pointer;
@@ -31,6 +32,7 @@
 
 .itemActive {
   color: var(--color-accent);
+  background: var(--color-accent-soft);
 }
 
 .item:focus-visible {

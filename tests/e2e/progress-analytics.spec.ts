@@ -4,7 +4,10 @@ test('lifting analytics stays readable and complete across responsive product sh
   await page.goto('/progress.e2e.html');
 
   await expect(page.getByRole('heading', { name: 'Your lifting trend' })).toBeVisible();
-  await expect(page.getByRole('img', { name: /training log beside a loaded barbell/i })).toBeVisible();
+  await expect(page.locator('[data-app-media-banner] img')).toHaveCount(1);
+  await expect(page.locator('[data-progress-surface="identity"]')).toBeVisible();
+  await expect(page.locator('[data-progress-surface="calendar-summary"]')).toBeVisible();
+  await expect(page.locator('[data-progress-surface="lift-picker"]')).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Weekly & monthly summary' })).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Weekly volume' })).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Monthly volume' })).toHaveCount(0);
@@ -18,7 +21,9 @@ test('lifting analytics stays readable and complete across responsive product sh
   await expect(page.getByRole('heading', { name: 'Barbell Bench Press' })).toBeVisible();
   await expect(page.getByRole('heading', { name: 'e1RM trend' })).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Volume history' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Exercise trends' })).toBeVisible();
   await expect(page.getByRole('heading', { name: 'PR timeline' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Session history' })).toBeVisible();
   await expect(page.getByText('128.3 kg', { exact: true }).first()).toBeVisible();
   await expect(page.getByText(/8,520 kg·reps/).first()).toBeVisible();
 

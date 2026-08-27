@@ -1,6 +1,6 @@
 # Phase 16.6 — Exercise picker + exercise library
 
-Status: **IN PROGRESS**
+Status: **DONE; composition refined by Phase 16.10A.2**
 
 ## Approved visual direction
 
@@ -24,5 +24,6 @@ Phone-first exercise selection keeps the existing canonical exercise/search beha
 - Already-selected exercises remain disabled as Added.
 - Escape returns from a detail view before closing from the home view.
 - Background scrolling remains locked while the picker is open.
+- Keyboard focus remains within the picker, Close receives initial focus, and focus returns to the opener after dismissal.
 - Favorites remain out of scope for this slice.
 - No scoring, workout persistence, database, or offline/recovery behavior changes.

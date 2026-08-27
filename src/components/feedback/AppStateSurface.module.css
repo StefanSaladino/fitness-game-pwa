@@ -1,0 +1,76 @@
+.surface {
+  display: grid;
+  min-width: 0;
+  min-height: 220px;
+  align-content: center;
+  justify-items: start;
+  gap: var(--space-3);
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  padding: var(--app-surface-padding);
+  color: var(--color-text);
+  background: var(--color-surface);
+}
+
+.surface[data-compact='true'] {
+  min-height: 168px;
+}
+
+.surface h1,
+.surface h2,
+.surface h3,
+.eyebrow,
+.description,
+.description p {
+  margin: 0;
+}
+
+.surface h1,
+.surface h2,
+.surface h3 {
+  max-width: 24ch;
+  font-size: clamp(1.2rem, 5vw, 1.6rem);
+  letter-spacing: -0.025em;
+  line-height: 1.12;
+}
+
+.eyebrow {
+  color: var(--color-accent);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.description {
+  max-width: 48ch;
+  color: var(--color-text-muted);
+  line-height: 1.55;
+}
+
+.action {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-top: var(--space-1);
+}
+
+.surface[data-tone='error'] {
+  border-color: rgba(255, 156, 156, 0.38);
+}
+
+.surface[data-tone='error'] .eyebrow {
+  color: var(--color-danger);
+}
+
+.surface[data-tone='success'] .eyebrow {
+  color: var(--color-success);
+}
+
+@media (max-width: 360px) {
+  .surface {
+    min-height: 190px;
+    padding: var(--space-4);
+  }
+}

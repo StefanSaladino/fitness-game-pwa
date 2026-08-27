@@ -337,6 +337,80 @@ for (const coverage of [
   if (!test154.includes(coverage)) fail(`Phase 15.4 pgTAP missing coverage: ${coverage}`);
 }
 
+const inboxDeletionMigrationPath = 'supabase/migrations/20260827195328_recipient_inbox_deletion.sql';
+const inboxDeletionTestPath = 'supabase/tests/041_recipient_inbox_deletion.test.sql';
+const groupChatMigrationPath = 'supabase/migrations/20260827195329_group_chat.sql';
+const groupChatIndexMigrationPath = 'supabase/migrations/20260827222849_group_chat_foreign_key_indexes.sql';
+const groupChatTestPath = 'supabase/tests/042_group_chat.test.sql';
+for (const relativePath of [inboxDeletionMigrationPath, inboxDeletionTestPath, groupChatMigrationPath, groupChatIndexMigrationPath, groupChatTestPath]) {
+  if (!fs.existsSync(path.join(root, relativePath))) fail(`Messaging/social database artifact missing: ${relativePath}`);
+}
+
+const inboxDeletionMigration = read(inboxDeletionMigrationPath);
+for (const invariant of [
+  'add column deleted_at',
+  'platform_message_deliveries_visible_recipient_idx',
+  'pmd.deleted_at is null',
+  'public.delete_my_platform_message',
+  'Acknowledge this message before deleting it',
+  'Recipient-only inbox tombstone',
+]) {
+  if (!inboxDeletionMigration.includes(invariant)) fail(`recipient inbox deletion migration missing invariant: ${invariant}`);
+}
+const inboxDeletionTest = read(inboxDeletionTestPath);
+if (!/select\s+plan\s*\(\s*27\s*\)\s*;/i.test(inboxDeletionTest)) fail('recipient inbox deletion pgTAP suite must retain its 27-assertion plan');
+for (const coverage of [
+  'first recipient deletion does not affect the second recipient inbox',
+  'required current revision cannot be deleted before acknowledgement',
+  'recipient deletion never hard-deletes the retained delivery row',
+  'inbox deletion does not create or alter XP events',
+]) {
+  if (!inboxDeletionTest.includes(coverage)) fail(`recipient inbox deletion pgTAP missing coverage: ${coverage}`);
+}
+
+const groupChatMigration = read(groupChatMigrationPath);
+for (const invariant of [
+  'public.group_chat_messages',
+  'public.group_chat_reactions',
+  'enable row level security',
+  'revoke all on table public.group_chat_messages',
+  'public.list_group_chat_messages',
+  'public.post_group_chat_message',
+  'public.set_group_chat_reaction',
+  'public.delete_group_chat_message',
+  'group chat members can receive change signals',
+  'realtime.send',
+  'Group chat rate limit reached; try again shortly',
+  "deletion_reason in ('SELF', 'MODERATION')",
+  "set search_path = ''",
+]) {
+  if (!groupChatMigration.includes(invariant)) fail(`group chat migration missing invariant: ${invariant}`);
+}
+if (/grant\s+(?:select|insert|update|delete)[^;]*on\s+(?:table\s+)?public\.group_chat_/i.test(groupChatMigration)) {
+  fail('group chat tables must remain RPC-only with no direct browser table grants');
+}
+const groupChatIndexMigration = read(groupChatIndexMigrationPath);
+for (const invariant of [
+  'group_chat_reactions_group_message_idx',
+  'on public.group_chat_reactions(group_id, message_id)',
+  'group_chat_reactions_user_idx',
+  'on public.group_chat_reactions(user_id)',
+]) {
+  if (!groupChatIndexMigration.includes(invariant)) fail(`group chat index migration missing invariant: ${invariant}`);
+}
+const groupChatTest = read(groupChatTestPath);
+if (!/select\s+plan\s*\(\s*45\s*\)\s*;/i.test(groupChatTest)) fail('group chat pgTAP suite must retain its 45-assertion plan');
+for (const coverage of [
+  'outsider cannot read group chat',
+  'ordinary member cannot delete another member message',
+  'group owner can moderate another member message',
+  'eleventh rolling-minute message is rate limited',
+  'removed member immediately loses authoritative chat read access',
+  'group chat messages and reactions never create or alter XP events',
+]) {
+  if (!groupChatTest.includes(coverage)) fail(`group chat pgTAP missing coverage: ${coverage}`);
+}
+
 const migration155 = read(phase155Migration);
 for (const invariant of [
   'alter default privileges for role postgres in schema public',

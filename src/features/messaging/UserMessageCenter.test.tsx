@@ -16,7 +16,7 @@ it('shows an unread all-user blast once as a dismissible what-is-new popup', asy
   const list = vi.fn()
     .mockResolvedValueOnce({ items: [blast], unreadCount: 1, total: 1 })
     .mockResolvedValueOnce({ items: [{ ...blast, deliveryState: 'READ', readAt: '2026-08-23T10:01:00Z' }], unreadCount: 0, total: 1 });
-  const service = { list, markRead, acknowledge: vi.fn() } satisfies PlatformMessageService;
+  const service = { list, markRead, acknowledge: vi.fn(), deleteMessage: vi.fn() } satisfies PlatformMessageService;
   render(<UserMessageCenter service={service} />);
   expect(await screen.findByRole('dialog', { name: 'Version update' })).toBeInTheDocument();
   await userEvent.click(screen.getByRole('button', { name: 'Got it' }));
@@ -24,9 +24,38 @@ it('shows an unread all-user blast once as a dismissible what-is-new popup', asy
   expect(markRead).toHaveBeenCalledWith('blast-1');
 });
 
-it('keeps individual messages in the banner and inbox instead of opening the update popup', async () => {
-  const service = { list: vi.fn().mockResolvedValue({ items: [{ ...blast, audienceType: 'USER' }], unreadCount: 1, total: 1 }), markRead: vi.fn(), acknowledge: vi.fn() } satisfies PlatformMessageService;
+it('keeps individual messages behind the app-bar inbox badge instead of opening a competing banner', async () => {
+  const service = { list: vi.fn().mockResolvedValue({ items: [{ ...blast, audienceType: 'USER' }], unreadCount: 1, total: 1 }), markRead: vi.fn(), acknowledge: vi.fn(), deleteMessage: vi.fn() } satisfies PlatformMessageService;
   render(<UserMessageCenter service={service} />);
-  expect(await screen.findByLabelText('Unread platform message')).toBeInTheDocument();
+  expect(await screen.findByRole('button', { name: 'Messages, 1 unread' })).toBeInTheDocument();
+  expect(screen.queryByLabelText('Unread platform message')).not.toBeInTheDocument();
   expect(screen.queryByText('WHAT’S NEW')).not.toBeInTheDocument();
+});
+
+it('deletes an ordinary received message only after a deliberate confirmation', async () => {
+  const user = userEvent.setup();
+  const message = { ...blast, audienceType: 'USER' as const, deliveryState: 'READ' as const, readAt: '2026-08-23T10:01:00Z' };
+  const list = vi.fn()
+    .mockResolvedValueOnce({ items: [message], unreadCount: 0, total: 1 })
+    .mockResolvedValueOnce({ items: [], unreadCount: 0, total: 0 });
+  const deleteMessage = vi.fn().mockResolvedValue(undefined);
+  const service = { list, markRead: vi.fn(), acknowledge: vi.fn(), deleteMessage } satisfies PlatformMessageService;
+
+  render(<UserMessageCenter service={service} />);
+  await user.click(await screen.findByRole('button', { name: 'Messages' }));
+  await user.click(screen.getByRole('button', { name: 'Delete' }));
+  expect(screen.getByRole('dialog', { name: 'Delete message?' })).toBeInTheDocument();
+  expect(deleteMessage).not.toHaveBeenCalled();
+  await user.click(screen.getByRole('button', { name: 'Delete' }));
+  await waitFor(() => expect(screen.getByText('No messages yet.')).toBeInTheDocument());
+  expect(deleteMessage).toHaveBeenCalledWith('blast-1');
+});
+
+it('requires the current acknowledgement before exposing deletion for a required message', async () => {
+  const required = { ...blast, audienceType: 'USER' as const, messageType: 'ACTION_REQUIRED' as const, acknowledgementRequired: true };
+  const service = { list: vi.fn().mockResolvedValue({ items: [required], unreadCount: 1, total: 1 }), markRead: vi.fn(), acknowledge: vi.fn(), deleteMessage: vi.fn() } satisfies PlatformMessageService;
+  render(<UserMessageCenter service={service} />);
+  await userEvent.click(await screen.findByRole('button', { name: 'Messages, 1 unread' }));
+  expect(screen.getByRole('button', { name: 'Acknowledge' })).toBeInTheDocument();
+  expect(screen.queryByRole('button', { name: 'Delete' })).not.toBeInTheDocument();
 });

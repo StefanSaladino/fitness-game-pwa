@@ -1,66 +1,148 @@
 .form {
   display: grid;
-  gap: 16px;
+  min-width: 0;
+  gap: var(--space-3);
+}
+
+.steps {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.steps li {
+  display: grid;
+  min-width: 0;
+  grid-template-columns: 26px minmax(0, 1fr);
+  align-items: center;
+  gap: 7px;
+  color: var(--color-text-muted);
+}
+
+.steps li > span {
+  display: grid;
+  width: 26px;
+  height: 26px;
+  place-items: center;
+  border: 1px solid var(--color-border-strong);
+  border-radius: 50%;
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
+.steps li small {
+  min-width: 0;
+  overflow: hidden;
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.steps li[aria-current='step'],
+.steps li[data-complete='true'] {
+  color: var(--color-text);
+}
+
+.steps li[aria-current='step'] > span,
+.steps li[data-complete='true'] > span {
+  border-color: var(--color-accent);
+  color: #fff;
+  background: var(--color-accent);
+}
+
+.stepCount {
+  margin: 2px 0 0;
+  color: var(--color-text-muted);
+  font-size: 0.72rem;
+  font-weight: 750;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.stepSurface {
+  display: grid;
+  min-width: 0;
+  gap: var(--space-4);
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  padding: var(--app-surface-padding);
+  background: var(--color-surface);
+}
+
+.stepHeader h2,
+.stepHeader p {
+  margin: 0;
+}
+
+.stepHeader h2 {
+  color: var(--color-text);
+  font-size: 1.15rem;
+  letter-spacing: -0.02em;
+}
+
+.stepHeader p {
+  margin-top: 7px;
+  color: var(--color-text-muted);
+  font-size: 0.83rem;
+  line-height: 1.48;
 }
 
 .field {
+  min-width: 0;
   color-scheme: dark;
 }
 
 .field :global(.ui-field__label) {
-  color: #f0f0f0;
+  color: var(--color-text);
   font-size: 0.78rem;
-  font-weight: 600;
+  font-weight: 650;
   line-height: 1.25;
 }
 
 .field :global(.ui-field__control) {
-  min-height: 46px;
+  min-height: 50px;
   overflow: hidden;
-  border-color: rgba(255, 255, 255, 0.17);
-  border-radius: 8px;
-  background: #090b0c;
+  border-color: var(--color-border-strong);
+  border-radius: var(--radius-md);
+  background: var(--color-bg-elevated);
   box-shadow: none;
 }
 
 .field :global(.ui-field__control:focus-within) {
-  border-color: rgba(241, 90, 8, 0.9);
-  box-shadow: 0 0 0 2px rgba(241, 90, 8, 0.12);
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px var(--color-accent-soft);
 }
 
-.field :global(.ui-field__control input),
-.field :global(.ui-field__control select) {
+.field :global(.ui-field__control input) {
   appearance: none;
   -webkit-appearance: none;
-  color: #f6f6f6 !important;
+  color: var(--color-text) !important;
   background: transparent !important;
-  background-color: transparent !important;
   box-shadow: none !important;
   caret-color: var(--color-accent);
-  font-size: 0.86rem;
-  -webkit-text-fill-color: #f6f6f6;
-}
-
-.field :global(.ui-field__control select) {
-  appearance: auto;
-  -webkit-appearance: menulist;
+  font-size: 0.9rem;
+  -webkit-text-fill-color: var(--color-text);
 }
 
 .field :global(.ui-field__control input::placeholder) {
-  color: #8f9194;
+  color: var(--color-text-muted);
   opacity: 1;
-  -webkit-text-fill-color: #8f9194;
+  -webkit-text-fill-color: var(--color-text-muted);
 }
 
 .field :global(.ui-field__hint) {
-  color: #939598;
+  color: var(--color-text-muted);
   font-size: 0.72rem;
-  font-weight: 400;
-  line-height: 1.38;
+  line-height: 1.4;
 }
 
 .field :global(.ui-field__error) {
-  color: #ffb0b0;
+  color: var(--color-danger);
   font-size: 0.74rem;
 }
 
@@ -68,38 +150,53 @@
 .field :global(.ui-field__control input:-webkit-autofill:hover),
 .field :global(.ui-field__control input:-webkit-autofill:focus),
 .field :global(.ui-field__control input:-webkit-autofill:active) {
-  -webkit-text-fill-color: #f6f6f6 !important;
-  -webkit-box-shadow: 0 0 0 1000px #090b0c inset !important;
-  box-shadow: 0 0 0 1000px #090b0c inset !important;
+  -webkit-text-fill-color: var(--color-text) !important;
+  -webkit-box-shadow: 0 0 0 1000px var(--color-bg-elevated) inset !important;
+  box-shadow: 0 0 0 1000px var(--color-bg-elevated) inset !important;
   caret-color: var(--color-accent);
-}
-
-.field :global(.ui-field__control input:autofill) {
-  color: #f6f6f6 !important;
-  background: #090b0c !important;
-  box-shadow: 0 0 0 1000px #090b0c inset !important;
 }
 
 .error {
   margin: 0;
-  border-left: 2px solid currentColor;
-  padding: 8px 10px;
-  color: #ffb0b0;
-  background: rgba(255, 156, 156, 0.045);
-  font-size: 0.78rem;
-  line-height: 1.42;
+  border: 1px solid rgba(255, 156, 156, 0.35);
+  border-radius: var(--radius-md);
+  padding: var(--space-3);
+  color: var(--color-danger);
+  background: rgba(255, 156, 156, 0.055);
+  font-size: 0.8rem;
+  line-height: 1.45;
+}
+
+.actions {
+  position: sticky;
+  z-index: 4;
+  bottom: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 0.62fr) minmax(0, 1fr);
+  gap: var(--space-2);
+  margin: var(--space-1) calc(-1 * var(--app-page-gutter)) calc(-1 * max(28px, env(safe-area-inset-bottom)));
+  border-top: 1px solid var(--color-border);
+  padding: var(--space-3) var(--app-page-gutter) max(var(--space-4), env(safe-area-inset-bottom));
+  background: color-mix(in srgb, var(--color-bg) 94%, transparent);
+  backdrop-filter: blur(16px);
+}
+
+:global(.ui-button).primaryButton,
+:global(.ui-button--primary).primaryButton,
+:global(.ui-button).backButton,
+:global(.ui-button--secondary).backButton {
+  min-height: 50px;
+  border-radius: var(--radius-md);
+  box-shadow: none;
+  font-size: 0.88rem;
+  font-weight: 750;
 }
 
 :global(.ui-button).primaryButton,
 :global(.ui-button--primary).primaryButton {
-  min-height: 48px;
   border-color: var(--color-accent);
-  border-radius: 8px;
-  color: #ffffff;
+  color: #fff;
   background: var(--color-accent);
-  box-shadow: none;
-  font-size: 0.86rem;
-  font-weight: 650;
 }
 
 :global(.ui-button).primaryButton:hover:not(:disabled),
@@ -108,7 +205,46 @@
   background: var(--color-accent-hover);
 }
 
-:global(.ui-button).primaryButton:focus-visible {
+:global(.ui-button).backButton,
+:global(.ui-button--secondary).backButton {
+  border-color: var(--color-border-strong);
+  color: var(--color-text-soft);
+  background: var(--color-surface);
+}
+
+:global(.ui-button).primaryButton:focus-visible,
+:global(.ui-button).backButton:focus-visible {
   outline: 3px solid rgba(241, 90, 8, 0.38);
   outline-offset: 2px;
+}
+
+@media (max-width: 360px) {
+  .steps li {
+    grid-template-columns: 24px minmax(0, 1fr);
+    gap: 5px;
+  }
+
+  .steps li > span {
+    width: 24px;
+    height: 24px;
+  }
+
+  .steps li small {
+    font-size: 0.62rem;
+  }
+
+  .stepSurface {
+    padding: var(--space-4);
+  }
+}
+
+@media (min-width: 520px) {
+  .actions {
+    position: static;
+    margin: var(--space-1) 0 0;
+    border-top: 0;
+    padding: 0;
+    background: transparent;
+    backdrop-filter: none;
+  }
 }

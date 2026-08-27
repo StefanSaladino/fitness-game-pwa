@@ -5,7 +5,7 @@
   place-items: center;
   padding: max(24px, env(safe-area-inset-top)) 20px max(24px, env(safe-area-inset-bottom));
   color: var(--color-text);
-  background: #070709;
+  background: var(--color-bg);
 }
 
 .content {
@@ -13,7 +13,10 @@
   width: min(100%, 260px);
   justify-items: center;
   gap: 9px;
-  transform: translateY(-3.5vh);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  padding: var(--space-6);
+  background: var(--color-surface);
   text-align: center;
 }
 

@@ -1,4 +1,5 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { useState, type ComponentProps } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import type { WorkoutExercise, WorkoutSet, WorkoutSetInput } from '../model';
@@ -79,6 +80,7 @@ describe('WorkoutSetList', () => {
   });
 
   it('persists plain, added-weight, and assisted bodyweight modes separately', async () => {
+    const user = userEvent.setup();
     const onSaveSet = vi.fn(async (_id: string, _input: WorkoutSetInput) => true);
     const bodyweightSet: WorkoutSet = {
       id: 'set-bw', workoutExerciseId: 'we-2', setNumber: 1, setType: 'WORKING',
@@ -87,7 +89,8 @@ describe('WorkoutSetList', () => {
     render(<WorkoutSetList {...props({ exercise: bodyweightExercise, sets: [bodyweightSet], onSaveSet })} />);
 
     expect(screen.queryByLabelText('Set 1 load in kg')).not.toBeInTheDocument();
-    fireEvent.change(screen.getByLabelText('Set 1 bodyweight mode'), { target: { value: 'ADDED_WEIGHT' } });
+    await user.click(screen.getByRole('combobox', { name: 'Set 1 bodyweight mode' }));
+    await user.click(screen.getByRole('option', { name: 'Added weight' }));
 
     expect(await screen.findByLabelText('Set 1 load in kg')).toBeInTheDocument();
     fireEvent.change(screen.getByLabelText('Set 1 load in kg'), { target: { value: '20' } });

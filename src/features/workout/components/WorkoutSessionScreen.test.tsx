@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import type { ComponentProps } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import type { OnboardingProfile } from '../../onboarding';
@@ -233,6 +233,21 @@ describe('workout session presentation', () => {
     const dialog = screen.getByRole('dialog', { name: 'Cancel this workout?' });
     fireEvent.click(dialog.querySelector('button:last-child') as HTMLButtonElement);
     await waitFor(() => expect(onCancel).toHaveBeenCalledTimes(1));
+  });
+
+  it('requires explicit confirmation before finishing and returns focus to the task action when dismissed', async () => {
+    const onFinish = vi.fn(async () => undefined);
+    render(activeScreen({ onFinish }));
+
+    const finishButton = screen.getByRole('button', { name: 'Finish workout' });
+    fireEvent.click(finishButton);
+
+    const dialog = screen.getByRole('dialog', { name: 'Finish this workout?' });
+    expect(screen.getByRole('button', { name: 'Keep logging' })).toHaveFocus();
+    expect(onFinish).not.toHaveBeenCalled();
+
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Finish workout' }));
+    await waitFor(() => expect(onFinish).toHaveBeenCalledTimes(1));
   });
 
   it('traps keyboard focus inside the cancel dialog and restores it on escape', () => {

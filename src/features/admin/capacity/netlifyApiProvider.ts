@@ -177,3 +177,15 @@ export function createNetlifyApiCapacityProvider(
     },
   };
 }
+
+export function createDeferredNetlifyCapacityProvider(): CapacityTelemetryProvider {
+  return {
+    source: 'NETLIFY_API',
+    async read(request?: CapacityTelemetryRequest): Promise<CapacityTelemetryResult> {
+      return unavailableResult(
+        requestedCodes(request),
+        'Netlify setup is deferred. Enable the Netlify capacity adapter after the site and provider credentials are configured.',
+      );
+    },
+  };
+}

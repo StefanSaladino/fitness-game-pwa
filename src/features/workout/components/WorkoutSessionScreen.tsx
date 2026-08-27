@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
-import workoutHero from '../../../assets/fitness/top-set-dumbbell-grip.jpg';
 import { AppShell, type AppSection } from '../../../components/layout';
 import { Button } from '../../../components/ui';
 import type { OnboardingProfile } from '../../onboarding';
@@ -204,16 +203,18 @@ function syncPresentation(
 export function WorkoutSyncConflictScreen(props: SyncConflictProps) {
   return (
     <WorkoutShell {...props}>
-      <main className={styles.start}>
-        <p className={styles.kicker}>WORKOUT RECOVERY</p>
-        <h1>Workout changed elsewhere</h1>
-        <p>{props.message}</p>
-        {props.onUseServerVersion && (
-          <Button disabled={props.resolving} onClick={() => void props.onUseServerVersion?.()}>
-            {props.resolving ? 'Checking server…' : 'Use server version'}
-          </Button>
-        )}
-      </main>
+      <div className={styles.statePage}>
+        <section className={styles.recoveryPanel} data-app-surface="primary">
+          <p className={styles.kicker}>WORKOUT RECOVERY</p>
+          <h1>Workout changed elsewhere</h1>
+          <p>{props.message}</p>
+          {props.onUseServerVersion && (
+            <Button disabled={props.resolving} onClick={() => void props.onUseServerVersion?.()}>
+              {props.resolving ? 'Checking server…' : 'Use server version'}
+            </Button>
+          )}
+        </section>
+      </div>
     </WorkoutShell>
   );
 }
@@ -234,24 +235,28 @@ export function WorkoutStartScreen(props: StartProps) {
 
   return (
     <WorkoutShell {...props}>
-      <main className={styles.start}>
-        <p className={styles.kicker}>WORKOUT</p>
-        <h1>Start a lift</h1>
-        <p>Start the session now. If a workout is already active on your account, this resumes it instead of creating a duplicate.</p>
-        {startingAtMs !== null && (
-          <div className={styles.startingClock} role="status">
-            <span>Starting workout</span>
-            <time dateTime={`PT${startingSeconds}S`}>{formatWorkoutDuration(startingSeconds)}</time>
+      <div className={styles.statePage}>
+        <section className={styles.startPanel} data-app-surface="primary">
+          <div className={styles.startCopy}>
+            <p className={styles.kicker}>WORKOUT</p>
+            <h1>Start a lift</h1>
+            <p>Start the session now. If a workout is already active on your account, this resumes it instead of creating a duplicate.</p>
           </div>
-        )}
-        {props.error && <p className={styles.error} role="alert">{props.error}</p>}
-        <div className={styles.startActions}>
-          <Button disabled={props.busyAction !== null || startingAtMs !== null} onClick={startNow}>
-            {props.busyAction === 'start' || startingAtMs !== null ? 'Starting…' : 'Start Lift'}
-          </Button>
-          <Button variant="secondary" disabled={props.busyAction !== null || startingAtMs !== null} onClick={() => props.onNavigate('cardio')}>Log cardio instead</Button>
-        </div>
-      </main>
+          {startingAtMs !== null && (
+            <div className={styles.startingClock} role="status">
+              <span>Starting workout</span>
+              <time dateTime={`PT${startingSeconds}S`}>{formatWorkoutDuration(startingSeconds)}</time>
+            </div>
+          )}
+          {props.error && <p className={styles.error} role="alert">{props.error}</p>}
+          <div className={styles.startActions}>
+            <Button disabled={props.busyAction !== null || startingAtMs !== null} fullWidth onClick={startNow}>
+              {props.busyAction === 'start' || startingAtMs !== null ? 'Starting…' : 'Start Lift'}
+            </Button>
+            <Button variant="secondary" disabled={props.busyAction !== null || startingAtMs !== null} fullWidth onClick={() => props.onNavigate('cardio')}>Log cardio instead</Button>
+          </div>
+        </section>
+      </div>
     </WorkoutShell>
   );
 }
@@ -263,12 +268,12 @@ export function ActiveWorkoutScreen(props: ActiveProps) {
   const [resumeIntentAtMs, setResumeIntentAtMs] = useState<number | null>(null);
   const [expandedExerciseId, setExpandedExerciseId] = useState<string | null>(() => props.exercises[0]?.id ?? null);
   const hasInitializedExerciseExpansionRef = useRef(props.exercises.length > 0);
-  const [cancelConfirmOpen, setCancelConfirmOpen] = useState(false);
+  const [lifecycleConfirm, setLifecycleConfirm] = useState<'finish' | 'cancel' | null>(null);
   const workoutContentRef = useRef<HTMLDivElement | null>(null);
-  const cancelDialogRef = useRef<HTMLElement | null>(null);
+  const lifecycleDialogRef = useRef<HTMLElement | null>(null);
   const cancelButtonRef = useRef<HTMLButtonElement | null>(null);
-  const keepWorkoutRef = useRef<HTMLButtonElement | null>(null);
-  const cancelBusyRef = useRef(false);
+  const safeLifecycleButtonRef = useRef<HTMLButtonElement | null>(null);
+  const lifecycleBusyRef = useRef(false);
   const seconds = useWorkoutClock(props.workout, pauseIntentAtMs, resumeIntentAtMs);
   const persistedPaused = props.workout.pausedAt !== null;
   const displayPaused = persistedPaused && resumeIntentAtMs === null;
@@ -283,7 +288,7 @@ export function ActiveWorkoutScreen(props: ActiveProps) {
   const setEditsEnabled = recoveryState !== 'recovering' && !queueBlocked && !queueConflict;
   const lifecycleMutationsEnabled = serverMutationsEnabled;
   const syncState = syncPresentation(recoveryState, mutationQueueStatus, mutationQueuePendingCount);
-  cancelBusyRef.current = props.busyAction === 'cancel';
+  lifecycleBusyRef.current = props.busyAction === 'finish' || props.busyAction === 'cancel';
 
   useEffect(() => {
     if (pauseIntentAtMs !== null && props.busyAction !== 'pause' && (props.workout.pausedAt !== null || props.error)) {
@@ -317,17 +322,17 @@ export function ActiveWorkoutScreen(props: ActiveProps) {
   }, [expandedExerciseId, props.exercises]);
 
   useEffect(() => {
-    if (!cancelConfirmOpen) return undefined;
+    if (!lifecycleConfirm) return undefined;
 
     const content = workoutContentRef.current;
-    const dialog = cancelDialogRef.current;
+    const dialog = lifecycleDialogRef.current;
     content?.setAttribute('inert', '');
-    keepWorkoutRef.current?.focus();
+    safeLifecycleButtonRef.current?.focus();
 
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape' && !cancelBusyRef.current) {
+      if (event.key === 'Escape' && !lifecycleBusyRef.current) {
         event.preventDefault();
-        setCancelConfirmOpen(false);
+        setLifecycleConfirm(null);
         return;
       }
 
@@ -349,13 +354,23 @@ export function ActiveWorkoutScreen(props: ActiveProps) {
     return () => {
       window.removeEventListener('keydown', onKeyDown);
       content?.removeAttribute('inert');
-      window.requestAnimationFrame(() => cancelButtonRef.current?.focus());
+      window.requestAnimationFrame(() => {
+        if (lifecycleConfirm === 'finish') document.querySelector<HTMLButtonElement>('[data-finish-workout]')?.focus();
+        else cancelButtonRef.current?.focus();
+      });
     };
-  }, [cancelConfirmOpen]);
+  }, [lifecycleConfirm]);
 
   useEffect(() => {
-    if (!lifecycleMutationsEnabled) setCancelConfirmOpen(false);
+    if (!lifecycleMutationsEnabled) setLifecycleConfirm(null);
   }, [lifecycleMutationsEnabled]);
+
+  useEffect(() => {
+    if (!pickerOpen) return undefined;
+    const content = workoutContentRef.current;
+    content?.setAttribute('inert', '');
+    return () => content?.removeAttribute('inert');
+  }, [pickerOpen]);
 
   const changeWeightUnit = (unit: WeightDisplayUnit) => {
     setWeightUnit(unit);
@@ -374,56 +389,61 @@ export function ActiveWorkoutScreen(props: ActiveProps) {
     void props.onResume(actionAtMs);
   };
 
-  const confirmCancel = async () => {
-    await props.onCancel();
-    setCancelConfirmOpen(false);
+  const confirmLifecycle = async () => {
+    if (lifecycleConfirm === 'finish') await props.onFinish();
+    if (lifecycleConfirm === 'cancel') await props.onCancel();
+    setLifecycleConfirm(null);
   };
+
+  const dialogIsFinish = lifecycleConfirm === 'finish';
 
   return (
     <WorkoutShell {...props}>
-      <main className={styles.active}>
-        <div ref={workoutContentRef} className={styles.workoutContent} aria-hidden={cancelConfirmOpen || undefined}>
-          <header className={styles.activeHeader}>
-            <div className={styles.activeTitle}>
-              <p className={styles.kicker}>ACTIVE LIFT</p>
-              <h1>{displayPaused ? 'Workout paused' : 'Workout in progress'}</h1>
+      <div className={styles.active}>
+        <div ref={workoutContentRef} className={styles.workoutContent} aria-hidden={(Boolean(lifecycleConfirm) || pickerOpen) || undefined}>
+          <section className={styles.sessionPanel} data-app-surface="primary">
+            <header className={styles.activeHeader}>
+              <div className={styles.activeTitle}>
+                <p className={styles.kicker}>ACTIVE LIFT</p>
+                <h1>{displayPaused ? 'Workout paused' : 'Workout in progress'}</h1>
+              </div>
+              {persistedPaused ? (
+                <button
+                  aria-label="Resume timer"
+                  className={styles.timerControl}
+                  disabled={!lifecycleMutationsEnabled || lifecycleBusy}
+                  onClick={resumeNow}
+                  type="button"
+                >{props.busyAction === 'resume' ? 'Resuming…' : 'Resume'}</button>
+              ) : (
+                <button
+                  aria-label="Pause timer"
+                  className={styles.timerControl}
+                  disabled={!lifecycleMutationsEnabled || lifecycleBusy}
+                  onClick={pauseNow}
+                  type="button"
+                >{props.busyAction === 'pause' ? 'Pausing…' : 'Pause'}</button>
+              )}
+            </header>
+
+            <div className={styles.sessionMeta} aria-label="Workout session state">
+              <div className={styles.elapsedMeta}>
+                <span>Elapsed</span>
+                <time className={styles.timer} dateTime={`PT${seconds}S`}>{formatWorkoutDuration(seconds)}</time>
+              </div>
+              <div><span>Started</span><strong>{new Intl.DateTimeFormat('en-CA', { hour: 'numeric', minute: '2-digit' }).format(new Date(props.workout.startedAt))}</strong></div>
+              <div><span>Scoring date</span><strong>{props.workout.scoringDate}</strong></div>
             </div>
-            {persistedPaused ? (
-              <button
-                aria-label="Resume timer"
-                className={styles.timerControl}
-                disabled={!lifecycleMutationsEnabled || lifecycleBusy}
-                onClick={resumeNow}
-                type="button"
-              >{props.busyAction === 'resume' ? 'Resuming…' : 'Resume'}</button>
-            ) : (
-              <button
-                aria-label="Pause timer"
-                className={styles.timerControl}
-                disabled={!lifecycleMutationsEnabled || lifecycleBusy}
-                onClick={pauseNow}
-                type="button"
-              >{props.busyAction === 'pause' ? 'Pausing…' : 'Pause'}</button>
+
+            {syncState.tone === 'success' && (
+              <div className={styles.syncQuiet} aria-live="polite" role="status">
+                <span aria-hidden="true">✓</span>
+                <strong>Synced</strong>
+              </div>
             )}
-          </header>
-
-          <img alt="" className={styles.workoutHero} src={workoutHero} />
-
-          <section className={styles.sessionMeta} aria-label="Workout session state">
-            <div className={styles.elapsedMeta}>
-              <span>Elapsed</span>
-              <time className={styles.timer} dateTime={`PT${seconds}S`}>{formatWorkoutDuration(seconds)}</time>
-            </div>
-            <div><span>Started</span><strong>{new Intl.DateTimeFormat('en-CA', { hour: 'numeric', minute: '2-digit' }).format(new Date(props.workout.startedAt))}</strong></div>
-            <div><span>Scoring date</span><strong>{props.workout.scoringDate}</strong></div>
           </section>
 
-          {syncState.tone === 'success' ? (
-            <div className={styles.syncQuiet} aria-live="polite" role="status">
-              <span aria-hidden="true">✓</span>
-              <strong>Synced</strong>
-            </div>
-          ) : (
+          {syncState.tone !== 'success' && (
             <section className={`${styles.syncNotice} ${styles[`sync${syncState.tone[0].toUpperCase()}${syncState.tone.slice(1)}`]}`} aria-live="polite" role="status">
               <div>
                 <strong>{syncState.title}</strong>
@@ -442,7 +462,7 @@ export function ActiveWorkoutScreen(props: ActiveProps) {
             </section>
           )}
 
-          <section className={styles.exerciseStage} aria-labelledby="workout-exercises-heading">
+          <section className={styles.exerciseStage} aria-labelledby="workout-exercises-heading" data-app-surface="category">
             <div className={styles.exerciseHeading}>
               <div>
                 <p className={styles.kicker}>EXERCISES</p>
@@ -553,50 +573,76 @@ export function ActiveWorkoutScreen(props: ActiveProps) {
             )}
           </section>
 
-          <ExercisePicker
-            catalog={props.exerciseCatalog}
-            error={props.exercisePickerError}
-            isAdding={props.compositionBusyAction === 'add'}
-            onAdd={props.onAddExercise}
-            onClose={() => setPickerOpen(false)}
-            onRetry={props.onRetryExercisePicker}
-            open={pickerOpen}
-            selectedExerciseIds={props.exercises.map((exercise) => exercise.exerciseId)}
-            status={props.exercisePickerStatus}
-          />
-
           {props.error && <p className={styles.error} role="alert">{props.error}</p>}
 
           <div className={styles.lifecycleActions}>
-            <Button disabled={!lifecycleMutationsEnabled || lifecycleBusy} onClick={() => void props.onFinish()}>
+            <Button data-finish-workout disabled={!lifecycleMutationsEnabled || lifecycleBusy} onClick={() => setLifecycleConfirm('finish')}>
               {props.busyAction === 'finish' ? 'Finishing…' : 'Finish workout'}
             </Button>
             <button
               ref={cancelButtonRef}
               className={styles.cancelButton}
               disabled={!lifecycleMutationsEnabled || lifecycleBusy}
-              onClick={() => setCancelConfirmOpen(true)}
+              onClick={() => setLifecycleConfirm('cancel')}
               type="button"
             >Cancel workout</button>
           </div>
         </div>
 
-        {cancelConfirmOpen && (
-          <div className={styles.cancelBackdrop}>
-            <section ref={cancelDialogRef} aria-describedby="cancel-workout-description" aria-labelledby="cancel-workout-title" aria-modal="true" className={styles.cancelDialog} role="dialog">
-              <p className={styles.kicker}>CANCEL WORKOUT</p>
-              <h2 id="cancel-workout-title">Cancel this workout?</h2>
-              <p id="cancel-workout-description">The active workout will be cancelled. Nothing changes until you confirm.</p>
-              <div className={styles.cancelDialogActions}>
-                <button ref={keepWorkoutRef} className={styles.keepWorkoutButton} disabled={props.busyAction === 'cancel'} onClick={() => setCancelConfirmOpen(false)} type="button">Keep workout</button>
-                <button className={styles.confirmCancelButton} disabled={props.busyAction === 'cancel'} onClick={() => void confirmCancel()} type="button">
-                  {props.busyAction === 'cancel' ? 'Cancelling…' : 'Cancel workout'}
+        <ExercisePicker
+          catalog={props.exerciseCatalog}
+          error={props.exercisePickerError}
+          isAdding={props.compositionBusyAction === 'add'}
+          onAdd={props.onAddExercise}
+          onClose={() => setPickerOpen(false)}
+          onRetry={props.onRetryExercisePicker}
+          open={pickerOpen}
+          selectedExerciseIds={props.exercises.map((exercise) => exercise.exerciseId)}
+          status={props.exercisePickerStatus}
+        />
+
+        {lifecycleConfirm && (
+          <div className={styles.lifecycleBackdrop}>
+            <section
+              ref={lifecycleDialogRef}
+              aria-describedby="workout-lifecycle-description"
+              aria-labelledby="workout-lifecycle-title"
+              aria-modal="true"
+              className={styles.lifecycleDialog}
+              data-lifecycle-action={lifecycleConfirm}
+              role="dialog"
+            >
+              <div className={styles.dialogHandle} aria-hidden="true" />
+              <p className={styles.kicker}>{dialogIsFinish ? 'FINISH WORKOUT' : 'CANCEL WORKOUT'}</p>
+              <h2 id="workout-lifecycle-title">{dialogIsFinish ? 'Finish this workout?' : 'Cancel this workout?'}</h2>
+              <p id="workout-lifecycle-description">
+                {dialogIsFinish
+                  ? 'Completed sets will be finalized and this lift will move to your workout history.'
+                  : 'The active workout will be cancelled. Nothing changes until you confirm.'}
+              </p>
+              <div className={styles.lifecycleDialogActions}>
+                <button
+                  ref={safeLifecycleButtonRef}
+                  className={styles.keepWorkoutButton}
+                  disabled={lifecycleBusyRef.current}
+                  onClick={() => setLifecycleConfirm(null)}
+                  type="button"
+                >{dialogIsFinish ? 'Keep logging' : 'Keep workout'}</button>
+                <button
+                  className={dialogIsFinish ? styles.confirmFinishButton : styles.confirmCancelButton}
+                  disabled={lifecycleBusyRef.current}
+                  onClick={() => void confirmLifecycle()}
+                  type="button"
+                >
+                  {dialogIsFinish
+                    ? (props.busyAction === 'finish' ? 'Finishing…' : 'Finish workout')
+                    : (props.busyAction === 'cancel' ? 'Cancelling…' : 'Cancel workout')}
                 </button>
               </div>
             </section>
           </div>
         )}
-      </main>
+      </div>
     </WorkoutShell>
   );
 }

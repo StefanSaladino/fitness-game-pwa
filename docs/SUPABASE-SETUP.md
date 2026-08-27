@@ -38,9 +38,10 @@ Set only browser-safe values:
 VITE_SUPABASE_URL=https://YOUR_PROJECT_REF.supabase.co
 VITE_SUPABASE_PUBLISHABLE_KEY=sb_publishable_YOUR_REAL_KEY
 VITE_APP_URL=http://localhost:5173
+VITE_NETLIFY_CAPACITY_ENABLED=false
 ```
 
-Get the Project URL and publishable key from the hosted Supabase project. Do not put a service-role key, `sb_secret_...` key, database password, `DATABASE_URL`, JWT signing secret, or other privileged credential in any `VITE_*` variable.
+Get the Project URL and publishable key from the hosted Supabase project. Leave the optional Netlify switch false until its server adapter is deliberately configured. Do not put a service-role key, `sb_secret_...` key, database password, `DATABASE_URL`, JWT signing secret, Netlify token, or other privileged credential in any `VITE_*` variable.
 
 See `docs/ENVIRONMENT.md` for the complete secret-handling policy.
 
@@ -92,7 +93,7 @@ Versioned files under `supabase/migrations/` remain the source of truth.
 
 For a database-bearing slice:
 
-1. create the next canonical timestamped migration file;
+1. create the next canonical timestamped migration with `supabase migration new <descriptive_name>`;
 2. review the SQL and authorization boundary;
 3. apply the migration to the linked hosted Supabase project using the connected Supabase tooling or the Dashboard SQL Editor workflow;
 4. confirm the hosted migration history contains the exact version/name committed to the repository;

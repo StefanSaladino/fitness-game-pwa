@@ -29,11 +29,14 @@ const snapshot: CapacityDashboardSnapshot = {
 describe('CapacityDashboard', () => {
   it('renders only real local telemetry and honest unavailable/unconfigured states', () => {
     render(<CapacityDashboard snapshot={snapshot} onRefresh={vi.fn()} onCaptureSnapshot={vi.fn()} />);
-    expect(screen.getByRole('heading', { name: 'Capacity', level: 1 })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Platform overview', level: 1 })).toBeInTheDocument();
+    expect(screen.getByText('Supabase connected')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Supabase project data' })).toBeInTheDocument();
     expect(screen.getByText('Database size')).toBeInTheDocument();
     expect(screen.getByText('Postgres connections')).toBeInTheDocument();
     expect(screen.getAllByText('Unconfigured').length).toBeGreaterThan(0);
-    expect(screen.getAllByText('Billing usage unavailable')).toHaveLength(2);
+    expect(screen.getByText('Management usage unavailable')).toBeInTheDocument();
+    expect(screen.getByText('Setup deferred')).toBeInTheDocument();
     expect(screen.getByText('No snapshots yet')).toBeInTheDocument();
     expect(screen.queryByText(/Healthy/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/500 MB/i)).not.toBeInTheDocument();

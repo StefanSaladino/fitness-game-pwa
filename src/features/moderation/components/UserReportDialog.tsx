@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type FormEvent, type KeyboardEvent } from 'react';
+import { SelectField } from '../../../components/ui';
 import {
   USER_REPORT_CATEGORIES,
   type UserReportCategory,
@@ -27,7 +28,7 @@ const categoryLabels: Record<UserReportCategory, string> = {
 
 function focusableElements(container: HTMLElement): HTMLElement[] {
   return Array.from(container.querySelectorAll<HTMLElement>(
-    'button:not([disabled]), textarea:not([disabled]), select:not([disabled])',
+    'button:not([disabled]), textarea:not([disabled]), [role="combobox"]:not([disabled])',
   ));
 }
 
@@ -39,7 +40,7 @@ export function UserReportDialog({
   onSubmitted,
 }: UserReportDialogProps) {
   const dialogRef = useRef<HTMLDivElement>(null);
-  const categoryRef = useRef<HTMLSelectElement>(null);
+  const categoryRef = useRef<HTMLButtonElement>(null);
   const [category, setCategory] = useState<UserReportCategory>('HARASSMENT');
   const [reason, setReason] = useState('');
   const [busy, setBusy] = useState(false);
@@ -117,17 +118,15 @@ export function UserReportDialog({
           <p className={styles.description} id="user-report-description">
             Your report goes to the private moderation queue. The reported user cannot see your identity through this feature.
           </p>
-          <label>
-            <span>Category</span>
-            <select
+          <SelectField
               disabled={busy}
+              label="Category"
               onChange={(event) => setCategory(event.target.value as UserReportCategory)}
               ref={categoryRef}
               value={category}
             >
               {USER_REPORT_CATEGORIES.map((value) => <option key={value} value={value}>{categoryLabels[value]}</option>)}
-            </select>
-          </label>
+          </SelectField>
           <label>
             <span>What happened?</span>
             <textarea

@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
-import { AppShell, type AppSection } from '../../../components/layout';
-import { Button } from '../../../components/ui';
+import competitionBanner from '../../../assets/fitness/top-set-kettlebell-chalk.jpg';
+import { AppShell, DestinationBanner, type AppSection } from '../../../components/layout';
+import { Button, SelectField } from '../../../components/ui';
 import { liftingBadgeDefinition } from '../../consistency';
 import type { GroupSummary } from '../../groups';
 import type { OnboardingProfile } from '../../onboarding';
@@ -50,6 +51,8 @@ interface ActivityContent {
   title: string;
   detail: string;
 }
+
+type SocialView = 'standings' | 'activity';
 
 const reactionCopy: Record<GroupReactionType, string> = {
   FIRE: 'Fire',
@@ -168,6 +171,7 @@ export function GroupSocialScreen(props: Props) {
   } = props;
 
   const [period, setPeriod] = useState<GroupCompetitionPeriod>('WEEK');
+  const [view, setView] = useState<SocialView>('standings');
   const [reportTarget, setReportTarget] = useState<ReportTarget | null>(null);
   const [reportNotice, setReportNotice] = useState('');
   const board = period === 'WEEK' ? weekly : allTime;
@@ -185,40 +189,41 @@ export function GroupSocialScreen(props: Props) {
         userLabel={profile.displayName}
         userMeta={`@${profile.username} · ${profile.weeklyWorkoutTarget} lift days`}
       >
-        <div className={styles.page}>
-          <header className={styles.header}>
-            <div>
+        <div className={styles.page} data-social-composition>
+          <DestinationBanner className={styles.headerSurface} data-social-surface="identity" imagePosition="center 50%" imageSrc={competitionBanner}>
+            <div className={styles.headerCopy}>
               <p className={styles.kicker}>COMPETE</p>
               <h1>{group.name}</h1>
               <p>Competition and privacy-safe crew highlights from authoritative lifting activity.</p>
             </div>
-            <button className={styles.manageGroupButton} onClick={() => onNavigate('groups')} type="button">
+            <Button className={styles.manageGroupButton} onClick={() => onNavigate('groups')} variant="secondary">
               Manage group
-            </button>
-          </header>
+            </Button>
+          </DestinationBanner>
 
-          {groups.length > 1 && (
-            <section className={styles.groupSwitcher} aria-labelledby="competition-groups-heading">
-              <p className={styles.sectionLabel} id="competition-groups-heading">Your groups</p>
-              <div className={styles.groupRail} role="group" aria-label="Select competition group">
+          <section className={styles.contextSurface} aria-label={`${group.name} competition context`} data-social-surface="context">
+            <span className={styles.groupMonogram} aria-hidden="true">{groupMonogram(group.name)}</span>
+            <span className={styles.contextCopy}>
+              <strong>{group.name}</strong>
+              <small>{groupMeta(group)}</small>
+            </span>
+            {groups.length > 1 && (
+              <SelectField
+                className={styles.groupSelect}
+                compact
+                label="Competition group"
+                labelHidden
+                onChange={(event) => onSelectGroup(event.target.value)}
+                value={group.id}
+              >
                 {groups.map((item) => (
-                  <button
-                    aria-pressed={item.id === group.id}
-                    className={styles.groupRailButton}
-                    key={item.id}
-                    onClick={() => onSelectGroup(item.id)}
-                    type="button"
-                  >
-                    <span className={styles.groupMonogram} aria-hidden="true">{groupMonogram(item.name)}</span>
-                    <span className={styles.groupRailCopy}>
-                      <strong>{item.name}</strong>
-                      <small>{groupMeta(item)}</small>
-                    </span>
-                  </button>
+                  <option key={item.id} value={item.id}>
+                    {item.name} · {groupMeta(item)}
+                  </option>
                 ))}
-              </div>
-            </section>
-          )}
+              </SelectField>
+            )}
+          </section>
 
           <section className={styles.privacyNote} aria-label="Social privacy">
             <strong>Summary-only social feed</strong>
@@ -228,8 +233,17 @@ export function GroupSocialScreen(props: Props) {
           {error && <p className={styles.error} role="alert">{error}</p>}
           {reportNotice && <p className={reportStyles.reportNotice} role="status">{reportNotice}</p>}
 
-          <div className={styles.contentGrid}>
-            <section className={styles.competition} aria-labelledby="competition-heading">
+          <nav className={styles.viewTabs} aria-label="Competition sections">
+            <button aria-selected={view === 'standings'} onClick={() => setView('standings')} role="tab" type="button">
+              Standings
+            </button>
+            <button aria-selected={view === 'activity'} onClick={() => setView('activity')} role="tab" type="button">
+              Activity
+            </button>
+          </nav>
+
+          {view === 'standings' && (
+            <section className={styles.competition} aria-labelledby="competition-heading" data-social-surface="standings" role="tabpanel">
               <div className={styles.sectionHeading}>
                 <div>
                   <p className={styles.sectionLabel}>Leaderboard</p>
@@ -307,8 +321,10 @@ export function GroupSocialScreen(props: Props) {
                 ))}
               </ol>
             </section>
+          )}
 
-            <section className={styles.feedSection} aria-labelledby="crew-feed-heading">
+          {view === 'activity' && (
+            <section className={styles.feedSection} aria-labelledby="crew-feed-heading" data-social-surface="activity" role="tabpanel">
               <div className={styles.sectionHeading}>
                 <div>
                   <p className={styles.sectionLabel}>Crew activity</p>
@@ -398,7 +414,7 @@ export function GroupSocialScreen(props: Props) {
                 </div>
               )}
             </section>
-          </div>
+          )}
         </div>
       </AppShell>
 

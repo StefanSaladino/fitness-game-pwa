@@ -72,7 +72,7 @@ function PickerHeader({ title, eyebrow, canGoBack, onBack, onClose }: {
           <h2 id="exercise-picker-title">{title}</h2>
         </div>
       </div>
-      <button aria-label="Close exercise picker" className={styles.close} onClick={onClose} type="button">Close</button>
+      <button aria-label="Close exercise picker" className={styles.close} data-picker-close onClick={onClose} type="button">Close</button>
     </header>
   );
 }
@@ -123,11 +123,15 @@ function ExerciseResults({ items, selected, isAdding, onAdd, emptyMessage }: {
 
 export function ExercisePicker(props: ExercisePickerProps) {
   const closeRef = useRef(props.onClose);
+  const dialogRef = useRef<HTMLElement | null>(null);
+  const previousFocusRef = useRef<HTMLElement | null>(null);
+  const viewRef = useRef<PickerView>('home');
   closeRef.current = props.onClose;
   const [view, setView] = useState<PickerView>('home');
   const [query, setQuery] = useState('');
   const [muscleGroup, setMuscleGroup] = useState<ExerciseMuscleGroup | null>(null);
   const [workoutType, setWorkoutType] = useState<ExerciseWorkoutType | ''>('');
+  viewRef.current = view;
 
   const selected = useMemo(() => new Set(props.selectedExerciseIds), [props.selectedExerciseIds]);
   const recents = useMemo(() => recentExercises(props.catalog), [props.catalog]);
@@ -163,23 +167,47 @@ export function ExercisePicker(props: ExercisePickerProps) {
   };
 
   useEffect(() => {
-    if (!props.open) {
-      goHome();
-      return undefined;
-    }
+    if (!props.open) return undefined;
     const previousOverflow = document.documentElement.style.overflow;
+    previousFocusRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
     document.documentElement.style.overflow = 'hidden';
+    window.requestAnimationFrame(() => dialogRef.current?.querySelector<HTMLButtonElement>('[data-picker-close]')?.focus());
+
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key !== 'Escape') return;
-      if (view === 'home') closeRef.current();
-      else goHome();
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        if (viewRef.current === 'home') closeRef.current();
+        else goHome();
+        return;
+      }
+
+      if (event.key !== 'Tab' || !dialogRef.current) return;
+      const focusable = Array.from(dialogRef.current.querySelectorAll<HTMLElement>(
+        'button:not(:disabled), input:not(:disabled), [tabindex]:not([tabindex="-1"])',
+      ));
+      if (focusable.length === 0) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
     };
+
     window.addEventListener('keydown', onKeyDown);
     return () => {
       document.documentElement.style.overflow = previousOverflow;
       window.removeEventListener('keydown', onKeyDown);
+      window.requestAnimationFrame(() => previousFocusRef.current?.focus());
     };
-  }, [props.open, view]);
+  }, [props.open]);
+
+  useEffect(() => {
+    if (!props.open) goHome();
+  }, [props.open]);
 
   if (!props.open) return null;
 
@@ -190,8 +218,13 @@ export function ExercisePicker(props: ExercisePickerProps) {
       : 'Add exercise';
 
   return (
-    <div className={styles.backdrop}>
-      <section aria-labelledby="exercise-picker-title" aria-modal="true" className={styles.picker} role="dialog">
+    <div
+      className={styles.backdrop}
+      onMouseDown={(event) => {
+        if (event.currentTarget === event.target) props.onClose();
+      }}
+    >
+      <section ref={dialogRef} aria-labelledby="exercise-picker-title" aria-modal="true" className={styles.picker} role="dialog" tabIndex={-1}>
         <div className={styles.chrome}>
           <PickerHeader
             canGoBack={view !== 'home'}
@@ -256,7 +289,9 @@ export function ExercisePicker(props: ExercisePickerProps) {
               </section>
             )}
 
-            <MuscleGroupSelector onSelect={openMuscle} />
+            <div className={styles.browseSurface}>
+              <MuscleGroupSelector onSelect={openMuscle} />
+            </div>
           </div>
         )}
 

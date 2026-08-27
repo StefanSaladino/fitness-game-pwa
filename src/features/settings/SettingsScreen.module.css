@@ -1,70 +1,176 @@
 .page {
+  min-width: 0;
   min-height: 100dvh;
-  background: #071019;
+  overflow-x: clip;
   color: var(--color-text);
-}
-
-.main {
-  width: min(100%, 820px);
-  margin: 0 auto;
-  padding: max(20px, env(safe-area-inset-top)) 18px calc(40px + env(safe-area-inset-bottom));
+  background: var(--color-bg);
 }
 
 .header {
+  position: sticky;
+  z-index: 40;
+  top: 0;
   display: grid;
+  min-height: calc(var(--shell-header-height) + env(safe-area-inset-top));
   grid-template-columns: minmax(64px, 1fr) auto minmax(64px, 1fr);
   align-items: center;
-  gap: 12px;
-  padding-bottom: 22px;
-  border-bottom: 1px solid var(--color-border-strong);
+  gap: var(--space-3);
+  border-bottom: 1px solid var(--color-border);
+  padding: env(safe-area-inset-top) var(--app-page-gutter) 0;
+  background: var(--color-bg-elevated);
   text-align: center;
 }
 
 .header h1,
 .section h2,
-.confirmDeletion h3 { margin: 0; }
-
-.header h1 { font-size: clamp(1.45rem, 5vw, 1.85rem); }
+.confirmDeletion h3,
+.settingsGroup h2 { margin: 0; }
+.header h1 { font-size: 1rem; letter-spacing: -0.01em; }
+.header .eyebrow { display: none; }
 
 .back {
   justify-self: start;
-  min-height: 42px;
-  border: 1px solid var(--color-border-strong);
-  border-radius: 10px;
-  padding: 0 13px;
-  color: var(--color-text);
-  background: #0c1722;
+  min-height: 44px;
+  border: 0;
+  padding: 0 8px 0 0;
+  color: var(--color-accent);
+  background: transparent;
   cursor: pointer;
   font: inherit;
-  font-weight: 700;
+  font-weight: 750;
 }
 
 .back:focus-visible,
+.headerSignOut:focus-visible,
+.accountSummary button:focus-visible,
+.settingsRow:focus-visible,
 .deleteButton:focus-visible,
 .switch:focus-visible {
-  outline: 3px solid rgba(61, 134, 255, 0.42);
+  outline: 3px solid rgba(241, 90, 8, 0.38);
   outline-offset: 2px;
 }
 
-.section {
-  padding: 24px 0;
-  border-bottom: 1px solid var(--color-border);
+.headerActions {
+  display: flex;
+  align-items: center;
+  justify-self: end;
+  gap: 4px;
 }
 
-.sectionHeading {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 16px;
-  margin-bottom: 16px;
+.messageSlot {
+  display: inline-flex;
+  width: 42px;
+  height: 42px;
 }
+
+.headerSignOut {
+  display: grid;
+  width: 42px;
+  height: 42px;
+  place-items: center;
+  border: 0;
+  border-radius: var(--radius-md);
+  padding: 0;
+  color: #ffb79d;
+  background: rgba(241, 90, 8, 0.08);
+  cursor: pointer;
+}
+
+.main {
+  width: min(calc(100% - (2 * var(--app-page-gutter))), 820px);
+  min-width: 0;
+  margin: 0 auto;
+  padding: var(--space-5) 0 calc(var(--space-8) + env(safe-area-inset-bottom));
+}
+
+.index,
+.panelStack,
+.profileForm {
+  display: grid;
+  min-width: 0;
+  gap: var(--app-category-gap);
+}
+
+.accountSummary {
+  display: grid;
+  min-width: 0;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 3px;
+  border-left: 3px solid var(--color-accent);
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-surface-strong);
+}
+
+.accountSummary > div { display: grid; min-width: 0; gap: 3px; }
+.accountSummary strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.accountSummary span { overflow: hidden; color: var(--color-text-muted); font-size: 0.8rem; text-overflow: ellipsis; white-space: nowrap; }
+.accountSummary button {
+  min-height: 42px;
+  border: 1px solid rgba(241, 90, 8, 0.42);
+  border-radius: var(--radius-md);
+  padding: 0 var(--space-3);
+  color: #ffb79d;
+  background: rgba(241, 90, 8, 0.08);
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 780;
+}
+
+.settingsGroup,
+.section {
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+}
+
+.settingsGroup > h2 {
+  padding: 12px var(--app-surface-padding) 9px;
+  color: var(--color-text-muted);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.settingsRows { border-top: 1px solid var(--color-border); }
+
+.settingsRow {
+  display: grid;
+  width: 100%;
+  min-height: 66px;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--space-3);
+  border: 0;
+  padding: 10px var(--app-surface-padding);
+  color: var(--color-text);
+  background: transparent;
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+}
+
+.settingsRow + .settingsRow { border-top: 1px solid rgba(255, 255, 255, 0.07); }
+.settingsRow:hover { background: rgba(255, 255, 255, 0.035); }
+.settingsRow > span:first-child { display: grid; min-width: 0; gap: 3px; }
+.settingsRow strong { font-size: 0.96rem; }
+.settingsRow small { overflow: hidden; color: var(--color-text-muted); font-size: 0.76rem; text-overflow: ellipsis; white-space: nowrap; }
+.rowChevron { color: var(--color-text-muted); font-size: 1.55rem; font-weight: 300; line-height: 1; }
+
+.section { padding: var(--app-surface-padding); }
+.sectionHeading { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--space-4); margin-bottom: var(--space-4); }
+.sectionHeading h2 { font-size: 1.28rem; letter-spacing: -0.02em; }
 
 .eyebrow {
   margin: 0 0 5px;
-  color: var(--color-text-muted);
-  font-size: 0.7rem;
+  color: var(--color-accent);
+  font-size: 0.68rem;
   font-weight: 800;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.1em;
 }
 
 .profileCode,
@@ -75,81 +181,59 @@
   border-radius: 999px;
   padding: 5px 9px;
   color: var(--color-text-muted);
-  font-size: 0.72rem;
+  font-size: 0.7rem;
   font-weight: 750;
   white-space: nowrap;
 }
 
-.profileForm { display: contents; }
-.formGrid { display: grid; gap: 16px; }
-.weeklyTarget { margin: 20px 0; }
-.passwordForm { display: grid; gap: 14px; margin-top: 18px; }
+.formGrid { display: grid; min-width: 0; gap: var(--space-4); }
+.weeklyTarget { margin: var(--space-5) 0; }
+.passwordForm { display: grid; min-width: 0; gap: var(--space-4); margin-top: var(--space-4); }
 
 .supportCopy,
 .dangerZone p,
 .confirmDeletion p {
-  margin: 0 0 13px;
+  margin: 0 0 var(--space-3);
   color: var(--color-text-muted);
   line-height: 1.55;
 }
 
-.detailList {
-  display: grid;
-  gap: 0;
-  margin: 0 0 14px;
-}
+.detailList { display: grid; margin: 0 0 var(--space-4); }
 
 .detailList div {
   display: grid;
+  min-height: 48px;
   grid-template-columns: minmax(0, 1fr) minmax(0, auto);
-  gap: 16px;
-  padding: 10px 0;
-  border-bottom: 1px solid var(--color-border);
+  align-items: center;
+  gap: var(--space-4);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
 }
 
 .detailList dt { color: var(--color-text-muted); }
-.detailList dd { margin: 0; text-align: right; overflow-wrap: anywhere; }
-
-.actions {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 10px;
-}
-
+.detailList dd { margin: 0; overflow-wrap: anywhere; text-align: right; }
+.actions { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); }
 .error,
 .success,
-.inviteCount {
-  margin: 13px 0;
-  line-height: 1.45;
-}
-
+.inviteCount { margin: var(--space-3) 0; line-height: 1.45; }
 .error { color: var(--color-danger); }
 .success { color: var(--color-success); }
 .inviteCount { color: var(--color-text-muted); }
 
-.notificationRows {
-  display: grid;
-  border-top: 1px solid var(--color-border);
-}
+.notificationRows { display: grid; border-top: 1px solid var(--color-border); }
 
 .notificationRow {
   display: grid;
+  min-height: 72px;
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
-  gap: 18px;
-  min-height: 72px;
-  padding: 13px 0;
-  border-bottom: 1px solid var(--color-border);
+  gap: var(--space-4);
+  padding: var(--space-3) 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
 }
 
 .notificationRow strong { display: block; }
 .notificationRow p,
-.deviceBox p {
-  margin: 5px 0 0;
-  color: var(--color-text-muted);
-  line-height: 1.45;
-}
+.deviceBox p { margin: 5px 0 0; color: var(--color-text-muted); line-height: 1.45; }
 
 .switch {
   position: relative;
@@ -158,57 +242,34 @@
   border: 1px solid var(--color-border-strong);
   border-radius: 999px;
   padding: 2px;
-  background: #101c27;
+  background: #181a1d;
   cursor: pointer;
   transition: background-color 160ms ease, border-color 160ms ease;
 }
 
-.switch[data-checked='true'] {
-  border-color: #5d94ff;
-  background: #2e67d6;
-}
-
+.switch[data-checked='true'] { border-color: var(--color-accent); background: var(--color-accent-strong); }
 .switch:disabled { cursor: not-allowed; opacity: 0.46; }
-
-.switchThumb {
-  display: block;
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
-  background: #f2f6fb;
-  transform: translateX(0);
-  transition: transform 160ms ease;
-}
-
+.switchThumb { display: block; width: 22px; height: 22px; border-radius: 50%; background: #f2f2f2; transform: translateX(0); transition: transform 160ms ease; }
 .switch[data-checked='true'] .switchThumb { transform: translateX(18px); }
 
 .deviceBox {
   display: grid;
-  gap: 15px;
-  margin: 18px 0;
-  border: 1px solid var(--color-border-strong);
-  border-radius: 14px;
-  padding: 16px;
-  background: #0b1722;
+  gap: var(--space-4);
+  margin: var(--space-5) 0;
+  border-left: 3px solid var(--color-border-strong);
+  padding: var(--space-4);
+  background: var(--color-surface-strong);
 }
 
-.groupList {
-  display: grid;
-  gap: 8px;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
+.groupList { display: grid; margin: 0; padding: 0; list-style: none; }
 
 .groupList li {
   display: flex;
+  min-height: var(--app-row-min-height);
   align-items: center;
   justify-content: space-between;
-  gap: 14px;
-  border: 1px solid var(--color-border);
-  border-radius: 12px;
-  padding: 12px 13px;
-  background: #0b1722;
+  gap: var(--space-3);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
 }
 
 .groupList strong,
@@ -218,33 +279,33 @@
 .dangerZone,
 .confirmDeletion {
   display: grid;
-  gap: 13px;
-  margin-top: 20px;
-  border: 1px solid rgba(255, 125, 140, 0.42);
-  border-radius: 14px;
-  padding: 16px;
-  background: rgba(255, 125, 140, 0.045);
+  gap: var(--space-3);
+  margin-top: var(--space-5);
+  border-left: 3px solid var(--color-danger);
+  padding: var(--space-4);
+  background: rgba(255, 125, 140, 0.055);
 }
 
 .dangerZone p:last-child,
 .confirmDeletion p:last-of-type { margin-bottom: 0; }
-
 .dangerZone > button { justify-self: start; }
 
 .confirmationPhrase {
   width: fit-content;
+  max-width: 100%;
+  overflow-wrap: anywhere;
   border: 1px solid var(--color-border-strong);
-  border-radius: 9px;
+  border-radius: var(--radius-sm);
   padding: 8px 10px;
   color: var(--color-text);
-  background: #071019;
+  background: var(--color-bg);
   font-size: 0.95rem;
 }
 
 .deleteButton {
   min-height: 46px;
   border: 1px solid #ff7d8c;
-  border-radius: 14px;
+  border-radius: var(--radius-md);
   padding: 0 18px;
   color: white;
   background: #9e2635;
@@ -256,7 +317,10 @@
 .deleteButton:disabled { cursor: not-allowed; opacity: 0.5; }
 
 @media (min-width: 680px) {
-  .main { padding-right: 24px; padding-left: 24px; }
+  .header { position: static; min-height: 84px; padding-top: 0; }
+  .header h1 { font-size: 1.4rem; }
+  .header .eyebrow { display: block; }
+  .main { padding-top: var(--space-6); }
   .formGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .passwordForm { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .passwordForm .actions,
@@ -264,25 +328,21 @@
   .passwordForm .success { grid-column: 1 / -1; }
 }
 
-@media (max-width: 520px) {
-  .header { grid-template-columns: auto 1fr auto; text-align: left; }
-  .header > span { display: none; }
+@media (max-width: 519px) {
+  .header { grid-template-columns: auto minmax(0, 1fr) auto; text-align: left; }
+  .header { gap: 4px; padding-right: 10px; padding-left: 10px; }
+  .headerActions { gap: 0; }
   .sectionHeading { align-items: flex-start; }
   .sectionHeading > button { flex: 0 0 auto; }
   .profileCode { max-width: 42%; overflow: hidden; text-overflow: ellipsis; }
-  .detailList div { grid-template-columns: 1fr; gap: 4px; }
+  .detailList div { grid-template-columns: 1fr; align-content: center; gap: 3px; }
   .detailList dd { text-align: left; }
   .actions > button { flex: 1 1 12rem; }
-  .notificationRow { gap: 12px; }
-  .comingSoon { white-space: normal; text-align: center; }
+  .notificationRow { gap: var(--space-3); }
+  .comingSoon { max-width: 94px; white-space: normal; text-align: center; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .back,
-  .deleteButton,
   .switch,
-  .switchThumb {
-    scroll-behavior: auto;
-    transition: none;
-  }
+  .switchThumb { transition: none; }
 }

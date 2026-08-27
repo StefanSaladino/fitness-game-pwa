@@ -23,7 +23,7 @@ Make existing lifting analytics readable on a phone without inventing new metric
 
 ## Approved hierarchy
 
-1. Progress identity/header with one new Progress-specific image.
+1. Compact Progress identity/header without decorative imagery.
 2. One Week/Month training-load summary at a time.
 3. One volume chart for the selected period.
 4. Tracked-lift selector.
@@ -32,9 +32,9 @@ Make existing lifting analytics readable on a phone without inventing new metric
 7. PR milestones.
 8. Lift-by-lift session history.
 
-## Image rule
+## Phase 16.10A.3 composition supersession
 
-`top-set-progress-log.jpg` is unique to this Progress surface. Existing Home, auth, workout, cardio, and exercise-picker imagery is not reused.
+The later application-composition reset removed `top-set-progress-log.jpg` from the rendered Progress page. The image file remains in repository history, but Progress now opens with a compact functional identity surface so calendar, lift selection, trends, milestones, and history receive the visual priority. This supersedes the earlier Phase 16.7 image rule without changing analytics behavior.
 
 ## Responsive behavior
 
@@ -44,6 +44,7 @@ Make existing lifting analytics readable on a phone without inventing new metric
 - desktop uses a sticky tracked-lift column and wider analytics detail;
 - mobile safe-area bottom padding is preserved;
 - no horizontal page overflow is allowed.
+- charts are clipped to contained internal surfaces and 320px metric summaries become vertical rows instead of compressed desktop grids.
 
 ## Non-goals
 

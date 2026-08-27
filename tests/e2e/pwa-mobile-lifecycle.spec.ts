@@ -5,7 +5,7 @@ test('platform PWA contract stays truthful across desktop, Android Chromium, and
   await expect(page.locator('#root')).not.toBeEmpty();
 
   if (testInfo.project.name === 'webkit-mobile') {
-    await expect(page.getByText('Add Workout Game to Home Screen')).toBeVisible();
+    await expect(page.getByText('Add Top Set to Home Screen')).toBeVisible();
     await expect(page.getByText(/Share → Add to Home Screen/)).toBeVisible();
     await expect(page.getByRole('button', { name: 'Install' })).toHaveCount(0);
     return;

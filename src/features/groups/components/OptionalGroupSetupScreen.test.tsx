@@ -34,13 +34,14 @@ function props(activeItem: 'groups' | 'compete' = 'groups') {
 }
 
 describe('OptionalGroupSetupScreen', () => {
-  it('keeps the zero-group choice grounded while using the photo banner hierarchy', async () => {
+  it('keeps the zero-group choice grounded in separate create and solo-training surfaces', async () => {
     const p = props('groups');
     render(<OptionalGroupSetupScreen {...p} />);
 
     expect(screen.getByRole('heading', { name: 'Groups are optional.' })).toBeInTheDocument();
     expect(screen.getByText(/train on your own or create a group when you want shared competition/i)).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Create your group' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Keep training solo' })).toBeInTheDocument();
     expect(screen.getByRole('textbox', { name: 'Group name' })).toBeInTheDocument();
 
     await userEvent.click(screen.getByRole('button', { name: 'Go to Home' }));

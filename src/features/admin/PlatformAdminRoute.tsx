@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { TopSetLoadingScreen } from '../../components/feedback/TopSetLoadingScreen';
 import { replacePath, navigateToPath } from '../../lib/appNavigation';
 import type { PlatformAccountAdminService } from './accounts/platformAccountAdminService';
 import { UserAdministrationController } from './accounts/components/UserAdministrationController';
@@ -23,7 +24,7 @@ interface PlatformAdminRouteProps {
 }
 
 function GenericRouteLoading() {
-  return <main aria-live="polite" className="auth-shell"><p>Loading…</p></main>;
+  return <TopSetLoadingScreen label="Checking administration access…" />;
 }
 
 export function PlatformAdminRoute({
@@ -73,7 +74,7 @@ export function PlatformAdminRoute({
   return (
     <PlatformAdminShell
       activeSection={activeSection}
-      mobileTitle={activeSection === 'messages' ? 'Messages' : activeSection === 'moderation' ? 'Moderation' : activeSection === 'users' ? 'Users' : 'Capacity'}
+      mobileTitle={activeSection === 'messages' ? 'Messages' : activeSection === 'moderation' ? 'Moderation' : activeSection === 'users' ? 'Users' : 'Overview'}
       onBackToApp={() => navigateToPath('/')}
       onNavigate={(section) => navigateToPath(`/platform-admin/${section}`)}
     >

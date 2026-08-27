@@ -37,7 +37,7 @@ export function PwaStatus({ service }: PwaStatusProps) {
 
   if (pwa.updateAvailable || pwa.applyingUpdate) {
     return (
-      <section className={styles.notice} role="status" aria-live="polite" data-kind="update">
+      <section className={styles.notice} data-system-notice role="status" aria-live="polite" data-kind="update">
         <div>
           <strong>{pwa.applyingUpdate ? 'Applying update' : 'Update ready'}</strong>
           <span>{pwa.applyingUpdate ? 'The app will reopen on the new version.' : 'Reload when you’re ready. Active lifts recover after reload.'}</span>
@@ -53,7 +53,7 @@ export function PwaStatus({ service }: PwaStatusProps) {
 
   if (!pwa.online) {
     return (
-      <section className={styles.notice} role="status" aria-live="polite" data-kind="offline">
+      <section className={styles.notice} data-system-notice role="status" aria-live="polite" data-kind="offline">
         <div>
           <strong>Offline</strong>
           <span>The app shell is available. Workout changes stay on this device until you reconnect.</span>
@@ -64,9 +64,9 @@ export function PwaStatus({ service }: PwaStatusProps) {
 
   if (pwa.installAvailable && !pwa.standalone) {
     return (
-      <section className={styles.notice} role="status" aria-live="polite" data-kind="install">
+      <section className={styles.notice} data-system-notice role="status" aria-live="polite" data-kind="install">
         <div>
-          <strong>Install Workout Game</strong>
+          <strong>Install Top Set</strong>
           <span>Open it like an app and keep the workout shell available offline.</span>
         </div>
         <button className={styles.action} disabled={busy !== null} onClick={() => void install()} type="button">
@@ -78,9 +78,9 @@ export function PwaStatus({ service }: PwaStatusProps) {
 
   if (pwa.manualInstallAvailable && !pwa.standalone) {
     return (
-      <section className={styles.notice} role="status" aria-live="polite" data-kind="ios-install">
+      <section className={styles.notice} data-system-notice role="status" aria-live="polite" data-kind="ios-install">
         <div>
-          <strong>Add Workout Game to Home Screen</strong>
+          <strong>Add Top Set to Home Screen</strong>
           <span>Use Share → Add to Home Screen. Keep Open as Web App enabled when that option is shown.</span>
         </div>
       </section>
@@ -89,7 +89,7 @@ export function PwaStatus({ service }: PwaStatusProps) {
 
   if (pwa.standalone && pwa.storagePersistence === 'best-effort' && pwa.storagePersistenceRequestAvailable) {
     return (
-      <section className={styles.notice} role="status" aria-live="polite" data-kind="storage">
+      <section className={styles.notice} data-system-notice role="status" aria-live="polite" data-kind="storage">
         <div>
           <strong>Protect offline workout data</strong>
           <span>Storage is currently best effort. Request persistent storage to reduce eviction risk for unsynced changes.</span>

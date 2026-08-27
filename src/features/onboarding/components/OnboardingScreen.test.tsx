@@ -1,4 +1,5 @@
 import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import type { OnboardingProfile } from '../model';
 import { OnboardingScreen } from './OnboardingScreen';
@@ -15,15 +16,25 @@ const profile: OnboardingProfile = {
 };
 
 describe('OnboardingScreen', () => {
-  it('renders the single real profile setup contract without a fake second onboarding step', () => {
+  it('separates identity, training preferences, and goal into focused steps', async () => {
+    const user = userEvent.setup();
     render(<OnboardingScreen busy={false} onSubmit={vi.fn(async () => true)} profile={profile} />);
 
-    expect(screen.getByRole('heading', { name: 'Set up your profile.' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Set up your profile' })).toBeInTheDocument();
+    expect(screen.getByText('Step 1 of 3')).toBeInTheDocument();
     expect(screen.getByRole('textbox', { name: 'Username' })).toBeInTheDocument();
     expect(screen.getByRole('textbox', { name: 'Display name' })).toBeInTheDocument();
+    expect(screen.queryByRole('combobox', { name: 'Timezone' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('group', { name: 'Weekly lifting target' })).not.toBeInTheDocument();
+
+    await user.type(screen.getByRole('textbox', { name: 'Username' }), 'ironwolf');
+    await user.click(screen.getByRole('button', { name: 'Continue' }));
+    expect(screen.getByText('Step 2 of 3')).toBeInTheDocument();
     expect(screen.getByRole('combobox', { name: 'Timezone' })).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Continue' }));
+    expect(screen.getByText('Step 3 of 3')).toBeInTheDocument();
     expect(screen.getByRole('group', { name: 'Weekly lifting target' })).toBeInTheDocument();
-    expect(screen.queryByText(/step 1 of 2/i)).not.toBeInTheDocument();
-    expect(screen.queryByText(/group creation or joining comes immediately after/i)).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Complete setup' })).toBeInTheDocument();
   });
 });

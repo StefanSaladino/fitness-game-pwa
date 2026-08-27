@@ -149,17 +149,20 @@ describe('GroupSocialScreen', () => {
 
     expect(screen.getByRole('heading', { name: 'Crew standings' })).toBeInTheDocument();
     expect(screen.getByText(/Individual sets, workout notes, and full exercise details stay private/i)).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: 'Highlights, not surveillance' })).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: 'Bench Press' })).toBeInTheDocument();
-    expect(screen.getByText('100 kg × 6 · e1RM 120 kg')).toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: 'Highlights, not surveillance' })).not.toBeInTheDocument();
 
-    expect(screen.queryByRole('combobox', { name: 'Group' })).not.toBeInTheDocument();
-    const groupRail = screen.getByRole('group', { name: 'Select competition group' });
-    await user.click(within(groupRail).getByRole('button', { name: /Sunday Crew/i }));
+    const groupSelect = screen.getByRole('combobox', { name: 'Competition group' });
+    await user.click(groupSelect);
+    await user.click(screen.getByRole('option', { name: /Sunday Crew/ }));
     expect(onSelectGroup).toHaveBeenCalledWith('group-2');
 
     await user.click(screen.getByRole('button', { name: 'All time' }));
     expect(screen.getByText('1200 XP')).toBeInTheDocument();
+
+    await user.click(screen.getByRole('tab', { name: 'Activity' }));
+    expect(screen.getByRole('heading', { name: 'Highlights, not surveillance' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Bench Press' })).toBeInTheDocument();
+    expect(screen.getByText('100 kg × 6 · e1RM 120 kg')).toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: /Fire 2/i }));
     expect(onReact).toHaveBeenCalledWith('PR:opaque', 'FIRE');
@@ -195,6 +198,7 @@ describe('GroupSocialScreen', () => {
     expect(screen.queryByRole('button', { name: /report stefan/i })).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Report Alex' })).toBeInTheDocument();
 
+    await user.click(screen.getByRole('tab', { name: 'Activity' }));
     await user.click(screen.getByRole('button', { name: 'Report this activity' }));
     await user.type(
       screen.getByLabelText('What happened?'),

@@ -67,7 +67,7 @@ function Switch({
 
 function deviceCopy(capability: string, permission: string, subscribed: boolean): string {
   if (capability === 'requires-install') {
-    return 'On iPhone and iPad, add Workout Game to the Home Screen first. Web Push permission is requested only from the installed Home Screen app.';
+    return 'On iPhone and iPad, add Top Set to the Home Screen first. Web Push permission is requested only from the installed Home Screen app.';
   }
   if (capability === 'unsupported') {
     return 'This browser or context does not support the required Web Push APIs.';
@@ -94,7 +94,7 @@ export function NotificationSettingsSection({
   const device = notifications.device;
 
   return (
-    <section className={styles.section} aria-labelledby="settings-notifications-heading">
+    <section className={styles.section} aria-labelledby="settings-notifications-heading" data-app-surface="category">
       <div className={styles.sectionHeading}>
         <div>
           <p className={styles.eyebrow}>MESSAGES</p>

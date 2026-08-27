@@ -28,7 +28,7 @@ function LegalLinks() {
 
 export function AuthLayout({ eyebrow, title, description, footer, children }: PropsWithChildren<AuthLayoutProps>) {
   return (
-    <main className={styles.root}>
+    <main className={styles.root} data-auth-composition>
       <div className={styles.photo} aria-hidden="true" />
       <div className={styles.frame}>
         <header className={styles.brand} aria-label="Top Set">
@@ -37,7 +37,7 @@ export function AuthLayout({ eyebrow, title, description, footer, children }: Pr
           <p className={styles.tagline}>See what you’ve got today.</p>
         </header>
 
-        <section className={styles.panel}>
+        <section className={styles.panel} data-app-surface="primary">
           <header className={styles.header}>
             {eyebrow ? <p className={styles.context}>{eyebrow}</p> : null}
             <h1 className={styles.title}>{title}</h1>

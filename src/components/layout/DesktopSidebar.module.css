@@ -24,6 +24,13 @@
   letter-spacing: -0.02em;
 }
 
+.messageSlot {
+  display: inline-flex;
+  width: 42px;
+  height: 42px;
+  margin-left: auto;
+}
+
 .nav {
   display: grid;
   gap: 4px;

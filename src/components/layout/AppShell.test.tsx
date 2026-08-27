@@ -6,8 +6,9 @@ import { AppShell } from './AppShell';
 describe('AppShell', () => {
   it('keeps five primary destinations and routes account access separately', async () => {
     const onNavigate = vi.fn();
+    const onSignOut = vi.fn();
     render(
-      <AppShell activeItem="home" onNavigate={onNavigate} userLabel="Stefan" userMeta="@stefan">
+      <AppShell activeItem="home" onNavigate={onNavigate} onSignOut={onSignOut} userLabel="Stefan" userMeta="@stefan">
         <h1>Dashboard</h1>
       </AppShell>,
     );
@@ -27,6 +28,9 @@ describe('AppShell', () => {
 
     await userEvent.click(screen.getAllByRole('button', { name: 'Open Profile and Settings for Stefan' })[0]);
     expect(onNavigate).toHaveBeenCalledWith('profile');
+
+    await userEvent.click(screen.getAllByRole('button', { name: 'Sign out' })[0]);
+    expect(onSignOut).toHaveBeenCalledOnce();
   });
 
   it('can replace the mobile brand lockup with a grounded page title while preserving Settings access', async () => {

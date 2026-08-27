@@ -202,7 +202,7 @@ Do not show unnecessary decimals, precise forecast dates, or calculated percenta
 
 A secure capability adapter does not mean billing telemetry is connected.
 
-If the provider billing feed is unavailable, the UI says **Billing usage unavailable**. It does not say Connected, Healthy, Live, or Synced unless those states are supported by a real provider result.
+If a provider billing feed is unavailable, the UI says that management usage is unavailable or setup is deferred. It does not call that provider feed Connected, Healthy, Live, or Synced. A separate **Supabase connected** label is permitted only for a successful guarded project-RPC response and must not imply provider billing availability.
 
 ## 21. No unsupported configuration UI
 

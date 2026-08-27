@@ -7,8 +7,8 @@ interface TopSetLoadingScreenProps {
 
 export function TopSetLoadingScreen({ label = 'Loading…' }: TopSetLoadingScreenProps) {
   return (
-    <main className={styles.root}>
-      <div className={styles.content} role="status" aria-live="polite">
+    <main className={styles.root} data-system-state="loading">
+      <div className={styles.content} data-app-state role="status" aria-live="polite">
         <TopSetMark className={styles.mark} size={34} />
         <span className={styles.name}>TOP SET</span>
         <span className={styles.loader} aria-hidden="true" />

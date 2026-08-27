@@ -5,10 +5,11 @@ import { TermsOfServicePage } from './TermsOfServicePage';
 
 describe('public legal pages', () => {
   it('publishes the Top Set terms without requiring authentication', () => {
-    render(<TermsOfServicePage />);
+    const { container } = render(<TermsOfServicePage />);
     expect(screen.getByRole('heading', { name: 'Terms of Service' })).toBeInTheDocument();
     expect(screen.getByText(/exercise carries inherent risk/i)).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Back to sign in' })).toHaveAttribute('href', '/');
+    expect(container.querySelector('[data-legal-composition] [data-app-surface="primary"]')).toBeInTheDocument();
   });
 
   it('describes the actual account, workout, group, offline, and deletion data surfaces', () => {

@@ -34,6 +34,7 @@ export interface PlatformMessageService {
   list(page?: number, pageSize?: number): Promise<PlatformInboxPage>;
   markRead(messageId: string): Promise<void>;
   acknowledge(messageId: string): Promise<void>;
+  deleteMessage(messageId: string): Promise<void>;
 }
 
 const audiences = new Set<string>(PLATFORM_MESSAGE_AUDIENCES);
@@ -106,6 +107,10 @@ export function createPlatformMessageService(client: SupabaseClient = getSupabas
     },
     async acknowledge(messageId) {
       const { error } = await client.rpc('acknowledge_platform_message', { p_message_id: requiredId(messageId) });
+      if (error) throw error;
+    },
+    async deleteMessage(messageId) {
+      const { error } = await client.rpc('delete_my_platform_message', { p_message_id: requiredId(messageId) });
       if (error) throw error;
     },
   };

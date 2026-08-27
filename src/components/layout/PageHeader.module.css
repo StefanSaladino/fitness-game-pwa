@@ -2,8 +2,8 @@
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 18px;
-  margin-bottom: 22px;
+  gap: var(--space-4);
+  margin-bottom: var(--app-category-gap);
 }
 
 .copy {
@@ -20,8 +20,8 @@
 
 .title {
   margin: 0;
-  font-size: clamp(1.65rem, 7vw, 2.1rem);
-  line-height: 1.08;
+  font-size: clamp(1.5rem, 6vw, 2rem);
+  line-height: 1.12;
   letter-spacing: -0.035em;
 }
 
@@ -40,6 +40,7 @@
 @media (max-width: 599px) {
   .header {
     flex-direction: column;
+    gap: var(--space-3);
   }
 
   .action {

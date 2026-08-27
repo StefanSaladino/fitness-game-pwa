@@ -158,11 +158,11 @@ function CaseActions({ record, currentUserId, busy, error, onAssignSelf, onAddNo
 export function ModerationWorkspaceScreen(props: Props) {
   const totalPages = Math.max(1, Math.ceil((props.directory?.total ?? 0) / 25));
   const detail = props.record?.detail;
-  return <main className={styles.main}>
+  return <main className={styles.main} data-admin-page="moderation">
     <header className={styles.pageHeader}><div><h1>Moderation</h1><p>Review reports, preserve private context, and record every action.</p></div><strong>{props.directory?.total ?? 0} cases</strong></header>
     {props.notice && <p className={styles.notice} role="status">{props.notice}</p>}
     <div className={styles.workspace} data-detail-open={Boolean(props.selectedCaseId || props.directReview)}>
-      <section className={styles.queue} aria-labelledby="moderation-queue-heading"><h2 id="moderation-queue-heading">Case queue</h2>
+      <section className={styles.queue} data-admin-surface="queue" aria-labelledby="moderation-queue-heading"><h2 id="moderation-queue-heading">Case queue</h2>
         <div className={styles.filters} aria-label="Moderation case status">{statusOptions.map((option) => <button aria-pressed={props.status === option.value} key={option.label} onClick={() => props.onChangeStatus(option.value)} type="button">{option.label}</button>)}</div>
         {props.directoryError && !props.directory && <div className={styles.state} role="alert"><p>{props.directoryError}</p><button onClick={props.onRetryDirectory} type="button">Try again</button></div>}
         {props.directoryLoading && !props.directory && <div className={styles.state} role="status">Loading cases…</div>}
@@ -170,7 +170,7 @@ export function ModerationWorkspaceScreen(props: Props) {
         {props.directory && props.directory.items.length > 0 && <ul className={styles.caseList} aria-busy={props.directoryLoading}>{props.directory.items.map((item) => <li key={item.caseId}><button aria-current={props.selectedCaseId === item.caseId ? 'true' : undefined} data-selected={props.selectedCaseId === item.caseId} onClick={() => props.onOpenCase(item.caseId)} type="button"><span><b>{item.target.displayName}</b><small>@{item.target.username}</small></span><strong data-status={item.status}>{statusLabel(item.status)}</strong><p>{item.reasonExcerpt}</p><time dateTime={item.updatedAt}>{formatDate(item.updatedAt)}</time></button></li>)}</ul>}
         {props.directory && props.directory.total > 0 && <nav className={styles.pagination} aria-label="Moderation case pages"><button disabled={props.page <= 1 || props.directoryLoading} onClick={() => props.onChangePage(props.page - 1)} type="button">Previous</button><span>{props.page} / {totalPages}</span><button disabled={props.page >= totalPages || props.directoryLoading} onClick={() => props.onChangePage(props.page + 1)} type="button">Next</button></nav>}
       </section>
-      <section className={styles.detail} aria-label="Moderation case detail">
+      <section className={styles.detail} data-admin-surface="detail" aria-label="Moderation case detail">
         {(props.selectedCaseId || props.directReview) && <button className={styles.mobileBack} onClick={props.onClearSelection} type="button">‹ Back to cases</button>}
         {!props.selectedCaseId && !props.directReview && <div className={styles.detailEmpty}><strong>Select a case</strong><p>Report evidence, private history, and audited activity review will appear here.</p></div>}
         {props.detailLoading && !props.record && <div className={styles.state} role="status">Loading case…</div>}

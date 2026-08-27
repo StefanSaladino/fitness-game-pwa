@@ -4,6 +4,8 @@
 
 **DONE.**
 
+Composition note: Phase 16.10A.2 subsequently removed the decorative workout photograph, consolidated timer/session/sync context into one contained task rail, changed phone set cards into one bounded app list, and added a Finish confirmation. The lifecycle, set-entry, recovery, and accessibility behavior documented below remains authoritative; current composition is defined in `docs/PHASE16.10A-APP-COMPOSITION-RESET.md`.
+
 Phase 16.5 applies the approved Top Set visual system to the real active lifting workflow without changing lifting-v1 scoring, workout persistence semantics, mutation ordering, recovery ownership, or Supabase lifecycle contracts.
 
 ## Approved visual contract
@@ -13,7 +15,7 @@ The active workout is deliberately task-first rather than dashboard-like:
 - near-black application background with charcoal workout surfaces;
 - warm Top Set orange for primary interaction, active focus, and the single Finish workout action;
 - green only for real completed/synced success state;
-- one restrained workout photograph: `src/assets/fitness/top-set-dumbbell-grip.jpg`, presented as a full-width in-column banner rather than a competing dashboard card;
+- no decorative workout photograph in the current active-task flow; the live timer and session state own the primary surface;
 - elapsed time is large and readable in a compact session strip but has no progress bar because no duration target exists;
 - no planned-set progress bar because the workout has no authoritative total-set denominator;
 - no fake volume totals, RPE, notes, calories, rest countdown, workout recommendation, target duration, coaching, or completion forecast;
@@ -31,7 +33,7 @@ The screen continues to use the existing workout lifecycle services and intent t
 - scoring date and started time from the active workout session;
 - no Save & Exit action because local recovery already preserves an active session.
 
-Phase 16.5 adds a UI confirmation boundary before calling the already-existing cancel pathway. The confirmation defaults to **Keep workout** and does not mutate server state until **Cancel workout** is explicitly confirmed.
+Phase 16.5 added a UI confirmation boundary before calling the already-existing cancel pathway. Phase 16.10A.2 applies the same boundary to Finish. The safe action receives initial focus and neither lifecycle path mutates server state until explicitly confirmed.
 
 ## Exercise sections
 
@@ -70,7 +72,7 @@ The existing set contract remains authoritative:
 - mark complete / reopen;
 - existing validation before completion.
 
-On phones, set logging deliberately stops behaving like a compressed desktop table. Each set becomes a compact logging card with a stable reading order: set/type/completion, then the authoritative load/reps fields, then copy/delete actions. Field labels become visible on phone layouts, completion/copy/delete retain approximately 44px targets, and no set row depends on horizontal clipping. The active editing row gains a restrained orange focus treatment, the primary Add working set action is filled orange, and bodyweight rows reflow vertically when their additional mode/load controls are present.
+On phones, set logging deliberately stops behaving like a compressed desktop table. Sets live in one bounded app list, and each row has a stable reading order: set/type/completion, then the authoritative load/reps fields, then copy/delete actions. Field labels become visible on phone layouts, completion/copy/delete retain approximately 44px targets, and no set row depends on horizontal clipping. The active editing row gains a restrained orange focus treatment, the primary Add working set action is filled orange, and bodyweight rows reflow vertically when their additional mode/load controls are present.
 
 ## Reliability states
 
@@ -94,7 +96,7 @@ Offline behavior remains intentionally bounded: existing set drafts and completi
 ### Phone
 
 - title and pause/resume remain immediately reachable;
-- the single workout photograph becomes a restrained full-width banner immediately below the active-lift header;
+- timer, pause/resume, start time, scoring date, and healthy sync state share one contained sticky task rail;
 - elapsed time, Started, and Scoring date share one compact strip without repeating a redundant Timer state field;
 - the normal Synced state remains visually quiet while offline/recovery/conflict states keep explicit banners;
 - collapsed exercise cards show only the approved silhouette, full wrapping exercise name, measurement type, and chevron;
@@ -109,7 +111,7 @@ Offline behavior remains intentionally bounded: existing set drafts and completi
 ### Desktop
 
 - the shared desktop navigation rail remains authoritative;
-- the workout banner spans the active content column rather than sitting beside session metadata;
+- the timer/session task rail spans the active content column;
 - the active workout canvas expands toward 1280px where available;
 - set rows use available width rather than inventing analytics;
 - the same exercise ordering/actions and lifecycle controls are preserved.

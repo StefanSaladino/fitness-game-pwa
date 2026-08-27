@@ -75,17 +75,19 @@ States:
 
 Snapshots are manual in this slice. No automatic hourly schedule or "next snapshot" time is displayed because no scheduler exists.
 
-### Supabase provider
+### Supabase project telemetry and provider boundary
+
+The Overview always reads real project telemetry through `public.get_platform_capacity_current()` and labels that successful guarded RPC connection as **Supabase connected**. This does not imply that a separate provider billing feed is available.
 
 The dashboard invokes the Phase 15.2C adapter through `platform-capacity-supabase`.
 
-Until the documented billing-cycle source exists, provider billing metrics remain `UNAVAILABLE`/null. The UI says **Billing usage unavailable** and does not report Connected, Healthy, zero usage, a plan allowance, or reconstructed MAU/egress.
+Until the documented billing-cycle source exists, provider billing metrics remain `UNAVAILABLE`/null. The UI says **Management usage unavailable** and does not report zero usage, a plan allowance, or reconstructed MAU/egress.
 
 Scope: **ORGANIZATION**.
 
 ### Netlify provider
 
-The dashboard invokes the Phase 15.2D adapter through `platform-capacity-netlify`.
+The browser does not invoke the Phase 15.2D adapter by default. The UI reports **Setup deferred** and the client returns fail-closed unavailable metrics. After the server-side function and credentials are configured, an operator may set `VITE_NETLIFY_CAPACITY_ENABLED=true` to allow the authenticated browser to invoke `platform-capacity-netlify`.
 
 Until Netlify exposes a supported authoritative account-usage feed for the reserved metrics, those values remain `UNAVAILABLE`/null. The UI does not derive bandwidth/requests/build credits from logs or deploy timing.
 
@@ -103,7 +105,7 @@ No Export, View details, quota editor, provider settings, auto-refresh schedule,
 
 ### Phone
 
-- compact sticky header with Back and Capacity;
+- compact sticky header with Back and Overview;
 - title/context;
 - two touch-sized actions;
 - one-column telemetry rows;
@@ -113,7 +115,7 @@ No Export, View details, quota editor, provider settings, auto-refresh schedule,
 
 ### Desktop
 
-- narrow admin rail containing only real destinations: Capacity and Back to app;
+- narrow admin rail containing only real destinations: Overview and Back to app;
 - content max-width for readable operational scanning;
 - telemetry becomes a two-column row grid inside one section, not a wall of individual cards;
 - history and providers remain separate functional sections.

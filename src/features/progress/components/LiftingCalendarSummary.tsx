@@ -102,7 +102,12 @@ export function LiftingCalendarSummaryPanel({ analytics, status, error, onRetry 
   }));
 
   return (
-    <section className={styles.calendarSection} aria-labelledby="lifting-calendar-heading">
+    <section
+      className={styles.calendarSection}
+      aria-labelledby="lifting-calendar-heading"
+      data-app-surface="category"
+      data-progress-surface="calendar-summary"
+    >
       <div className={styles.heading}>
         <div>
           <p>Training load</p>

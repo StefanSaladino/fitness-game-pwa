@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { TopSetMark } from '../../../components/brand/TopSetMark';
 import styles from './PlatformAdminShell.module.css';
 
 export type PlatformAdminSection = 'capacity' | 'users' | 'moderation' | 'messages';
@@ -12,7 +13,7 @@ interface PlatformAdminShellProps {
 }
 
 const destinations: Array<{ id: PlatformAdminSection; label: string }> = [
-  { id: 'capacity', label: 'Capacity' },
+  { id: 'capacity', label: 'Overview' },
   { id: 'users', label: 'Users' },
   { id: 'moderation', label: 'Moderation' },
   { id: 'messages', label: 'Messages' },
@@ -26,10 +27,11 @@ export function PlatformAdminShell({
   onNavigate,
 }: PlatformAdminShellProps) {
   return (
-    <div className={styles.shell}>
+    <div className={styles.shell} data-admin-composition>
       <aside className={styles.rail} aria-label="Platform administration">
         <div className={styles.railBrand}>
-          <strong>Workout Game</strong>
+          <TopSetMark className={styles.mark} size={30} />
+          <strong>TOP SET</strong>
           <span>Platform administration</span>
         </div>
         <p className={styles.railLabel}>Operations</p>
@@ -50,9 +52,9 @@ export function PlatformAdminShell({
         <button className={styles.railButton} onClick={onBackToApp} type="button">Back to app</button>
       </aside>
 
-      <div className={styles.content}>
+      <div className={styles.content} data-admin-scroll-owner>
         <div className={styles.mobileBar}>
-          <button className={styles.mobileBack} onClick={onBackToApp} type="button">Back</button>
+          <button aria-label="Back to Top Set" className={styles.mobileBack} onClick={onBackToApp} type="button">‹ App</button>
           <strong className={styles.mobileTitle}>{mobileTitle}</strong>
           <span aria-hidden="true" />
         </div>

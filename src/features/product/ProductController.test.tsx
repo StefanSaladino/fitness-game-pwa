@@ -54,6 +54,7 @@ describe('ProductController', () => {
     expect(await screen.findByText('Dashboard for Iron Crew')).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Open progress' }));
     expect(await screen.findByText('Progress screen')).toBeInTheDocument();
+    expect(window.location.pathname).toBe('/progress');
   });
 
   it('still routes group administration through the same controller boundary', async () => {
@@ -69,6 +70,11 @@ describe('ProductController', () => {
     window.history.replaceState({}, '', '/?section=groups');
     render(<ProductController groups={groups} onGroupsChanged={vi.fn()} profile={profile} />);
 
+    expect(await screen.findByText('Admin for group-1')).toBeInTheDocument();
+  });
+
+  it('renders canonical product routes supplied by the app router', async () => {
+    render(<ProductController groups={groups} onGroupsChanged={vi.fn()} profile={profile} requestedSection="groups" />);
     expect(await screen.findByText('Admin for group-1')).toBeInTheDocument();
   });
 

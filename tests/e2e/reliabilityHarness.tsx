@@ -47,8 +47,8 @@ const set: WorkoutSet = {
   weightKg: 100,
   reps: 5,
   bodyweightMode: null,
-  completed: true,
-  completedAt: '2026-08-20T20:10:00Z',
+  completed: false,
+  completedAt: null,
   revision: 0,
 };
 

@@ -14,11 +14,12 @@ interface Props {
   error: string;
   notice: string;
   onSave(input: ProfileSettingsInput): Promise<OnboardingProfile | null>;
+  mode?: 'profile' | 'training' | 'both';
 }
 
 type FieldErrors = Partial<Record<OnboardingField, string>>;
 
-export function ProfileSettingsForm({ profile, busy, error, notice, onSave }: Props) {
+export function ProfileSettingsForm({ profile, busy, error, notice, onSave, mode = 'both' }: Props) {
   const [values, setValues] = useState<ProfileSettingsInput>({
     username: profile.username,
     displayName: profile.displayName,
@@ -28,6 +29,9 @@ export function ProfileSettingsForm({ profile, busy, error, notice, onSave }: Pr
   });
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const timezoneOptions = useMemo(() => getTimeZoneOptions(values.timezone), [values.timezone]);
+  const showProfile = mode === 'profile' || mode === 'both';
+  const showTraining = mode === 'training' || mode === 'both';
+  const saveLabel = mode === 'profile' ? 'Save profile' : mode === 'training' ? 'Save training preferences' : 'Save profile & training';
 
   useEffect(() => {
     setValues({
@@ -55,7 +59,7 @@ export function ProfileSettingsForm({ profile, busy, error, notice, onSave }: Pr
 
   return (
     <form className={styles.profileForm} onSubmit={submit} noValidate>
-      <section className={styles.section} aria-labelledby="settings-profile-heading">
+      {showProfile ? <section className={styles.section} aria-labelledby="settings-profile-heading" data-app-surface="category">
         <div className={styles.sectionHeading}>
           <div>
             <p className={styles.eyebrow}>IDENTITY</p>
@@ -83,9 +87,12 @@ export function ProfileSettingsForm({ profile, busy, error, notice, onSave }: Pr
             value={values.displayName}
           />
         </div>
-      </section>
+        {error ? <p className={styles.error} role="alert">{error}</p> : null}
+        {notice ? <p className={styles.success} role="status">{notice}</p> : null}
+        <Button disabled={busy} type="submit">{busy ? 'Saving…' : saveLabel}</Button>
+      </section> : null}
 
-      <section className={styles.section} aria-labelledby="settings-training-heading">
+      {showTraining ? <section className={styles.section} aria-labelledby="settings-training-heading" data-app-surface="category">
         <div className={styles.sectionHeading}>
           <div>
             <p className={styles.eyebrow}>PREFERENCES</p>
@@ -127,8 +134,8 @@ export function ProfileSettingsForm({ profile, busy, error, notice, onSave }: Pr
         </div>
         {error ? <p className={styles.error} role="alert">{error}</p> : null}
         {notice ? <p className={styles.success} role="status">{notice}</p> : null}
-        <Button disabled={busy} type="submit">{busy ? 'Saving…' : 'Save profile & training'}</Button>
-      </section>
+        <Button disabled={busy} type="submit">{busy ? 'Saving…' : saveLabel}</Button>
+      </section> : null}
     </form>
   );
 }

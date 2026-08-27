@@ -1,39 +1,44 @@
 .calendarSection {
   display: grid;
-  gap: 18px;
-  margin: 24px 0 38px;
+  min-width: 0;
+  gap: var(--space-4);
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--app-surface-padding);
+  background: var(--color-surface);
 }
 
-.heading {
+.heading,
+.periodHeader {
   display: flex;
-  align-items: end;
+  min-width: 0;
+  align-items: flex-end;
   justify-content: space-between;
-  gap: 18px;
-  padding-bottom: 12px;
-  border-bottom: 1px solid #242529;
+  gap: var(--space-4);
 }
 
 .heading p,
 .periodHeader p {
   margin: 0;
-  color: #a0a1a4;
+  color: var(--color-accent);
   font-size: 0.68rem;
-  font-weight: 750;
+  font-weight: 760;
   letter-spacing: 0.09em;
   text-transform: uppercase;
 }
 
 .heading h2,
 .periodHeader h3 {
-  margin: 4px 0 0;
-  color: #f7f7f7;
+  margin: var(--space-1) 0 0;
+  color: var(--color-text);
   letter-spacing: -0.035em;
 }
 
-.heading h2 { font-size: 1.25rem; }
+.heading h2 { font-size: 1.3rem; }
 .heading > span {
-  max-width: 380px;
-  color: #a0a1a4;
+  max-width: 390px;
+  color: var(--color-text-muted);
   font-size: 0.72rem;
   line-height: 1.45;
   text-align: right;
@@ -42,137 +47,77 @@
 .periodToggle {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  width: min(100%, 420px);
-  padding: 4px;
-  background: #0e0f11;
-  border: 1px solid #242529;
-  border-radius: 10px;
+  width: min(100%, 390px);
+  border-radius: var(--radius-md);
+  padding: var(--space-1);
+  background: var(--color-bg-elevated);
 }
 
 .periodToggle button {
-  min-height: 42px;
-  padding: 0 18px;
-  color: #c7c8ca;
+  min-height: 44px;
+  border: 0;
+  border-radius: var(--radius-sm);
+  padding: 0 var(--space-4);
+  color: var(--color-text-soft);
+  background: transparent;
+  cursor: pointer;
   font: inherit;
   font-size: 0.82rem;
   font-weight: 750;
-  background: transparent;
-  border: 0;
-  border-radius: 7px;
-  cursor: pointer;
 }
 
-.periodToggle button[aria-pressed='true'] {
-  color: #f7f7f7;
-  background: #f15a08;
-}
+.periodToggle button[aria-pressed='true'] { color: #111; background: var(--color-accent); }
+.periodToggle button:focus-visible { outline: 2px solid var(--color-accent-hover); outline-offset: 2px; }
 
-.periodToggle button:focus-visible {
-  outline: 2px solid #ff670d;
-  outline-offset: 2px;
-}
-
-.analyticsLayout {
-  display: grid;
-  gap: 24px;
-  min-width: 0;
-}
-
-.periodSummary {
-  min-width: 0;
-}
-
-.periodHeader {
-  display: flex;
-  align-items: end;
-  justify-content: space-between;
-  gap: 14px;
-  padding-bottom: 12px;
-  border-bottom: 1px solid #242529;
-}
-
+.analyticsLayout { display: grid; min-width: 0; gap: var(--space-3); }
+.periodSummary { min-width: 0; overflow: hidden; border-radius: var(--radius-md); padding: var(--space-4); background: var(--color-bg-elevated); }
+.periodHeader { margin-bottom: var(--space-3); }
 .periodHeader h3 { font-size: 1rem; }
-.periodHeader > span {
-  color: #a0a1a4;
-  font-size: 0.7rem;
-  white-space: nowrap;
-}
+.periodHeader > span { color: var(--color-text-muted); font-size: 0.7rem; white-space: nowrap; }
 
 .metricGrid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   margin: 0;
+  overflow: hidden;
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
 }
 
-.metricGrid > div {
-  display: grid;
-  align-content: start;
-  gap: 4px;
-  min-width: 0;
-  padding: 15px 0;
-  border-bottom: 1px solid #1f2023;
-}
-
-.metricGrid > div:nth-child(odd) { padding-right: 14px; }
-.metricGrid > div:nth-child(even) {
-  padding-left: 14px;
-  border-left: 1px solid #1f2023;
-}
-
-.metricGrid dt {
-  color: #a0a1a4;
-  font-size: 0.67rem;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-}
-
-.metricGrid dd {
-  margin: 0;
-  color: #f7f7f7;
-  font-size: clamp(1.35rem, 7vw, 1.9rem);
-  font-weight: 760;
-  letter-spacing: -0.04em;
-}
-
-.metricGrid small {
-  color: #a0a1a4;
-  font-size: 0.68rem;
-  line-height: 1.35;
-}
+.metricGrid > div { display: grid; min-width: 0; align-content: start; gap: var(--space-1); padding: var(--space-3); }
+.metricGrid > div:nth-child(even) { border-left: 1px solid rgba(255, 255, 255, 0.07); }
+.metricGrid > div:nth-child(n + 3) { border-top: 1px solid rgba(255, 255, 255, 0.07); }
+.metricGrid dt { color: var(--color-text-muted); font-size: 0.67rem; letter-spacing: 0.06em; text-transform: uppercase; }
+.metricGrid dd { margin: 0; overflow-wrap: anywhere; color: var(--color-text); font-size: clamp(1.25rem, 6vw, 1.85rem); font-weight: 760; letter-spacing: -0.04em; }
+.metricGrid small { color: var(--color-text-muted); font-size: 0.68rem; line-height: 1.35; overflow-wrap: anywhere; }
 
 .state,
 .empty,
-.error p {
-  margin: 0;
-  color: #a0a1a4;
-  line-height: 1.5;
-}
-
+.error p { margin: 0; color: var(--color-text-muted); line-height: 1.5; }
 .state,
-.error { padding: 14px 0; }
-.error { display: grid; justify-items: start; gap: 12px; }
-.empty { padding: 16px 0; }
+.error { border-radius: var(--radius-md); padding: var(--space-4); background: var(--color-bg-elevated); }
+.error { display: grid; justify-items: start; gap: var(--space-3); }
+.empty { padding: var(--space-3) 0; }
 
 @media (min-width: 900px) {
-  .analyticsLayout {
-    grid-template-columns: minmax(300px, 0.8fr) minmax(0, 1.35fr);
-    align-items: stretch;
-    gap: 32px;
-  }
-
-  .periodToggle { width: 360px; }
+  .analyticsLayout { grid-template-columns: minmax(300px, 0.82fr) minmax(0, 1.35fr); align-items: stretch; gap: var(--space-4); }
+  .periodToggle { width: 350px; }
 }
 
 @media (max-width: 560px) {
-  .heading {
-    align-items: flex-start;
-    flex-direction: column;
-  }
-
-  .heading > span {
-    max-width: none;
-    text-align: left;
-  }
-
+  .heading { align-items: flex-start; flex-direction: column; gap: var(--space-1); }
+  .heading > span { max-width: none; text-align: left; }
   .periodToggle { width: 100%; }
+}
+
+@media (max-width: 360px) {
+  .calendarSection { border-radius: var(--radius-md); padding: var(--space-3); }
+  .periodSummary { padding: var(--space-3); }
+  .periodHeader { align-items: flex-start; flex-direction: column; gap: var(--space-1); }
+  .metricGrid { grid-template-columns: 1fr; }
+  .metricGrid > div { grid-template-columns: minmax(0, 1fr) auto; align-items: center; }
+  .metricGrid > div:nth-child(even) { border-left: 0; }
+  .metricGrid > div + div { border-top: 1px solid rgba(255, 255, 255, 0.07); }
+  .metricGrid dd { text-align: right; }
+  .metricGrid small { grid-column: 1 / -1; }
 }

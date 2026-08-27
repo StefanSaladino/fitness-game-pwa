@@ -79,3 +79,13 @@ This must not become a cardio dashboard or KPI grid.
 `CardioService` remains the only cardio layer talking directly to Supabase.
 
 The cardio domain continues to own validation and tier calculations.
+
+## Phase 16.10A.3 composition follow-up
+
+The cumulative application-composition reset keeps every boundary above and strengthens the visual hierarchy:
+
+- identity, quick log, summary, and history are separate bounded app regions rather than divider-only document sections;
+- the quick-log surface remains the only primary task and contains activity, duration, tier context, notes, and submit action;
+- the seven-category rail is touch-sized and internally scrollable with hidden scrollbar chrome;
+- summary and recent history reflow into readable rows at phone widths, including an explicit 320px contract;
+- no Cardio domain, service, hook, persistence, eligibility, or scoring behavior changes.

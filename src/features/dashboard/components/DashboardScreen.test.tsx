@@ -68,7 +68,8 @@ describe('DashboardScreen', () => {
     expect(screen.getByText('Cardio bonus')).toBeInTheDocument();
     expect(screen.getByText('2-Week Streak')).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Completed weeks & badges' })).toBeInTheDocument();
-    expect(container.querySelector('img[src*="top-set-plate-banner"]')).toBeInTheDocument();
+    expect(container.querySelectorAll('[data-app-surface]').length).toBeGreaterThanOrEqual(6);
+    expect(container.querySelector('[data-app-media-banner] img[src*="top-set-plate-banner"]')).toBeInTheDocument();
 
     expect(screen.queryByText(/recommended/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/level \d+/i)).not.toBeInTheDocument();

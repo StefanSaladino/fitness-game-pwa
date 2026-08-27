@@ -26,7 +26,7 @@ export function LegalPage({ eyebrow, title, intro, children }: LegalPageProps) {
   }
 
   return (
-    <main className={styles.root}>
+    <main className={styles.root} data-legal-composition>
       <header className={styles.header}>
         <div className={styles.headerInner}>
           <a className={styles.brand} href="/" onClick={home}>
@@ -37,10 +37,12 @@ export function LegalPage({ eyebrow, title, intro, children }: LegalPageProps) {
         </div>
       </header>
       <article className={styles.content}>
-        <p className={styles.eyebrow}>{eyebrow}</p>
-        <h1>{title}</h1>
-        <p className={styles.updated}>Effective August 23, 2026</p>
-        <p className={styles.intro}>{intro}</p>
+        <header className={styles.documentHeader} data-app-surface="primary">
+          <p className={styles.eyebrow}>{eyebrow}</p>
+          <h1>{title}</h1>
+          <p className={styles.updated}>Effective August 23, 2026</p>
+          <p className={styles.intro}>{intro}</p>
+        </header>
         {children}
         <p className={styles.notice}>These policies are a practical product draft for Top Set and should be reviewed before a public commercial launch, especially if the operator, hosting providers, age requirements, or data practices change.</p>
       </article>

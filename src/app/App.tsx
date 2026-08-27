@@ -12,7 +12,13 @@ import { OnboardingScreen, OnboardingStatusScreen, useOnboarding } from '../feat
 import { ProductController } from '../features/product';
 import { UserMessageCenter } from '../features/messaging';
 import { isSupabaseConfigured } from '../lib/supabase';
-import { replacePath, usePathname } from '../lib/appNavigation';
+import {
+  legacyProductSectionFromLocation,
+  productPathForSection,
+  productSectionFromPathname,
+  replacePath,
+  usePathname,
+} from '../lib/appNavigation';
 
 const PlatformAdminRoute = lazy(async () => {
   const module = await import('../features/admin/PlatformAdminRoute');
@@ -35,6 +41,12 @@ function UnknownAuthenticatedRoute() {
 
 function ProfileGate({ userId, userEmail, memberSince, pathname }: { userId: string; userEmail: string; memberSince: string | null; pathname: string }) {
   const onboarding = useOnboarding(userId);
+  const legacyProductSection = legacyProductSectionFromLocation();
+  const productSection = productSectionFromPathname(pathname) ?? legacyProductSection;
+
+  useEffect(() => {
+    if (legacyProductSection) replacePath(productPathForSection(legacyProductSection));
+  }, [legacyProductSection]);
 
   if (onboarding.status === 'loading') {
     return <OnboardingStatusScreen status="loading" />;
@@ -77,12 +89,19 @@ function ProfileGate({ userId, userEmail, memberSince, pathname }: { userId: str
     );
   }
 
-  if (pathname !== '/') return <UnknownAuthenticatedRoute />;
+  if (!productSection) return <UnknownAuthenticatedRoute />;
 
   return (
     <>
       <GroupGate profileCode={onboarding.profile.profileCode} userId={userId}>
-        {(groups, refreshGroups) => <ProductController groups={groups} onGroupsChanged={refreshGroups} profile={onboarding.profile!} />}
+        {(groups, refreshGroups) => (
+          <ProductController
+            groups={groups}
+            onGroupsChanged={refreshGroups}
+            profile={onboarding.profile!}
+            requestedSection={productSection}
+          />
+        )}
       </GroupGate>
       <UserMessageCenter />
     </>

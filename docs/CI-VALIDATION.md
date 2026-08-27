@@ -31,6 +31,8 @@ npm run test:e2e
 
 These checks remain release requirements even though they are not duplicated in the lightweight GitHub Actions workflow.
 
+`npm run test:structure` also runs the Phase 16.10A application-composition validator. It prevents raw select controls outside the shared SelectField, verifies shell-owned scroll/spacing markers, rejects nested feature `main` landmarks inside AppShell, checks canonical product paths and the mobile overflow/scrollbar and selector-sheet contracts, protects the Home/Settings composition reset, and guards purposeful destination banners, header action ownership, inbox deletion confirmation, the Lift task rail, lifecycle confirmation, exercise-picker focus/scroll, 320px set containment, Progress chart/history regions, Cardio quick-log/accessory separation, Groups task views plus group-chat containment, Standings/Activity split, Auth/Onboarding/Legal composition, Supabase-backed Admin Overview, deferred Netlify boundary, and shared system-state/notice contracts from silent regression.
+
 ## Browser validation
 
 Playwright remains part of the local release gate through:
@@ -42,6 +44,14 @@ npm run test:e2e
 The configured projects cover desktop Chromium, Android-class Chromium, and iPhone-class WebKit.
 
 Phase 15.3D includes a deterministic user-administration browser fixture that selects a suspended account, submits an audited restore reason, verifies the refreshed ACTIVE controls, and checks for horizontal overflow at every configured viewport.
+
+Phase 16.10A.3 includes deterministic Progress and Cardio fixtures. They verify surface hierarchy and analytics/accessory content across all configured projects, plus an explicit 320px pass that checks document overflow, chart containment, and Cardio history-row width.
+
+Phase 16.10A.4 adds deterministic Groups and Competition fixtures. They verify group-context selection, Members/Invites/Settings separation, Standings/Activity separation, privacy copy, reaction behavior, and explicit 320px horizontal-overflow containment.
+
+Phase 16.10A.5 adds deterministic Auth, Onboarding, Legal, and Capacity/Admin fixtures. They verify the first-viewport sign-in task, focused onboarding progression, public document hierarchy, Top Set administration shell, bounded telemetry surface, and explicit 320px horizontal-overflow containment. The existing user-administration fixture continues to prove real one-pane account selection and an audited restore interaction.
+
+Phase 16.10A.6 adds a 320px shell-action fixture proving that Messages, Settings, and Sign out remain independently visible, touch-sized, non-overlapping, and horizontally contained. The repaired reliability fixture starts incomplete so its completion-control assertion tests the intended state; the install lifecycle assertion uses current Top Set naming.
 
 ## Database validation
 
@@ -61,6 +71,7 @@ That gate validates:
 - explicit pgTAP plans;
 - rollback-safe test transactions;
 - required Phase 15 database migration/test invariants;
+- recipient-only inbox deletion and member-only group-chat security/retention invariants;
 - notification-persistence and push-delivery database contracts;
 - and the static repository contracts that can be proven without starting a local Supabase stack.
 
@@ -121,6 +132,8 @@ Phase 15.3E hosted validation uses only rollback-safe fake reports/cases. It mus
 Phase 15.3F hosted validation applies its migration and pgTAP fixtures in one rollback-safe transaction. It proves private immutable access audit, active-admin-only 15-minute review grants, actor/case/subject binding, selected-source enforcement, cursor/page bounds, workout-note redaction, originating-case links, two-year audit retention, and deletion-safe identity snapshots. Communication history remains absent until Phase 15.4 creates a durable source.
 
 Phase 15.4 hosted validation proves server-resolved audience previews, set-based and idempotent fan-out, immutable revisions and deliveries, recipient isolation, delivery/read/acknowledged state, edit/withdraw audit, two-year retention, suspension enforcement, moderation-timeline communication context, and zero scoring effects. Full-app delivery is additionally constrained to NOTICE messages that cannot require acknowledgement and that the PWA presents once as a dismissible “What’s new” popup.
+
+Phase 15.9 hosted validation must apply the two migrations in order and run the 27-assertion inbox-deletion suite plus the 45-assertion group-chat suite. It proves recipient-only deletion, acknowledgement gating, retained shared audit/deliveries, RPC-only chat tables, outsider/removal denial, duplicate/rate controls, bounded reactions, self-delete, OWNER/ADMIN moderation, content-free private Realtime invalidation, and zero XP effects. Hosted completion also requires disabling public Realtime channel access, regenerating public database types, and reviewing both advisor classes.
 
 Phase 15.6A hosted validation proves authenticated self-only profile updates, deny-by-default RPC execution, removal of direct identity/preference column writes, persisted kg/lb display preference, next-Monday weekly-target scheduling, suspended-account rejection, and zero scoring/history rewrites.
 

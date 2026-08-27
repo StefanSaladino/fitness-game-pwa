@@ -17,12 +17,14 @@ describe('platform message service', () => {
     expect(rpc).toHaveBeenCalledWith('list_my_platform_messages', { p_page: 1, p_page_size: 20, p_include_expired: false });
   });
 
-  it('uses separate guarded read and acknowledgement boundaries', async () => {
+  it('uses separate guarded read, acknowledgement, and recipient-deletion boundaries', async () => {
     const rpc = vi.fn().mockResolvedValue({ data: null, error: null });
     const service = createPlatformMessageService({ rpc } as unknown as SupabaseClient);
     await service.markRead('message-1');
     await service.acknowledge('message-2');
+    await service.deleteMessage('message-3');
     expect(rpc).toHaveBeenNthCalledWith(1, 'mark_platform_message_read', { p_message_id: 'message-1' });
     expect(rpc).toHaveBeenNthCalledWith(2, 'acknowledge_platform_message', { p_message_id: 'message-2' });
+    expect(rpc).toHaveBeenNthCalledWith(3, 'delete_my_platform_message', { p_message_id: 'message-3' });
   });
 });

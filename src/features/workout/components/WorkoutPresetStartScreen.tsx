@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
-import { AppShell, type AppSection } from '../../../components/layout';
+import dumbbellBanner from '../../../assets/fitness/top-set-dumbbell-grip.jpg';
+import { AppShell, DestinationBanner, type AppSection } from '../../../components/layout';
 import { Button } from '../../../components/ui';
 import type { OnboardingProfile } from '../../onboarding';
 import { TrainingTipSurface, trainingTipForDate } from '../../training-content';
@@ -75,20 +76,20 @@ export function WorkoutPresetStartScreen(props: WorkoutPresetStartScreenProps) {
       userLabel={props.profile.displayName}
       userMeta={`@${props.profile.username}`}
     >
-      <main className={styles.page}>
-        <header className={styles.header}>
-          <div>
+      <div className={styles.page} data-lift-start>
+        <DestinationBanner className={styles.startSurface} imagePosition="center 54%" imageSrc={dumbbellBanner}>
+          <div className={styles.startCopy}>
             <p className={styles.kicker}>LIFT</p>
             <h1>Start a lift</h1>
             <p>Start empty and build your own session, or preload a curated exercise list. Presets choose exercises only—sets, reps, weights, and substitutions stay yours.</p>
           </div>
           <div className={styles.headerActions}>
-            <Button disabled={starting} onClick={startEmpty}>
+            <Button disabled={starting} fullWidth onClick={startEmpty}>
               {starting && selectedPresetId === null ? 'Starting…' : 'Start empty lift'}
             </Button>
-            <Button variant="secondary" disabled={starting} onClick={() => props.onNavigate('cardio')}>Log cardio instead</Button>
+            <Button variant="secondary" disabled={starting} fullWidth onClick={() => props.onNavigate('cardio')}>Log cardio instead</Button>
           </div>
-        </header>
+        </DestinationBanner>
 
         {startingAtMs !== null && (
           <div className={styles.startingClock} role="status">
@@ -99,7 +100,7 @@ export function WorkoutPresetStartScreen(props: WorkoutPresetStartScreenProps) {
 
         {props.error && <p className={styles.error} role="alert">{props.error}</p>}
 
-        <section className={styles.presets} aria-labelledby="preset-workouts-heading">
+        <section className={styles.presets} aria-labelledby="preset-workouts-heading" data-app-surface="category">
           <div className={styles.sectionHeading}>
             <div>
               <p className={styles.kicker}>PRESET WORKOUTS</p>
@@ -130,6 +131,7 @@ export function WorkoutPresetStartScreen(props: WorkoutPresetStartScreenProps) {
                   </div>
                   <Button
                     disabled={starting || !available}
+                    fullWidth
                     variant="secondary"
                     onClick={() => startPreset(preset.id)}
                   >
@@ -141,8 +143,10 @@ export function WorkoutPresetStartScreen(props: WorkoutPresetStartScreenProps) {
           </ul>
         </section>
 
-        <TrainingTipSurface compact tip={tip} />
-      </main>
+        <section className={styles.tipRegion} data-app-surface="category">
+          <TrainingTipSurface compact tip={tip} />
+        </section>
+      </div>
     </AppShell>
   );
 }

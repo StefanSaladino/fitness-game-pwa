@@ -1,11 +1,17 @@
 import { lazy, Suspense, useEffect, useMemo, useState } from 'react';
 import type { ReactNode } from 'react';
+import { TopSetLoadingScreen } from '../../components/feedback/TopSetLoadingScreen';
 import type { AppSection } from '../../components/layout';
-import { navigateToPath } from '../../lib/appNavigation';
+import {
+  navigateToPath,
+  productPathForSection,
+  type ProductPathSection,
+} from '../../lib/appNavigation';
 import { signOut } from '../auth/authService';
 import type { DashboardService } from '../dashboard';
 import type { CardioService } from '../cardio';
 import type { GroupService, GroupSummary } from '../groups';
+import type { GroupChatService } from '../groups/chat';
 import type { OnboardingProfile } from '../onboarding';
 import type { UserReportService } from '../moderation';
 import type { ExerciseProgressService } from '../progress';
@@ -52,7 +58,9 @@ interface ProductControllerProps {
   profile: OnboardingProfile;
   groups: GroupSummary[];
   onGroupsChanged: () => Promise<unknown> | unknown;
+  requestedSection?: ProductPathSection;
   groupService?: GroupService;
+  groupChatService?: GroupChatService;
   dashboardService?: DashboardService;
   workoutService?: WorkoutService;
   workoutExerciseService?: WorkoutExerciseService;
@@ -66,7 +74,7 @@ interface ProductControllerProps {
 }
 
 function ProductSectionFallback() {
-  return <div aria-live="polite" role="status">Loading…</div>;
+  return <TopSetLoadingScreen label="Loading section…" />;
 }
 
 function initialProductSection(): AppSection {
@@ -80,7 +88,9 @@ export function ProductController({
   profile,
   groups,
   onGroupsChanged,
+  requestedSection,
   groupService,
+  groupChatService,
   dashboardService,
   workoutService,
   workoutExerciseService,
@@ -92,7 +102,8 @@ export function ProductController({
   reportService,
   cardioService,
 }: ProductControllerProps) {
-  const [activeSection, setActiveSection] = useState<AppSection>(initialProductSection);
+  const [internalSection, setInternalSection] = useState<AppSection>(initialProductSection);
+  const activeSection = requestedSection ?? internalSection;
   const [selectedGroupId, setSelectedGroupId] = useState(
     () => resolveSelectedGroupId(profile.id, groups),
   );
@@ -127,7 +138,8 @@ export function ProductController({
       || section === 'progress'
       || section === 'compete'
     ) {
-      setActiveSection(section);
+      setInternalSection(section);
+      navigateToPath(productPathForSection(section));
     }
   };
 
@@ -192,6 +204,7 @@ export function ProductController({
   } else if (activeSection === 'groups') {
     section = selectedGroup ? (
       <GroupAdministrationController
+        chatService={groupChatService}
         groups={groups}
         onGroupsChanged={onGroupsChanged}
         onNavigate={onNavigate}

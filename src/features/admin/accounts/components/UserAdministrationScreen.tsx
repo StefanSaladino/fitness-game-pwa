@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { SelectField } from '../../../../components/ui';
 import type {
   PlatformAccountDetail,
   PlatformAccountDirectoryPage,
@@ -181,7 +182,7 @@ export function UserAdministrationScreen(props: UserAdministrationScreenProps) {
   }, [notice, selectedUserId]);
 
   return (
-    <main className={styles.main}>
+    <main className={styles.main} data-admin-page="users">
       <header className={styles.pageHeader}>
         <div>
           <h1 ref={directoryHeadingRef} tabIndex={-1}>Users</h1>
@@ -193,7 +194,7 @@ export function UserAdministrationScreen(props: UserAdministrationScreenProps) {
       <p aria-live="polite" className={styles.liveNotice} role="status">{notice}</p>
 
       <div className={styles.workspace} data-detail-open={Boolean(selectedUserId)}>
-        <section className={styles.directoryPane} aria-labelledby="user-directory-heading">
+        <section className={styles.directoryPane} data-admin-surface="directory" aria-labelledby="user-directory-heading">
           <h2 className={styles.srOnly} id="user-directory-heading">Account directory</h2>
           <form
             className={styles.searchForm}
@@ -227,9 +228,9 @@ export function UserAdministrationScreen(props: UserAdministrationScreenProps) {
               </button>
             ))}
           </div>
-          <label className={styles.desktopFilter}>
-            <span>Status</span>
-            <select
+          <SelectField
+              className={styles.desktopFilter}
+              label="Status"
               onChange={(event) => onApplyFilters(search, (event.target.value || null) as PlatformAccountStatus | null)}
               value={filters.status ?? ''}
             >
@@ -237,8 +238,7 @@ export function UserAdministrationScreen(props: UserAdministrationScreenProps) {
               <option value="ACTIVE">Active</option>
               <option value="SUSPENDED">Suspended</option>
               <option value="DELETION_PENDING">Deletion pending</option>
-            </select>
-          </label>
+          </SelectField>
 
           <div className={styles.directoryHeader} aria-hidden="true">
             <span>User</span><span>Status</span><span>Joined</span><span>Last sign-in</span>
@@ -300,7 +300,7 @@ export function UserAdministrationScreen(props: UserAdministrationScreenProps) {
           )}
         </section>
 
-        <section className={styles.detailPane} aria-labelledby="account-detail-heading">
+        <section className={styles.detailPane} data-admin-surface="detail" aria-labelledby="account-detail-heading">
           {!selectedUserId && (
             <div className={styles.detailEmpty}>
               <strong>Select an account</strong>

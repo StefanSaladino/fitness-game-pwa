@@ -95,16 +95,16 @@ function CapacityHistory({ snapshot }: { snapshot: CapacityDashboardSnapshot }) 
   );
 }
 
-function ProviderRow({ name, scope, metrics }: { name: string; scope: string; metrics: CapacityDashboardSnapshot['supabase']['metrics'] }) {
+function ProviderRow({ name, scope, metrics, unavailableLabel }: { name: string; scope: string; metrics: CapacityDashboardSnapshot['supabase']['metrics']; unavailableLabel: string }) {
   const availableCount = metrics.filter((metric) => metric.available && metric.value !== null).length;
-  const state = availableCount > 0 ? `${availableCount} metrics available` : 'Billing usage unavailable';
+  const state = availableCount > 0 ? `${availableCount} metrics available` : unavailableLabel;
   return (
     <div className={styles.providerRow}>
       <div className={styles.providerTop}>
         <strong>{name}</strong>
         <strong>{state}</strong>
       </div>
-      <p>{scope}. Missing provider billing data stays unavailable; it is never reconstructed from local activity or reported as zero.</p>
+      <p>{scope}. Missing provider data stays unavailable; it is never reconstructed from local activity or reported as zero.</p>
     </div>
   );
 }
@@ -112,12 +112,12 @@ function ProviderRow({ name, scope, metrics }: { name: string; scope: string; me
 export function CapacityDashboard({ snapshot, error, capturing, onRefresh, onCaptureSnapshot }: CapacityDashboardProps) {
   const byCode = new Map(snapshot.current.map((metric) => [metric.code, metric]));
   return (
-    <main className={styles.main}>
+    <main className={styles.main} data-admin-page="capacity">
           <header className={styles.header}>
             <div>
-              <h1>Capacity</h1>
-              <p>Operational capacity from the database and provider adapters. Missing limits and provider billing feeds are shown as unavailable or unconfigured.</p>
-              <div className={styles.sourceLine}>Measured {formatMeasuredAt(snapshot.fetchedAt)}</div>
+              <h1>Platform overview</h1>
+              <p>Live project telemetry from guarded Supabase RPCs, with provider adapters kept behind explicit server-side boundaries.</p>
+              <div className={styles.sourceLine}><strong>Supabase connected</strong><span>Measured {formatMeasuredAt(snapshot.fetchedAt)}</span></div>
             </div>
             <div className={styles.actions}>
               <button className={styles.secondaryButton} onClick={onRefresh} type="button">Refresh</button>
@@ -129,10 +129,10 @@ export function CapacityDashboard({ snapshot, error, capturing, onRefresh, onCap
 
           {error && <div className={styles.message} role="status">{error}</div>}
 
-          <section className={styles.section} aria-labelledby="capacity-current-heading">
+          <section className={styles.section} data-admin-surface="telemetry" aria-labelledby="capacity-current-heading">
             <div className={styles.sectionHeader}>
-              <h2 id="capacity-current-heading">Current telemetry</h2>
-              <span>Database-local · project scope</span>
+              <h2 id="capacity-current-heading">Supabase project data</h2>
+              <span>Live guarded RPC · project scope</span>
             </div>
             <div className={styles.metrics}>
               {METRIC_ORDER.map(({ code, label }) => {
@@ -142,7 +142,7 @@ export function CapacityDashboard({ snapshot, error, capturing, onRefresh, onCap
             </div>
           </section>
 
-          <section className={styles.section} aria-labelledby="capacity-history-heading">
+          <section className={styles.section} data-admin-surface="history" aria-labelledby="capacity-history-heading">
             <div className={styles.sectionHeader}>
               <h2 id="capacity-history-heading">Snapshot history</h2>
               <span>Recorded manually</span>
@@ -150,14 +150,14 @@ export function CapacityDashboard({ snapshot, error, capturing, onRefresh, onCap
             <CapacityHistory snapshot={snapshot} />
           </section>
 
-          <section className={styles.section} aria-labelledby="capacity-providers-heading">
+          <section className={styles.section} data-admin-surface="providers" aria-labelledby="capacity-providers-heading">
             <div className={styles.sectionHeader}>
-              <h2 id="capacity-providers-heading">Provider billing feeds</h2>
-              <span>Fail closed</span>
+              <h2 id="capacity-providers-heading">Provider integrations</h2>
+              <span>Server-side · fail closed</span>
             </div>
             <div className={styles.providerRows}>
-              <ProviderRow name="Supabase" scope="Organization scope" metrics={snapshot.supabase.metrics} />
-              <ProviderRow name="Netlify" scope="Account scope" metrics={snapshot.netlify.metrics} />
+              <ProviderRow name="Supabase Management" scope="Organization scope" metrics={snapshot.supabase.metrics} unavailableLabel="Management usage unavailable" />
+              <ProviderRow name="Netlify" scope="Account scope" metrics={snapshot.netlify.metrics} unavailableLabel="Setup deferred" />
             </div>
           </section>
     </main>

@@ -1,4 +1,6 @@
 import { useEffect, useMemo, useState, type FormEvent } from 'react';
+import { SelectField } from '../../../../components/ui';
+import { AppStateSurface } from '../../../../components/feedback/AppStateSurface';
 import { PLATFORM_MESSAGE_TYPES, type PlatformMessageAudience, type PlatformMessageType } from '../../../messaging/model';
 import type { PlatformMessageAudiencePreview, PlatformMessageGroupTarget, PlatformMessageHistoryPage, PlatformMessageUserTarget } from '../model';
 import { createPlatformMessagingService, type PlatformMessagingService } from '../platformMessagingService';
@@ -81,12 +83,12 @@ export function PlatformMessagingController({ service, initialTargetUserId = nul
   }
 
   const selected = targets.find((item) => ('userId' in item ? item.userId : item.groupId) === targetId);
-  return <main className={styles.main}>
+  return <main className={styles.main} data-admin-page="messages">
     <header className={styles.header}><div><h1>Messages</h1><p>Send private, auditable notices to a user, group, or the full app.</p></div><strong>{history?.total ?? 0} sent</strong></header>
     {notice && <p className={styles.notice} role="status">{notice}</p>}
     {error && <p className={styles.error} role="alert">{error}</p>}
     <div className={styles.grid}>
-      <section className={styles.composer} aria-labelledby="composer-heading"><h2 id="composer-heading">Compose</h2>
+      <section className={styles.composer} data-admin-surface="composer" aria-labelledby="composer-heading"><h2 id="composer-heading">Compose</h2>
         <fieldset className={styles.audience}><legend>Audience</legend>{(['USER','GROUP','ALL'] as const).map((item) => <label key={item}><input checked={audience === item} name="audience" onChange={() => changeAudience(item)} type="radio" /><span>{item === 'USER' ? 'Individual' : item === 'GROUP' ? 'Group' : 'Full app'}</span></label>)}</fieldset>
         {audience === 'ALL' ? <div className={styles.blastHelp}><strong>Shown as a “What’s new” popup</strong><p>Every active user sees this notice once. It is non-blocking, can be dismissed, and never requires acknowledgement.</p></div> : <form className={styles.search} onSubmit={(event) => void search(event)}><label><span>Find {audience === 'USER' ? 'user' : 'group'}</span><input onChange={(event) => setQuery(event.target.value)} placeholder={audience === 'USER' ? 'Username, name, or user ID' : 'Group name or ID'} value={query} /></label><button disabled={busy} type="submit">Search</button></form>}
         {audience !== 'ALL' && targets.length > 0 && <div className={styles.targets}>{targets.map((item) => {
@@ -96,7 +98,7 @@ export function PlatformMessagingController({ service, initialTargetUserId = nul
           return <button aria-pressed={targetId === id} key={id} onClick={() => setTargetId(id)} type="button"><strong>{title}</strong><span>{detail}</span></button>;
         })}</div>}
         {selected && <p className={styles.selected}>Selected: <strong>{'userId' in selected ? `@${selected.username}` : selected.groupName}</strong></p>}
-        <label><span>Message type</span><select disabled={audience === 'ALL'} onChange={(event) => setMessageType(event.target.value as PlatformMessageType)} value={audience === 'ALL' ? 'NOTICE' : messageType}>{PLATFORM_MESSAGE_TYPES.map((type) => <option key={type} value={type}>{type.replaceAll('_',' ')}</option>)}</select></label>
+        <SelectField label="Message type" disabled={audience === 'ALL'} onChange={(event) => setMessageType(event.target.value as PlatformMessageType)} value={audience === 'ALL' ? 'NOTICE' : messageType}>{PLATFORM_MESSAGE_TYPES.map((type) => <option key={type} value={type}>{type.replaceAll('_',' ')}</option>)}</SelectField>
         <label><span>Subject</span><input maxLength={120} minLength={3} onChange={(event) => setSubject(event.target.value)} value={subject} /></label>
         <label><span>Message</span><textarea maxLength={4000} minLength={10} onChange={(event) => setBody(event.target.value)} rows={6} value={body} /></label>
         <label><span>Audit reason</span><textarea aria-label="Audit reason" maxLength={500} minLength={3} onChange={(event) => setAuditReason(event.target.value)} rows={3} value={auditReason} /><small>Private. Retained with the administrator audit.</small></label>
@@ -106,9 +108,9 @@ export function PlatformMessagingController({ service, initialTargetUserId = nul
         {preview && <form className={styles.confirm} onSubmit={(event) => void send(event)}><h3>Confirm delivery</h3><p><strong>{preview.recipientCount}</strong> {preview.recipientCount === 1 ? 'recipient' : 'recipients'} · {preview.audienceLabel}</p><label><span>Type <code>{preview.confirmationPhrase}</code></span><input aria-label="Exact send confirmation" autoComplete="off" onChange={(event) => setConfirmation(event.target.value)} value={confirmation} /></label><div><button onClick={() => setPreview(null)} type="button">Cancel</button><button className={styles.primary} disabled={busy || confirmation !== preview.confirmationPhrase} type="submit">{busy ? 'Sending…' : 'Send message'}</button></div></form>}
       </section>
 
-      <section className={styles.history} aria-labelledby="history-heading"><div className={styles.sectionHeading}><h2 id="history-heading">Delivery history</h2><button onClick={() => void loadHistory()} type="button">Refresh</button></div>
-        {!history && !error && <p>Loading message history…</p>}
-        {history?.items.length === 0 && <p>No messages have been sent.</p>}
+      <section className={styles.history} data-admin-surface="history" aria-labelledby="history-heading"><div className={styles.sectionHeading}><h2 id="history-heading">Delivery history</h2><button onClick={() => void loadHistory()} type="button">Refresh</button></div>
+        {!history && !error && <AppStateSurface compact description="Reading the audited delivery log." role="status" title="Loading message history…" />}
+        {history?.items.length === 0 && <AppStateSurface compact description="Sent notices and their delivery status will appear here." title="No messages have been sent." />}
         {history && <ol>{history.items.map((item) => <li key={item.messageId} data-withdrawn={item.status === 'WITHDRAWN'}><header><div><span>{item.messageType.replaceAll('_',' ')} · {item.audienceLabel}</span><h3>{item.subject}</h3></div><strong>{item.status}</strong></header><p>{item.body}</p><dl><div><dt>Delivered</dt><dd>{item.recipientCount}</dd></div><div><dt>Read</dt><dd>{item.readCount}</dd></div>{item.acknowledgementRequired && <div><dt>Acknowledged</dt><dd>{item.acknowledgedCount}</dd></div>}<div><dt>Revision</dt><dd>{item.currentRevision}</dd></div></dl><time dateTime={item.sentAt}>{formatDate(item.sentAt)}</time>
           {item.status === 'SENT' && <div className={styles.historyActions}><button onClick={() => { setEditingId(editingId === item.messageId ? null : item.messageId); setEditReason(''); }} type="button">Edit</button><button onClick={() => { setWithdrawingId(withdrawingId === item.messageId ? null : item.messageId); setWithdrawReason(''); }} type="button">Withdraw</button></div>}
           {withdrawingId === item.messageId && <div className={styles.withdrawForm}><input aria-label={`Withdrawal reason for ${item.subject}`} onChange={(event) => setWithdrawReason(event.target.value)} placeholder="Withdrawal reason" value={withdrawReason} /><button disabled={busy || withdrawReason.trim().length < 3} onClick={() => void withdraw(item.messageId)} type="button">Confirm withdrawal</button></div>}

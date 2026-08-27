@@ -3,7 +3,7 @@ import { getSupabaseClient } from '../../../lib/supabase';
 import { assessCapacityMetric } from './capacityMath';
 import type { CapacityDashboardSnapshot } from './dashboardModel';
 import type { CapacityMetricCode, CapacityMetricMeasurement, CapacityMetricUnit, CapacitySnapshot } from './model';
-import { createNetlifyApiCapacityProvider } from './netlifyApiProvider';
+import { createDeferredNetlifyCapacityProvider, createNetlifyApiCapacityProvider } from './netlifyApiProvider';
 import type { CapacityTelemetryProvider } from './provider';
 import { createSupabaseManagementCapacityProvider } from './supabaseManagementProvider';
 
@@ -134,9 +134,10 @@ export function createCapacityDashboardService(
   const supabaseProvider = options.supabaseProvider ?? createSupabaseManagementCapacityProvider(
     functionInvoker(client, 'platform-capacity-supabase'),
   );
-  const netlifyProvider = options.netlifyProvider ?? createNetlifyApiCapacityProvider(
-    functionInvoker(client, 'platform-capacity-netlify'),
-  );
+  const netlifyEnabled = import.meta.env.VITE_NETLIFY_CAPACITY_ENABLED === 'true';
+  const netlifyProvider = options.netlifyProvider ?? (netlifyEnabled
+    ? createNetlifyApiCapacityProvider(functionInvoker(client, 'platform-capacity-netlify'))
+    : createDeferredNetlifyCapacityProvider());
   const historyLimit = options.historyLimit ?? 30;
 
   return {

@@ -9,22 +9,24 @@
   position: sticky;
   z-index: 5;
   top: 0;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  background: #090b0e;
+  border-bottom: 1px solid var(--color-border);
+  background: color-mix(in srgb, var(--color-bg) 96%, transparent);
+  backdrop-filter: blur(18px);
 }
 
 .headerInner,
 .content {
-  width: min(100% - 32px, 820px);
+  width: min(calc(100% - (2 * var(--app-page-gutter))), 820px);
   margin: 0 auto;
 }
 
 .headerInner {
-  min-height: 72px;
+  min-height: calc(60px + env(safe-area-inset-top));
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 18px;
+  gap: var(--space-3);
+  padding-top: env(safe-area-inset-top);
 }
 
 .brand {
@@ -36,7 +38,7 @@
 }
 
 .mark {
-  width: 46px;
+  width: 32px;
   height: auto;
 }
 
@@ -61,7 +63,14 @@
 }
 
 .content {
-  padding: 48px 0 72px;
+  padding: var(--space-6) 0 calc(64px + env(safe-area-inset-bottom));
+}
+
+.documentHeader {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  padding: var(--app-surface-padding);
+  background: var(--color-surface);
 }
 
 .eyebrow {
@@ -73,7 +82,7 @@
   text-transform: uppercase;
 }
 
-.content h1 {
+.documentHeader h1 {
   margin: 0;
   font-size: clamp(2.25rem, 9vw, 4rem);
   letter-spacing: -0.05em;
@@ -81,21 +90,24 @@
 }
 
 .updated {
-  margin: 14px 0 36px;
+  margin: 14px 0 var(--space-5);
   color: #8f949a;
   font-size: 0.84rem;
 }
 
 .intro {
-  margin-bottom: 36px;
+  margin: 0;
   color: #c5c8cb;
   font-size: 1.05rem;
   line-height: 1.7;
 }
 
 .section {
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-  padding: 28px 0;
+  margin-top: var(--app-category-gap);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  padding: var(--app-surface-padding);
+  background: var(--color-surface);
 }
 
 .section h2 {
@@ -128,9 +140,10 @@
 }
 
 .notice {
-  margin: 28px 0 0;
-  border-left: 2px solid #ff861f;
-  padding: 2px 0 2px 16px;
+  margin: var(--app-category-gap) 0 0;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-3);
   color: #9da2a7;
   font-size: 0.82rem;
   line-height: 1.6;
@@ -144,5 +157,20 @@
 
   .content {
     padding-top: 64px;
+  }
+}
+
+@media (max-width: 360px) {
+  .brand span {
+    font-size: 0.76rem;
+  }
+
+  .back {
+    font-size: 0.78rem;
+  }
+
+  .documentHeader,
+  .section {
+    padding: var(--space-4);
   }
 }

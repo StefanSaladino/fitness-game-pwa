@@ -430,10 +430,10 @@ describe('workout reliability integration gate', () => {
 
     await user.click(screen.getByRole('button', { name: buttonName }));
 
-    if (action === 'cancel') {
-      const dialog = await screen.findByRole('dialog', { name: 'Cancel this workout?' });
-      await user.click(within(dialog).getByRole('button', { name: 'Cancel workout' }));
-    }
+    const dialog = await screen.findByRole('dialog', {
+      name: action === 'finish' ? 'Finish this workout?' : 'Cancel this workout?',
+    });
+    await user.click(within(dialog).getByRole('button', { name: buttonName }));
 
     expect(await screen.findByRole('heading', { name: 'Start a lift' })).toBeInTheDocument();
     expect(backend.workoutStatus).toBe(terminalStatus);

@@ -122,6 +122,7 @@ describe('platform administration integration security gate', () => {
       },
       markRead: vi.fn(async () => { deliveryState = 'READ'; }),
       acknowledge: vi.fn(),
+      deleteMessage: vi.fn(),
     };
 
     render(<UserMessageCenter service={userService} />);

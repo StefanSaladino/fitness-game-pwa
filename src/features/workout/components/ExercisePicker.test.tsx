@@ -1,5 +1,5 @@
-import { fireEvent, render, screen, within } from '@testing-library/react';
-import type { ComponentProps } from 'react';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { useState, type ComponentProps } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import type { ExercisePickerItem } from '../model';
 import { ExercisePicker } from './ExercisePicker';
@@ -77,5 +77,50 @@ describe('ExercisePicker', () => {
     expect(screen.getByRole('heading', { name: 'Recent' })).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'Add Barbell Bench Press' }));
     expect(onAdd).toHaveBeenCalledWith('bench-bb');
+  });
+
+  it('uses Escape as in-app back before closing the picker', () => {
+    const onClose = vi.fn();
+    render(picker({ onClose }));
+
+    fireEvent.click(screen.getByRole('button', { name: 'Open Chest exercises' }));
+    fireEvent.keyDown(window, { key: 'Escape' });
+    expect(screen.getByRole('heading', { name: 'Add exercise' })).toBeInTheDocument();
+    expect(onClose).not.toHaveBeenCalled();
+
+    fireEvent.keyDown(window, { key: 'Escape' });
+    expect(onClose).toHaveBeenCalledTimes(1);
+  });
+
+  it('focuses the picker chrome and restores focus to the opener after close', async () => {
+    function Harness() {
+      const [open, setOpen] = useState(false);
+      return (
+        <>
+          <button onClick={() => setOpen(true)} type="button">Open picker</button>
+          <ExercisePicker
+            catalog={catalog}
+            error=""
+            isAdding={false}
+            onAdd={vi.fn(async () => true)}
+            onClose={() => setOpen(false)}
+            onRetry={vi.fn(async () => catalog)}
+            open={open}
+            selectedExerciseIds={[]}
+            status="ready"
+          />
+        </>
+      );
+    }
+
+    render(<Harness />);
+    const opener = screen.getByRole('button', { name: 'Open picker' });
+    opener.focus();
+    fireEvent.click(opener);
+
+    const close = screen.getByRole('button', { name: 'Close exercise picker' });
+    await waitFor(() => expect(close).toHaveFocus());
+    fireEvent.click(close);
+    await waitFor(() => expect(opener).toHaveFocus());
   });
 });

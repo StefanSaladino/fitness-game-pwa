@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from 'react';
-import { AppShell, type AppSection } from '../../../components/layout';
+import battleRopeBanner from '../../../assets/fitness/top-set-battle-rope-banner.jpg';
+import { AppShell, DestinationBanner, type AppSection } from '../../../components/layout';
 import { Button } from '../../../components/ui';
 import type { OnboardingProfile } from '../../onboarding';
 import {
@@ -96,13 +97,14 @@ export function CardioScreen({
   return (
     <AppShell
       activeItem="workouts"
+      mobileTitle="Cardio"
       onNavigate={onNavigate}
       onSignOut={onSignOut}
       userLabel={profile.displayName}
       userMeta={`@${profile.username}`}
     >
-      <main className={styles.page}>
-        <header className={styles.header}>
+      <div className={styles.page} data-cardio-page>
+        <DestinationBanner className={styles.header} data-cardio-surface="identity" imagePosition="center 40%" imageSrc={battleRopeBanner}>
           <div>
             <p className={styles.kicker}>CARDIO ACCESSORY</p>
             <h1>Log cardio</h1>
@@ -115,10 +117,15 @@ export function CardioScreen({
           >
             Back to Lift
           </button>
-        </header>
+        </DestinationBanner>
 
         <div className={styles.desktopGrid}>
-          <section className={styles.logSection} aria-labelledby="cardio-log-heading">
+          <section
+            className={styles.logSection}
+            aria-labelledby="cardio-log-heading"
+            data-app-surface="primary"
+            data-cardio-surface="quick-log"
+          >
             <div className={styles.sectionHeading}>
               <p className={styles.sectionLabel}>NEW ACTIVITY</p>
               <h2 id="cardio-log-heading">Completed cardio</h2>
@@ -159,7 +166,7 @@ export function CardioScreen({
                 </span>
               </label>
 
-              <div className={styles.tier} aria-live="polite">
+              <div className={styles.tier} aria-live="polite" data-cardio-tier>
                 <span>Bonus preview</span>
                 <div className={styles.tierHeadline}>
                   <strong>{tier > 0 ? `+${tier} XP` : 'Below bonus minimum'}</strong>
@@ -202,15 +209,15 @@ export function CardioScreen({
 
           <div className={styles.activityHistory}>
             {status === 'loading' && !snapshot ? (
-              <div className={styles.state} role="status">Loading cardio history…</div>
+              <div className={styles.state} data-app-surface="category" data-cardio-surface="history-state" role="status">Loading cardio history…</div>
             ) : status === 'error' && !snapshot ? (
-              <div className={styles.state}>
+              <div className={styles.state} data-app-surface="category" data-cardio-surface="history-state">
                 <p>{error}</p>
                 <Button onClick={() => void retry()}>Try again</Button>
               </div>
             ) : snapshot ? (
               <>
-                <section className={styles.summary} aria-label="Cardio summary">
+                <section className={styles.summary} aria-label="Cardio summary" data-app-surface="category" data-cardio-surface="summary">
                   <p className={styles.sectionLabel}>LAST 30 DAYS</p>
                   <div className={styles.summaryPrimary}>
                     <strong>
@@ -228,7 +235,12 @@ export function CardioScreen({
                   <small>Accessory summary — weekly lifting consistency is unchanged.</small>
                 </section>
 
-                <section className={styles.history} aria-labelledby="cardio-history-heading">
+                <section
+                  className={styles.history}
+                  aria-labelledby="cardio-history-heading"
+                  data-app-surface="category"
+                  data-cardio-surface="history"
+                >
                   <div className={styles.sectionHeading}>
                     <p className={styles.sectionLabel}>HISTORY</p>
                     <h2 id="cardio-history-heading">Recent cardio</h2>
@@ -274,7 +286,7 @@ export function CardioScreen({
             ) : null}
           </div>
         </div>
-      </main>
+      </div>
     </AppShell>
   );
 }

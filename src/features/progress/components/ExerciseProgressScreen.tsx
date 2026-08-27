@@ -1,7 +1,7 @@
+import progressBanner from '../../../assets/fitness/top-set-progress-log.jpg';
 import type { AppSection } from '../../../components/layout';
-import { AppShell } from '../../../components/layout';
+import { AppShell, DestinationBanner } from '../../../components/layout';
 import { Button } from '../../../components/ui';
-import progressLogImage from '../../../assets/fitness/top-set-progress-log.jpg';
 import type { OnboardingProfile } from '../../onboarding';
 import type { ExerciseAnalyticsSnapshot, ExercisePrTimelineEntry } from '../exerciseAnalytics';
 import type { LiftingCalendarAnalytics } from '../liftingCalendarAnalytics';
@@ -110,7 +110,12 @@ function ExerciseList({ exercises, selectedExerciseId, onSelectExercise }: {
   const totalSessions = exercises.reduce((total, exercise) => total + exercise.sessionCount, 0);
 
   return (
-    <section className={styles.exercisePanel} aria-labelledby="tracked-exercises-heading">
+    <section
+      className={styles.exercisePanel}
+      aria-labelledby="tracked-exercises-heading"
+      data-app-surface="category"
+      data-progress-surface="lift-picker"
+    >
       <div className={styles.panelHeading}>
         <div>
           <p>Exercise progress</p>
@@ -186,28 +191,47 @@ function ExerciseCharts({ exercise, analytics }: { exercise: ExerciseProgressSum
   const volumePoints = analytics.volumeTrend.map((point) => ({ id: point.workoutId, observedAt: point.observedAt, value: point.value }));
 
   return (
-    <div className={styles.chartGrid} aria-label="Exercise analytics charts">
-      <ExerciseTrendChart
-        description={`${metricPoints.length} comparable session${metricPoints.length === 1 ? '' : 's'}`}
-        formatValue={(value) => formatMetric(exercise.metricType, value)}
-        points={metricPoints}
-        title={metricTrendTitle(exercise.metricType)}
-      />
-      <ExerciseTrendChart
-        description={`${volumePoints.length} completed session${volumePoints.length === 1 ? '' : 's'} · analytics only`}
-        formatValue={(value) => `${formatNumber(value, 0)} kg·reps`}
-        points={volumePoints}
-        title="Volume history"
-        variant="bars"
-      />
-    </div>
+    <section
+      className={styles.trendsPanel}
+      aria-labelledby="exercise-trends-heading"
+      data-app-surface="category"
+      data-progress-surface="trends"
+    >
+      <div className={styles.sectionHeading}>
+        <div>
+          <p>Completed sessions</p>
+          <h3 id="exercise-trends-heading">Exercise trends</h3>
+        </div>
+        <span>Comparable progress and analytics-only volume are kept separate.</span>
+      </div>
+      <div className={styles.chartGrid} aria-label="Exercise analytics charts">
+        <ExerciseTrendChart
+          description={`${metricPoints.length} comparable session${metricPoints.length === 1 ? '' : 's'}`}
+          formatValue={(value) => formatMetric(exercise.metricType, value)}
+          points={metricPoints}
+          title={metricTrendTitle(exercise.metricType)}
+        />
+        <ExerciseTrendChart
+          description={`${volumePoints.length} completed session${volumePoints.length === 1 ? '' : 's'} · analytics only`}
+          formatValue={(value) => `${formatNumber(value, 0)} kg·reps`}
+          points={volumePoints}
+          title="Volume history"
+          variant="bars"
+        />
+      </div>
+    </section>
   );
 }
 
 function PrTimeline({ entries }: { entries: ExercisePrTimelineEntry[] }) {
   return (
-    <section className={styles.prTimeline} aria-labelledby="pr-timeline-heading">
-      <div className={styles.historyHeading}>
+    <section
+      className={styles.prTimeline}
+      aria-labelledby="pr-timeline-heading"
+      data-app-surface="category"
+      data-progress-surface="milestones"
+    >
+      <div className={styles.sectionHeading}>
         <div>
           <p>Milestones</p>
           <h3 id="pr-timeline-heading">PR timeline</h3>
@@ -243,25 +267,31 @@ function ExerciseDetail({ exercise, analytics, history, historyStatusValue, hist
   onRetryHistory: () => void;
 }) {
   return (
-    <section className={styles.detailPanel} aria-labelledby="exercise-detail-heading">
-      <header className={styles.detailHeader}>
-        <div>
-          <p className={styles.kicker}>{metricLabel(exercise.metricType)}</p>
-          <h2 id="exercise-detail-heading">{exercise.canonicalName}</h2>
-          <span>Last performed {formatDate(exercise.lastPerformedAt)}</span>
-        </div>
-      </header>
+    <div className={styles.detailStack} data-progress-detail>
+      <section
+        className={styles.summaryPanel}
+        aria-labelledby="exercise-detail-heading"
+        data-app-surface="category"
+        data-progress-surface="exercise-summary"
+      >
+        <header className={styles.detailHeader}>
+          <div>
+            <p className={styles.kicker}>{metricLabel(exercise.metricType)}</p>
+            <h2 id="exercise-detail-heading">{exercise.canonicalName}</h2>
+            <span>Last performed {formatDate(exercise.lastPerformedAt)}</span>
+          </div>
+        </header>
 
-      {historyStatusValue === 'loading' && <p className={styles.stateText}>Loading exercise analytics…</p>}
-      {historyStatusValue === 'error' && (
-        <div className={styles.inlineError} role="alert">
-          <p>{historyError}</p>
-          <Button onClick={onRetryHistory} variant="secondary">Retry history</Button>
-        </div>
-      )}
+        {historyStatusValue === 'loading' && <p className={styles.stateText}>Loading exercise analytics…</p>}
+        {historyStatusValue === 'error' && (
+          <div className={styles.inlineError} role="alert">
+            <p>{historyError}</p>
+            <Button onClick={onRetryHistory} variant="secondary">Retry history</Button>
+          </div>
+        )}
 
-      {historyStatusValue === 'ready' && analytics && (
-        <>
+        {historyStatusValue === 'ready' && analytics && (
+          <>
           <AnalyticsSummary analytics={analytics} exercise={exercise} />
 
           {exercise.measurementType === 'BODYWEIGHT_REPS' && (
@@ -269,45 +299,57 @@ function ExerciseDetail({ exercise, analytics, history, historyStatusValue, hist
               Added-weight and assisted sets stay visible as analytics, but they are not compared with plain bodyweight reps for PR or XP calculations.
             </p>
           )}
+          </>
+        )}
+      </section>
 
+      {historyStatusValue === 'ready' && analytics && (
+        <>
           <ExerciseCharts analytics={analytics} exercise={exercise} />
           <PrTimeline entries={analytics.prTimeline} />
 
-          <div className={styles.historyHeading}>
-            <div>
-              <p>Lift by lift</p>
-              <h3>Session history</h3>
+          <section
+            className={styles.historyPanel}
+            aria-labelledby="session-history-heading"
+            data-app-surface="category"
+            data-progress-surface="history"
+          >
+            <div className={styles.sectionHeading}>
+              <div>
+                <p>Lift by lift</p>
+                <h3 id="session-history-heading">Session history</h3>
+              </div>
+              <span>{exercise.observationCount} comparable observation{exercise.observationCount === 1 ? '' : 's'} · volume is analytics-only.</span>
             </div>
-            <span>{exercise.observationCount} comparable observation{exercise.observationCount === 1 ? '' : 's'} · volume is analytics-only.</span>
-          </div>
 
-          {history.length === 0 ? (
-            <p className={styles.stateText}>No completed session history is available yet.</p>
-          ) : (
-            <ol className={styles.historyList}>
-              {history.map((entry) => (
-                <li key={entry.workoutId}>
-                  <div className={styles.historyPrimary}>
-                    <div className={styles.historyTopline}>
-                      <time dateTime={entry.observedAt}>{formatDate(entry.observedAt)}</time>
-                      <span className={entry.isCurrentPr || entry.isPr ? styles.prBadge : styles.statusBadge}>{historyStatus(entry)}</span>
+            {history.length === 0 ? (
+              <p className={styles.stateText}>No completed session history is available yet.</p>
+            ) : (
+              <ol className={styles.historyList}>
+                {history.map((entry) => (
+                  <li key={entry.workoutId}>
+                    <div className={styles.historyPrimary}>
+                      <div className={styles.historyTopline}>
+                        <time dateTime={entry.observedAt}>{formatDate(entry.observedAt)}</time>
+                        <span className={entry.isCurrentPr || entry.isPr ? styles.prBadge : styles.statusBadge}>{historyStatus(entry)}</span>
+                      </div>
+                      <strong>{historyPerformance(entry)}</strong>
+                      {entry.previousPrValue !== null && entry.metricValue !== null && (
+                        <small>Previous best: {formatMetric(entry.metricType, entry.previousPrValue)}</small>
+                      )}
                     </div>
-                    <strong>{historyPerformance(entry)}</strong>
-                    {entry.previousPrValue !== null && entry.metricValue !== null && (
-                      <small>Previous best: {formatMetric(entry.metricType, entry.previousPrValue)}</small>
-                    )}
-                  </div>
-                  <div className={styles.historyAnalytics}>
-                    <span>{entry.completedWorkingSets} working sets</span>
-                    <span>{entry.sessionVolumeKgReps > 0 ? `${formatNumber(entry.sessionVolumeKgReps, 0)} kg·reps volume` : 'No weighted volume'}</span>
-                  </div>
-                </li>
-              ))}
-            </ol>
-          )}
+                    <div className={styles.historyAnalytics}>
+                      <span>{entry.completedWorkingSets} working sets</span>
+                      <span>{entry.sessionVolumeKgReps > 0 ? `${formatNumber(entry.sessionVolumeKgReps, 0)} kg·reps volume` : 'No weighted volume'}</span>
+                    </div>
+                  </li>
+                ))}
+              </ol>
+            )}
+          </section>
         </>
       )}
-    </section>
+    </div>
   );
 }
 
@@ -329,16 +371,15 @@ export function ExerciseProgressScreen({
   onSignOut,
 }: ExerciseProgressScreenProps) {
   return (
-    <AppShell activeItem="progress" onNavigate={onNavigate} onSignOut={onSignOut} userLabel={profile.displayName} userMeta={`@${profile.username}`}>
-      <div className={styles.progressPage}>
-        <header className={styles.hero}>
-          <div className={styles.heroCopy}>
+    <AppShell activeItem="progress" mobileTitle="Progress" onNavigate={onNavigate} onSignOut={onSignOut} userLabel={profile.displayName} userMeta={`@${profile.username}`}>
+      <div className={styles.progressPage} data-progress-page>
+        <DestinationBanner className={styles.pageHeader} data-progress-surface="identity" imagePosition="center 43%" imageSrc={progressBanner}>
+          <div className={styles.headerCopy}>
             <p>Lifting analytics</p>
             <h1>Your lifting trend</h1>
             <span>Strength, volume, frequency, and PR history from your completed sessions. Analytics never changes XP.</span>
           </div>
-          <img alt="Training log beside a loaded barbell" className={styles.heroImage} src={progressLogImage} />
-        </header>
+        </DestinationBanner>
 
         <LiftingCalendarSummaryPanel
           analytics={calendarAnalytics}
@@ -348,7 +389,7 @@ export function ExerciseProgressScreen({
         />
 
         {exercises.length === 0 ? (
-          <section className={styles.emptyState}>
+          <section className={styles.emptyState} data-app-surface="category" data-progress-surface="empty">
             <h2>No lift history yet</h2>
             <p>Complete a strength session with working sets and your exercise analytics will appear here automatically.</p>
             <Button onClick={() => onNavigate('workouts')}>Start Lift</Button>

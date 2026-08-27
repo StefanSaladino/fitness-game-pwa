@@ -14,8 +14,9 @@ export function OnboardingScreen({ profile, busy, error, onSubmit }: OnboardingS
   return (
     <OnboardingLayout>
       <header className={styles.header}>
-        <h1>Set up your profile.</h1>
-        <p>This helps personalize your experience.</p>
+        <p className={styles.eyebrow}>WELCOME TO TOP SET</p>
+        <h1>Set up your profile</h1>
+        <p>Three short steps, then you’re ready to train.</p>
       </header>
       <OnboardingForm busy={busy} error={error} onSubmit={onSubmit} profile={profile} />
     </OnboardingLayout>

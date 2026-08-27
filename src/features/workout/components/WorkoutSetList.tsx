@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { SelectField } from '../../../components/ui';
 import type { WorkoutSetBusyState, WorkoutSetStatus } from '../hooks/useWorkoutSets';
 import type {
   BodyweightLoadMode,
@@ -180,11 +181,12 @@ function SetRow({
     <li className={`${styles.setRow} ${isBodyweight ? styles.bodyweightRow : styles.weightedRow}${set.completed ? ` ${styles.completed}` : ''}`}>
       <span className={styles.setNumber} aria-hidden="true">{set.setNumber}</span>
 
-      <label className={styles.typeField}>
-        <span className={styles.visuallyHidden}>Type</span>
-        <select
-          aria-label={`Set ${set.setNumber} type`}
+      <SelectField
+          className={styles.typeField}
+          compact
           disabled={Boolean(rowBusy) || !setEditsEnabled}
+          label={`Set ${set.setNumber} type`}
+          labelHidden
           onChange={(event) => {
             const setType = event.target.value as SetDraft['setType'];
             updateDraft((current) => ({ ...current, setType }));
@@ -194,15 +196,15 @@ function SetRow({
         >
           <option value="WORKING">Working</option>
           <option value="WARMUP">Warmup</option>
-        </select>
-      </label>
+      </SelectField>
 
       {isBodyweight && (
-        <label className={styles.modeField}>
-          <span className={styles.visuallyHidden}>Mode</span>
-          <select
-            aria-label={`Set ${set.setNumber} bodyweight mode`}
+        <SelectField
+            className={styles.modeField}
+            compact
             disabled={Boolean(rowBusy) || !setEditsEnabled}
+            label={`Set ${set.setNumber} bodyweight mode`}
+            labelHidden
             onChange={(event) => {
               const bodyweightMode = event.target.value as BodyweightLoadMode;
               const nextWeight = bodyweightMode === 'BODYWEIGHT' ? '' : draftRef.current.weight;
@@ -214,8 +216,7 @@ function SetRow({
             <option value="BODYWEIGHT">Bodyweight</option>
             <option value="ADDED_WEIGHT">Added weight</option>
             <option value="ASSISTED">Assisted</option>
-          </select>
-        </label>
+        </SelectField>
       )}
 
       {(exercise.measurementType === 'WEIGHT_REPS' || usesExternalLoad) ? (

@@ -1,87 +1,87 @@
 .page {
-  width: min(1120px, 100%);
+  width: min(100%, 1040px);
+  min-width: 0;
   margin: 0 auto;
-  padding: 20px 14px calc(100px + env(safe-area-inset-bottom));
 }
 
 .pageContent {
+  display: grid;
+  min-width: 0;
+  gap: var(--app-category-gap);
+}
+
+.headerSurface,
+.contextSurface,
+.sectionSurface,
+.viewTabs,
+.state {
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+}
+
+.headerSurface {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-5);
+  border-color: rgba(241, 90, 8, 0.26);
+  padding: var(--app-surface-padding);
+  background: var(--color-surface-strong);
+}
+
+.headerCopy {
   min-width: 0;
 }
 
-.header {
-  display: flex;
-  align-items: end;
-  justify-content: space-between;
-  gap: 20px;
-  padding-bottom: 14px;
-  border-bottom: 1px solid #292a2e;
+.headerCopy h1 {
+  margin: var(--space-1) 0 var(--space-1);
+  overflow-wrap: anywhere;
+  color: var(--color-text);
+  font-size: clamp(1.9rem, 9vw, 3rem);
+  line-height: 1;
+  letter-spacing: -0.048em;
+}
+
+.headerCopy > p:not(.kicker),
+.contextIdentity span,
+.memberPreview > span,
+.sectionHeadingCompact > span,
+.emptyState,
+.createGroupBlock > p,
+.membershipBlock > p,
+.state {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: 0.8rem;
+  line-height: 1.5;
 }
 
 .kicker,
 .sectionLabel,
 .outgoingLabel {
   margin: 0;
-  color: #a0a1a4;
-  font-size: 0.68rem;
-  font-weight: 760;
+  color: var(--color-accent);
+  font-size: 0.67rem;
+  font-weight: 800;
   letter-spacing: 0.1em;
   text-transform: uppercase;
 }
 
-.kicker { color: #f15a08; }
-
-.header h1 {
-  margin: 4px 0 0;
-  color: #f7f7f7;
-  font-size: clamp(2rem, 8vw, 3.35rem);
-  letter-spacing: -0.045em;
-}
-
-.groupMeta {
-  margin: 5px 0 0;
-  color: #a0a1a4;
-  font-size: 0.82rem;
-  text-transform: capitalize;
-}
-
-.competitionLink,
-.manageButton,
-.inviteActions button,
-.revokeButton,
-.doneButton,
-.memberActions button,
-.confirmActions button {
+:global(.ui-button).competitionLink {
   min-height: 44px;
-  padding: 8px 0;
-  color: #c7c8ca;
-  font: inherit;
-  font-weight: 720;
-  background: transparent;
-  border: 0;
-  cursor: pointer;
+  flex: 0 0 auto;
 }
 
-.competitionLink,
-.primaryTextAction,
-.doneButton,
-.manageButton {
-  color: #f15a08;
-}
-
-.competitionLink:hover,
-.primaryTextAction:hover,
-.doneButton:hover,
-.manageButton:hover {
-  color: #ff670d;
-}
-
-.groupIdentity {
+.contextSurface {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
-  gap: 12px;
-  min-height: 84px;
-  border-bottom: 1px solid #292a2e;
+  gap: var(--space-3) var(--space-4);
+  padding: var(--app-surface-padding);
+  background: var(--color-bg-elevated);
 }
 
 .groupMonogram {
@@ -89,335 +89,334 @@
   width: 52px;
   height: 52px;
   place-items: center;
-  color: #f15a08;
-  font-size: 0.82rem;
-  font-weight: 800;
-  letter-spacing: 0.06em;
-  background: #15100d;
-  border: 2px solid #f15a08;
+  border: 1px solid rgba(241, 90, 8, 0.42);
   border-radius: 50%;
+  color: var(--color-accent);
+  background: var(--color-accent-soft);
+  font-size: 0.82rem;
+  font-weight: 840;
+  letter-spacing: 0.05em;
 }
 
-.groupIdentityCopy {
+.contextIdentity {
   display: grid;
-  gap: 4px;
   min-width: 0;
+  gap: var(--space-1);
 }
 
-.groupIdentityCopy strong {
+.contextIdentity strong {
   overflow: hidden;
-  color: #f7f7f7;
-  font-size: 1.02rem;
+  color: var(--color-text);
+  font-size: 0.98rem;
   text-overflow: ellipsis;
   white-space: nowrap;
-}
-
-.groupIdentityCopy span,
-.memberPreview > span {
-  color: #a0a1a4;
-  font-size: 0.74rem;
 }
 
 .memberPreview {
   display: grid;
   justify-items: end;
-  gap: 5px;
+  gap: var(--space-1);
 }
 
 .memberAvatarStack {
   display: flex;
   justify-content: flex-end;
-  min-width: 74px;
+  padding-left: var(--space-3);
 }
 
-.memberAvatarStack > * + * {
-  margin-left: -11px;
+.memberAvatarStack > * {
+  margin-left: -8px;
+  outline: 2px solid var(--color-bg-elevated);
 }
 
-.groupSwitcher,
-.section,
-.settingsSection {
-  padding: 24px 0;
-  border-bottom: 1px solid #292a2e;
+:global(.ui-field).groupSelect {
+  grid-column: 1 / -1;
+  width: 100%;
+  margin-top: var(--space-1);
 }
 
-.sectionHeadingCompact,
-.sectionHeadingRow {
-  margin-bottom: 12px;
+.error {
+  margin: calc(var(--app-category-gap) * -0.5) 0 0;
+  border-left: 3px solid var(--color-danger);
+  border-radius: var(--radius-sm);
+  padding: var(--space-3) var(--space-4);
+  color: var(--color-danger);
+  background: rgba(255, 156, 156, 0.06);
+  font-size: 0.8rem;
+  line-height: 1.45;
 }
 
-.sectionHeadingCompact h2,
-.sectionHeadingRow h2 {
-  margin: 4px 0 0;
-  color: #f7f7f7;
-  font-size: 1.22rem;
-  letter-spacing: -0.025em;
+.viewTabs {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--space-1);
+  padding: var(--space-1);
+  background: var(--color-bg-elevated);
+}
+
+.viewTabs button {
+  display: inline-flex;
+  min-width: 0;
+  min-height: 48px;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  padding: 0 var(--space-2);
+  color: var(--color-text-muted);
+  background: transparent;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.76rem;
+  font-weight: 780;
+}
+
+.viewTabs button[aria-selected='true'] {
+  border-color: var(--color-border-strong);
+  color: var(--color-text);
+  background: var(--color-surface-strong);
+  box-shadow: inset 0 -2px 0 var(--color-accent);
+}
+
+.viewTabs b {
+  display: grid;
+  min-width: 20px;
+  height: 20px;
+  place-items: center;
+  border-radius: 999px;
+  padding: 0 5px;
+  color: var(--color-accent);
+  background: var(--color-accent-soft);
+  font-size: 0.62rem;
+}
+
+.viewTabs button:focus-visible,
+.manageButton:focus-visible,
+.inviteActions button:focus-visible,
+.revokeButton:focus-visible,
+.doneButton:focus-visible,
+.memberActions > button:focus-visible,
+.confirmActions button:focus-visible {
+  outline: 2px solid var(--color-accent-hover);
+  outline-offset: 2px;
+}
+
+.viewStack {
+  display: grid;
+  min-width: 0;
+  gap: var(--app-category-gap);
+}
+
+.sectionSurface {
+  padding: var(--app-surface-padding);
+}
+
+.sectionSurface h2,
+.createGroupBlock h2,
+.membershipBlock h2 {
+  margin: var(--space-1) 0 0;
+  color: var(--color-text);
+  font-size: clamp(1.2rem, 5vw, 1.55rem);
+  letter-spacing: -0.03em;
+}
+
+.sectionHeadingRow,
+.sectionHeadingCompact {
+  min-width: 0;
+  margin-bottom: var(--space-4);
 }
 
 .sectionHeadingRow {
   display: flex;
-  align-items: end;
+  align-items: flex-end;
   justify-content: space-between;
-  gap: 16px;
+  gap: var(--space-4);
 }
 
 .sectionHeadingRow > span {
-  color: #a0a1a4;
-  font-size: 0.78rem;
-  font-weight: 760;
+  flex: 0 0 auto;
+  color: var(--color-text-muted);
+  font-size: 0.72rem;
 }
 
-.groupRail {
-  display: flex;
-  gap: 18px;
-  overflow-x: auto;
-  overscroll-behavior-inline: contain;
-  scrollbar-width: none;
-  -webkit-overflow-scrolling: touch;
-}
-
-.groupRail::-webkit-scrollbar { display: none; }
-
-.groupRailButton {
-  flex: 0 0 min(190px, 64vw);
-  min-height: 62px;
-  padding: 7px 0 11px;
-  color: #c7c8ca;
-  text-align: left;
-  background: transparent;
-  border: 0;
-  border-bottom: 1px solid #292a2e;
-  cursor: pointer;
-}
-
-.groupRailButton strong,
-.groupRailButton span {
+.sectionHeadingCompact > span {
   display: block;
+  max-width: 640px;
+  margin-top: var(--space-2);
 }
-
-.groupRailButton strong {
-  overflow: hidden;
-  color: #c7c8ca;
-  font-size: 0.9rem;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.groupRailButton span {
-  margin-top: 7px;
-  color: #a0a1a4;
-  font-size: 0.69rem;
-  text-transform: capitalize;
-}
-
-.groupRailButton[aria-pressed='true'] {
-  border-bottom: 3px solid #f15a08;
-}
-
-.groupRailButton[aria-pressed='true'] strong { color: #f7f7f7; }
-.groupRailButton[aria-pressed='true'] span { color: #f15a08; }
 
 .memberList,
 .inviteList {
   margin: 0;
+  overflow: hidden;
+  border-radius: var(--radius-md);
   padding: 0;
+  background: var(--color-bg-elevated);
   list-style: none;
 }
 
 .memberRow {
   display: grid;
+  min-width: 0;
   grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
-  gap: 12px;
-  min-height: 68px;
-  border-top: 1px solid #222327;
+  gap: var(--space-3);
+  min-height: var(--app-row-min-height);
+  padding: var(--space-3) var(--space-4);
 }
 
-.memberRow:last-child { border-bottom: 1px solid #222327; }
+.memberRow + .memberRow,
+.inviteRow + .inviteRow {
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+}
 
-.identity {
+.identity,
+.inviteMeta {
   min-width: 0;
 }
 
 .identity strong,
-.identity span {
+.identity span,
+.inviteMeta strong,
+.inviteMeta span {
   display: block;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.identity strong {
-  color: #f7f7f7;
-  font-size: 0.9rem;
+.identity strong,
+.inviteMeta strong {
+  color: var(--color-text);
+  font-size: 0.86rem;
 }
 
-.identity span {
+.identity span,
+.inviteMeta span {
   margin-top: 3px;
-  color: #a0a1a4;
-  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  font-size: 0.7rem;
 }
 
 .role {
-  align-self: start;
-  margin-top: 18px;
-  color: #a0a1a4;
-  font-size: 0.64rem;
-  font-weight: 800;
+  border-radius: 999px;
+  padding: 4px 7px;
+  color: var(--color-text-muted);
+  background: var(--color-surface-strong);
+  font-size: 0.6rem;
+  font-weight: 780;
   letter-spacing: 0.05em;
 }
 
 .manageButton {
-  grid-column: 2 / -1;
-  justify-self: end;
   display: inline-flex;
+  grid-column: 2 / -1;
+  min-height: 44px;
   align-items: center;
-  gap: 8px;
-  min-height: 30px;
-  margin-top: -28px;
-  padding: 0;
-  font-size: 0.74rem;
-}
-
-.manageButton > span:last-child {
-  font-size: 1.1rem;
+  justify-content: space-between;
+  gap: var(--space-3);
+  border: 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+  padding: var(--space-2) 0 0;
+  color: var(--color-accent);
+  background: transparent;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.72rem;
+  font-weight: 760;
 }
 
 .inviteRow {
   display: grid;
+  min-width: 0;
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
-  gap: 14px;
-  min-height: 68px;
-  border-top: 1px solid #222327;
+  gap: var(--space-4);
+  min-height: var(--app-row-min-height);
+  padding: var(--space-3) var(--space-4);
 }
-
-.inviteRow:last-child { border-bottom: 1px solid #222327; }
-
-.inviteMeta {
-  min-width: 0;
-}
-
-.inviteMeta strong,
-.inviteMeta span {
-  display: block;
-}
-
-.inviteMeta strong { color: #f7f7f7; }
-.inviteMeta span { margin-top: 4px; color: #a0a1a4; font-size: 0.75rem; }
 
 .inviteActions {
   display: flex;
-  gap: 22px;
+  gap: var(--space-2);
 }
 
 .inviteActions button,
-.revokeButton {
-  font-size: 0.78rem;
+.revokeButton,
+.doneButton {
+  min-height: 44px;
+  border: 0;
+  padding: 0 var(--space-3);
+  color: var(--color-text-muted);
+  background: transparent;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.72rem;
+  font-weight: 760;
 }
 
-.revokeButton { color: #ff7474; }
+.inviteActions .primaryTextAction {
+  color: var(--color-accent);
+}
 
-.inviteForm {
+.revokeButton {
+  color: var(--color-danger);
+}
+
+.inviteForm,
+.renameForm {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  align-items: end;
-  gap: 10px;
-  max-width: 720px;
+  min-width: 0;
+  gap: var(--space-3);
 }
 
 .outgoingInvites {
-  margin-top: 20px;
+  margin-top: var(--space-5);
 }
 
 .outgoingLabel {
-  margin-bottom: 8px;
+  margin-bottom: var(--space-2);
+  color: var(--color-text-muted);
 }
 
-.settingsSection {
-  border-bottom: 0;
-}
-
-.settingsDetails > summary {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 20px;
-  min-height: 58px;
-  color: #f7f7f7;
-  list-style: none;
-  cursor: pointer;
-}
-
-.settingsDetails > summary::-webkit-details-marker { display: none; }
-
-.settingsDetails > summary > span:first-child {
-  display: grid;
-  gap: 6px;
-}
-
-.settingsDetails > summary strong {
-  color: #c7c8ca;
-  font-size: 0.9rem;
-}
-
-.settingsDetails > summary > span:last-child {
-  color: #c7c8ca;
-  font-size: 1.3rem;
-  transition: transform 160ms ease;
-}
-
-.settingsDetails[open] > summary > span:last-child { transform: rotate(90deg); }
-
-.settingsBody {
-  display: grid;
-  gap: 28px;
-  padding: 18px 0 10px;
-}
-
-.renameForm {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  align-items: end;
-  gap: 10px;
-  max-width: 660px;
+.emptyState {
+  padding: var(--space-3) 0;
 }
 
 .createGroupBlock,
 .membershipBlock {
-  max-width: 660px;
+  min-width: 0;
 }
 
-.createGroupBlock h3,
-.membershipBlock h3 {
-  margin: 0;
-  color: #f7f7f7;
-  font-size: 1rem;
-}
-
-.createGroupBlock p,
-.membershipBlock p {
-  margin: 7px 0 14px;
-  color: #a0a1a4;
-  font-size: 0.82rem;
-  line-height: 1.5;
+.createGroupBlock > p:not(.sectionLabel),
+.membershipBlock > p:not(.sectionLabel) {
+  margin: var(--space-2) 0 var(--space-4);
 }
 
 .membershipRow {
   display: flex;
   align-items: center;
-  gap: 14px;
-  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: var(--space-3);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-bg-elevated);
 }
 
-.membershipRow span {
-  color: #a0a1a4;
-  font-size: 0.78rem;
+.membershipRow > span {
+  color: var(--color-text-soft);
+  font-size: 0.76rem;
+  font-weight: 760;
 }
 
-.error {
-  margin: 16px 0 0;
-  color: #ff7474;
+.state {
+  display: grid;
+  min-height: 50vh;
+  place-items: center;
+  gap: var(--space-4);
+  padding: var(--app-surface-padding);
+  text-align: center;
 }
 
 .manageBackdrop {
@@ -427,33 +426,36 @@
   display: flex;
   align-items: flex-end;
   justify-content: center;
-  padding: 16px 10px calc(10px + env(safe-area-inset-bottom));
-  background: rgba(0, 0, 0, 0.7);
+  padding: var(--space-4) var(--space-2) calc(var(--space-2) + env(safe-area-inset-bottom));
+  background: rgba(0, 0, 0, 0.72);
 }
 
 .manageSheet {
   position: relative;
   width: min(560px, 100%);
-  max-height: min(78vh, 640px);
+  max-height: min(82dvh, 660px);
   overflow-y: auto;
-  padding: 30px 18px 18px;
-  background: #121316;
-  border: 1px solid #393a3f;
-  border-radius: 18px 18px 12px 12px;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-xl) var(--radius-xl) var(--radius-md) var(--radius-md);
+  padding: 30px var(--space-4) var(--space-4);
+  background: var(--color-surface-strong);
   box-shadow: 0 -18px 48px rgba(0, 0, 0, 0.42);
+  overscroll-behavior: contain;
   scrollbar-width: none;
 }
 
-.manageSheet::-webkit-scrollbar { display: none; }
+.manageSheet::-webkit-scrollbar {
+  display: none;
+}
 
 .sheetHandle {
   position: absolute;
   top: 10px;
   left: 50%;
-  width: 72px;
+  width: 64px;
   height: 5px;
-  background: #56575c;
   border-radius: 999px;
+  background: var(--color-border-strong);
   transform: translateX(-50%);
 }
 
@@ -461,106 +463,119 @@
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
-  gap: 12px;
-  padding-bottom: 16px;
-  border-bottom: 1px solid #292a2e;
+  gap: var(--space-3);
+  padding-bottom: var(--space-4);
+  border-bottom: 1px solid var(--color-border);
 }
 
 .manageHeader h2 {
   margin: 0;
-  color: #f7f7f7;
+  color: var(--color-text);
   font-size: 1rem;
-  letter-spacing: -0.015em;
 }
 
 .manageHeader p {
-  margin: 4px 0 0;
-  color: #a0a1a4;
+  margin: var(--space-1) 0 0;
+  color: var(--color-text-muted);
   font-size: 0.72rem;
   text-transform: capitalize;
 }
 
 .doneButton {
-  align-self: start;
-  min-height: 34px;
-  padding: 0;
-  font-size: 0.78rem;
+  color: var(--color-accent);
 }
 
 .memberActions,
 .confirmPanel {
-  padding-top: 18px;
+  padding-top: var(--space-4);
 }
 
 .memberActions > button {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  align-items: center;
-  gap: 14px;
   width: 100%;
   min-height: 68px;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--space-3);
+  border: 0;
+  border-bottom: 1px solid var(--color-border);
+  padding: var(--space-3) 0;
+  color: var(--color-text-soft);
+  background: transparent;
+  cursor: pointer;
+  font: inherit;
   text-align: left;
-  border-bottom: 1px solid #292a2e;
 }
 
 .memberActions > button > span:first-child {
   display: grid;
-  gap: 5px;
+  gap: var(--space-1);
 }
 
 .memberActions strong {
-  color: #f7f7f7;
-  font-size: 0.9rem;
+  color: var(--color-text);
+  font-size: 0.88rem;
 }
 
 .memberActions small {
-  color: #a0a1a4;
+  color: var(--color-text-muted);
   font-size: 0.72rem;
   font-weight: 500;
 }
 
-.memberActions > button:first-of-type strong { color: #f15a08; }
+.memberActions > button:first-of-type strong {
+  color: var(--color-accent);
+}
+
 .memberActions .dangerAction strong,
-.memberActions .dangerAction > span:last-child { color: #ff7474; }
+.memberActions .dangerAction > span:last-child {
+  color: var(--color-danger);
+}
 
 .confirmPanel h3 {
-  margin: 7px 0 0;
-  color: #f7f7f7;
+  margin: var(--space-2) 0 0;
+  color: var(--color-text);
   font-size: 1.2rem;
   letter-spacing: -0.025em;
 }
 
 .confirmPanel > p:not(.sectionLabel) {
-  margin: 10px 0 0;
-  color: #a0a1a4;
-  font-size: 0.82rem;
+  margin: var(--space-3) 0 0;
+  color: var(--color-text-muted);
+  font-size: 0.8rem;
   line-height: 1.5;
 }
 
 .confirmActions {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 10px;
-  margin-top: 22px;
+  gap: var(--space-3);
+  margin-top: var(--space-5);
 }
 
 .confirmActions button {
   min-height: 46px;
-  padding: 10px 14px;
-  border: 1px solid #393a3f;
-  border-radius: 8px;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-sm);
+  padding: var(--space-2) var(--space-3);
+  color: var(--color-text-soft);
+  background: var(--color-surface);
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 760;
 }
 
 .confirmPrimary {
-  color: #f7f7f7 !important;
-  background: #f15a08 !important;
-  border-color: #f15a08 !important;
+  border-color: var(--color-accent) !important;
+  color: var(--color-text) !important;
+  background: var(--color-accent) !important;
 }
 
 .confirmDanger {
+  border-color: #a83b3b !important;
   color: #fff !important;
   background: #8d2d2d !important;
-  border-color: #a83b3b !important;
 }
 
 button:disabled {
@@ -568,38 +583,109 @@ button:disabled {
   cursor: default;
 }
 
-@media (min-width: 760px) {
-  .page { padding: 30px 28px 112px; }
-  .memberRow { grid-template-columns: auto minmax(0, 1fr) auto auto; }
-  .role { align-self: center; margin-top: 0; }
-  .manageButton { grid-column: auto; margin-top: 0; min-height: 44px; }
-  .manageBackdrop { align-items: center; }
-  .manageSheet { border-radius: 16px; }
-}
+@media (min-width: 700px) {
+  .contextSurface {
+    grid-template-columns: auto minmax(0, 1fr) auto minmax(240px, 0.8fr);
+  }
 
-@media (max-width: 560px) {
-  .page { padding-inline: 12px; }
-  .header { align-items: start; }
-  .header h1 { font-size: 2.15rem; }
-  .competitionLink { min-height: 38px; padding-top: 4px; }
-  .groupIdentity { grid-template-columns: auto minmax(0, 1fr); }
-  .memberPreview { grid-column: 1 / -1; grid-template-columns: auto 1fr; align-items: center; justify-items: start; gap: 10px; }
-  .groupRailButton { flex-basis: min(178px, 62vw); }
-  .inviteRow { grid-template-columns: 1fr; padding: 10px 0; }
-  .inviteActions { justify-content: flex-end; }
+  :global(.ui-field).groupSelect {
+    grid-column: auto;
+    margin-top: 0;
+  }
+
+  .memberRow {
+    grid-template-columns: auto minmax(0, 1fr) auto auto;
+  }
+
+  .manageButton {
+    grid-column: auto;
+    min-width: 92px;
+    border-top: 0;
+    padding-top: 0;
+  }
+
   .inviteForm,
-  .renameForm { grid-template-columns: 1fr; }
-  .confirmActions { grid-template-columns: 1fr; }
+  .renameForm {
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: end;
+  }
+
+  .manageBackdrop {
+    align-items: center;
+  }
+
+  .manageSheet {
+    border-radius: var(--radius-xl);
+  }
 }
 
-@media (max-width: 360px) {
-  .page { padding-inline: 10px; }
-  .groupMonogram { width: 46px; height: 46px; }
-  .groupRailButton { flex-basis: 160px; }
-  .memberRow { gap: 9px; }
-  .role { font-size: 0.59rem; }
+@media (min-width: 920px) {
+  .viewStack {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
+  }
+
+  .viewStack > :only-child,
+  .viewStack > :first-child:nth-last-child(3) {
+    grid-column: 1 / -1;
+  }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .settingsDetails > summary > span:last-child { transition: none; }
+@media (max-width: 420px) {
+  .headerSurface {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  :global(.ui-button).competitionLink {
+    width: 100%;
+  }
+
+  .contextSurface {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .memberPreview {
+    grid-column: 1 / -1;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+    justify-items: start;
+  }
+
+  .inviteRow {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .inviteActions {
+    justify-content: flex-end;
+  }
+
+  .membershipRow {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .confirmActions {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 340px) {
+  .headerCopy h1 {
+    font-size: 1.75rem;
+  }
+
+  .sectionSurface {
+    padding: var(--space-3);
+  }
+
+  .memberRow,
+  .inviteRow {
+    padding-inline: var(--space-3);
+  }
+
+  .viewTabs button {
+    padding-inline: var(--space-1);
+    font-size: 0.7rem;
+  }
 }

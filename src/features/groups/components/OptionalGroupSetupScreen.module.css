@@ -1,91 +1,75 @@
 .page {
-  width: 100%;
-  max-width: 520px;
-  margin: 0 auto;
-  padding: 18px 0 28px;
-  color: var(--color-text);
-}
-
-.photoBanner {
-  position: relative;
-  min-height: 164px;
-  overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.105);
-  border-radius: 14px;
-  background:
-    linear-gradient(
-      90deg,
-      rgba(8, 9, 10, 0.98) 0%,
-      rgba(8, 9, 10, 0.96) 41%,
-      rgba(8, 9, 10, 0.68) 62%,
-      rgba(8, 9, 10, 0.18) 100%
-    ),
-    url('../../../assets/fitness/top-set-battle-rope-banner.jpg') 76% center / cover no-repeat;
-}
-
-.photoBanner::after {
-  position: absolute;
-  inset: 0;
-  border: 1px solid rgba(255, 255, 255, 0.035);
-  border-radius: inherit;
-  pointer-events: none;
-  content: '';
-}
-
-.photoBannerCopy {
-  position: relative;
-  z-index: 1;
   display: grid;
-  width: min(66%, 320px);
-  min-height: 164px;
-  align-content: center;
-  padding: 20px;
+  width: min(100%, 720px);
+  min-width: 0;
+  gap: var(--app-category-gap);
+  margin: 0 auto;
 }
 
-.photoBannerCopy > span {
-  margin-bottom: 8px;
+.headerSurface,
+.inlineStatus,
+.retryState,
+.invitationState,
+.createCard,
+.soloSection {
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+}
+
+.headerSurface {
+  border-color: rgba(241, 90, 8, 0.26);
+  padding: var(--app-surface-padding);
+  background: var(--color-surface-strong);
+}
+
+.headerCopy {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.headerCopy > span {
   color: var(--color-accent);
-  font-size: 0.66rem;
-  font-weight: 700;
-  letter-spacing: 0.09em;
+  font-size: 0.67rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
 }
 
-.photoBannerCopy h1 {
+.headerCopy h1 {
   margin: 0;
-  color: #f8f8f8;
-  font-size: 1.3rem;
-  font-weight: 650;
-  letter-spacing: -0.018em;
-  line-height: 1.12;
+  color: var(--color-text);
+  font-size: clamp(1.9rem, 9vw, 3rem);
+  line-height: 1;
+  letter-spacing: -0.048em;
 }
 
-.photoBannerCopy p {
-  margin: 10px 0 0;
-  color: #b6b7b9;
-  font-size: 0.79rem;
-  line-height: 1.48;
+.headerCopy p,
+.inlineStatus p,
+.retryState p,
+.createCard > p,
+.soloSection > p {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: 0.82rem;
+  line-height: 1.52;
 }
 
 .inlineStatus {
   display: grid;
-  min-height: 54px;
+  min-height: 60px;
   grid-template-columns: auto minmax(0, 1fr);
   align-items: center;
-  gap: 10px;
-  margin-top: 16px;
-  border-bottom: 1px solid var(--color-border);
-  color: var(--color-text-muted);
-}
-
-.inlineStatus p {
-  margin: 0;
-  font-size: 0.8rem;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-bg-elevated);
 }
 
 .inlineLoader {
-  width: 17px;
-  height: 17px;
-  border: 2px solid rgba(255, 255, 255, 0.13);
+  width: 18px;
+  height: 18px;
+  border: 2px solid var(--color-border-strong);
   border-top-color: var(--color-accent);
   border-radius: 50%;
   animation: groups-loading 720ms linear infinite;
@@ -93,246 +77,172 @@
 
 .retryState {
   display: grid;
-  gap: 13px;
-  margin-top: 16px;
-  padding: 18px;
-  border: 1px solid rgba(255, 156, 156, 0.13);
-  border-radius: 10px;
-  background: rgba(255, 156, 156, 0.035);
+  gap: var(--space-3);
+  border-color: rgba(255, 156, 156, 0.18);
+  padding: var(--app-surface-padding);
 }
 
-.retryState p {
-  margin: 0;
+.retryState p,
+.error {
   color: var(--color-danger);
-  font-size: 0.82rem;
-  line-height: 1.45;
 }
 
 .zeroState,
 .invitationState {
   display: grid;
-  padding-top: 18px;
+  min-width: 0;
+  gap: var(--app-category-gap);
+}
+
+.invitationState {
+  padding: var(--app-surface-padding);
+}
+
+.createCard,
+.soloSection {
+  padding: var(--app-surface-padding);
 }
 
 .createCard {
-  border: 1px solid rgba(255, 255, 255, 0.105);
-  border-radius: 12px;
-  padding: 17px 15px 15px;
-  background: #0e0f11;
-  box-shadow: none;
+  border-color: rgba(241, 90, 8, 0.26);
+  background: var(--color-surface-strong);
 }
 
 .createCard h2,
 .soloSection h2 {
   margin: 0;
-  color: #f8f8f8;
-  font-size: 1.02rem;
-  font-weight: 600;
-  letter-spacing: -0.01em;
-  line-height: 1.2;
+  color: var(--color-text);
+  font-size: 1.18rem;
+  letter-spacing: -0.025em;
 }
 
 .createCard > p,
 .soloSection > p {
-  margin: 8px 0 16px;
-  color: #a6a7aa;
-  font-size: 0.82rem;
-  font-weight: 400;
-  line-height: 1.55;
-}
-
-.orDivider {
-  display: grid;
-  grid-template-columns: 1fr auto 1fr;
-  align-items: center;
-  gap: 12px;
-  margin: 18px 0;
-  color: #98999c;
-  font-size: 0.72rem;
-}
-
-.orDivider::before,
-.orDivider::after {
-  height: 1px;
-  background: rgba(255, 255, 255, 0.12);
-  content: '';
+  margin: var(--space-2) 0 var(--space-4);
 }
 
 .error {
-  margin: 0 0 12px;
-  color: var(--color-danger);
+  margin: 0;
+  border-left: 3px solid var(--color-danger);
+  border-radius: var(--radius-sm);
+  padding: var(--space-3);
+  background: rgba(255, 156, 156, 0.06);
   font-size: 0.8rem;
-  line-height: 1.42;
+  line-height: 1.45;
 }
 
 .inviteList {
   display: grid;
-  gap: 12px;
+  min-width: 0;
+  gap: var(--space-3);
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
 .inviteCard {
-  border: 1px solid rgba(255, 255, 255, 0.095);
-  border-radius: 12px;
-  padding: 16px 14px 14px;
-  background: #121316;
-  box-shadow: none;
+  min-width: 0;
+  overflow: hidden;
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+  background: var(--color-bg-elevated);
 }
 
 .inviteTop {
   display: grid;
+  min-width: 0;
   grid-template-columns: auto minmax(0, 1fr);
   align-items: start;
-  gap: 13px;
+  gap: var(--space-3);
 }
 
 .groupAvatar {
   display: grid;
-  width: 45px;
-  height: 45px;
+  width: 48px;
+  height: 48px;
   place-items: center;
+  border: 1px solid rgba(241, 90, 8, 0.42);
   border-radius: 50%;
-  color: #f7f2ff;
-  background: #725aad;
-  font-size: 0.88rem;
-  font-weight: 600;
+  color: var(--color-accent);
+  background: var(--color-accent-soft);
+  font-size: 0.84rem;
+  font-weight: 820;
 }
 
 .inviteIdentity {
   display: grid;
   min-width: 0;
-  gap: 2px;
+  gap: 3px;
+}
+
+.inviteIdentity strong,
+.inviteIdentity span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .inviteIdentity strong {
-  margin: 1px 0 6px;
-  color: #f7f7f7;
-  font-size: 0.96rem;
-  font-weight: 600;
-  line-height: 1.2;
+  margin-bottom: var(--space-1);
+  color: var(--color-text);
+  font-size: 0.94rem;
 }
 
 .inviteIdentity span {
-  color: #b1b2b5;
-  font-size: 0.78rem;
-  font-weight: 400;
-  line-height: 1.35;
-  overflow-wrap: anywhere;
+  color: var(--color-text-muted);
+  font-size: 0.74rem;
 }
 
 .inviteIdentity .invitedBy {
-  color: #8f9093;
+  color: var(--color-text-soft);
 }
 
 .inviteActions {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 9px;
-  margin-top: 18px;
-}
-
-.sectionDivider {
-  height: 1px;
-  margin: 22px 0 27px;
-  background: rgba(255, 255, 255, 0.13);
-}
-
-.soloSection {
-  display: grid;
+  gap: var(--space-2);
+  margin-top: var(--space-4);
 }
 
 :global(.ui-button).primaryButton,
-:global(.ui-button--primary).primaryButton {
-  min-height: 44px;
-  border-color: var(--color-accent);
-  border-radius: 8px;
-  color: #ffffff;
-  background: var(--color-accent);
-  box-shadow: none;
-  font-size: 0.82rem;
-  font-weight: 600;
+:global(.ui-button).secondaryButton,
+:global(.ui-button).fullSecondaryButton {
+  min-height: 46px;
 }
 
-:global(.ui-button).primaryButton:hover:not(:disabled),
-:global(.ui-button--primary).primaryButton:hover:not(:disabled) {
-  border-color: var(--color-accent-hover);
-  background: var(--color-accent-hover);
+:global(.ui-button).primaryButton {
+  border-color: var(--color-accent);
+  color: var(--color-text);
+  background: var(--color-accent);
 }
 
 :global(.ui-button).secondaryButton,
-:global(.ui-button--secondary).secondaryButton,
-:global(.ui-button).fullSecondaryButton,
-:global(.ui-button--secondary).fullSecondaryButton {
-  min-height: 44px;
-  border-color: rgba(255, 255, 255, 0.15);
-  border-radius: 8px;
-  color: #f4f4f4;
-  background: #0f1012;
-  box-shadow: none;
-  font-size: 0.82rem;
-  font-weight: 600;
-}
-
-:global(.ui-button).secondaryButton:hover:not(:disabled),
-:global(.ui-button).fullSecondaryButton:hover:not(:disabled) {
-  border-color: rgba(255, 255, 255, 0.26);
-  background: #151618;
-}
-
-:global(.ui-button).primaryButton:focus-visible,
-:global(.ui-button).secondaryButton:focus-visible,
-:global(.ui-button).fullSecondaryButton:focus-visible {
-  outline: 3px solid rgba(241, 90, 8, 0.36);
-  outline-offset: 2px;
+:global(.ui-button).fullSecondaryButton {
+  border-color: var(--color-border-strong);
+  color: var(--color-text-soft);
+  background: var(--color-bg-elevated);
 }
 
 @keyframes groups-loading {
   to { transform: rotate(360deg); }
 }
 
-@media (max-width: 380px) {
-  .photoBanner {
-    min-height: 154px;
-    background-position: 72% center;
-  }
-
-  .photoBannerCopy {
-    width: 70%;
-    min-height: 154px;
-    padding: 17px;
-  }
-
-  .photoBannerCopy h1 {
-    font-size: 1.16rem;
+@media (min-width: 700px) {
+  .zeroState {
+    grid-template-columns: minmax(0, 1.25fr) minmax(0, 0.75fr);
+    align-items: start;
   }
 }
 
-@media (min-width: 620px) {
-  .page {
-    max-width: 620px;
-    padding-top: 24px;
+@media (max-width: 340px) {
+  .headerCopy h1 {
+    font-size: 1.72rem;
   }
 
-  .photoBanner {
-    min-height: 182px;
-  }
-
-  .photoBannerCopy {
-    min-height: 182px;
-    padding: 24px;
-  }
-
-  .photoBannerCopy h1 {
-    font-size: 1.5rem;
-  }
-}
-
-@media (min-width: 1024px) {
-  .page {
-    max-width: 680px;
-    padding-top: 0;
+  .invitationState,
+  .createCard,
+  .soloSection {
+    padding: var(--space-3);
   }
 }
 

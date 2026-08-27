@@ -871,6 +871,22 @@ Functional content added before the visual overhaul resumes:
 
 See `docs/PHASE15.8-TRAINING-TIPS-PRESETS.md`.
 
+## Phase 15.9 — Recipient inbox deletion + member-only group chat — HOSTED DATABASE VALIDATED; REALTIME SETTING CHECK PENDING
+
+- let a recipient delete a platform message from only their own inbox while retaining shared content, delivery identity/progress, administrator audit, and every other recipient delivery;
+- require acknowledgement of the current required revision before deletion;
+- add one persistent plain-text conversation per group, separate from the automated Competition activity feed;
+- restrict reads, posts, reactions, and deletion to current ACTIVE members through guarded RPCs;
+- allow authors to delete their own messages and group OWNER/ADMIN roles to moderate any message through body-free tombstones;
+- support one bounded emoji reaction per member/message, cursor pagination, duplicate protection, and a rolling post rate limit;
+- use private Realtime Broadcast only for content-free invalidation, followed by a fresh membership-authorized RPC read;
+- preserve zero scoring, XP, workout, progression, badge, and ranking effects;
+- record all three migrations under their exact repository timestamps, including foreign-key covering indexes discovered by the Performance advisor;
+- pass 27/27 inbox-deletion and 45/45 group-chat hosted pgTAP assertions, refresh hosted database types, and pass the complete repository gate;
+- keep only the operator confirmation that Realtime public channel access is disabled pending before release.
+
+See `docs/PHASE15.9-INBOX-DELETION-GROUP-CHAT.md`.
+
 ## Phase 16 — Mobile-first visual overhaul — IN PROGRESS
 
 Objective: redesign the existing user-facing product **page by page** so it feels purpose-built as a polished mobile application while preserving authoritative behavior, accessibility, reliability, and responsive desktop support.
@@ -1004,7 +1020,63 @@ See `docs/PHASE16.1-APP-SHELL.md`.
 - history and summary;
 - maintain its deliberate secondary relationship to lifting.
 
-### 16.11 Platform-administration console visual overhaul
+### 16.10A Application-composition reset — DONE
+
+The page-by-page Phase 16 work preserved behavior but did not produce a sufficiently coherent app composition across routes. This repair sequence keeps the accepted functional boundaries while reopening layout containment, mobile interaction, spacing ownership, category separation, and control consistency as a cumulative set of small slices.
+
+#### 16.10A.1 Shared foundation + Home + Settings — DONE
+
+- one shell-owned responsive gutter, content width, page scroll owner, and mobile scrollbar/overflow contract;
+- shared app spacing, surface, row, radius, and bottom-navigation tokens;
+- app-owned desktop popover/mobile bottom-sheet SelectField, with all current raw select call sites migrated;
+- Home rebuilt as bounded functional regions without its photo hero or divider-only major category boundaries;
+- Settings rebuilt as a category index with focused Profile, Training, Notifications, Security, Groups, App, Privacy, and authorized Admin panels;
+- no product behavior, scoring, authorization, persistence, Supabase, or hosted environment change.
+
+See `docs/PHASE16.10A-APP-COMPOSITION-RESET.md`.
+
+#### 16.10A.2 Lift task flow — DONE
+
+- pre-workout/start surface, active workout, dense set rows, exercise picker, lifecycle/destructive controls, and offline/recovery/conflict containment;
+- verify fixed/sticky action ownership, keyboard behavior, and 320px one-handed use without horizontal overflow.
+- remove the decorative active-workout banner and consolidate the timer/session state into one contained task rail;
+- confirmation-gate both Finish and Cancel while preserving the existing lifecycle and terminal-race services.
+
+#### 16.10A.3 Progress + cardio — DONE
+
+- separate trend/summary controls from history rows and keep charts/list regions contained at phone widths;
+- preserve cardio's accessory role and all existing metrics.
+- replace Progress's photo hero with a compact app identity surface and give calendar summary, tracked lifts, selected-lift facts, trends, milestones, and session history distinct functional boundaries;
+- keep Cardio quick logging primary while separating its authoritative summary and recent-history rows, including explicit 320px containment coverage.
+
+#### 16.10A.4 Groups + competition + social — DONE
+
+- replace horizontal group rails with the shared app selector so group context remains explicit without creating document-level scrolling;
+- separate Groups into Members, Invites, and Settings task views while preserving role-gated administration, targeted invitation, multi-group, and membership contracts;
+- separate Competition into Standings and Activity views, retain the pinned current-user standing and privacy-safe summary boundary, and contain reactions/reports at 320px;
+- keep all group/social RPC, authorization, reaction, reporting, ranking, and persistence behavior unchanged.
+
+#### 16.10A.5 Auth + onboarding + admin + system integration — DONE
+
+- compressed mobile authentication branding so the sign-in/recovery task remains in the first viewport while preserving the photographic identity and keyboard-safe form behavior;
+- split onboarding into focused Identity, Training preferences, and Goal steps with a safe-area-aware mobile action rail and unchanged atomic submission contract;
+- aligned legal documents, platform administration, moderation, capacity, user administration, and platform messaging with the shared charcoal/orange surface and spacing system;
+- retained one-pane list/detail administration on phones and two-pane operational workspaces on desktop, without horizontal filter rails;
+- added shared bounded loading/error/empty state geometry plus one top-chrome/system-sheet language for PWA and platform notices;
+- added deterministic Auth/Onboarding/Legal/Admin browser fixtures and explicit 320px horizontal-overflow coverage;
+- changed no auth, authorization, moderation, platform-message, persistence, scoring, Supabase, or hosted-environment behavior.
+
+#### 16.10A.6 Visual integration + route/access repair — DONE
+
+- add bounded destination photography to Home, Lift start, Cardio, Progress, Groups, and Compete without reintroducing marketing-style page heroes;
+- give every product destination a canonical direct path while retaining legacy query-link compatibility;
+- place Messages, Settings, and one-tap mobile Sign out in explicit non-overlapping header action slots;
+- expose existing guarded Supabase project telemetry clearly in the Admin Overview and defer Netlify invocation until its adapter is deliberately enabled;
+- audit page gutter/spacing ownership and prevent nested main landmarks inside AppShell;
+- repair stale browser fixtures/copy assertions that caused the reported multi-engine gate failures;
+- add no migration, RLS, RPC, provider credential, hosted write, deployment, scoring, or persistence change.
+
+### 16.11 Platform-administration console visual overhaul — ABSORBED BY 16.10A.5
 
 Start only after Phase 15 has delivered the real admin data/actions.
 

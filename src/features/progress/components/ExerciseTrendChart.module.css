@@ -1,96 +1,63 @@
 .chartCard {
   min-width: 0;
-  padding: 16px 0 4px;
-  border-top: 1px solid #242529;
+  overflow: hidden;
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+  background: var(--color-bg-elevated);
 }
 
 .chartHeader {
   display: flex;
-  align-items: end;
+  min-width: 0;
+  align-items: flex-end;
   justify-content: space-between;
-  gap: 16px;
-  margin-bottom: 12px;
+  gap: var(--space-4);
+  margin-bottom: var(--space-3);
 }
 
-.chartHeader p {
-  margin: 0;
-  color: #a0a1a4;
-  font-size: 0.66rem;
-  font-weight: 750;
-  letter-spacing: 0.09em;
-  text-transform: uppercase;
-}
-
-.chartHeader h3 {
-  margin: 4px 0 0;
-  color: #f7f7f7;
-  font-size: 1.04rem;
-  letter-spacing: -0.025em;
-}
-
+.chartHeader p { margin: 0; color: var(--color-text-muted); font-size: 0.66rem; font-weight: 750; letter-spacing: 0.09em; text-transform: uppercase; }
+.chartHeader h3 { margin: var(--space-1) 0 0; color: var(--color-text); font-size: 1.04rem; letter-spacing: -0.025em; }
 .chartHeader > span,
 .empty,
-.chartFooter {
-  color: #a0a1a4;
-  font-size: 0.7rem;
-}
-
-.chartHeader > span { text-align: right; }
-.empty { margin: 22px 0; }
+.chartFooter { color: var(--color-text-muted); font-size: 0.7rem; }
+.chartHeader > span { max-width: 210px; text-align: right; }
+.empty { margin: var(--space-5) 0; }
 
 .chart {
   display: block;
   width: 100%;
-  min-height: 150px;
-  color: #f15a08;
-  overflow: visible;
+  height: clamp(150px, 42vw, 220px);
+  max-width: 100%;
+  color: var(--color-accent);
+  overflow: hidden;
 }
 
-.gridLine {
-  stroke: #242529;
-  stroke-width: 1;
-}
-
-.trendLine {
-  stroke: currentColor;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  stroke-width: 4;
-}
-
-.point {
-  fill: #070709;
-  stroke: currentColor;
-  stroke-width: 4;
-}
-
-.bar {
-  fill: #f15a08;
-  opacity: 0.92;
-}
+.gridLine { stroke: rgba(255, 255, 255, 0.08); stroke-width: 1; }
+.trendLine { stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 4; }
+.point { fill: var(--color-bg-elevated); stroke: currentColor; stroke-width: 4; }
+.bar { fill: var(--color-accent); opacity: 0.92; }
 
 .chartFooter {
   display: grid;
-  grid-template-columns: 1fr auto 1fr;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  min-width: 0;
   align-items: center;
-  gap: 10px;
+  gap: var(--space-2);
   margin-top: -2px;
 }
 
-.chartFooter strong {
-  color: #f15a08;
-  font-size: 0.78rem;
-}
-
+.chartFooter strong { color: var(--color-accent); font-size: 0.78rem; white-space: nowrap; }
+.chartFooter span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .chartFooter span:last-child { text-align: right; }
 
 @media (max-width: 560px) {
-  .chartHeader {
-    align-items: flex-start;
-    flex-direction: column;
-    gap: 5px;
-  }
+  .chartHeader { align-items: flex-start; flex-direction: column; gap: var(--space-1); }
+  .chartHeader > span { max-width: none; text-align: left; }
+}
 
-  .chartHeader > span { text-align: left; }
-  .chart { min-height: 140px; }
+@media (max-width: 360px) {
+  .chartCard { border-radius: var(--radius-sm); padding: var(--space-3); }
+  .chart { height: 150px; }
+  .chartFooter { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .chartFooter strong { grid-column: 1 / -1; grid-row: 1; }
 }

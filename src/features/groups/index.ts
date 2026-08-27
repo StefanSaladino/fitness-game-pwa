@@ -17,3 +17,4 @@ export * from './components/DashboardGroupMembership';
 export * from './hooks/useGroupAdministration';
 export * from './components/GroupAdministrationScreen';
 export * from './components/GroupAdministrationController';
+export * from './chat';

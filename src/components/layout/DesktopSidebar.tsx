@@ -20,6 +20,7 @@ export function DesktopSidebar({ activeItem, items, userLabel, userMeta, onNavig
       <div className={styles.brand} aria-label="Top Set">
         <span className={styles.brandMark} aria-hidden="true"><TopSetMark size={18} /></span>
         <span className={styles.brandName}>Top Set</span>
+        <span className={styles.messageSlot} data-app-message-slot="desktop" />
       </div>
 
       <nav className={styles.nav}>

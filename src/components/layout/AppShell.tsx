@@ -36,8 +36,8 @@ export function AppShell({
         userMeta={userMeta}
       />
       <div className={styles.viewport}>
-        <ShellHeader onNavigate={onNavigate} title={mobileTitle} userLabel={userLabel} />
-        <main className={styles.main}>{children}</main>
+        <ShellHeader onNavigate={onNavigate} onSignOut={onSignOut} title={mobileTitle} userLabel={userLabel} />
+        <main className={styles.main} data-app-scroll-owner>{children}</main>
       </div>
       <MobileNav activeItem={activeItem} items={navigationItems} onNavigate={onNavigate} />
     </div>
