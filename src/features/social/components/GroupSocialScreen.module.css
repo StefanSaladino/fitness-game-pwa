@@ -177,7 +177,6 @@
 }
 
 .viewTabs button:focus-visible,
-.periodSwitch button:focus-visible,
 .reportAction:focus-visible,
 .reactions button:focus-visible {
   outline: 2px solid var(--color-accent-hover);
@@ -209,33 +208,9 @@
   margin-top: var(--space-1);
 }
 
-.periodSwitch {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  flex: 0 0 auto;
-  overflow: hidden;
-  border-radius: var(--radius-md);
-  padding: var(--space-1);
-  background: var(--color-bg-elevated);
-}
-
-.periodSwitch button {
+.globalLeaderboardButton {
   min-height: 40px;
-  border: 0;
-  border-radius: var(--radius-sm);
-  padding: 0 var(--space-3);
-  color: var(--color-text-muted);
-  background: transparent;
-  cursor: pointer;
-  font: inherit;
-  font-size: 0.7rem;
-  font-weight: 780;
-  white-space: nowrap;
-}
-
-.periodSwitch button[aria-pressed='true'] {
-  color: var(--color-accent);
-  background: var(--color-surface-strong);
+  flex: 0 0 auto;
 }
 
 .yourStanding {
@@ -552,7 +527,7 @@
     flex-direction: column;
   }
 
-  .periodSwitch {
+  :global(.ui-button).globalLeaderboardButton {
     width: 100%;
   }
 

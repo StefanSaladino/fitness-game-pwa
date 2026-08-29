@@ -11,7 +11,6 @@ import type {
   BadgeActivityMetadata,
   GoalActivityMetadata,
   GroupCompetitionLeaderboard,
-  GroupCompetitionPeriod,
   GroupReactionType,
   GroupSocialFeedItem,
   LiftActivityMetadata,
@@ -25,7 +24,6 @@ interface Props {
   groups: GroupSummary[];
   group: GroupSummary;
   weekly: GroupCompetitionLeaderboard;
-  allTime: GroupCompetitionLeaderboard;
   feed: GroupSocialFeedItem[];
   hasMore: boolean;
   loadingMore: boolean;
@@ -36,6 +34,7 @@ interface Props {
   onSignOut: () => void;
   onSelectGroup: (groupId: string) => void;
   onLoadMore: () => void;
+  onShowGlobal: () => void;
   onReact: (activityKey: string, reaction: GroupReactionType) => void;
 }
 
@@ -129,7 +128,6 @@ function activityContent(item: GroupSocialFeedItem): ActivityContent {
 }
 
 function leaderboardLabel(board: GroupCompetitionLeaderboard): string {
-  if (board.period === 'ALL_TIME') return 'All authoritative lifting-v1 XP';
   if (!board.periodStart || !board.periodEnd) return 'Current lifting week';
   return `${shortDate(board.periodStart)}–${shortDate(board.periodEnd)}`;
 }
@@ -156,7 +154,6 @@ export function GroupSocialScreen(props: Props) {
     groups,
     group,
     weekly,
-    allTime,
     feed,
     hasMore,
     loadingMore,
@@ -167,14 +164,14 @@ export function GroupSocialScreen(props: Props) {
     onSignOut,
     onSelectGroup,
     onLoadMore,
+    onShowGlobal,
     onReact,
   } = props;
 
-  const [period, setPeriod] = useState<GroupCompetitionPeriod>('WEEK');
   const [view, setView] = useState<SocialView>('standings');
   const [reportTarget, setReportTarget] = useState<ReportTarget | null>(null);
   const [reportNotice, setReportNotice] = useState('');
-  const board = period === 'WEEK' ? weekly : allTime;
+  const board = weekly;
   const currentUser = useMemo(
     () => board.entries.find((entry) => entry.isCurrentUser) ?? null,
     [board],
@@ -251,22 +248,9 @@ export function GroupSocialScreen(props: Props) {
                   <p>{leaderboardLabel(board)}</p>
                 </div>
 
-                <div className={styles.periodSwitch} role="group" aria-label="Leaderboard period">
-                  <button
-                    aria-pressed={period === 'WEEK'}
-                    onClick={() => setPeriod('WEEK')}
-                    type="button"
-                  >
-                    This week
-                  </button>
-                  <button
-                    aria-pressed={period === 'ALL_TIME'}
-                    onClick={() => setPeriod('ALL_TIME')}
-                    type="button"
-                  >
-                    All time
-                  </button>
-                </div>
+                <Button className={styles.globalLeaderboardButton} onClick={onShowGlobal} variant="secondary">
+                  Global all-time
+                </Button>
               </div>
 
               {currentUser && (

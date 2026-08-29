@@ -28,8 +28,10 @@ vi.mock('../progress/components/ExerciseProgressController', () => ({
   ExerciseProgressController: () => <p>Progress screen</p>,
 }));
 
-vi.mock('../social/components/GroupSocialController', () => ({
-  GroupSocialController: ({ selectedGroupId }: { selectedGroupId: string }) => <p>Competition for {selectedGroupId}</p>,
+vi.mock('../social/components/CompetitionController', () => ({
+  CompetitionController: ({ selectedGroupId, groups }: { selectedGroupId: string; groups: GroupSummary[] }) => (
+    <p>{groups.length > 0 ? `Competition for ${selectedGroupId}` : 'Global competition'}</p>
+  ),
 }));
 
 import { ProductController } from './ProductController';
@@ -90,6 +92,14 @@ describe('ProductController', () => {
   it('renders the dashboard immediately when the user has zero groups', async () => {
     render(<ProductController groups={[]} onGroupsChanged={vi.fn()} profile={profile} />);
     expect(await screen.findByText('Dashboard for solo')).toBeInTheDocument();
+  });
+
+  it('keeps global competition available when the user has zero groups', async () => {
+    const user = userEvent.setup();
+    render(<ProductController groups={[]} onGroupsChanged={vi.fn()} profile={profile} />);
+    await screen.findByText('Dashboard for solo');
+    await user.click(screen.getByRole('button', { name: 'Open competition' }));
+    expect(await screen.findByText('Global competition')).toBeInTheDocument();
   });
 
   it('keeps Groups voluntary and explains Competition when the user has zero groups', async () => {

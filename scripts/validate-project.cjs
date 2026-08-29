@@ -496,7 +496,7 @@ ok(/group_social_activity_key/.test(phase10Migration) && /extensions\.digest\(p_
 ok(/group_social_activity_exists/.test(phase10Migration) && /Social activity is not available in this group/.test(phase10Migration), 'reaction writes validate their current group activity target');
 ok(/get_group_competition_leaderboard/.test(phase10Migration), 'Phase 10 adds group competition leaderboard RPC');
 ok(/scoring_version = 'lifting-v1'/.test(phase10Migration), 'competition aggregates only authoritative lifting-v1 scoring');
-ok(/v_period not in \('WEEK', 'ALL_TIME'\)/.test(phase10Migration), 'competition exposes weekly and all-time periods only');
+ok(/v_period not in \('WEEK', 'ALL_TIME'\)/.test(phase10Migration), 'historical Phase 10 migration records the superseded period-overloaded competition contract');
 ok(/dense_rank\(\) over[\s\S]*s\.xp desc[\s\S]*s\.lifting_days desc[\s\S]*pr\.pr_count/.test(phase10Migration), 'competition ranks by XP with deterministic lifting/PR context');
 ok(/get_group_social_feed/.test(phase10Migration), 'Phase 10 adds privacy-safe group activity feed RPC');
 ok(/'LIFT'::text/.test(phase10Migration) && /'PR'::text/.test(phase10Migration) && /'BADGE'::text/.test(phase10Migration) && /'GOAL'::text/.test(phase10Migration), 'social feed is curated to lift, PR, badge, and weekly-goal activity');
@@ -506,12 +506,39 @@ ok(/least\(coalesce\(p_limit, 20\), 50\)/.test(phase10Migration), 'server caps f
 ok(!/insert into public\.scoring_events|update public\.scoring_events|delete from public\.scoring_events/i.test(phase10Migration), 'social migration never mutates authoritative XP');
 ok(/metadata \? 'sets'/.test(phase10Test) && /metadata \? 'notes'/.test(phase10Test), 'database regression proves raw sets and notes are absent from feed metadata');
 ok(/metadata \? 'workoutId'/.test(phase10Test) && /metadata \? 'exerciseId'/.test(phase10Test), 'database regression proves source row identifiers stay out of feed metadata');
-ok(Number.isInteger(phase10Plan) && phase10Plan === 42 && phase10Plan === phase10Count, 'Phase 10 pgTAP plan matches 42 assertions');
-ok(/get_group_competition_leaderboard/.test(phase10Service) && /get_group_social_feed/.test(phase10Service) && /set_group_activity_reaction/.test(phase10Service), 'social service uses all guarded Phase 10 RPCs');
+ok(Number.isInteger(phase10Plan) && phase10Plan === 38 && phase10Plan === phase10Count, 'Phase 10 pgTAP plan matches 38 retained group-social assertions after 17.2C removes group all-time coverage');
+ok(/loadGroupLeaderboard/.test(phase10Service) && /get_group_competition_leaderboard/.test(phase10Service) && /get_group_social_feed/.test(phase10Service) && /set_group_activity_reaction/.test(phase10Service), 'social service uses the weekly group leaderboard plus guarded Phase 10 social RPCs');
 ok(/FEED_PAGE_SIZE\s*\+\s*1/.test(phase10Service) && /nextCursor/.test(phase10Service), 'social service implements page-size-plus-one cursor pagination');
 ok(/withOptimisticReaction/.test(phase10Hook) && /setReaction\(groupId,activityKey,nextReaction\)/.test(phase10Hook), 'social hook optimistically applies one reaction and persists it');
 ok(/previous/.test(phase10Hook) && /catch\(caught\)/.test(phase10Hook), 'social hook retains rollback state for failed reaction writes');
 ok(/competition: resolve\(process\.cwd\(\), 'competition\.e2e\.html'\)/.test(read('vite.config.ts')), 'competition fixture is compiled only through the existing E2E build gate');
+
+
+// Phase 17.2C — global all-time leaderboard
+for (const rel of [
+  'supabase/migrations/20260829030000_phase17_2c_global_all_time_leaderboard.sql',
+  'supabase/tests/043_phase17_2c_global_all_time_leaderboard.test.sql',
+  'src/features/social/components/CompetitionController.tsx',
+  'src/features/social/components/GlobalAllTimeLeaderboardScreen.tsx',
+  'src/features/social/hooks/useGlobalAllTimeLeaderboard.ts',
+]) ok(fs.existsSync(path.join(root, rel)), `${rel} exists`);
+const phase172cMigration = read('supabase/migrations/20260829030000_phase17_2c_global_all_time_leaderboard.sql');
+const phase172cTest = read('supabase/tests/043_phase17_2c_global_all_time_leaderboard.test.sql');
+const phase172cGroupScreen = read('src/features/social/components/GroupSocialScreen.tsx');
+const phase172cGlobalScreen = read('src/features/social/components/GlobalAllTimeLeaderboardScreen.tsx');
+const phase172cPlan = Number((phase172cTest.match(/select\s+plan\((\d+)\)/i) || [])[1]);
+const phase172cCount = (phase172cTest.match(/select\s+(?:has_table|has_column|has_function|col_is_pk|results_eq|throws_ok|lives_ok|is|cmp_ok|ok)\s*\(/gi) || []).length;
+ok(/drop function if exists public\.get_group_competition_leaderboard\(uuid, text, date\)/.test(phase172cMigration), '17.2C retires the period-overloaded group leaderboard signature');
+ok(/get_group_competition_leaderboard\(\s*p_group_id uuid\s*\)/.test(phase172cMigration), '17.2C group competition contract is weekly-only and accepts only a group id');
+ok(/get_global_all_time_leaderboard\(\)/.test(phase172cMigration), '17.2C exposes a dedicated no-argument global all-time RPC');
+ok(/row_number\(\) over/.test(phase172cMigration) && /global_rank <= 10/.test(phase172cMigration), 'global leaderboard produces an exact deterministic Top 10');
+ok(/'CURRENT_USER'::text/.test(phase172cMigration) && /where r\.member_user_id = v_user_id/.test(phase172cMigration), 'global response always includes a detached current-user row');
+ok(/onboarding_completed_at is not null/.test(phase172cMigration) && /pas\.status = 'ACTIVE'::public\.platform_account_status/.test(phase172cMigration), 'global eligibility is limited to active onboarded accounts');
+ok(!/ALL_TIME/.test(phase172cGroupScreen) && !/All time/.test(phase172cGroupScreen), 'group competition UI no longer exposes an all-time period');
+ok(/Global all-time/.test(phase172cGlobalScreen) && /Your global rank/.test(phase172cGlobalScreen), 'global UI exposes Top 10 and detached current-user rank surfaces');
+ok(!/GroupSocialFeedItem|GroupReactionType|UserReportDialog|onReact/.test(phase172cGlobalScreen), 'global all-time screen has no feed, reaction, or reporting social surface');
+ok(/get_global_all_time_leaderboard/.test(phase10Service) && !/p_period/.test(phase10Service), 'social service uses the dedicated global RPC and sends no period to group competition');
+ok(Number.isInteger(phase172cPlan) && phase172cPlan === 15 && phase172cPlan === phase172cCount, 'Phase 17.2C pgTAP plan matches 15 assertions');
 
 
 // Phase 11 â€” cardio accessory logging

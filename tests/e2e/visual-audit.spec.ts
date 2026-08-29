@@ -92,6 +92,7 @@ const scenarios: Scenario[] = [
   { name: 'groups-invites', url: '/groups.e2e.html', group: 'groups', prepare: async (page) => { await page.getByRole('tab', { name: /Invites/ }).click(); } },
   { name: 'groups-settings', url: '/groups.e2e.html', group: 'groups', prepare: async (page) => { await page.getByRole('tab', { name: 'Settings' }).click(); } },
   { name: 'compete-standings', url: '/competition.e2e.html', group: 'social' },
+  { name: 'compete-global-all-time', url: '/competition.e2e.html', group: 'social', prepare: async (page) => { await page.getByRole('button', { name: 'Global all-time' }).click(); } },
   { name: 'compete-activity', url: '/competition.e2e.html', group: 'social', prepare: async (page) => { await page.getByRole('tab', { name: 'Activity' }).click(); } },
   { name: 'settings-index', url: '/release-visual-audit.e2e.html?surface=settings', group: 'settings' },
   ...[

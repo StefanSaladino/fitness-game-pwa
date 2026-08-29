@@ -45,9 +45,9 @@ const ExerciseProgressController = lazy(async () => {
   const module = await import('../progress/components/ExerciseProgressController');
   return { default: module.ExerciseProgressController };
 });
-const GroupSocialController = lazy(async () => {
-  const module = await import('../social/components/GroupSocialController');
-  return { default: module.GroupSocialController };
+const CompetitionController = lazy(async () => {
+  const module = await import('../social/components/CompetitionController');
+  return { default: module.CompetitionController };
 });
 const WorkoutController = lazy(async () => {
   const module = await import('../workout/components/WorkoutController');
@@ -179,26 +179,16 @@ export function ProductController({
       />
     );
   } else if (activeSection === 'compete') {
-    section = selectedGroup ? (
-      <GroupSocialController
-        key={selectedGroup.id}
+    section = (
+      <CompetitionController
         groups={groups}
         onNavigate={onNavigate}
         onSelectGroup={setSelectedGroupId}
         onSignOut={onSignOut}
         profile={profile}
-        selectedGroupId={selectedGroup.id}
-        service={socialService}
         reportService={reportService}
-      />
-    ) : (
-      <OptionalGroupSetupController
-        activeItem="compete"
-        onMembershipReady={onGroupsChanged}
-        onNavigate={onNavigate}
-        onSignOut={onSignOut}
-        profile={profile}
-        service={groupService}
+        selectedGroupId={selectedGroup?.id ?? ''}
+        service={socialService}
       />
     );
   } else if (activeSection === 'groups') {

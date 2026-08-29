@@ -1,9 +1,9 @@
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(42);
+select plan(38);
 
 select has_table('public', 'group_activity_reactions', 'group activity reactions table exists');
-select has_function('public', 'get_group_competition_leaderboard', array['uuid','text','date'], 'group competition leaderboard RPC exists');
+select has_function('public', 'get_group_competition_leaderboard', array['uuid'], 'weekly-only group competition leaderboard RPC exists');
 select has_function('public', 'get_group_social_feed', array['uuid','integer','timestamp with time zone','text'], 'group social feed RPC exists');
 select has_function('public', 'set_group_activity_reaction', array['uuid','text','text'], 'group reaction RPC exists');
 
@@ -55,7 +55,7 @@ set status='COMPLETED',
     notes='Private test note that must never enter the social feed.'
 where id='82000000-0000-4000-8000-000000000001';
 
--- Owner leads this week, while older events make the member the all-time leader.
+-- Owner leads this week; older events must not affect the weekly group board.
 insert into public.scoring_events (user_id, scoring_date, exercise_id, event_type, amount, scoring_version) values
   ('81111111-1111-4111-8111-111111111111', date_trunc('week', now() at time zone 'America/Toronto')::date + 2, null, 'LIFTING_WORKOUT', 50, 'lifting-v1'),
   ('81111111-1111-4111-8111-111111111111', date_trunc('week', now() at time zone 'America/Toronto')::date + 2, '80000000-0000-4000-8000-000000000010', 'EXERCISE_PROGRESS', 15, 'lifting-v1'),
@@ -89,48 +89,29 @@ set local role authenticated;
 select set_config('request.jwt.claim.sub', '81111111-1111-4111-8111-111111111111', true);
 
 select lives_ok(
-  $$select * from public.get_group_competition_leaderboard('80000000-0000-4000-8000-000000000001','WEEK',null)$$,
+  $$select * from public.get_group_competition_leaderboard('80000000-0000-4000-8000-000000000001')$$,
   'active member can load weekly group competition'
 );
 select is(
-  (select count(*)::integer from public.get_group_competition_leaderboard('80000000-0000-4000-8000-000000000001','WEEK',null)),
+  (select count(*)::integer from public.get_group_competition_leaderboard('80000000-0000-4000-8000-000000000001')),
   2,
   'leaderboard contains active group members only'
 );
 select is(
-  (select member_user_id from public.get_group_competition_leaderboard('80000000-0000-4000-8000-000000000001','WEEK',null) where rank=1 limit 1),
+  (select member_user_id from public.get_group_competition_leaderboard('80000000-0000-4000-8000-000000000001') where rank=1 limit 1),
   '81111111-1111-4111-8111-111111111111'::uuid,
   'owner leads the seeded current week'
 );
 select is(
-  (select xp from public.get_group_competition_leaderboard('80000000-0000-4000-8000-000000000001','WEEK',null) where member_user_id='81111111-1111-4111-8111-111111111111'),
+  (select xp from public.get_group_competition_leaderboard('80000000-0000-4000-8000-000000000001') where member_user_id='81111111-1111-4111-8111-111111111111'),
   65::bigint,
   'weekly competition sums authoritative lifting-v1 XP'
 );
 select is(
-  (select lifting_days from public.get_group_competition_leaderboard('80000000-0000-4000-8000-000000000001','WEEK',null) where member_user_id='82222222-2222-4222-8222-222222222222'),
+  (select lifting_days from public.get_group_competition_leaderboard('80000000-0000-4000-8000-000000000001') where member_user_id='82222222-2222-4222-8222-222222222222'),
   1::bigint,
   'weekly competition counts distinct authoritative lifting days'
 );
-select is(
-  (select member_user_id from public.get_group_competition_leaderboard('80000000-0000-4000-8000-000000000001','ALL_TIME',null) where rank=1 limit 1),
-  '82222222-2222-4222-8222-222222222222'::uuid,
-  'older authoritative XP can produce a different all-time leader'
-);
-select is(
-  (select period_start from public.get_group_competition_leaderboard('80000000-0000-4000-8000-000000000001','ALL_TIME',null) limit 1),
-  null::date,
-  'all-time competition has no artificial date boundary'
-);
-select throws_ok(
-  $$select * from public.get_group_competition_leaderboard('80000000-0000-4000-8000-000000000001','MONTH',null)$$,
-  '22023', null, 'unsupported competition periods are rejected'
-);
-select throws_ok(
-  $$select * from public.get_group_competition_leaderboard('80000000-0000-4000-8000-000000000001','WEEK',date '2026-08-18')$$,
-  '22023', null, 'weekly competition requires a Monday boundary'
-);
-
 select ok(exists(select 1 from public.get_group_social_feed('80000000-0000-4000-8000-000000000001',20,null,null) where activity_type='LIFT'), 'feed includes qualifying lift summaries');
 select ok(exists(select 1 from public.get_group_social_feed('80000000-0000-4000-8000-000000000001',20,null,null) where activity_type='PR'), 'feed includes real PR summaries');
 select ok(exists(select 1 from public.get_group_social_feed('80000000-0000-4000-8000-000000000001',20,null,null) where activity_type='BADGE'), 'feed includes earned badges');
@@ -227,7 +208,7 @@ select throws_ok(
 
 select set_config('request.jwt.claim.sub', '83333333-3333-4333-8333-333333333333', true);
 select throws_ok(
-  $$select * from public.get_group_competition_leaderboard('80000000-0000-4000-8000-000000000001','WEEK',null)$$,
+  $$select * from public.get_group_competition_leaderboard('80000000-0000-4000-8000-000000000001')$$,
   '42501', null, 'outsiders cannot read group competition'
 );
 select throws_ok(
@@ -240,10 +221,10 @@ select throws_ok(
 );
 
 reset role;
-select is(has_function_privilege('authenticated','public.get_group_competition_leaderboard(uuid,text,date)','execute'), true, 'authenticated role can execute competition RPC');
+select is(has_function_privilege('authenticated','public.get_group_competition_leaderboard(uuid)','execute'), true, 'authenticated role can execute competition RPC');
 select is(has_function_privilege('authenticated','public.get_group_social_feed(uuid,integer,timestamp with time zone,text)','execute'), true, 'authenticated role can execute social feed RPC');
 select is(has_function_privilege('authenticated','public.set_group_activity_reaction(uuid,text,text)','execute'), true, 'authenticated role can execute reaction RPC');
-select is(has_function_privilege('anon','public.get_group_competition_leaderboard(uuid,text,date)','execute'), false, 'anonymous role cannot execute competition RPC');
+select is(has_function_privilege('anon','public.get_group_competition_leaderboard(uuid)','execute'), false, 'anonymous role cannot execute competition RPC');
 select is(has_function_privilege('anon','public.get_group_social_feed(uuid,integer,timestamp with time zone,text)','execute'), false, 'anonymous role cannot execute social feed RPC');
 select is(has_function_privilege('anon','public.set_group_activity_reaction(uuid,text,text)','execute'), false, 'anonymous role cannot execute reaction RPC');
 

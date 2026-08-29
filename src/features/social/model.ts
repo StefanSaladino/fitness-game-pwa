@@ -1,6 +1,6 @@
 import type { LiftingBadgeKey } from '../consistency';
 
-export type GroupCompetitionPeriod = 'WEEK' | 'ALL_TIME';
+export type GroupCompetitionPeriod = 'WEEK';
 export type GroupSocialActivityType = 'LIFT' | 'PR' | 'BADGE' | 'GOAL';
 export type GroupReactionType = 'FIRE' | 'STRONG' | 'CLAP';
 
@@ -22,6 +22,11 @@ export interface GroupCompetitionLeaderboard {
   periodStart: string | null;
   periodEnd: string | null;
   entries: GroupCompetitionEntry[];
+}
+
+export interface GlobalAllTimeLeaderboard {
+  top10: GroupCompetitionEntry[];
+  currentUser: GroupCompetitionEntry | null;
 }
 
 export interface LiftActivityMetadata {

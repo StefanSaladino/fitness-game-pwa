@@ -64,15 +64,24 @@ const progressService: ExerciseProgressService = {
 };
 
 const socialService: GroupSocialService = {
-  async loadLeaderboard(_groupId, period) {
+  async loadGroupLeaderboard() {
     return {
-      period,
-      periodStart: period === 'WEEK' ? '2026-08-17' : null,
-      periodEnd: period === 'WEEK' ? '2026-08-23' : null,
+      period: 'WEEK',
+      periodStart: '2026-08-17',
+      periodEnd: '2026-08-23',
       entries: [
-        { rank: 1, userId: USER_ID, username: 'stefan', displayName: 'Stefan', profilePictureUrl: null, xp: period === 'WEEK' ? 115 : 900, liftingDays: period === 'WEEK' ? 2 : 16, prCount: 7, badgeCount: 6, isCurrentUser: true },
-        { rank: 2, userId: TEAMMATE_ID, username: 'alex', displayName: 'Alex', profilePictureUrl: null, xp: period === 'WEEK' ? 90 : 850, liftingDays: period === 'WEEK' ? 2 : 15, prCount: 5, badgeCount: 4, isCurrentUser: false },
+        { rank: 1, userId: USER_ID, username: 'stefan', displayName: 'Stefan', profilePictureUrl: null, xp: 115, liftingDays: 2, prCount: 7, badgeCount: 6, isCurrentUser: true },
+        { rank: 2, userId: TEAMMATE_ID, username: 'alex', displayName: 'Alex', profilePictureUrl: null, xp: 90, liftingDays: 2, prCount: 5, badgeCount: 4, isCurrentUser: false },
       ],
+    };
+  },
+  async loadGlobalAllTimeLeaderboard() {
+    return {
+      top10: [
+        { rank: 1, userId: TEAMMATE_ID, username: 'alex', displayName: 'Alex', profilePictureUrl: null, xp: 950, liftingDays: 18, prCount: 8, badgeCount: 7, isCurrentUser: false },
+        { rank: 2, userId: USER_ID, username: 'stefan', displayName: 'Stefan', profilePictureUrl: null, xp: 900, liftingDays: 16, prCount: 7, badgeCount: 6, isCurrentUser: true },
+      ],
+      currentUser: { rank: 2, userId: USER_ID, username: 'stefan', displayName: 'Stefan', profilePictureUrl: null, xp: 900, liftingDays: 16, prCount: 7, badgeCount: 6, isCurrentUser: true },
     };
   },
   async loadFeed() {

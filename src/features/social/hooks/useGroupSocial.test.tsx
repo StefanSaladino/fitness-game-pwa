@@ -1,11 +1,12 @@
 import { act, renderHook, waitFor } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import type { GroupSocialFeedItem, GroupSocialFeedPage } from '../model';
+import type { GlobalAllTimeLeaderboard, GroupSocialFeedItem, GroupSocialFeedPage } from '../model';
 import type { GroupSocialService } from '../socialService';
+import { useGlobalAllTimeLeaderboard } from './useGlobalAllTimeLeaderboard';
 import { useGroupSocial } from './useGroupSocial';
 
 const weekly = { period: 'WEEK' as const, periodStart: '2026-08-17', periodEnd: '2026-08-23', entries: [] };
-const allTime = { period: 'ALL_TIME' as const, periodStart: null, periodEnd: null, entries: [] };
+const globalBoard: GlobalAllTimeLeaderboard = { top10: [], currentUser: null };
 const activity: GroupSocialFeedItem = {
   activityKey: 'LIFT:opaque', activityType: 'LIFT', activityAt: '2026-08-20T22:00:00Z', actorUserId: 'user-1',
   username: 'stefan', displayName: 'Stefan', profilePictureUrl: null,
@@ -17,10 +18,11 @@ const nextActivity: GroupSocialFeedItem = {
   metadata: { exerciseName: 'Bench Press', metricType: 'E1RM', metricValue: 120, previousBest: 115, weightKg: 100, reps: 6, scoringDate: '2026-08-19' },
 };
 
-function createService(options: { firstPage?: GroupSocialFeedPage; secondPage?: GroupSocialFeedPage; reactionError?: Error } = {}): GroupSocialService {
+function createService(options: { firstPage?: GroupSocialFeedPage; secondPage?: GroupSocialFeedPage; reactionError?: Error; global?: GlobalAllTimeLeaderboard } = {}): GroupSocialService {
   let feedCalls = 0;
   return {
-    loadLeaderboard: vi.fn(async (_groupId, period) => period === 'WEEK' ? weekly : allTime),
+    loadGroupLeaderboard: vi.fn(async () => weekly),
+    loadGlobalAllTimeLeaderboard: vi.fn(async () => options.global ?? globalBoard),
     loadFeed: vi.fn(async () => {
       feedCalls += 1;
       if (feedCalls === 1) return options.firstPage ?? { items: [activity], nextCursor: null };
@@ -33,11 +35,13 @@ function createService(options: { firstPage?: GroupSocialFeedPage; secondPage?: 
 }
 
 describe('useGroupSocial', () => {
-  it('loads both standings and optimistically applies one group reaction', async () => {
+  it('loads weekly group standings only and optimistically applies one group reaction', async () => {
     const service = createService();
     const { result } = renderHook(() => useGroupSocial('group-1', service));
     await waitFor(() => expect(result.current.status).toBe('ready'));
 
+    expect(service.loadGroupLeaderboard).toHaveBeenCalledWith('group-1');
+    expect(service.loadGlobalAllTimeLeaderboard).not.toHaveBeenCalled();
     await act(async () => { await result.current.react('LIFT:opaque', 'FIRE'); });
     expect(result.current.feed.items[0]).toEqual(expect.objectContaining({
       myReaction: 'FIRE', reactions: { FIRE: 1, STRONG: 0, CLAP: 0 },
@@ -74,5 +78,19 @@ describe('useGroupSocial', () => {
     expect(result.current.feed.items.map((item) => item.activityKey)).toEqual(['LIFT:opaque', 'PR:older']);
     expect(result.current.feed.nextCursor).toBeNull();
     expect(service.loadFeed).toHaveBeenLastCalledWith('group-1', cursor);
+  });
+});
+
+describe('useGlobalAllTimeLeaderboard', () => {
+  it('loads only the dedicated global contract', async () => {
+    const expected: GlobalAllTimeLeaderboard = { top10: [], currentUser: null };
+    const service = createService({ global: expected });
+    const { result } = renderHook(() => useGlobalAllTimeLeaderboard(service));
+    await waitFor(() => expect(result.current.status).toBe('ready'));
+
+    expect(result.current.leaderboard).toEqual(expected);
+    expect(service.loadGlobalAllTimeLeaderboard).toHaveBeenCalledTimes(1);
+    expect(service.loadGroupLeaderboard).not.toHaveBeenCalled();
+    expect(service.loadFeed).not.toHaveBeenCalled();
   });
 });

@@ -10,8 +10,14 @@ test('competition stays privacy-safe and usable across responsive product shells
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
   expect(overflow).toBeLessThanOrEqual(1);
 
-  await page.getByRole('button', { name: 'All time' }).click();
-  await expect(page.getByText('1200 XP')).toBeVisible();
+  await expect(page.getByRole('button', { name: 'All time' })).toHaveCount(0);
+  await page.getByRole('button', { name: 'Global all-time' }).click();
+  await expect(page.getByRole('heading', { name: 'Global all-time' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Top 10 across Top Set' })).toBeVisible();
+  await expect(page.getByLabel('Your global rank')).toContainText('#27');
+  await expect(page.getByRole('tab', { name: 'Activity' })).toHaveCount(0);
+  await expect(page.getByRole('button', { name: /Fire/i })).toHaveCount(0);
+  await page.getByRole('button', { name: 'Crew weekly' }).click();
 
   await page.getByRole('tab', { name: 'Activity' }).click();
   await expect(page.getByRole('heading', { name: 'Highlights, not surveillance' })).toBeVisible();
@@ -72,6 +78,12 @@ test('Groups and Compete stay contained at a 320px app viewport', async ({ page 
   overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
   expect(overflow).toBeLessThanOrEqual(1);
 
+  await page.getByRole('button', { name: 'Global all-time' }).click();
+  await expect(page.locator('[data-global-all-time-surface="leaderboard"]')).toBeVisible();
+  overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+  expect(overflow).toBeLessThanOrEqual(1);
+
+  await page.getByRole('button', { name: 'Crew weekly' }).click();
   await page.getByRole('tab', { name: 'Activity' }).click();
   await expect(page.locator('[data-social-surface="activity"]')).toBeVisible();
   overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);

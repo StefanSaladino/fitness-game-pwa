@@ -1231,8 +1231,24 @@ export type Database = {
           workout_type: string
         }[]
       }
+      get_global_all_time_leaderboard: {
+        Args: never
+        Returns: {
+          badge_count: number
+          display_name: string
+          is_current_user: boolean
+          lifting_days: number
+          member_user_id: string
+          pr_count: number
+          profile_picture_path: string
+          rank: number
+          row_kind: string
+          username: string
+          xp: number
+        }[]
+      }
       get_group_competition_leaderboard: {
-        Args: { p_group_id: string; p_period?: string; p_week_start?: string }
+        Args: { p_group_id: string }
         Returns: {
           badge_count: number
           display_name: string

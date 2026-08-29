@@ -1,0 +1,148 @@
+.page {
+  display: grid;
+  width: min(100%, 1040px);
+  min-width: 0;
+  gap: var(--app-category-gap);
+  margin: 0 auto;
+}
+
+.headerSurface,
+.leaderboardSurface,
+.currentUserSurface {
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+}
+
+.headerSurface {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-5);
+  border-color: rgba(241, 90, 8, 0.26);
+  padding: var(--app-surface-padding);
+  background: var(--color-surface-strong);
+}
+
+.headerCopy { min-width: 0; }
+.headerCopy h1 {
+  margin: var(--space-1) 0 var(--space-1);
+  overflow-wrap: anywhere;
+  color: var(--color-text);
+  font-size: clamp(1.9rem, 9vw, 3rem);
+  line-height: 1;
+  letter-spacing: -0.048em;
+}
+.headerCopy > p:not(.kicker),
+.sectionHeading p,
+.empty {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: 0.8rem;
+  line-height: 1.5;
+}
+.kicker,
+.sectionLabel {
+  margin: 0;
+  color: var(--color-accent);
+  font-size: 0.67rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+:global(.ui-button).scopeButton { min-height: 44px; flex: 0 0 auto; }
+
+.leaderboardSurface,
+.currentUserSurface { padding: var(--app-surface-padding); }
+.sectionHeading { min-width: 0; margin-bottom: var(--space-4); }
+.sectionHeading h2 {
+  margin: var(--space-1) 0 0;
+  color: var(--color-text);
+  font-size: clamp(1.25rem, 5vw, 1.65rem);
+  letter-spacing: -0.035em;
+}
+.sectionHeading p { margin-top: var(--space-1); }
+
+.leaderboard {
+  margin: 0;
+  overflow: hidden;
+  border-radius: var(--radius-md);
+  padding: 0;
+  background: var(--color-bg-elevated);
+  list-style: none;
+}
+.leaderboardRow {
+  display: grid;
+  min-width: 0;
+  grid-template-columns: 24px 40px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--space-1) var(--space-2);
+  min-height: 74px;
+  padding: var(--space-3) var(--space-4);
+}
+.leaderboardRow + .leaderboardRow { border-top: 1px solid rgba(255, 255, 255, 0.07); }
+.rank {
+  grid-row: 1 / 3;
+  color: var(--color-text-soft);
+  font-size: 0.9rem;
+  font-weight: 840;
+  text-align: center;
+}
+.leaderboardRow:first-child .rank { color: var(--color-accent); }
+.identity { min-width: 0; }
+.identity strong,
+.identity span { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.identity strong { color: var(--color-text); font-size: 0.84rem; }
+.identity span { margin-top: 2px; color: var(--color-text-muted); font-size: 0.69rem; }
+.xp { justify-self: end; color: var(--color-text); font-size: 0.8rem; text-align: right; white-space: nowrap; }
+.supportingStats {
+  grid-column: 3 / -1;
+  min-width: 0;
+  overflow: hidden;
+  color: var(--color-text-muted);
+  font-size: 0.65rem;
+  line-height: 1.4;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.currentUserSurface {
+  border-color: rgba(241, 90, 8, 0.34);
+  background: var(--color-accent-soft);
+}
+.currentUserRow {
+  display: grid;
+  min-width: 0;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+  margin-top: var(--space-3);
+}
+.currentUserRow > strong { color: var(--color-text); font-size: 1.65rem; letter-spacing: -0.04em; }
+.currentUserRow > b { color: var(--color-accent); font-size: 0.9rem; white-space: nowrap; }
+.currentIdentity { display: grid; min-width: 0; gap: 2px; }
+.currentIdentity span,
+.currentIdentity small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.currentIdentity span { color: var(--color-text); font-size: 0.84rem; font-weight: 760; }
+.currentIdentity small,
+.currentStats { color: var(--color-text-muted); font-size: 0.68rem; }
+.currentStats { grid-column: 2 / -1; overflow-wrap: anywhere; }
+
+@media (max-width: 520px) {
+  .headerSurface { align-items: stretch; flex-direction: column; }
+  :global(.ui-button).scopeButton { width: 100%; }
+  .supportingStats { white-space: normal; }
+}
+
+@media (max-width: 360px) {
+  .headerCopy h1 { font-size: 1.75rem; }
+  .leaderboardSurface,
+  .currentUserSurface { padding: var(--space-3); }
+  .leaderboardRow { grid-template-columns: 20px 32px minmax(0, 1fr) auto; gap-inline: 6px; padding-inline: var(--space-2); }
+  .xp { font-size: 0.74rem; }
+  .currentUserRow { grid-template-columns: auto minmax(0, 1fr); }
+  .currentUserRow > b { grid-column: 2; justify-self: start; }
+  .currentStats { grid-column: 1 / -1; }
+}

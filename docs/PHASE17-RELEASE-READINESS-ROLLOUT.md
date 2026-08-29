@@ -6,9 +6,9 @@ Release target: first hosted Top Set production rollout using **Supabase Free** 
 
 ## Release rule
 
-Phase 17 is a feature freeze. Until launch, accepted changes are limited to visual/layout/accessibility repair, release-reset safety, provider capacity telemetry, deployment configuration, production validation, and defects discovered by those gates.
+Phase 17 is a feature freeze. Until launch, accepted changes are limited to visual/layout/accessibility repair, the explicitly approved Phase 17.2C global All-Time leaderboard, release-reset safety, provider capacity telemetry, deployment configuration, production validation, and defects discovered by those gates.
 
-## 17.1 — Exhaustive visual audit harness — IN PROGRESS
+## 17.1 — Exhaustive visual audit harness — COMPLETE
 
 Goals:
 
@@ -30,7 +30,7 @@ Current implementation:
 
 The visual-audit matrix is intentionally separate from the normal three-browser behavioral E2E suite so ordinary development remains fast.
 
-## 17.2 — Visual remediation + scroll architecture — NOT STARTED
+## 17.2 — Visual remediation + scroll architecture — COMPLETE
 
 - Execute the visual audit locally with Playwright browser binaries installed.
 - Review every generated screenshot and `geometry.json` attachment.
@@ -40,6 +40,23 @@ The visual-audit matrix is intentionally separate from the normal three-browser 
 - Re-run the complete visual audit until there are no known visual defects.
 
 Exit gate: full visual matrix executed and manually reviewed with no unresolved defect.
+
+## 17.2C — Global All-Time leaderboard — IMPLEMENTED, VALIDATION IN PROGRESS
+
+This is the only product-rule exception to the Phase 17 feature freeze.
+
+- Remove `ALL_TIME` rankings from group competition surfaces; groups remain weekly competition contexts.
+- Add one read-only app-global All-Time leaderboard backed by authoritative user-level lifetime scoring.
+- Rank all eligible active, onboarded app users globally, independent of group membership.
+- Display the global Top 10.
+- Display the signed-in user’s true global rank in a visually detached row beneath the Top 10, including when the user is already present in the Top 10.
+- Do not expose group chat, global chat, feed, reactions, reports, or other social actions on the Global All-Time leaderboard.
+- Keep a workout/scoring event user-scoped and counted once; the same user-level score may contribute to weekly standings in every active group and to one global lifetime rank.
+- Use a dedicated global read contract/RPC rather than overloading the group leaderboard with a fake group identifier.
+- Cover the contract with database, service/unit, structural, E2E, and visual regressions.
+- Remove stale group-All-Time tests, fixtures, and options from current product code while preserving historical migrations/docs as history.
+
+Exit gate: group competition exposes no All-Time mode, the global Top 10/current-user rank is authoritative and deterministic, no chat/social affordance exists on the global board, and all targeted/full gates pass.
 
 ## 17.3 — Production statistics reset mechanism — NOT STARTED
 
