@@ -525,7 +525,7 @@
   outline-offset: 2px;
 }
 
-@media (max-width: 900px) {
+@media (max-width: 980px) {
   .workspace {
     display: block;
     min-height: 0;

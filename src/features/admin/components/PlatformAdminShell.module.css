@@ -118,7 +118,10 @@
 @media (min-width: 940px) {
   .shell {
     display: grid;
+    height: 100dvh;
+    min-height: 0;
     grid-template-columns: var(--desktop-sidebar-width) minmax(0, 1fr);
+    overflow: hidden;
   }
 
   .rail {
@@ -126,10 +129,21 @@
     top: 0;
     display: flex;
     height: 100dvh;
+    min-height: 0;
     flex-direction: column;
+    overflow-y: auto;
     border-right: 1px solid var(--color-border);
     padding: var(--space-6) var(--space-4);
     background: var(--color-bg-elevated);
+    overscroll-behavior-y: contain;
+  }
+
+  .content {
+    height: 100dvh;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior-y: contain;
+    scrollbar-gutter: stable;
   }
 
   .railBrand {

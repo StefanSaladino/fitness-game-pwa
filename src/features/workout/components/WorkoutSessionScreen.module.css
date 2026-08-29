@@ -640,6 +640,17 @@
   .dialogHandle { width: 38px; height: 4px; display: block; justify-self: center; border-radius: 999px; background: var(--color-border-strong); }
 }
 
+@media (max-width: 699px) and (max-height: 500px) and (orientation: landscape) {
+  .sessionPanel {
+    position: static;
+  }
+
+  .lifecycleActions {
+    position: static;
+    box-shadow: none;
+  }
+}
+
 @media (max-width: 360px) {
   .activeHeader { gap: var(--space-2); padding-inline: var(--space-3); }
   .activeHeader h1 { font-size: 1.18rem; }

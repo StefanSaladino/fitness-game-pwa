@@ -32,6 +32,7 @@ export default defineConfig({
         input: {
           app: resolve(process.cwd(), 'index.html'),
           reliability: resolve(process.cwd(), 'reliability.e2e.html'),
+          releaseVisualAudit: resolve(process.cwd(), 'release-visual-audit.e2e.html'),
           competition: resolve(process.cwd(), 'competition.e2e.html'),
           groups: resolve(process.cwd(), 'groups.e2e.html'),
           indexeddb: resolve(process.cwd(), 'indexeddb.e2e.html'),

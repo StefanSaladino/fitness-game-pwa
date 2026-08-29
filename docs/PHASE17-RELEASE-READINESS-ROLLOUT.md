@@ -1,0 +1,130 @@
+# Phase 17 — Release Readiness & Rollout
+
+Status: **IN PROGRESS**
+
+Release target: first hosted Top Set production rollout using **Supabase Free** and **Netlify Free**.
+
+## Release rule
+
+Phase 17 is a feature freeze. Until launch, accepted changes are limited to visual/layout/accessibility repair, release-reset safety, provider capacity telemetry, deployment configuration, production validation, and defects discovered by those gates.
+
+## 17.1 — Exhaustive visual audit harness — IN PROGRESS
+
+Goals:
+
+- Inspect every deterministic application surface and major state.
+- Run every surface at canonical phone, landscape phone, tablet, desktop, and short-desktop viewports.
+- Run each surface at `breakpoint - 1`, `breakpoint`, and `breakpoint + 1` for the CSS breakpoints relevant to that feature.
+- Capture full-page screenshots for manual review.
+- Fail on document horizontal overflow or visible interactive controls escaping the viewport.
+- Audit the declared admin scroll owner and prove the bottom of vertically overflowing content is reachable.
+- Attach geometry diagnostics for clipped text and undersized mobile controls so they can be manually inspected without pretending every intentional ellipsis is a defect.
+
+Current implementation:
+
+- `playwright.visual.config.ts`
+- `tests/e2e/visual-audit.spec.ts`
+- `tests/e2e/releaseVisualAuditHarness.tsx`
+- `release-visual-audit.e2e.html`
+- `npm run test:e2e:visual`
+
+The visual-audit matrix is intentionally separate from the normal three-browser behavioral E2E suite so ordinary development remains fast.
+
+## 17.2 — Visual remediation + scroll architecture — NOT STARTED
+
+- Execute the visual audit locally with Playwright browser binaries installed.
+- Review every generated screenshot and `geometry.json` attachment.
+- Repair styling inconsistencies, overlap, collisions, unreadable wrapping, clipped controls, hidden scroll paths, modal/sheet containment, and unsafe short-viewport layouts.
+- Give desktop platform administration one explicit viewport-constrained vertical scroll owner while leaving the rail independently usable.
+- Add focused regressions for each defect found.
+- Re-run the complete visual audit until there are no known visual defects.
+
+Exit gate: full visual matrix executed and manually reviewed with no unresolved defect.
+
+## 17.3 — Production statistics reset mechanism — NOT STARTED
+
+Build and test a release-only, explicitly destructive reset procedure. Do **not** execute it during implementation.
+
+Reset training/statistical state while preserving identity/configuration, including review of:
+
+- workouts, exercises, and sets
+- mutation receipts and offline reconciliation state
+- XP/scoring events
+- exercise/performance observations and summaries
+- weekly lifting snapshots and consistency
+- earned badges
+- any derived competition/activity records that would leak pre-release statistics
+
+Preserve accounts, profiles, preferences, groups/memberships, group chat, platform messages, administration/audit history, moderation history, exercise catalogue, benchmark definitions, and provider allowance configuration unless a dependency audit proves otherwise.
+
+Add a release data epoch/persistence version so pre-release IndexedDB workout drafts or queued mutations cannot repopulate wiped production statistics after launch.
+
+Exit gate: rollback-safe tests prove the reset scope and preservation contract; production reset remains unexecuted.
+
+## 17.4 — Supabase Free-plan capacity implementation — NOT STARTED
+
+- Verify current Free-plan quotas from official Supabase documentation immediately before implementation.
+- Keep quota values server-owned/configured, never cosmetic frontend constants.
+- Reuse guarded local telemetry for authoritative database/storage/connection measurements.
+- Complete provider-backed Supabase Management telemetry only where an authoritative usage signal exists.
+- Keep unavailable usage explicitly unavailable rather than estimating or displaying zero.
+- Include current usage, Free-plan limit, utilization, source/scope, measured time, and warning state in Platform Overview.
+- Cover provider failures, stale/invalid payloads, and plan-limit changes with tests.
+
+Exit gate: hosted Supabase telemetry and allowances are verified, pgTAP passes, and Security/Performance advisors are reviewed.
+
+## 17.5 — Netlify hosting + production configuration — NOT STARTED
+
+- Add/verify `netlify.toml`, build/publish contract, SPA fallback, cache behavior, security headers, and PWA asset handling.
+- Connect the GitHub repository to Netlify.
+- Configure only public browser-safe Vite environment values in Netlify.
+- Configure production Supabase Site URL and allowed auth/reset/verification redirects.
+- Deploy a preview first, then run remote E2E/PWA/auth/direct-route checks before production promotion.
+
+Exit gate: an approved Netlify deploy preview passes production-like checks.
+
+## 17.6 — Netlify Free-plan capacity implementation — NOT STARTED
+
+- Verify the current Netlify Free-plan quota model from official Netlify documentation immediately before implementation.
+- Configure the existing server-side Netlify provider boundary using the real account/site identifiers and server-held provider credential.
+- Prefer the actual account-level Free-plan limiting resource as the primary capacity metric.
+- Show bandwidth/request/deploy/compute contributors only when they are authoritative and useful.
+- Never reconstruct an unavailable account balance from incomplete client-side traffic data.
+
+Exit gate: Platform Overview shows trustworthy Netlify Free-plan usage/limits or explicit unavailable states from the live deployed account.
+
+## 17.7 — Release-candidate gate — NOT STARTED
+
+Required repository gates:
+
+```text
+npm run typecheck
+npm test
+npm run test:integration
+npm run build
+npm run test:structure
+npm run test:internal
+npm run db:test:ci
+npm run test:e2e
+npm run test:e2e:visual
+```
+
+Also require hosted pgTAP, Supabase advisors, Edge Function verification, deployed-Netlify smoke/E2E, authentication/reset verification, Realtime/group-chat verification, PWA install/offline/update behavior, secret/environment audit, security headers, and direct-route refresh checks.
+
+## 17.8 — Production reset + launch — NOT STARTED
+
+Only after the release candidate is frozen and green:
+
+1. Create a manual pre-reset backup/export appropriate to the current Supabase plan.
+2. Record pre-reset row counts and the exact release commit.
+3. Execute the tested statistical reset.
+4. Bump/invalidate pre-release local persistence state.
+5. Verify zeroed statistics and preserved accounts/configuration.
+6. Deploy the exact approved commit to production.
+7. Verify production authentication, training, groups/chat, admin, telemetry, PWA/offline behavior, and direct routes.
+8. Record the first clean production capacity snapshot.
+9. Tag the production release only after verification.
+
+## 17.9 — Initial production monitoring — NOT STARTED
+
+Watch capacity, provider failures, auth failures, workout mutation/reconciliation failures, Realtime disconnects, push failures, and unexpected admin errors during initial rollout. Escalate before either Free-plan hard limit threatens availability.
