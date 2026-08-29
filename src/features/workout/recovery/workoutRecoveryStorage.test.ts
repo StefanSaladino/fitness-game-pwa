@@ -36,10 +36,10 @@ describe('workout recovery storage', () => {
     expect(await storage.load('user-1')).toBeNull();
   });
 
-  it('migrates a valid v1 localStorage recovery snapshot into durable storage once', async () => {
+  it('migrates a valid current-epoch localStorage recovery snapshot into durable storage once', async () => {
     const durable = createMemoryAsyncStorage();
     const legacy = new MemoryLegacyStorage();
-    legacy.setItem('fitness-game:active-workout:v1:user-1', JSON.stringify(snapshot));
+    legacy.setItem('fitness-game:active-workout:v2:user-1', JSON.stringify(snapshot));
     const storage = createWorkoutRecoveryStorage(durable, legacy);
 
     expect(await storage.load('user-1')).toEqual(snapshot);
@@ -47,10 +47,20 @@ describe('workout recovery storage', () => {
     expect(await storage.load('user-1')).toEqual(snapshot);
   });
 
-  it('discards corrupt legacy data instead of breaking workout startup', async () => {
+  it('retires pre-release v1 localStorage recovery instead of restoring it', async () => {
     const durable = createMemoryAsyncStorage();
     const legacy = new MemoryLegacyStorage();
-    legacy.setItem('fitness-game:active-workout:v1:user-1', '{broken');
+    legacy.setItem('fitness-game:active-workout:v1:user-1', JSON.stringify(snapshot));
+    const storage = createWorkoutRecoveryStorage(durable, legacy);
+
+    expect(await storage.load('user-1')).toBeNull();
+    expect(legacy.values.has('fitness-game:active-workout:v1:user-1')).toBe(false);
+  });
+
+  it('discards corrupt current-epoch fallback data instead of breaking workout startup', async () => {
+    const durable = createMemoryAsyncStorage();
+    const legacy = new MemoryLegacyStorage();
+    legacy.setItem('fitness-game:active-workout:v2:user-1', '{broken');
     const storage = createWorkoutRecoveryStorage(durable, legacy);
 
     expect(await storage.load('user-1')).toBeNull();

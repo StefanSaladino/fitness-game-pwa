@@ -41,7 +41,7 @@ The visual-audit matrix is intentionally separate from the normal three-browser 
 
 Exit gate: full visual matrix executed and manually reviewed with no unresolved defect.
 
-## 17.2C — Global All-Time leaderboard — IMPLEMENTED, VALIDATION IN PROGRESS
+## 17.2C — Global All-Time leaderboard — COMPLETE
 
 This is the only product-rule exception to the Phase 17 feature freeze.
 
@@ -56,27 +56,24 @@ This is the only product-rule exception to the Phase 17 feature freeze.
 - Cover the contract with database, service/unit, structural, E2E, and visual regressions.
 - Remove stale group-All-Time tests, fixtures, and options from current product code while preserving historical migrations/docs as history.
 
-Exit gate: group competition exposes no All-Time mode, the global Top 10/current-user rank is authoritative and deterministic, no chat/social affordance exists on the global board, and all targeted/full gates pass.
+Exit gate: group competition exposes no All-Time mode, the global Top 10/current-user rank is authoritative and deterministic, no chat/social affordance exists on the global board, and targeted release gates pass.
 
-## 17.3 — Production statistics reset mechanism — NOT STARTED
+## 17.3 — Production statistics reset mechanism — IMPLEMENTED, VALIDATION IN PROGRESS
 
 Build and test a release-only, explicitly destructive reset procedure. Do **not** execute it during implementation.
 
-Reset training/statistical state while preserving identity/configuration, including review of:
+Current implementation:
 
-- workouts, exercises, and sets
-- mutation receipts and offline reconciliation state
-- XP/scoring events
-- exercise/performance observations and summaries
-- weekly lifting snapshots and consistency
-- earned badges
-- any derived competition/activity records that would leak pre-release statistics
+- `supabase/release/phase17-production-statistics-reset.sql` is an operator-only reset script, not a migration. It requires an explicit launch confirmation and remains `ROLLBACK`-only in source control.
+- The reset scope covers workouts/sets, mutation receipts, XP/scoring, exercise/performance observations and summaries, weekly goal/snapshot/consistency state, earned badges, and derived group activity reactions.
+- `public.performance_benchmarks` is reset because it is per-user benchmark summary state, not a static benchmark-definition table.
+- Accounts, profiles/training preferences, notification preferences, groups/memberships/invites, group chat/reactions, platform/admin/moderation history, exercise catalogue, push configuration, and provider capacity configuration/history remain outside the delete allowlist.
+- Workout browser persistence advances to epoch `2`, using a new IndexedDB database namespace and `v2` recovery/mutation keys. Known v1 localStorage fallbacks are retired instead of migrated.
+- `supabase/tests/044_phase17_3_release_reset_contract.test.sql` proves the destructive scope and representative preservation contract inside a transaction that always rolls back.
+- `scripts/validate-phase17-3-release-reset.cjs` keeps the operator SQL and pgTAP delete allowlists identical and fails if protected tables enter the reset scope or the checked-in SQL becomes commit-capable.
+- `docs/PHASE17-3-PRODUCTION-RESET-RUNBOOK.md` documents the Phase 17.8 backup/dry-run/commit prerequisites.
 
-Preserve accounts, profiles, preferences, groups/memberships, group chat, platform messages, administration/audit history, moderation history, exercise catalogue, benchmark definitions, and provider allowance configuration unless a dependency audit proves otherwise.
-
-Add a release data epoch/persistence version so pre-release IndexedDB workout drafts or queued mutations cannot repopulate wiped production statistics after launch.
-
-Exit gate: rollback-safe tests prove the reset scope and preservation contract; production reset remains unexecuted.
+Exit gate: targeted unit/E2E/structural/database gates pass, rollback-safe tests prove the reset scope and preservation contract, persistence epoch 2 ignores pre-release durable state, and production reset remains unexecuted.
 
 ## 17.4 — Supabase Free-plan capacity implementation — NOT STARTED
 

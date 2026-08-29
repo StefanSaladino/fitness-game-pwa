@@ -1,4 +1,5 @@
-const WORKOUT_DB_NAME = 'fitness-game-workout';
+export const WORKOUT_PERSISTENCE_EPOCH = 2;
+export const WORKOUT_DB_NAME = `fitness-game-workout-v${WORKOUT_PERSISTENCE_EPOCH}`;
 const WORKOUT_DB_VERSION = 1;
 const WORKOUT_STORE_NAME = 'durable-state';
 

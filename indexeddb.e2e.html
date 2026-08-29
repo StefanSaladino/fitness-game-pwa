@@ -10,8 +10,10 @@
       <h1>Workout durable state</h1>
       <p id="recovery">Recovery: loading</p>
       <p id="queue">Queue: loading</p>
-      <p id="legacy">Legacy keys: loading</p>
-      <button id="seed" type="button">Seed legacy state</button>
+      <p id="legacy">Current fallback keys: loading</p>
+      <p id="stale">Stale v1 keys: loading</p>
+      <button id="seed" type="button">Seed current fallback state</button>
+      <button id="seed-stale" type="button">Seed stale v1 state</button>
       <button id="clear" type="button">Clear durable state</button>
     </main>
     <script type="module" src="/tests/e2e/indexedDbHarness.ts"></script>

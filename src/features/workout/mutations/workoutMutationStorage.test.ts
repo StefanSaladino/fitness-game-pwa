@@ -27,10 +27,10 @@ describe('workout mutation storage', () => {
     expect(await storage.load('user-1')).toEqual([]);
   });
 
-  it('migrates the existing localStorage queue without changing idempotency keys', async () => {
+  it('migrates the current-epoch localStorage queue without changing idempotency keys', async () => {
     const durable = createMemoryAsyncStorage();
     const legacy = new MemoryLegacyStorage();
-    legacy.setItem('fitness-game:workout-mutations:v1:user-1', JSON.stringify([later, earlier]));
+    legacy.setItem('fitness-game:workout-mutations:v2:user-1', JSON.stringify([later, earlier]));
     const storage = createWorkoutMutationStorage(durable, legacy);
 
     const loaded = await storage.load('user-1');
@@ -41,10 +41,20 @@ describe('workout mutation storage', () => {
     expect(legacy.values.size).toBe(0);
   });
 
-  it('discards corrupt queue data instead of replaying it', async () => {
+  it('retires pre-release v1 mutation queues instead of replaying them', async () => {
     const durable = createMemoryAsyncStorage();
     const legacy = new MemoryLegacyStorage();
-    legacy.setItem('fitness-game:workout-mutations:v1:user-1', '[{"version":1,"userId":"user-2"}]');
+    legacy.setItem('fitness-game:workout-mutations:v1:user-1', JSON.stringify([earlier]));
+    const storage = createWorkoutMutationStorage(durable, legacy);
+
+    expect(await storage.load('user-1')).toEqual([]);
+    expect(legacy.values.has('fitness-game:workout-mutations:v1:user-1')).toBe(false);
+  });
+
+  it('discards corrupt current-epoch queue data instead of replaying it', async () => {
+    const durable = createMemoryAsyncStorage();
+    const legacy = new MemoryLegacyStorage();
+    legacy.setItem('fitness-game:workout-mutations:v2:user-1', '[{"version":1,"userId":"user-2"}]');
     const storage = createWorkoutMutationStorage(durable, legacy);
 
     expect(await storage.load('user-1')).toEqual([]);

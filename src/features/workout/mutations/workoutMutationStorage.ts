@@ -1,9 +1,10 @@
 import type { KeyValueStorage } from '../recovery/workoutRecoveryStorage';
-import { createWorkoutIndexedDbStorage, type AsyncKeyValueStorage } from '../storage/workoutIndexedDb';
+import { createWorkoutIndexedDbStorage, WORKOUT_PERSISTENCE_EPOCH, type AsyncKeyValueStorage } from '../storage/workoutIndexedDb';
 import { parseWorkoutMutationQueue, type WorkoutMutationQueueItem } from './workoutMutationModel';
 
-const MUTATION_QUEUE_KEY_PREFIX = 'workout-mutations:v1:';
-const LEGACY_MUTATION_QUEUE_KEY_PREFIX = 'fitness-game:workout-mutations:v1:';
+const MUTATION_QUEUE_KEY_PREFIX = `workout-mutations:v${WORKOUT_PERSISTENCE_EPOCH}:`;
+const LEGACY_MUTATION_QUEUE_KEY_PREFIX = `fitness-game:workout-mutations:v${WORKOUT_PERSISTENCE_EPOCH}:`;
+const STALE_LEGACY_MUTATION_QUEUE_KEY_PREFIXES = ['fitness-game:workout-mutations:v1:'] as const;
 
 export interface WorkoutMutationStorage {
   load(userId: string): Promise<WorkoutMutationQueueItem[]>;
@@ -17,6 +18,13 @@ function keyForUser(userId: string): string {
 
 function legacyKeyForUser(userId: string): string {
   return `${LEGACY_MUTATION_QUEUE_KEY_PREFIX}${userId}`;
+}
+
+function retireStaleLegacyQueue(legacyStorage: KeyValueStorage | null, userId: string): void {
+  if (!legacyStorage) return;
+  for (const prefix of STALE_LEGACY_MUTATION_QUEUE_KEY_PREFIXES) {
+    try { legacyStorage.removeItem(`${prefix}${userId}`); } catch { /* best effort */ }
+  }
 }
 
 function browserLegacyStorage(): KeyValueStorage | null {
@@ -43,6 +51,7 @@ export function createWorkoutMutationStorage(
 ): WorkoutMutationStorage {
   return {
     async load(userId) {
+      retireStaleLegacyQueue(legacyStorage, userId);
       if (storage) {
         try {
           const raw = await storage.getItem(keyForUser(userId));
@@ -55,7 +64,7 @@ export function createWorkoutMutationStorage(
             return parsed;
           }
         } catch {
-          // Fall through to the legacy migration source when IndexedDB is unavailable.
+          // Fall through to the current-epoch browser fallback when IndexedDB is unavailable.
         }
       }
 
@@ -80,13 +89,14 @@ export function createWorkoutMutationStorage(
           if (parsed.length > 0) await storage.setItem(keyForUser(userId), JSON.stringify(parsed));
           legacyStorage.removeItem(legacyKey);
         } catch {
-          // Keep the valid legacy copy until IndexedDB accepts the migration.
+          // Keep the valid current-epoch fallback until IndexedDB accepts the migration.
         }
       }
       return parsed;
     },
 
     async save(userId, items) {
+      retireStaleLegacyQueue(legacyStorage, userId);
       const serialized = JSON.stringify(items);
       if (storage) {
         try {
@@ -95,7 +105,7 @@ export function createWorkoutMutationStorage(
           try { legacyStorage?.removeItem(legacyKeyForUser(userId)); } catch { /* best effort */ }
           return true;
         } catch {
-          // Fall back to legacy browser storage only when IndexedDB cannot accept the write.
+          // Fall back to current-epoch browser storage only when IndexedDB cannot accept the write.
         }
       }
       if (!legacyStorage) return items.length === 0;
@@ -109,6 +119,7 @@ export function createWorkoutMutationStorage(
     },
 
     async clear(userId) {
+      retireStaleLegacyQueue(legacyStorage, userId);
       if (storage) {
         try { await storage.removeItem(keyForUser(userId)); } catch { /* best effort */ }
       }
