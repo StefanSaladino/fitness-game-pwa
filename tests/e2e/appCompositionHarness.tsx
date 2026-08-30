@@ -12,11 +12,11 @@ import type { PlatformMessageService } from '../../src/features/messaging/platfo
 import type { PlatformInboxMessage } from '../../src/features/messaging/model';
 import '../../src/styles/global.css';
 
-const measuredAt = '2026-08-25T12:00:00.000Z';
+const measuredAt = '2026-08-29T19:30:00.000Z';
 const capacity: CapacityDashboardSnapshot = {
   fetchedAt: measuredAt,
   current: [
-    { code: 'database_bytes', source: 'DATABASE_LOCAL', scope: 'PROJECT', unit: 'bytes', value: 18_000_000, limit: null, measuredAt, available: true, status: 'UNCONFIGURED', utilizationPercent: null },
+    { code: 'database_bytes', source: 'DATABASE_LOCAL', scope: 'PROJECT', unit: 'bytes', value: 18_000_000, limit: 524_288_000, measuredAt, available: true, status: 'NORMAL', utilizationPercent: 3.43 },
     { code: 'storage_bytes', source: 'DATABASE_LOCAL', scope: 'PROJECT', unit: 'bytes', value: 4_000_000, limit: null, measuredAt, available: true, status: 'UNCONFIGURED', utilizationPercent: null },
     { code: 'storage_objects', source: 'DATABASE_LOCAL', scope: 'PROJECT', unit: 'count', value: 12, limit: null, measuredAt, available: true, status: 'UNCONFIGURED', utilizationPercent: null },
     { code: 'postgres_connections', source: 'DATABASE_LOCAL', scope: 'PROJECT', unit: 'count', value: 6, limit: 60, measuredAt, available: true, status: 'NORMAL', utilizationPercent: 10 },
@@ -24,8 +24,26 @@ const capacity: CapacityDashboardSnapshot = {
     { code: 'auth_users_30d', source: 'DATABASE_LOCAL', scope: 'PROJECT', unit: 'count', value: 19, limit: null, measuredAt, available: true, status: 'UNCONFIGURED', utilizationPercent: null },
   ],
   history: [],
-  supabase: { source: 'SUPABASE_MANAGEMENT', scope: 'ORGANIZATION', fetchedAt: measuredAt, metrics: [] },
-  netlify: { source: 'NETLIFY_API', scope: 'ACCOUNT', fetchedAt: measuredAt, metrics: [] },
+  supabase: {
+    source: 'SUPABASE_MANAGEMENT',
+    scope: 'ORGANIZATION',
+    fetchedAt: measuredAt,
+    metrics: [
+      { code: 'supabase_monthly_active_users', source: 'SUPABASE_MANAGEMENT', scope: 'ORGANIZATION', unit: 'count', value: null, limit: 50_000, measuredAt, available: false, note: 'Verified Free-plan allowance. Billing-cycle usage remains unavailable rather than inferred.' },
+      { code: 'supabase_storage_bytes', source: 'SUPABASE_MANAGEMENT', scope: 'ORGANIZATION', unit: 'bytes', value: null, limit: 1_073_741_824, measuredAt, available: false, note: 'Organization Storage is not reconstructed from the project-local byte measurement.' },
+      { code: 'supabase_egress_bytes', source: 'SUPABASE_MANAGEMENT', scope: 'ORGANIZATION', unit: 'bytes', value: null, limit: 5_368_709_120, measuredAt, available: false },
+      { code: 'supabase_cached_egress_bytes', source: 'SUPABASE_MANAGEMENT', scope: 'ORGANIZATION', unit: 'bytes', value: null, limit: 5_368_709_120, measuredAt, available: false },
+      { code: 'supabase_edge_function_invocations', source: 'SUPABASE_MANAGEMENT', scope: 'ORGANIZATION', unit: 'count', value: null, limit: 500_000, measuredAt, available: false },
+      { code: 'supabase_realtime_messages', source: 'SUPABASE_MANAGEMENT', scope: 'ORGANIZATION', unit: 'count', value: null, limit: 2_000_000, measuredAt, available: false },
+      { code: 'supabase_realtime_peak_connections', source: 'SUPABASE_MANAGEMENT', scope: 'ORGANIZATION', unit: 'count', value: null, limit: 200, measuredAt, available: false },
+    ],
+  },
+  netlify: {
+    source: 'NETLIFY_API',
+    scope: 'ACCOUNT',
+    fetchedAt: measuredAt,
+    metrics: [],
+  },
 };
 
 const profile = {

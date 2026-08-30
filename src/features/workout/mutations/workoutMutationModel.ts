@@ -1,4 +1,6 @@
 export const WORKOUT_MUTATION_QUEUE_VERSION = 1 as const;
+export const WORKOUT_MUTATION_MAX_REPLAY_AGE_MS = 30 * 24 * 60 * 60 * 1_000;
+export const WORKOUT_MUTATION_EXPIRED_ERROR = 'Workout mutation expired after 30 days and was not replayed.';
 
 export type WorkoutMutationRequest =
   | { kind: 'ADD_EXERCISE'; payload: { exerciseId: string } }

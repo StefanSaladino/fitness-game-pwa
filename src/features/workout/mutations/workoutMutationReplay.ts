@@ -1,4 +1,9 @@
-import { classifyWorkoutMutationError, type WorkoutMutationQueueItem } from './workoutMutationModel';
+import {
+  classifyWorkoutMutationError,
+  WORKOUT_MUTATION_EXPIRED_ERROR,
+  WORKOUT_MUTATION_MAX_REPLAY_AGE_MS,
+  type WorkoutMutationQueueItem,
+} from './workoutMutationModel';
 import { workoutMutationRetryBudgetExhausted } from './workoutMutationRetry';
 import type { WorkoutMutationService } from './workoutMutationService';
 
@@ -20,8 +25,19 @@ export async function replayWorkoutMutations(
   while (queue.length > 0) {
     const current = queue[0];
     if (current.status === 'failed' || current.status === 'conflict') break;
+
+    const replayedAt = nowMs();
+    if (replayedAt - current.createdAtMs > WORKOUT_MUTATION_MAX_REPLAY_AGE_MS) {
+      queue[0] = {
+        ...current,
+        status: 'failed',
+        lastError: WORKOUT_MUTATION_EXPIRED_ERROR,
+      };
+      break;
+    }
+
     attemptedCount += 1;
-    const attemptedAt = nowMs();
+    const attemptedAt = replayedAt;
     try {
       await service.apply(current);
       queue.shift();

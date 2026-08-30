@@ -10,8 +10,10 @@ import type {
 
 export const SUPABASE_MANAGEMENT_METRIC_CODES = [
   'supabase_monthly_active_users',
+  'supabase_storage_bytes',
   'supabase_egress_bytes',
   'supabase_cached_egress_bytes',
+  'supabase_edge_function_invocations',
   'supabase_realtime_messages',
   'supabase_realtime_peak_connections',
 ] as const satisfies readonly CapacityMetricCode[];
@@ -37,8 +39,10 @@ const CODE_SET = new Set<string>(SUPABASE_MANAGEMENT_METRIC_CODES);
 
 const UNIT_BY_CODE: Record<SupabaseManagementMetricCode, CapacityMetricMeasurement['unit']> = {
   supabase_monthly_active_users: 'count',
+  supabase_storage_bytes: 'bytes',
   supabase_egress_bytes: 'bytes',
   supabase_cached_egress_bytes: 'bytes',
+  supabase_edge_function_invocations: 'count',
   supabase_realtime_messages: 'count',
   supabase_realtime_peak_connections: 'count',
 };
@@ -101,10 +105,10 @@ function parseMetric(raw: unknown): CapacityMetricMeasurement | null {
   const typedCode = code as SupabaseManagementMetricCode;
   if (raw.source !== 'SUPABASE_MANAGEMENT' || raw.scope !== 'ORGANIZATION') return null;
   if (raw.unit !== UNIT_BY_CODE[typedCode] || !isIsoDate(raw.measuredAt) || typeof raw.available !== 'boolean') return null;
+  if (raw.limit !== null && !isPositive(raw.limit)) return null;
 
   if (raw.available) {
     if (!isFiniteNonNegative(raw.value)) return null;
-    if (raw.limit !== null && !isPositive(raw.limit)) return null;
   } else if (raw.value !== null) {
     return null;
   }

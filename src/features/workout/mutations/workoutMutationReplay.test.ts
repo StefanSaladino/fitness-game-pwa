@@ -1,5 +1,10 @@
 import { describe, expect, it, vi } from 'vitest';
-import { createWorkoutMutationQueueItem, type WorkoutMutationQueueItem } from './workoutMutationModel';
+import {
+  createWorkoutMutationQueueItem,
+  WORKOUT_MUTATION_EXPIRED_ERROR,
+  WORKOUT_MUTATION_MAX_REPLAY_AGE_MS,
+  type WorkoutMutationQueueItem,
+} from './workoutMutationModel';
 import { replayWorkoutMutations } from './workoutMutationReplay';
 import type { WorkoutMutationService } from './workoutMutationService';
 
@@ -59,6 +64,50 @@ describe('workout mutation replay', () => {
       attemptCount: 4,
       status: 'failed',
     }));
+  });
+
+
+  it('fails an expired queued mutation without contacting the server', async () => {
+    const stale = createWorkoutMutationQueueItem(
+      'user-1',
+      'workout-1',
+      { kind: 'ADD_SET', payload: { workoutExerciseId: 'we-1', setType: 'WORKING' } },
+      '33333333-3333-4333-8333-333333333333',
+      1_000,
+    );
+    const apply = vi.fn(async (_item: WorkoutMutationQueueItem) => undefined);
+    const now = 1_000 + WORKOUT_MUTATION_MAX_REPLAY_AGE_MS + 1;
+
+    const result = await replayWorkoutMutations([stale, second], { apply } as WorkoutMutationService, () => now);
+
+    expect(apply).not.toHaveBeenCalled();
+    expect(result.attemptedCount).toBe(0);
+    expect(result.appliedCount).toBe(0);
+    expect(result.items[0]).toEqual(expect.objectContaining({
+      status: 'failed',
+      attemptCount: 0,
+      lastAttemptAtMs: null,
+      lastError: WORKOUT_MUTATION_EXPIRED_ERROR,
+    }));
+    expect(result.items[1]?.idempotencyKey).toBe(second.idempotencyKey);
+  });
+
+  it('allows replay at the exact 30-day boundary', async () => {
+    const boundary = createWorkoutMutationQueueItem(
+      'user-1',
+      'workout-1',
+      { kind: 'ADD_SET', payload: { workoutExerciseId: 'we-1', setType: 'WORKING' } },
+      '44444444-4444-4444-8444-444444444444',
+      1_000,
+    );
+    const apply = vi.fn(async (_item: WorkoutMutationQueueItem) => undefined);
+    const now = 1_000 + WORKOUT_MUTATION_MAX_REPLAY_AGE_MS;
+
+    const result = await replayWorkoutMutations([boundary], { apply } as WorkoutMutationService, () => now);
+
+    expect(apply).toHaveBeenCalledOnce();
+    expect(result.appliedCount).toBe(1);
+    expect(result.items).toEqual([]);
   });
 
 });

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { createSupabaseManagementCapacityProvider } from './supabaseManagementProvider';
 
-const fetchedAt = '2026-08-22T04:30:00.000Z';
+const fetchedAt = '2026-08-29T19:30:00.000Z';
 
 function unavailableEnvelope() {
   return {
@@ -21,18 +21,18 @@ function unavailableEnvelope() {
         scope: 'ORGANIZATION',
         unit: 'count',
         value: null,
-        limit: null,
+        limit: 50_000,
         measuredAt: fetchedAt,
         available: false,
-        note: 'No documented provider billing-cycle usage API.',
+        note: 'Usage unavailable; verified Free-plan organization allowance is configured server-side.',
       },
       {
-        code: 'supabase_egress_bytes',
+        code: 'supabase_edge_function_invocations',
         source: 'SUPABASE_MANAGEMENT',
         scope: 'ORGANIZATION',
-        unit: 'bytes',
+        unit: 'count',
         value: null,
-        limit: null,
+        limit: 500_000,
         measuredAt: fetchedAt,
         available: false,
       },
@@ -41,14 +41,16 @@ function unavailableEnvelope() {
 }
 
 describe('Supabase management capacity provider', () => {
-  it('does not turn provider failure into zero and accepts an organization-scoped fail-closed response', async () => {
+  it('preserves known server-owned limits while unavailable usage remains null', async () => {
     const result = await createSupabaseManagementCapacityProvider(async () => unavailableEnvelope()).read({
-      metricCodes: ['supabase_monthly_active_users', 'supabase_egress_bytes'],
+      metricCodes: ['supabase_monthly_active_users', 'supabase_edge_function_invocations'],
     });
 
     expect(result).toMatchObject({ source: 'SUPABASE_MANAGEMENT', scope: 'ORGANIZATION', fetchedAt });
-    expect(result.metrics).toHaveLength(2);
-    expect(result.metrics.every((metric) => metric.available === false && metric.value === null && metric.limit === null)).toBe(true);
+    expect(result.metrics).toEqual(expect.arrayContaining([
+      expect.objectContaining({ code: 'supabase_monthly_active_users', available: false, value: null, limit: 50_000 }),
+      expect.objectContaining({ code: 'supabase_edge_function_invocations', available: false, value: null, limit: 500_000 }),
+    ]));
   });
 
   it('filters out non-Supabase metric requests instead of querying unrelated sources', async () => {
@@ -79,12 +81,12 @@ describe('Supabase management capacity provider', () => {
     expect(result.metrics[0]).toMatchObject({ available: false, value: null, limit: null });
   });
 
-  it('rejects malformed or wrong-scope provider payloads', async () => {
+  it('rejects malformed limits even when provider usage is unavailable', async () => {
     const bad = unavailableEnvelope();
-    bad.scope = 'PROJECT';
+    bad.metrics[0].limit = -1;
     const result = await createSupabaseManagementCapacityProvider(async () => bad).read({
       metricCodes: ['supabase_monthly_active_users'],
     });
-    expect(result.metrics[0]).toMatchObject({ available: false, value: null });
+    expect(result.metrics[0]).toMatchObject({ available: false, value: null, limit: null });
   });
 });

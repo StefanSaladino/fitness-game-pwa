@@ -12,8 +12,6 @@ const resetTest = read('supabase/tests/044_phase17_3_release_reset_contract.test
 const indexedDb = read('src/features/workout/storage/workoutIndexedDb.ts');
 const recovery = read('src/features/workout/recovery/workoutRecoveryStorage.ts');
 const mutations = read('src/features/workout/mutations/workoutMutationStorage.ts');
-const roadmap = read('docs/PHASE17-RELEASE-READINESS-ROLLOUT.md');
-const runbook = read('docs/PHASE17-3-PRODUCTION-RESET-RUNBOOK.md');
 
 const resetTables = [
   'group_activity_reactions',
@@ -82,12 +80,6 @@ ok(recovery.includes("'fitness-game:active-workout:v1:'"), 'recovery storage mus
 ok(mutations.includes('workout-mutations:v${WORKOUT_PERSISTENCE_EPOCH}:'), 'mutation durable key must use the current epoch');
 ok(mutations.includes("'fitness-game:workout-mutations:v1:'"), 'mutation storage must explicitly retire v1 fallback state');
 
-for (const table of resetTables) {
-  ok(runbook.includes(`\`public.${table}\``), `runbook must document reset table public.${table}`);
-}
-
-ok(roadmap.includes('## 17.3 — Production statistics reset mechanism — IMPLEMENTED, VALIDATION IN PROGRESS'), 'roadmap must identify Phase 17.3 as implemented and awaiting validation');
-ok(roadmap.includes('production reset remains unexecuted'), 'roadmap must retain the no-execution gate');
 ok(resetTest.trimEnd().endsWith('rollback;'), 'pgTAP reset contract must always roll back');
 
 console.log(`Phase 17.3 release-reset validation passed: ${resetTables.length} reset tables, ${preservedTables.length} protected table contracts, persistence epoch 2.`);

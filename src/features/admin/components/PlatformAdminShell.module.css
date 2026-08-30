@@ -12,6 +12,7 @@
 
 .content {
   min-width: 0;
+  container-type: inline-size;
 }
 
 .mobileBar {
@@ -19,7 +20,7 @@
   z-index: 30;
   top: 0;
   display: grid;
-  grid-template-columns: minmax(64px, auto) 1fr minmax(64px, auto);
+  grid-template-columns: minmax(58px, auto) minmax(0, 1fr) minmax(58px, auto);
   align-items: center;
   min-height: var(--shell-header-height);
   border-bottom: 1px solid var(--color-border);
@@ -31,7 +32,8 @@
 .mobileTitle {
   min-width: 0;
   overflow: hidden;
-  font-size: 0.98rem;
+  font-size: 0.96rem;
+  line-height: 1.2;
   text-align: center;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -41,28 +43,35 @@
   position: sticky;
   z-index: 29;
   top: calc(var(--shell-header-height) + env(safe-area-inset-top));
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: var(--space-1);
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
   border-bottom: 1px solid var(--color-border);
-  padding: var(--space-2) var(--app-page-gutter);
-  background: var(--color-bg);
+  padding: 8px var(--app-page-gutter) 9px;
+  background: color-mix(in srgb, var(--color-bg) 98%, transparent);
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.mobileNav::-webkit-scrollbar {
+  display: none;
 }
 
 .mobileNav button {
-  min-width: 0;
+  flex: 1 0 max-content;
+  min-width: 82px;
   min-height: 42px;
-  overflow: hidden;
   border: 1px solid transparent;
   border-radius: var(--radius-md);
-  padding: 0 var(--space-1);
+  padding: 0 12px;
   color: var(--color-text-muted);
   background: transparent;
   cursor: pointer;
   font: inherit;
-  font-size: 0.75rem;
+  font-size: 0.76rem;
   font-weight: 750;
-  text-overflow: ellipsis;
+  line-height: 1.15;
   white-space: nowrap;
 }
 
@@ -104,14 +113,15 @@
   outline-offset: 2px;
 }
 
-@media (max-width: 360px) {
+@media (min-width: 560px) and (max-width: 939px) {
   .mobileNav {
-    gap: 2px;
-    padding-inline: var(--space-2);
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    overflow: visible;
   }
 
   .mobileNav button {
-    font-size: 0.68rem;
+    min-width: 0;
   }
 }
 
@@ -142,6 +152,7 @@
     height: 100dvh;
     min-height: 0;
     overflow-y: auto;
+    overflow-x: clip;
     overscroll-behavior-y: contain;
     scrollbar-gutter: stable;
   }
@@ -165,8 +176,10 @@
   }
 
   .railBrand span {
+    min-width: 0;
     color: var(--color-text-muted);
     font-size: 0.72rem;
+    line-height: 1.3;
   }
 
   .railLabel {
@@ -185,6 +198,7 @@
 
   .railDestination {
     width: 100%;
+    min-width: 0;
     border-color: transparent;
     text-align: left;
     background: transparent;
