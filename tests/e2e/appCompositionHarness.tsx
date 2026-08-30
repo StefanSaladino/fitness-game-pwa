@@ -28,15 +28,7 @@ const capacity: CapacityDashboardSnapshot = {
     source: 'SUPABASE_MANAGEMENT',
     scope: 'ORGANIZATION',
     fetchedAt: measuredAt,
-    metrics: [
-      { code: 'supabase_monthly_active_users', source: 'SUPABASE_MANAGEMENT', scope: 'ORGANIZATION', unit: 'count', value: null, limit: 50_000, measuredAt, available: false, note: 'Verified Free-plan allowance. Billing-cycle usage remains unavailable rather than inferred.' },
-      { code: 'supabase_storage_bytes', source: 'SUPABASE_MANAGEMENT', scope: 'ORGANIZATION', unit: 'bytes', value: null, limit: 1_073_741_824, measuredAt, available: false, note: 'Organization Storage is not reconstructed from the project-local byte measurement.' },
-      { code: 'supabase_egress_bytes', source: 'SUPABASE_MANAGEMENT', scope: 'ORGANIZATION', unit: 'bytes', value: null, limit: 5_368_709_120, measuredAt, available: false },
-      { code: 'supabase_cached_egress_bytes', source: 'SUPABASE_MANAGEMENT', scope: 'ORGANIZATION', unit: 'bytes', value: null, limit: 5_368_709_120, measuredAt, available: false },
-      { code: 'supabase_edge_function_invocations', source: 'SUPABASE_MANAGEMENT', scope: 'ORGANIZATION', unit: 'count', value: null, limit: 500_000, measuredAt, available: false },
-      { code: 'supabase_realtime_messages', source: 'SUPABASE_MANAGEMENT', scope: 'ORGANIZATION', unit: 'count', value: null, limit: 2_000_000, measuredAt, available: false },
-      { code: 'supabase_realtime_peak_connections', source: 'SUPABASE_MANAGEMENT', scope: 'ORGANIZATION', unit: 'count', value: null, limit: 200, measuredAt, available: false },
-    ],
+    metrics: [],
   },
   netlify: {
     source: 'NETLIFY_API',

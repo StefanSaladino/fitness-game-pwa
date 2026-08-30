@@ -1,44 +1,36 @@
-# Phase 17.4 — Supabase Free-plan capacity
+# Phase 17.4 — Measurable Supabase Free capacity
 
-Status: **IMPLEMENTED, LOCAL VALIDATION REQUIRED**
+Status: **CORRECTED, LOCAL VALIDATION REQUIRED**
 
-Official Supabase limits were re-verified on 2026-08-29 before implementation.
+The Capacity dashboard follows one rule:
 
-## Server-owned allowances
+> If Top Set cannot measure a value authoritatively, it is not presented as a telemetry card.
 
-| Metric | Free allowance | Scope |
-| --- | ---: | --- |
-| Database size | 500 MB | Project |
-| Monthly active users | 50,000 | Organization |
-| Storage | 1 GB | Organization |
-| Uncached egress | 5 GB | Organization |
-| Cached egress | 5 GB | Organization |
-| Edge Function invocations | 500,000 | Organization |
-| Realtime messages | 2,000,000 | Organization |
-| Realtime peak connections | 200 | Organization |
+## Dashboard
 
-The values are stored in `private.platform_capacity_allowances`; they are not frontend constants.
+Exactly three live project signals are shown:
 
-The existing project-local Storage measurement remains separate from the organization Storage billing allowance. Supabase bills Storage using average GB-hours over the billing cycle, so an instantaneous project-local byte count is not presented as organization billing utilization.
+- **Database size** — measured with `pg_database_size`, compared with the verified Supabase Free 500 MB per-project quota.
+- **Postgres connections** — live connection count compared with the project's own `max_connections` setting.
+- **Project Storage** — project object bytes from trusted Storage metadata. No utilization percentage is shown because the Free 1 GB Storage allowance is organization-wide.
 
-## Usage policy
+Removed from the dashboard: Storage object count, total Auth users, rolling 30-day sign-ins, provider status, MAU, egress, Edge Function invocations, Realtime messages, Realtime peak connections, and any card whose durable state was only "usage unavailable".
 
-If an authoritative provider billing-cycle numerator is unavailable, Top Set shows:
+## Network behavior
 
-- the verified server-owned allowance,
-- `Unavailable` for current usage,
-- no utilization percentage,
-- no fabricated zero.
+The Capacity page no longer calls Supabase or Netlify provider Edge Functions by default. It loads only the guarded database-local current/history RPCs.
 
-The Supabase provider continues to verify the configured Management organization/entitlements boundary, but does not reconstruct billing usage from local auth, traffic, Storage, or Realtime activity.
+The previously staged Phase 17.4 provider expansion is retracted to the Phase 17.3 baseline and must not be deployed.
 
-## Deployment gate
+## Hosted rollout
 
-Phase 17.4 implementation does not itself deploy the migration or Edge Function. After local validation:
+Phase 17.4 now requires only the corrected database migration that seeds the 500 MB `database_bytes` allowance.
 
-1. apply the reviewed migration to hosted Supabase,
-2. deploy `platform-capacity-supabase`,
-3. run hosted pgTAP,
-4. verify the eight allowance rows,
-5. inspect Security and Performance advisors,
-6. manually verify Platform Overview using an active platform-admin account.
+After local validation:
+1. apply the corrected migration,
+2. verify live database size and connection capacity,
+3. run hosted verification / pgTAP,
+4. inspect Security and Performance advisors,
+5. verify `/platform-admin/capacity` as a platform admin.
+
+No production statistics reset is part of this phase.

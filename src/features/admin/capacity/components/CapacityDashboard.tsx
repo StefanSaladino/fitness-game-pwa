@@ -4,10 +4,26 @@ import { capacityStatusLabel, formatCapacityValue, formatMeasuredAt, formatUtili
 import type { CapacityMetricAssessment, CapacityMetricCode } from '../model';
 import styles from './CapacityDashboard.module.css';
 
-const MEASURED_METRICS: Array<{ code: CapacityMetricCode; label: string }> = [
-  { code: 'database_bytes', label: 'Database size' },
-  { code: 'postgres_connections', label: 'Postgres connections' },
-  { code: 'storage_bytes', label: 'Current project storage' },
+const LIVE_METRICS: Array<{
+  code: CapacityMetricCode;
+  label: string;
+  description: string;
+}> = [
+  {
+    code: 'database_bytes',
+    label: 'Database size',
+    description: 'Measured PostgreSQL database size against the Supabase Free 500 MB per-project allowance.',
+  },
+  {
+    code: 'postgres_connections',
+    label: 'Postgres connections',
+    description: 'Live PostgreSQL connections against this project’s current max_connections setting.',
+  },
+  {
+    code: 'storage_bytes',
+    label: 'Project storage',
+    description: 'Current object bytes in this project. Supabase Free includes 1 GB across the organization, so no project-only utilization percentage is inferred.',
+  },
 ];
 
 interface CapacityDashboardProps {
@@ -18,62 +34,64 @@ interface CapacityDashboardProps {
   onCaptureSnapshot: () => void;
 }
 
-function metricSourceLabel(metric: CapacityMetricAssessment): string {
-  return `Database-local · project scope · measured ${formatMeasuredAt(metric.measuredAt)}`;
-}
-
-function detailLabel(metric: CapacityMetricAssessment): string {
-  if (metric.code === 'storage_bytes') {
-    return 'Free plan includes 1 GB organization Storage; billing uses average GB-hours, so no billing percentage is shown here.';
-  }
-
-  return metric.limit === null
-    ? 'No verified limit available'
-    : `Limit ${formatCapacityValue({ unit: metric.unit, value: metric.limit })}`;
-}
-
-function MetricCard({ metric, label }: { metric: CapacityMetricAssessment; label: string }) {
+function MetricCard({
+  metric,
+  label,
+  description,
+}: {
+  metric: CapacityMetricAssessment;
+  label: string;
+  description: string;
+}) {
   const utilization = formatUtilization(metric);
+  const measuredOnly = metric.limit === null;
 
   return (
     <article className={styles.metricCard} data-capacity-metric={metric.code}>
       <div className={styles.metricCardHeader}>
         <h3>{label}</h3>
-        <span className={styles.statusBadge} data-status={metric.status}>
-          {capacityStatusLabel(metric.status)}
+        <span className={styles.statusBadge} data-status={measuredOnly ? 'MEASURED' : metric.status}>
+          {measuredOnly ? 'Measured' : capacityStatusLabel(metric.status)}
         </span>
       </div>
 
       <div className={styles.metricReading}>
         <strong>{formatCapacityValue(metric)}</strong>
-        <span>{detailLabel(metric)}</span>
+        <span>
+          {metric.limit === null
+            ? 'No project-level utilization calculated'
+            : `Limit ${formatCapacityValue({ unit: metric.unit, value: metric.limit })}`}
+        </span>
       </div>
 
       {utilization && (
         <div className={styles.utilization} aria-label={`${label} utilization ${utilization}`}>
           <div className={styles.track} aria-hidden="true">
-            <span className={styles.fill} style={{ width: `${Math.min(metric.utilizationPercent ?? 0, 100)}%` }} />
+            <span
+              className={styles.fill}
+              style={{ width: `${Math.min(metric.utilizationPercent ?? 0, 100)}%` }}
+            />
           </div>
           <strong>{utilization}</strong>
         </div>
       )}
 
+      <p className={styles.metricDescription}>{description}</p>
       <div className={styles.metricMeta}>
-        <span>{metricSourceLabel(metric)}</span>
+        Database-local · project scope · measured {formatMeasuredAt(metric.measuredAt)}
       </div>
-
-      {metric.note && <p className={styles.metricNote}>{metric.note}</p>}
     </article>
   );
 }
 
 function CapacityHistory({ snapshot }: { snapshot: CapacityDashboardSnapshot }) {
   const history = snapshot.history;
+
   if (history.length === 0) {
     return (
       <div className={styles.historyEmpty}>
         <strong>No snapshots yet</strong>
-        <p>Record a snapshot to establish a database-growth baseline.</p>
+        <p>Record a snapshot to establish a database growth baseline. Growth estimates begin after two comparable snapshots exist.</p>
       </div>
     );
   }
@@ -89,12 +107,16 @@ function CapacityHistory({ snapshot }: { snapshot: CapacityDashboardSnapshot }) 
 
   const currentDatabase = snapshot.current.find((metric) => metric.code === 'database_bytes');
   let growthText = 'No positive database growth signal from the latest comparable snapshots.';
+
   if (currentDatabase) {
     const comparable = latestComparableMeasurements(history, currentDatabase);
     if (comparable.length === 2) {
       const growth = estimateCapacityGrowth(comparable[1], comparable[0]);
       if (growth) {
-        growthText = `Database growth: ${formatCapacityValue({ unit: 'bytes', value: growth.unitsPerDay })} per day.`;
+        growthText = `Database growth: ${formatCapacityValue({
+          unit: 'bytes',
+          value: growth.unitsPerDay,
+        })} per day.`;
       }
     }
   }
@@ -123,8 +145,14 @@ function CapacityHistory({ snapshot }: { snapshot: CapacityDashboardSnapshot }) 
   );
 }
 
-export function CapacityDashboard({ snapshot, error, capturing, onRefresh, onCaptureSnapshot }: CapacityDashboardProps) {
-  const metrics = new Map(snapshot.current.map((metric) => [metric.code, metric] as const));
+export function CapacityDashboard({
+  snapshot,
+  error,
+  capturing,
+  onRefresh,
+  onCaptureSnapshot,
+}: CapacityDashboardProps) {
+  const byCode = new Map(snapshot.current.map((metric) => [metric.code, metric]));
 
   return (
     <main className={styles.main} data-admin-page="capacity">
@@ -132,10 +160,10 @@ export function CapacityDashboard({ snapshot, error, capturing, onRefresh, onCap
         <div className={styles.headerCopy}>
           <p className={styles.eyebrow}>Platform administration</p>
           <h1>Capacity overview</h1>
-          <p>Only measurements Top Set can verify directly are shown. Billing-cycle values that cannot be measured authoritatively are intentionally omitted.</p>
+          <p>Only trustworthy, directly measurable project signals are shown here. Organization billing metrics that cannot be measured authoritatively are intentionally omitted.</p>
           <div className={styles.sourceLine}>
             <strong>Supabase connected</strong>
-            <span>Measured {formatMeasuredAt(snapshot.fetchedAt)}</span>
+            <span>Project telemetry measured {formatMeasuredAt(snapshot.fetchedAt)}</span>
           </div>
         </div>
         <div className={styles.actions}>
@@ -151,15 +179,18 @@ export function CapacityDashboard({ snapshot, error, capturing, onRefresh, onCap
       <section className={styles.section} data-admin-surface="telemetry" aria-labelledby="capacity-current-heading">
         <div className={styles.sectionHeader}>
           <div>
-            <p className={styles.sectionEyebrow}>Measured now</p>
-            <h2 id="capacity-current-heading">Supabase project capacity</h2>
+            <p className={styles.sectionEyebrow}>Live project telemetry</p>
+            <h2 id="capacity-current-heading">Measured capacity</h2>
           </div>
-          <span>Live guarded RPC</span>
+          <span>Guarded database RPC</span>
         </div>
-        <div className={styles.metricGrid} aria-label="Measured Supabase project capacity">
-          {MEASURED_METRICS.map(({ code, label }) => {
-            const metric = metrics.get(code);
-            return metric ? <MetricCard key={code} label={label} metric={metric} /> : null;
+
+        <div className={styles.metricGrid} aria-label="Measured capacity metrics">
+          {LIVE_METRICS.map(({ code, label, description }) => {
+            const metric = byCode.get(code);
+            return metric
+              ? <MetricCard key={code} description={description} label={label} metric={metric} />
+              : null;
           })}
         </div>
       </section>
@@ -175,18 +206,13 @@ export function CapacityDashboard({ snapshot, error, capturing, onRefresh, onCap
         <CapacityHistory snapshot={snapshot} />
       </section>
 
-      <section className={styles.section} data-admin-surface="coverage" aria-labelledby="capacity-coverage-heading">
-        <div className={styles.sectionHeader}>
-          <div>
-            <p className={styles.sectionEyebrow}>Coverage</p>
-            <h2 id="capacity-coverage-heading">Intentionally omitted</h2>
-          </div>
-          <span>Checked in Supabase Usage</span>
-        </div>
-        <p className={styles.sectionIntro}>
-          Monthly Active Users, cached and uncached egress, Edge Function invocations, Realtime messages, and Realtime peak connections are not displayed because Top Set cannot retrieve authoritative current billing-cycle usage for them through a documented provider API.
+      <aside className={styles.quotaNote} aria-label="Supabase organization quotas">
+        <strong>Organization-level quotas</strong>
+        <p>
+          Supabase Free also includes organization-level MAU, egress, Edge Function, Realtime, and Storage allowances.
+          Their authoritative billing-cycle usage is not reconstructed here; review those values in Supabase Usage instead of treating estimates as telemetry.
         </p>
-      </section>
+      </aside>
     </main>
   );
 }

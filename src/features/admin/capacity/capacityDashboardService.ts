@@ -3,8 +3,6 @@ import { getSupabaseClient } from '../../../lib/supabase';
 import { assessCapacityMetric } from './capacityMath';
 import type { CapacityDashboardSnapshot } from './dashboardModel';
 import type { CapacityMetricCode, CapacityMetricMeasurement, CapacityMetricUnit, CapacitySnapshot } from './model';
-import { createDeferredNetlifyCapacityProvider, createNetlifyApiCapacityProvider } from './netlifyApiProvider';
-import type { CapacityTelemetryProvider, CapacityTelemetryResult } from './provider';
 
 const DATABASE_LOCAL_CODES = new Set<CapacityMetricCode>([
   'database_bytes',
@@ -46,7 +44,6 @@ export interface CapacityDashboardService {
 }
 
 interface CapacityDashboardServiceOptions {
-  netlifyProvider?: CapacityTelemetryProvider;
   historyLimit?: number;
 }
 
@@ -67,8 +64,10 @@ function parseLocalMeasurement(row: CurrentMetricRow): CapacityMetricMeasurement
   if (!VALID_UNITS.has(row.unit as CapacityMetricUnit) || !validDate(row.measured_at)) {
     throw new Error('Invalid database-local capacity metric metadata.');
   }
+
   const value = numeric(row.value);
   const limit = numeric(row.limit_value);
+
   if (row.available && (value === null || value < 0)) throw new Error('Invalid database-local capacity value.');
   if (!row.available && value !== null) throw new Error('Unavailable capacity metric must not contain a value.');
   if (limit !== null && limit <= 0) throw new Error('Invalid database-local capacity limit.');
@@ -92,6 +91,7 @@ function parseHistory(rows: HistoryMetricRow[]): CapacitySnapshot[] {
   for (const row of rows) {
     if (row.source !== 'DATABASE_LOCAL' || !DATABASE_LOCAL_CODES.has(row.metric_code as CapacityMetricCode)) continue;
     if (!VALID_UNITS.has(row.unit as CapacityMetricUnit) || !validDate(row.captured_at)) continue;
+
     const value = numeric(row.value);
     const limit = numeric(row.limit_value);
     if (row.available && (value === null || value < 0)) continue;
@@ -114,45 +114,31 @@ function parseHistory(rows: HistoryMetricRow[]): CapacitySnapshot[] {
     groups.set(key, snapshot);
   }
 
-  return [...groups.values()].sort((left, right) => Date.parse(right.capturedAt) - Date.parse(left.capturedAt));
-}
-
-function omittedSupabaseProvider(fetchedAt: string): CapacityTelemetryResult {
-  return {
-    source: 'SUPABASE_MANAGEMENT',
-    scope: 'ORGANIZATION',
-    fetchedAt,
-    metrics: [],
-  };
+  return [...groups.values()].sort(
+    (left, right) => Date.parse(right.capturedAt) - Date.parse(left.capturedAt),
+  );
 }
 
 export function createCapacityDashboardService(
   client: SupabaseClient = getSupabaseClient(),
   options: CapacityDashboardServiceOptions = {},
 ): CapacityDashboardService {
-  const netlifyEnabled = import.meta.env.VITE_NETLIFY_CAPACITY_ENABLED === 'true';
-  const netlifyProvider = options.netlifyProvider ?? (netlifyEnabled
-    ? createNetlifyApiCapacityProvider(async () => {
-        const { data, error } = await client.functions.invoke('platform-capacity-netlify', { body: {} });
-        if (error) throw error;
-        return data;
-      })
-    : createDeferredNetlifyCapacityProvider());
   const historyLimit = options.historyLimit ?? 30;
 
   return {
     async load() {
-      const [currentResult, historyResult, netlify] = await Promise.all([
+      const [currentResult, historyResult] = await Promise.all([
         client.rpc('get_platform_capacity_current'),
         client.rpc('get_platform_capacity_history', { p_snapshot_limit: historyLimit }),
-        netlifyProvider.read(),
       ]);
 
       if (currentResult.error) throw currentResult.error;
       if (historyResult.error) throw historyResult.error;
 
       const currentRows = (currentResult.data ?? []) as CurrentMetricRow[];
-      const current = currentRows.map(parseLocalMeasurement).map((measurement) => assessCapacityMetric(measurement));
+      const current = currentRows
+        .map(parseLocalMeasurement)
+        .map((measurement) => assessCapacityMetric(measurement));
       const history = parseHistory((historyResult.data ?? []) as HistoryMetricRow[]);
       const measuredTimes = current.map((metric) => Date.parse(metric.measuredAt)).filter(Number.isFinite);
       const fetchedAt = measuredTimes.length > 0
@@ -163,8 +149,18 @@ export function createCapacityDashboardService(
         fetchedAt,
         current,
         history,
-        supabase: omittedSupabaseProvider(fetchedAt),
-        netlify,
+        supabase: {
+          source: 'SUPABASE_MANAGEMENT',
+          scope: 'ORGANIZATION',
+          fetchedAt,
+          metrics: [],
+        },
+        netlify: {
+          source: 'NETLIFY_API',
+          scope: 'ACCOUNT',
+          fetchedAt,
+          metrics: [],
+        },
       };
     },
 

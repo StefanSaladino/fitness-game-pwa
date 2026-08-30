@@ -423,3 +423,33 @@
     padding: 16px;
   }
 }
+
+.metricDescription {
+  margin: 0;
+  overflow-wrap: anywhere;
+  color: var(--color-text-muted);
+  font-size: 0.76rem;
+  line-height: 1.45;
+}
+
+.quotaNote {
+  margin-top: clamp(14px, 2vw, 20px);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 14px 16px;
+  background: color-mix(in srgb, var(--color-surface) 76%, transparent);
+}
+
+.quotaNote strong {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 0.84rem;
+}
+
+.quotaNote p {
+  max-width: 82ch;
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: 0.8rem;
+  line-height: 1.5;
+}

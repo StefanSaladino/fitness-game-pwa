@@ -271,11 +271,17 @@ const adminSources = [
 for (const marker of ['data-admin-page="capacity"', 'data-admin-page="users"', 'data-admin-page="moderation"', 'data-admin-page="messages"', 'data-admin-surface=']) {
   requireText(adminSources, marker, 'platform administration page composition');
 }
-for (const marker of ['Supabase connected', 'Supabase project data', 'Setup deferred']) {
-  requireText(adminSources, marker, 'Supabase-backed platform overview');
+const capacitySource = read('src/features/admin/capacity/components/CapacityDashboard.tsx');
+for (const marker of ['Supabase connected', 'Measured capacity', 'Organization-level quotas']) {
+  requireText(capacitySource, marker, 'Supabase-backed measurable capacity overview');
 }
 const capacityService = read('src/features/admin/capacity/capacityDashboardService.ts');
-requireText(capacityService, 'VITE_NETLIFY_CAPACITY_ENABLED', 'deferred Netlify provider boundary');
+if (capacityService.includes('client.functions.invoke')) {
+  fail('Capacity page reintroduced provider Edge Function calls for unavailable billing telemetry');
+}
+if (capacityService.includes('VITE_NETLIFY_CAPACITY_ENABLED')) {
+  fail('Capacity page reintroduced deferred Netlify telemetry before the Netlify capacity phase');
+}
 const adminCss = [
   'src/features/admin/components/PlatformAdminShell.module.css',
   'src/features/admin/capacity/components/CapacityDashboard.module.css',
@@ -286,7 +292,8 @@ const adminCss = [
 for (const retiredColor of ['#071019', '#0c1722', '#08131d', '#52d878', 'rgba(61, 134, 255']) {
   if (adminCss.includes(retiredColor)) fail(`platform administration contains retired navy/green value ${retiredColor}`);
 }
-if (/overflow-x\s*:\s*(auto|scroll)/.test(adminCss)) fail('platform administration reintroduced a horizontal mobile rail');
+const adminShellCss = read('src/features/admin/components/PlatformAdminShell.module.css');
+requireText(adminShellCss, 'overflow-x: clip', 'platform administration horizontal containment');
 
 const stateSurface = read('src/components/feedback/AppStateSurface.tsx');
 for (const marker of ['data-app-state', "tone = 'neutral'", "role?: 'alert' | 'status'"]) {

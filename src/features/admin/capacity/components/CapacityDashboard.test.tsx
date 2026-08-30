@@ -1,9 +1,9 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, within } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import type { CapacityDashboardSnapshot } from '../dashboardModel';
 import { CapacityDashboard } from './CapacityDashboard';
 
-const measuredAt = '2026-08-30T20:30:00.000Z';
+const measuredAt = '2026-08-30T16:30:00.000Z';
 
 const snapshot: CapacityDashboardSnapshot = {
   fetchedAt: measuredAt,
@@ -21,28 +21,36 @@ const snapshot: CapacityDashboardSnapshot = {
 };
 
 describe('CapacityDashboard', () => {
-  it('shows only measurable, useful capacity signals', () => {
+  it('renders only trustworthy measurable capacity signals', () => {
     render(<CapacityDashboard snapshot={snapshot} onRefresh={vi.fn()} onCaptureSnapshot={vi.fn()} />);
 
-    expect(screen.getByRole('heading', { name: 'Capacity overview', level: 1 })).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: 'Supabase project capacity' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Measured capacity' })).toBeInTheDocument();
+    expect(screen.getAllByRole('article')).toHaveLength(3);
 
     expect(screen.getByText('Database size')).toBeInTheDocument();
     expect(screen.getByText('Limit 500 MB')).toBeInTheDocument();
+    expect(screen.getByLabelText(/Database size utilization/i)).toBeInTheDocument();
+
     expect(screen.getByText('Postgres connections')).toBeInTheDocument();
     expect(screen.getByText('Limit 60')).toBeInTheDocument();
-    expect(screen.getByText('Current project storage')).toBeInTheDocument();
-    expect(screen.getByText(/Free plan includes 1 GB organization Storage/)).toBeInTheDocument();
 
-    expect(screen.queryByText('Storage objects')).not.toBeInTheDocument();
-    expect(screen.queryByText('Auth users')).not.toBeInTheDocument();
-    expect(screen.queryByText('Recent sign-ins')).not.toBeInTheDocument();
-    expect(screen.queryByText('Monthly active users')).not.toBeInTheDocument();
-    expect(screen.queryByText('Uncached egress')).not.toBeInTheDocument();
-    expect(screen.queryByText('Edge Function invocations')).not.toBeInTheDocument();
-    expect(screen.queryByText('Realtime messages')).not.toBeInTheDocument();
+    const storageCard = screen.getByText('Project storage').closest('article');
+    expect(storageCard).not.toBeNull();
+    expect(within(storageCard!).getByText('Measured')).toBeInTheDocument();
+    expect(within(storageCard!).queryByLabelText(/utilization/i)).not.toBeInTheDocument();
 
-    expect(screen.getByRole('heading', { name: 'Intentionally omitted' })).toBeInTheDocument();
+    for (const removed of [
+      'Storage objects',
+      'Auth users',
+      'Recent sign-ins',
+      'Monthly active users',
+      'Usage unavailable',
+      'Provider status',
+    ]) {
+      expect(screen.queryByText(removed)).not.toBeInTheDocument();
+    }
+
+    expect(screen.getByText('Organization-level quotas')).toBeInTheDocument();
   });
 
   it('wires refresh and snapshot actions', () => {
