@@ -17,6 +17,7 @@ export const NETLIFY_API_METRIC_CODES = [
 type NetlifyApiMetricCode = typeof NETLIFY_API_METRIC_CODES[number];
 
 export interface NetlifyApiCapability {
+  providerReachable: boolean;
   apiConfigured: boolean;
   accountVerified: boolean;
   siteConfigured: boolean;
@@ -83,6 +84,7 @@ function unavailableResult(codes: NetlifyApiMetricCode[], note: string): Netlify
     fetchedAt,
     metrics: codes.map((code) => unavailableMetric(code, fetchedAt, note)),
     capability: {
+      providerReachable: false,
       apiConfigured: false,
       accountVerified: false,
       siteConfigured: false,
@@ -125,7 +127,7 @@ function parseEnvelope(raw: unknown, codes: NetlifyApiMetricCode[]): NetlifyApiE
     return null;
   }
   if (!Array.isArray(raw.metrics) || !isRecord(raw.capability)) return null;
-  if (raw.capability.billingUsageApi !== 'UNAVAILABLE') return null;
+  if (raw.capability.providerReachable !== true || raw.capability.billingUsageApi !== 'UNAVAILABLE') return null;
 
   const parsed = raw.metrics.map(parseMetric);
   if (parsed.some((metric) => metric === null)) return null;
@@ -142,6 +144,7 @@ function parseEnvelope(raw: unknown, codes: NetlifyApiMetricCode[]): NetlifyApiE
     fetchedAt: raw.fetchedAt,
     metrics: normalized,
     capability: {
+      providerReachable: true,
       apiConfigured: raw.capability.apiConfigured === true,
       accountVerified: raw.capability.accountVerified === true,
       siteConfigured: raw.capability.siteConfigured === true,
@@ -184,7 +187,7 @@ export function createDeferredNetlifyCapacityProvider(): CapacityTelemetryProvid
     async read(request?: CapacityTelemetryRequest): Promise<CapacityTelemetryResult> {
       return unavailableResult(
         requestedCodes(request),
-        'Netlify setup is deferred. Enable the Netlify capacity adapter after the site and provider credentials are configured.',
+        'Netlify setup is deferred. Configure the secured server-side provider before relying on Netlify telemetry.',
       );
     },
   };

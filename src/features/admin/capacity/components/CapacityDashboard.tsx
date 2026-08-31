@@ -1,7 +1,8 @@
 import { estimateCapacityGrowth, latestComparableMeasurements } from '../capacityMath';
 import type { CapacityDashboardSnapshot } from '../dashboardModel';
 import { capacityStatusLabel, formatCapacityValue, formatMeasuredAt, formatUtilization } from '../formatCapacity';
-import type { CapacityMetricAssessment, CapacityMetricCode } from '../model';
+import type { CapacityMetricAssessment, CapacityMetricCode, CapacityMetricMeasurement } from '../model';
+import type { NetlifyApiCapability } from '../netlifyApiProvider';
 import styles from './CapacityDashboard.module.css';
 
 const LIVE_METRICS: Array<{
@@ -23,6 +24,28 @@ const LIVE_METRICS: Array<{
     code: 'storage_bytes',
     label: 'Project storage',
     description: 'Current object bytes in this project. Supabase Free includes 1 GB across the organization, so no project-only utilization percentage is inferred.',
+  },
+];
+
+const NETLIFY_METRICS: Array<{
+  code: CapacityMetricCode;
+  label: string;
+  description: string;
+}> = [
+  {
+    code: 'netlify_bandwidth_bytes',
+    label: 'Bandwidth',
+    description: 'Current billing-period bandwidth is not exposed by a documented Netlify public usage API.',
+  },
+  {
+    code: 'netlify_requests',
+    label: 'Web requests',
+    description: 'Current billing-period web-request usage is not exposed by a documented Netlify public usage API.',
+  },
+  {
+    code: 'netlify_build_usage',
+    label: 'Build / credit usage',
+    description: 'Current billing-period credit usage is not exposed by a documented Netlify public usage API.',
   },
 ];
 
@@ -81,6 +104,45 @@ function MetricCard({
         Database-local · project scope · measured {formatMeasuredAt(metric.measuredAt)}
       </div>
     </article>
+  );
+}
+
+function netlifyConnectionLabel(capability?: NetlifyApiCapability): string {
+  if (!capability?.providerReachable) return 'Provider function unavailable';
+  if (!capability.apiConfigured) return 'Provider secrets not configured';
+  if (!capability.accountVerified) return 'Netlify account verification failed';
+  if (!capability.siteConfigured) return 'Netlify project not configured';
+  if (!capability.siteVerified) return 'Netlify project verification failed';
+  return 'Account and project verified';
+}
+
+function UnavailableNetlifyMetric({
+  metric,
+  label,
+  description,
+  measuredAt,
+}: {
+  metric?: CapacityMetricMeasurement;
+  label: string;
+  description: string;
+  measuredAt: string;
+}) {
+  return (
+    <div className={styles.metricCard} data-netlify-metric={metric?.code ?? label}>
+      <div className={styles.metricCardHeader}>
+        <h3>{label}</h3>
+        <span className={styles.statusBadge} data-status="UNAVAILABLE">Unavailable</span>
+      </div>
+      <div className={styles.metricReading}>
+        <strong>Not exposed</strong>
+        <span>No authoritative billing-period value available</span>
+      </div>
+      <p className={styles.metricDescription}>{description}</p>
+      {metric?.note && <p className={styles.metricNote}>{metric.note}</p>}
+      <div className={styles.metricMeta}>
+        Netlify API · account scope · checked {formatMeasuredAt(metric?.measuredAt ?? measuredAt)}
+      </div>
+    </div>
   );
 }
 
@@ -153,6 +215,8 @@ export function CapacityDashboard({
   onCaptureSnapshot,
 }: CapacityDashboardProps) {
   const byCode = new Map(snapshot.current.map((metric) => [metric.code, metric]));
+  const netlifyByCode = new Map(snapshot.netlify.metrics.map((metric) => [metric.code, metric]));
+  const netlifyCapability = snapshot.netlify.capability;
 
   return (
     <main className={styles.main} data-admin-page="capacity">
@@ -160,7 +224,7 @@ export function CapacityDashboard({
         <div className={styles.headerCopy}>
           <p className={styles.eyebrow}>Platform administration</p>
           <h1>Capacity overview</h1>
-          <p>Only trustworthy, directly measurable project signals are shown here. Organization billing metrics that cannot be measured authoritatively are intentionally omitted.</p>
+          <p>Only trustworthy, directly measurable project signals are shown here. Provider billing metrics that cannot be measured authoritatively remain unavailable rather than estimated.</p>
           <div className={styles.sourceLine}>
             <strong>Supabase connected</strong>
             <span>Project telemetry measured {formatMeasuredAt(snapshot.fetchedAt)}</span>
@@ -195,6 +259,40 @@ export function CapacityDashboard({
         </div>
       </section>
 
+      <section className={styles.section} data-admin-surface="netlify" aria-labelledby="netlify-capacity-heading">
+        <div className={styles.sectionHeader}>
+          <div>
+            <p className={styles.sectionEyebrow}>Hosting provider</p>
+            <h2 id="netlify-capacity-heading">Netlify account telemetry</h2>
+          </div>
+          <span>Admin-only Edge Function</span>
+        </div>
+        <p className={styles.sectionIntro}>
+          Top Set verifies the configured Netlify account and project through a server-side provider. The Netlify access token never enters the browser. Account Usage Insights totals are intentionally not reconstructed from deploy or traffic estimates.
+        </p>
+        <div className={styles.providerGrid}>
+          <div className={styles.providerCard} data-provider="netlify">
+            <div>
+              <h3>Netlify provider connection</h3>
+              <span>Server-side credential boundary</span>
+            </div>
+            <strong>{netlifyConnectionLabel(netlifyCapability)}</strong>
+            <p>Usage totals remain unavailable until Netlify exposes an authoritative public API for current billing-period bandwidth, requests, and credits.</p>
+          </div>
+        </div>
+        <div className={styles.metricGrid} aria-label="Netlify capacity metrics">
+          {NETLIFY_METRICS.map(({ code, label, description }) => (
+            <UnavailableNetlifyMetric
+              key={code}
+              description={description}
+              label={label}
+              measuredAt={snapshot.netlify.fetchedAt}
+              metric={netlifyByCode.get(code)}
+            />
+          ))}
+        </div>
+      </section>
+
       <section className={styles.section} data-admin-surface="history" aria-labelledby="capacity-history-heading">
         <div className={styles.sectionHeader}>
           <div>
@@ -206,11 +304,10 @@ export function CapacityDashboard({
         <CapacityHistory snapshot={snapshot} />
       </section>
 
-      <aside className={styles.quotaNote} aria-label="Supabase organization quotas">
-        <strong>Organization-level quotas</strong>
+      <aside className={styles.quotaNote} aria-label="Provider quota boundaries">
+        <strong>Provider quota boundaries</strong>
         <p>
-          Supabase Free also includes organization-level MAU, egress, Edge Function, Realtime, and Storage allowances.
-          Their authoritative billing-cycle usage is not reconstructed here; review those values in Supabase Usage instead of treating estimates as telemetry.
+          Supabase organization-level MAU, egress, Realtime, and Storage billing-cycle usage and Netlify Account Usage Insights totals are not inferred here. Review each provider’s Usage or Billing surface for authoritative values that are not available through a supported API.
         </p>
       </aside>
     </main>

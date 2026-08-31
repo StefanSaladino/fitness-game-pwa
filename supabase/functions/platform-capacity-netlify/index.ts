@@ -2,7 +2,7 @@ import { createClient } from 'npm:@supabase/supabase-js@2.112.3';
 
 const NETLIFY_API_BASE_URL = 'https://api.netlify.com/api/v1';
 const BILLING_USAGE_NOTE =
-  'Netlify does not currently document a stable public API endpoint for authoritative account Usage & billing totals for bandwidth, web requests, or build/credit usage. Values remain unavailable rather than inferred.';
+  'Netlify documents account and project management through its public REST API, but does not expose Account Usage Insights billing-period totals for bandwidth, web requests, or credit usage. Review Netlify Usage & billing for authoritative current-period totals.';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -76,7 +76,7 @@ async function netlifyGet(path: string, accessToken: string): Promise<unknown | 
       headers: {
         Authorization: `Bearer ${accessToken}`,
         Accept: 'application/json',
-        'User-Agent': 'fitness-game-pwa-capacity/15.2D',
+        'User-Agent': 'top-set-capacity/17.6',
       },
       signal: AbortSignal.timeout(8_000),
     });
@@ -139,6 +139,7 @@ Deno.serve(async (request) => {
     fetchedAt,
     metrics: unavailableMetrics(fetchedAt),
     capability: {
+      providerReachable: true,
       apiConfigured,
       accountVerified,
       siteConfigured,

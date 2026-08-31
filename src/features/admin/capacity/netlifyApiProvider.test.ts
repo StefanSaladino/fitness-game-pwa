@@ -9,6 +9,7 @@ function unavailableEnvelope() {
     scope: 'ACCOUNT',
     fetchedAt,
     capability: {
+      providerReachable: true,
       apiConfigured: true,
       accountVerified: true,
       siteConfigured: true,
@@ -47,7 +48,12 @@ describe('Netlify API capacity provider', () => {
       metricCodes: ['netlify_bandwidth_bytes', 'netlify_requests'],
     });
 
-    expect(result).toMatchObject({ source: 'NETLIFY_API', scope: 'ACCOUNT', fetchedAt });
+    expect(result).toMatchObject({
+      source: 'NETLIFY_API',
+      scope: 'ACCOUNT',
+      fetchedAt,
+      capability: { providerReachable: true, accountVerified: true, siteVerified: true },
+    });
     expect(result.metrics).toHaveLength(2);
     expect(result.metrics.every((metric) => metric.available === false && metric.value === null && metric.limit === null)).toBe(true);
   });
@@ -78,6 +84,7 @@ describe('Netlify API capacity provider', () => {
       throw new Error('network');
     }).read({ metricCodes: ['netlify_requests'] });
 
+    expect(result).toMatchObject({ capability: { providerReachable: false, apiConfigured: false } });
     expect(result.metrics[0]).toMatchObject({ available: false, value: null, limit: null });
   });
 
@@ -87,6 +94,7 @@ describe('Netlify API capacity provider', () => {
     const result = await createNetlifyApiCapacityProvider(async () => bad).read({
       metricCodes: ['netlify_bandwidth_bytes'],
     });
+    expect(result).toMatchObject({ capability: { providerReachable: false } });
     expect(result.metrics[0]).toMatchObject({ available: false, value: null });
   });
 });

@@ -4,7 +4,28 @@ import { createCapacityDashboardService } from './capacityDashboardService';
 
 const measuredAt = '2026-08-30T16:30:00.000Z';
 
-function fakeClient() {
+function netlifyEnvelope() {
+  return {
+    source: 'NETLIFY_API',
+    scope: 'ACCOUNT',
+    fetchedAt: measuredAt,
+    capability: {
+      providerReachable: true,
+      apiConfigured: true,
+      accountVerified: true,
+      siteConfigured: true,
+      siteVerified: true,
+      billingUsageApi: 'UNAVAILABLE',
+    },
+    metrics: [
+      { code: 'netlify_bandwidth_bytes', source: 'NETLIFY_API', scope: 'ACCOUNT', unit: 'bytes', value: null, limit: null, measuredAt, available: false, note: 'Authoritative billing usage API unavailable.' },
+      { code: 'netlify_requests', source: 'NETLIFY_API', scope: 'ACCOUNT', unit: 'count', value: null, limit: null, measuredAt, available: false, note: 'Authoritative billing usage API unavailable.' },
+      { code: 'netlify_build_usage', source: 'NETLIFY_API', scope: 'ACCOUNT', unit: 'credits', value: null, limit: null, measuredAt, available: false, note: 'Authoritative billing usage API unavailable.' },
+    ],
+  };
+}
+
+function fakeClient(options: { providerError?: boolean } = {}) {
   const rpc = vi.fn(async (name: string) => {
     if (name === 'get_platform_capacity_current') {
       return {
@@ -23,18 +44,20 @@ function fakeClient() {
     throw new Error(`Unexpected RPC ${name}`);
   });
 
+  const invoke = vi.fn(async (name: string) => {
+    if (name !== 'platform-capacity-netlify') throw new Error(`Unexpected function ${name}`);
+    if (options.providerError) return { data: null, error: new Error('provider unavailable') };
+    return { data: netlifyEnvelope(), error: null };
+  });
+
   return {
     rpc,
-    functions: {
-      invoke: vi.fn(() => {
-        throw new Error('Provider functions must not be invoked by the Capacity page');
-      }),
-    },
+    functions: { invoke },
   } as unknown as SupabaseClient;
 }
 
 describe('capacity dashboard service', () => {
-  it('loads authoritative database-local telemetry without provider network calls', async () => {
+  it('loads database-local telemetry and the secured Netlify provider together', async () => {
     const client = fakeClient();
     const snapshot = await createCapacityDashboardService(client).load();
 
@@ -47,8 +70,25 @@ describe('capacity dashboard service', () => {
       limit: 60,
     });
     expect(snapshot.supabase.metrics).toEqual([]);
-    expect(snapshot.netlify.metrics).toEqual([]);
-    expect(client.functions.invoke).not.toHaveBeenCalled();
+    expect(snapshot.netlify.metrics).toHaveLength(3);
+    expect(snapshot.netlify.metrics.every((metric) => metric.available === false && metric.value === null)).toBe(true);
+    expect(snapshot.netlify.capability).toMatchObject({
+      providerReachable: true,
+      accountVerified: true,
+      siteVerified: true,
+      billingUsageApi: 'UNAVAILABLE',
+    });
+    expect(client.functions.invoke).toHaveBeenCalledWith('platform-capacity-netlify', { body: {} });
+  });
+
+  it('fails the Netlify provider closed without hiding database-local telemetry', async () => {
+    const client = fakeClient({ providerError: true });
+    const snapshot = await createCapacityDashboardService(client).load();
+
+    expect(snapshot.current).toHaveLength(3);
+    expect(snapshot.netlify.metrics).toHaveLength(3);
+    expect(snapshot.netlify.metrics.every((metric) => metric.available === false && metric.value === null && metric.limit === null)).toBe(true);
+    expect(snapshot.netlify.capability).toMatchObject({ providerReachable: false, apiConfigured: false });
   });
 
   it('captures database-local snapshots through the guarded RPC', async () => {
