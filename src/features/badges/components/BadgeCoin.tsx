@@ -1,4 +1,4 @@
-import { useRef, useState, type CSSProperties, type KeyboardEvent, type PointerEvent } from 'react';
+import { useRef, useState, type CSSProperties, type PointerEvent } from 'react';
 import badgeEmblem from '../assets/top-set-badge-emblem.svg';
 import type { BadgePresentationDefinition } from '../badgeCatalog';
 import styles from './BadgeCoin.module.css';
@@ -79,12 +79,6 @@ export function BadgeCoin({ definition, earnedAt = null, size = 'md' }: BadgeCoi
     pointerId.current = null;
   };
 
-  const onKeyDown = (event: KeyboardEvent<HTMLButtonElement>) => {
-    if (event.key !== 'Enter' && event.key !== ' ') return;
-    event.preventDefault();
-    rotateHalfTurn();
-  };
-
   return (
     <button
       aria-label={`${definition.title} badge, ${earned ? 'earned' : 'locked'}. Rotate badge.`}
@@ -98,7 +92,6 @@ export function BadgeCoin({ definition, earnedAt = null, size = 'md' }: BadgeCoi
         if (suppressClick.current) return;
         rotateHalfTurn();
       }}
-      onKeyDown={onKeyDown}
       onPointerCancel={(event) => {
         if (pointerId.current === event.pointerId) setRotation((current) => snapRotation(current));
         pointerId.current = null;

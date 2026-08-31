@@ -38,6 +38,7 @@ export default defineConfig({
           indexeddb: resolve(process.cwd(), 'indexeddb.e2e.html'),
           progress: resolve(process.cwd(), 'progress.e2e.html'),
           cardio: resolve(process.cwd(), 'cardio.e2e.html'),
+          badges: resolve(process.cwd(), 'badges.e2e.html'),
           appComposition: resolve(process.cwd(), 'app-composition.e2e.html'),
           userAdministration: resolve(process.cwd(), 'user-administration.e2e.html'),
         },

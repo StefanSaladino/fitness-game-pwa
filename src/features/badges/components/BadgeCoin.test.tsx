@@ -1,4 +1,5 @@
 import { fireEvent, render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
 import { badgePresentationDefinition } from '../badgeCatalog';
 import { BadgeCoin } from './BadgeCoin';
@@ -14,15 +15,26 @@ describe('BadgeCoin', () => {
     expect(screen.getAllByText(/Improved a personal record for the first time/i).length).toBeGreaterThan(0);
   });
 
-  it('rotates a half turn on click and keyboard activation', () => {
+  it('rotates a half turn on pointer click', () => {
     render(<BadgeCoin definition={firstPr} />);
     const badge = screen.getByRole('button', { name: /First PR badge/i });
 
     fireEvent.click(badge);
     expect(badge).toHaveAttribute('data-rotation', '180');
     expect(badge).toHaveAttribute('aria-pressed', 'true');
+  });
 
-    fireEvent.keyDown(badge, { key: 'Enter' });
+  it('uses native button keyboard activation for Enter and Space without double rotation', async () => {
+    const user = userEvent.setup();
+    render(<BadgeCoin definition={firstPr} />);
+    const badge = screen.getByRole('button', { name: /First PR badge/i });
+
+    badge.focus();
+    await user.keyboard('{Enter}');
+    expect(badge).toHaveAttribute('data-rotation', '180');
+    expect(badge).toHaveAttribute('aria-pressed', 'true');
+
+    await user.keyboard(' ');
     expect(badge).toHaveAttribute('data-rotation', '360');
     expect(badge).toHaveAttribute('aria-pressed', 'false');
   });
