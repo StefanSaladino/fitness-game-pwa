@@ -1,92 +1,64 @@
 # Environment Variables and Secret Handling
 
-This document is the source of truth for environment configuration in the Fitness Game PWA.
+This document is the source of truth for browser environment configuration in Top Set.
 
-## 1. What the React PWA needs
+## 1. Browser environment
 
-The browser application needs three core environment variables and one optional public feature switch:
+The React PWA requires two browser-safe Supabase values:
 
 ```env
 VITE_SUPABASE_URL=https://YOUR_PROJECT_REF.supabase.co
 VITE_SUPABASE_PUBLISHABLE_KEY=sb_publishable_REPLACE_ME
-VITE_APP_URL=http://localhost:5173
-VITE_NETLIFY_CAPACITY_ENABLED=false
 ```
+
+The app also supports one optional public-origin override:
+
+```env
+VITE_APP_URL=http://localhost:5173
+```
+
+Anything prefixed with `VITE_` is compiled for browser use and must be treated as public.
 
 ### `VITE_SUPABASE_URL`
 
-Use the project's Supabase API URL. In the hosted Supabase Dashboard, copy the **Project URL** from the project's Connect panel or API settings.
-
-Example shape:
-
-```text
-https://abcdefghijklmnop.supabase.co
-```
+Use the hosted project's Supabase API URL.
 
 ### `VITE_SUPABASE_PUBLISHABLE_KEY`
 
-Use the project's **Publishable key** (`sb_publishable_...`). This is the browser/client key used by `@supabase/supabase-js` together with Row Level Security.
-
-If an older Supabase project exposes only legacy keys, the legacy `anon` key is browser-safe with RLS, but this project is intentionally named/configured for Supabase's newer publishable key and should use it when available.
+Use the project's browser-safe Publishable key (`sb_publishable_...`). RLS remains the security boundary.
 
 ### `VITE_APP_URL`
 
-This is the public origin of the PWA and is used to construct authentication redirect URLs.
+`VITE_APP_URL` is optional. It controls the origin used to construct confirmation and password-reset redirects.
 
-Local development:
+Local development can set it explicitly:
 
 ```env
 VITE_APP_URL=http://localhost:5173
 ```
 
-Later staging example:
+For Netlify Deploy Previews and temporary branch deploys, **omit `VITE_APP_URL`**. `src/lib/supabase.ts` then uses `window.location.origin`, so the generated auth redirect follows the exact preview origin.
 
-```env
-VITE_APP_URL=https://staging.example.com
-```
+For the final production site, either:
 
-Later production example:
+1. leave it unset and use the browser's current production origin; or
+2. set it to the exact canonical production origin once that origin is final.
 
-```env
-VITE_APP_URL=https://example.com
-```
+Do not include `/reset-password`; the application adds that route.
 
-Do not include a trailing path such as `/reset-password`; the app adds that route when required.
+## 2. Local environment
 
-### `VITE_NETLIFY_CAPACITY_ENABLED`
-
-Leave this `false` until the server-side Netlify capacity Edge Function and its server-only provider credentials are configured. When deliberately enabled, the browser may invoke that authenticated server boundary; the value itself is only a public boolean and must never contain a Netlify access token.
-
-## 2. Create your local environment file
-
-From the project root:
-
-### macOS / Linux / Git Bash
-
-```bash
-cp .env.example .env.local
-```
-
-### Windows PowerShell
+PowerShell:
 
 ```powershell
 Copy-Item .env.example .env.local
 ```
 
-Then open `.env.local` and replace the placeholders with your hosted Supabase values:
+Then replace the placeholders with the hosted Supabase URL and publishable key. Restart Vite after changing an environment variable.
 
-```env
-VITE_SUPABASE_URL=https://YOUR_PROJECT_REF.supabase.co
-VITE_SUPABASE_PUBLISHABLE_KEY=sb_publishable_YOUR_REAL_KEY
-VITE_APP_URL=http://localhost:5173
-VITE_NETLIFY_CAPACITY_ENABLED=false
-```
+## 3. Values that must never enter the browser environment
 
-Restart `npm run dev` whenever you change Vite environment variables.
-
-## 3. Values that must NEVER go in the React environment
-
-Do not put any privileged database/server credential in `.env.local` or any other Vite file, including:
+Never put privileged credentials in `.env.local`, `netlify.toml`, a `VITE_*` variable, or client source code:
 
 ```text
 SUPABASE_SECRET_KEY
@@ -96,92 +68,74 @@ sb_secret_... keys
 DATABASE_URL
 Postgres passwords
 JWT signing private keys
+NETLIFY_AUTH_TOKEN
 ```
 
-Anything prefixed with `VITE_` is intended to be available to browser code. Treat every `VITE_*` value as public.
-
-If we later add server-only infrastructure (for example a trusted server or CI migration job), its secrets must be stored in that platform's secret manager or a separately ignored server environment file, never in the React bundle.
+Server-only credentials belong only in the relevant provider's secret store and only when a server-side feature actually requires them.
 
 ## 4. Git protection
 
-The repository `.gitignore` ignores:
+The repository ignores `.env`, `.env.*`, Supabase generated state, and `.netlify/`. Only sanitized `*.example` environment templates may be committed.
 
-```text
-.env
-.env.*
-```
+Before committing:
 
-and explicitly re-allows only sanitized templates:
-
-```text
-!.env.example
-!.env.*.example
-```
-
-It also ignores common private key formats and Supabase local secret/temp files.
-
-Before committing, verify:
-
-```bash
-git status
-```
-
-Your `.env.local` must **not** appear as an untracked or staged file.
-
-A second useful check:
-
-```bash
+```powershell
+git status --short
 git check-ignore -v .env.local
 ```
 
-It should report that `.gitignore` is ignoring the file.
+`.env.local` must be ignored.
 
-## 5. Supabase Auth URL configuration
+## 5. Netlify build environment
 
-When the PWA runs locally, configure the hosted Supabase project:
+Phase 17.5 keeps `netlify.toml` free of application values and secrets.
 
-**Authentication -> URL Configuration**
-
-Site URL:
-
-```text
-http://localhost:5173
-```
-
-Allowed redirect URL:
-
-```text
-http://localhost:5173/reset-password
-```
-
-Add staging and production origins/redirects when those environments exist.
-
-The application's forgot-password flow uses `VITE_APP_URL` to construct the reset redirect.
-
-## 6. Deployment environments
-
-Do not create or commit a real `.env.production` file just to deploy the app.
-
-When we deploy to a host, add these values through the hosting provider's environment-variable UI:
+When the first Netlify project is created, configure these through Netlify's environment-variable UI for the deploy contexts that need the app:
 
 ```text
 VITE_SUPABASE_URL
 VITE_SUPABASE_PUBLISHABLE_KEY
-VITE_APP_URL
-VITE_NETLIFY_CAPACITY_ENABLED
 ```
 
-The production build will receive them from the deployment environment. Keep the Netlify switch `false` or omit it until that server adapter is intentionally configured.
+For the first Deploy Preview, do **not** set `VITE_APP_URL`. This lets the preview use its exact `window.location.origin`.
 
-## 7. If a secret is accidentally committed
+Do not add the retired `VITE_NETLIFY_CAPACITY_ENABLED` flag. Netlify capacity work belongs to Phase 17.6 and must use a server-side provider boundary if implemented.
 
-Adding it to `.gitignore` afterward does not make the leaked value safe.
+## 6. Supabase Auth URL configuration for Netlify
 
-Immediately:
+The app sends:
 
-1. Revoke/rotate the exposed credential in Supabase.
-2. Remove it from the working tree and future commits.
-3. If necessary, clean it from repository history before sharing/publishing the repository.
-4. Reissue the application with the replacement credential.
+- signup/email-confirmation redirects to the app root;
+- password resets to `/reset-password`.
 
-For a leaked Supabase secret/service-role key, treat it as compromised because it can bypass normal Row Level Security protections.
+Before testing a Netlify preview, add the specific Netlify preview pattern to **Authentication -> URL Configuration -> Redirect URLs**.
+
+Supabase supports wildcard redirect patterns for Netlify previews. Once the Netlify site slug exists, add only the pattern needed for that site, for example:
+
+```text
+https://**--YOUR_SITE_SLUG.netlify.app/**
+```
+
+Keep local development explicitly allowlisted as needed:
+
+```text
+http://localhost:5173/**
+```
+
+Do not change Supabase **Site URL** to a temporary preview. When the final production origin is chosen, set Site URL to that exact production origin and add exact production redirects, including `/reset-password`.
+
+## 7. First production promotion
+
+After the Deploy Preview is approved:
+
+1. confirm the production branch in Netlify is `master`;
+2. confirm `npm run build` and `dist` are read from `netlify.toml`;
+3. set the required public Supabase values for production;
+4. choose the final Netlify/custom production origin;
+5. configure Supabase Site URL and exact production redirect URLs;
+6. deploy the exact approved release commit;
+7. run the Phase 17.7 deployed-auth/PWA/direct-route/security checks before the Phase 17.8 reset and launch.
+
+## 8. If a secret is exposed
+
+Revoke/rotate it immediately. `.gitignore` does not make a previously committed secret safe.

@@ -6,6 +6,9 @@ playwright-report/
 test-results/
 .internal-build/
 
+# Netlify local CLI state
+.netlify/
+
 # Environment files and local secrets
 # Commit only sanitized *.example templates.
 .env
