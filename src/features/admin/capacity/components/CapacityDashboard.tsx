@@ -307,7 +307,7 @@ export function CapacityDashboard({
       <aside className={styles.quotaNote} aria-label="Provider quota boundaries">
         <strong>Provider quota boundaries</strong>
         <p>
-          Supabase organization-level MAU, egress, Realtime, and Storage billing-cycle usage and Netlify Account Usage Insights totals are not inferred here. Review each provider’s Usage or Billing surface for authoritative values that are not available through a supported API.
+          Organization-level quotas and billing-cycle meters are not inferred here. Supabase MAU, egress, Realtime, and Storage usage and Netlify Account Usage Insights totals must be reviewed in each provider’s authoritative Usage or Billing surface when a supported API is unavailable.
         </p>
       </aside>
     </main>

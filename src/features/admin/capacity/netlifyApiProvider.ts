@@ -1,3 +1,4 @@
+import type { SupabaseClient } from '@supabase/supabase-js';
 import type {
   CapacityMetricCode,
   CapacityMetricMeasurement,
@@ -179,6 +180,14 @@ export function createNetlifyApiCapacityProvider(
       }
     },
   };
+}
+
+export function createSupabaseNetlifyCapacityProvider(client: SupabaseClient): CapacityTelemetryProvider {
+  return createNetlifyApiCapacityProvider(async () => {
+    const { data, error } = await client.functions.invoke('platform-capacity-netlify', { body: {} });
+    if (error) throw error;
+    return data;
+  });
 }
 
 export function createDeferredNetlifyCapacityProvider(): CapacityTelemetryProvider {

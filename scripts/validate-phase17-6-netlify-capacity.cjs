@@ -25,9 +25,10 @@ const config = read('supabase/config.toml');
 const netlify = read('netlify.toml');
 const browserSource = readTree('src');
 
-ok(service.includes("client.functions.invoke('platform-capacity-netlify'"), 'Capacity service must invoke the secured Netlify Edge Function');
-ok(service.includes('createNetlifyApiCapacityProvider'), 'Capacity service must normalize Netlify responses through the provider parser');
+ok(service.includes('createSupabaseNetlifyCapacityProvider'), 'Capacity service must depend on the secured Netlify provider adapter');
+ok(!service.includes('client.functions.invoke'), 'Capacity service must not own raw provider-function transport');
 ok(!service.includes('VITE_NETLIFY_CAPACITY_ENABLED'), 'retired browser feature switch must stay removed');
+ok(provider.includes("client.functions.invoke('platform-capacity-netlify'"), 'Netlify provider adapter must invoke the secured Edge Function');
 
 ok(provider.includes('providerReachable'), 'provider envelope must distinguish function reachability from provider configuration');
 ok(provider.includes("billingUsageApi: 'UNAVAILABLE'"), 'provider must record the unsupported authoritative billing-usage API');
