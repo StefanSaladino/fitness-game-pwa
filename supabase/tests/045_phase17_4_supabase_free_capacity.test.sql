@@ -9,10 +9,11 @@ select is(
   'database size allowance is 500 MB per project'
 );
 
-select like(
-  (select note from private.platform_capacity_allowances
-   where source = 'DATABASE_LOCAL' and metric_code = 'database_bytes'),
-  '%Verified 2026-08-30%',
+select ok(
+  position('Verified 2026-08-30' in (
+    select note from private.platform_capacity_allowances
+    where source = 'DATABASE_LOCAL' and metric_code = 'database_bytes'
+  )) > 0,
   'database allowance records its verification date'
 );
 
