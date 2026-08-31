@@ -2,7 +2,8 @@ import type { ReactNode } from 'react';
 import plateBanner from '../../../assets/fitness/top-set-plate-banner.jpg';
 import { AppShell, DestinationBanner, type AppSection } from '../../../components/layout';
 import { Button } from '../../../components/ui';
-import { liftingBadgeDefinition } from '../../consistency';
+import { navigateToPath } from '../../../lib/appNavigation';
+import { BadgeCoin, badgePresentationDefinition } from '../../badges';
 import type { GroupSummary } from '../../groups';
 import type { OnboardingProfile } from '../../onboarding';
 import { ProfilePicture } from '../../profile-picture';
@@ -234,21 +235,28 @@ export function DashboardScreen({ profile, group, groupNotice, snapshot, onNavig
             </dl>
 
             <div className={styles.badgeHeading}>
-              <strong>Earned badges</strong>
-              <span>{snapshot.consistency.badges.length}</span>
+              <div className={styles.badgeHeadingCopy}>
+                <strong>Earned badges</strong>
+                <span>{snapshot.consistency.badges.length} collected</span>
+              </div>
+              <Button onClick={() => navigateToPath('/badges')} variant="ghost">View badge gallery</Button>
             </div>
             {earnedBadges.length === 0 ? (
-              <p className={styles.empty}>Complete lift days, weekly goals, and personal records to earn recognition badges.</p>
+              <div className={styles.badgeEmpty}>
+                <p className={styles.empty}>Complete lift days, weekly goals, and personal records to earn recognition badges.</p>
+                <Button onClick={() => navigateToPath('/badges')} variant="secondary">Explore locked badges</Button>
+              </div>
             ) : (
-              <ul className={styles.badgeList}>
+              <ul className={styles.badgePreview}>
                 {earnedBadges.map((badge) => {
-                  const definition = liftingBadgeDefinition(badge.badgeKey);
+                  const definition = badgePresentationDefinition(badge.badgeKey);
                   return (
                     <li key={badge.badgeKey}>
-                      <span className={styles.badgeCategory}>EARNED · {definition.category}</span>
-                      <strong>{definition.title}</strong>
-                      <p>{definition.description}</p>
-                      <time dateTime={badge.earnedAt}>Earned {formatTimestamp(badge.earnedAt)}</time>
+                      <BadgeCoin definition={definition} earnedAt={badge.earnedAt} size="sm" />
+                      <div className={styles.badgePreviewMeta}>
+                        <span>{definition.category}</span>
+                        <time dateTime={badge.earnedAt}>Earned {formatTimestamp(badge.earnedAt)}</time>
+                      </div>
                     </li>
                   );
                 })}

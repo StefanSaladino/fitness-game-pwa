@@ -253,6 +253,16 @@
   margin-top: var(--space-5);
 }
 
+.badgeHeading > button {
+  flex: 0 0 auto;
+}
+
+.badgeHeadingCopy {
+  display: grid;
+  min-width: 0;
+  gap: 2px;
+}
+
 .badgeHeading strong,
 .badgeList strong,
 .soloRank strong { color: var(--color-text); }
@@ -270,6 +280,57 @@
 
 .badgeCategory { color: var(--color-green); font-size: 0.64rem; font-weight: 760; letter-spacing: 0.08em; }
 .badgeList p { margin: 0; line-height: 1.4; }
+
+.badgePreview {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-4);
+  margin: var(--space-5) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.badgePreview li {
+  display: grid;
+  min-width: 0;
+  justify-items: center;
+  gap: 10px;
+  padding: var(--space-3);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: var(--radius-md);
+  background: rgba(255, 255, 255, 0.018);
+}
+
+.badgePreviewMeta {
+  display: grid;
+  max-width: 100%;
+  justify-items: center;
+  gap: 3px;
+  color: var(--color-text-muted);
+  font-size: 0.68rem;
+  text-align: center;
+}
+
+.badgePreviewMeta span {
+  color: var(--color-green);
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+}
+
+.badgePreviewMeta time {
+  white-space: nowrap;
+}
+
+.badgeEmpty {
+  display: grid;
+  justify-items: start;
+  gap: var(--space-3);
+}
+
+.badgeEmpty .empty {
+  margin-bottom: 0;
+}
 
 .leaderboardRows li {
   display: grid;
@@ -333,6 +394,22 @@
   .trainingColumns,
   .lowerGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .badgeList { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 519px) {
+  .badgeHeading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .badgePreview {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-2);
+  }
+
+  .badgePreview li {
+    padding-inline: var(--space-2);
+  }
 }
 
 @media (max-width: 379px) {
