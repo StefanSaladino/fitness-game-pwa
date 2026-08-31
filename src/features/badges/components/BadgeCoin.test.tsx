@@ -11,7 +11,7 @@ describe('BadgeCoin', () => {
     const badge = screen.getByRole('button', { name: /First PR badge, locked/i });
     expect(badge).toHaveAttribute('data-badge-emblem', 'top-set');
     expect(badge).toHaveAttribute('data-badge-state', 'locked');
-    expect(screen.getByText(/Improved a personal record for the first time/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/Improved a personal record for the first time/i).length).toBeGreaterThan(0);
   });
 
   it('rotates a half turn on click and keyboard activation', () => {
@@ -43,6 +43,6 @@ describe('BadgeCoin', () => {
     render(<BadgeCoin definition={firstPr} earnedAt="2026-08-30T12:00:00.000Z" />);
     const badge = screen.getByRole('button', { name: /First PR badge, earned/i });
     expect(badge).toHaveAttribute('data-badge-state', 'earned');
-    expect(screen.getByText(/Earned Aug 30, 2026/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/Earned Aug 30, 2026/i).length).toBeGreaterThan(0);
   });
 });

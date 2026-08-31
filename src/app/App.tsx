@@ -30,6 +30,11 @@ const SettingsScreen = lazy(async () => {
   return { default: module.SettingsScreen };
 });
 
+const BadgeGalleryRoute = lazy(async () => {
+  const module = await import('../features/badges/components/BadgeGalleryRoute');
+  return { default: module.BadgeGalleryRoute };
+});
+
 function RouteLoading() {
   return <TopSetLoadingScreen />;
 }
@@ -70,6 +75,17 @@ function ProfileGate({ userId, userEmail, memberSince, pathname }: { userId: str
         onSubmit={onboarding.complete}
         profile={onboarding.profile}
       />
+    );
+  }
+
+  if (pathname === '/badges') {
+    return (
+      <>
+        <Suspense fallback={<RouteLoading />}>
+          <BadgeGalleryRoute profile={onboarding.profile} />
+        </Suspense>
+        <UserMessageCenter />
+      </>
     );
   }
 
