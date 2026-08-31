@@ -18,12 +18,11 @@
     "test:e2e": "playwright test",
     "test:internal": "node scripts/internal-test.cjs",
     "supabase:init": "supabase init",
-    "db:test:ci": "node scripts/validate-db-ci.cjs && node scripts/validate-phase15-6b.cjs && node scripts/validate-phase15-6c.cjs && node scripts/validate-phase15-8-db.cjs && node scripts/validate-phase17-4-supabase-capacity.cjs && node scripts/validate-phase17-scoring-scale-hardening.cjs",
-    "db:test:local": "node scripts/run-canonical-db-tests.cjs",
+    "db:test:ci": "node scripts/validate-db-ci.cjs && node scripts/validate-phase15-6b.cjs && node scripts/validate-phase15-6c.cjs && node scripts/validate-phase15-8.cjs && node scripts/validate-phase17-4-supabase-capacity.cjs && node scripts/validate-phase17-scoring-scale-hardening.cjs",
     "validate": "npm run typecheck && npm test && npm run build",
     "test:structure": "node scripts/validate-test-hygiene.cjs && node scripts/validate-structure-current.cjs && node scripts/validate-phase16-app-composition.cjs && node scripts/validate-phase17-3-release-reset.cjs && node scripts/validate-phase17-admin-ui.cjs",
     "test:e2e:visual": "playwright test --config playwright.visual.config.ts",
-    "test:e2e:admin-layout": "playwright test tests/e2e/admin-critical-layout.spec.ts --workers=1"
+    "test:e2e:admin-layout": "playwright test --config playwright.admin.config.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.112.3",

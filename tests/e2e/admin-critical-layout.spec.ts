@@ -195,7 +195,7 @@ for (const viewport of viewports) {
       page.getByRole('heading', { name: 'Capacity overview', level: 1 }),
     ).toBeVisible();
     await expect(
-      page.getByRole('heading', { name: 'Supabase Free-plan allowances' }),
+      page.getByRole('heading', { name: 'Measured capacity' }),
     ).toBeVisible();
 
     await assertReadable(

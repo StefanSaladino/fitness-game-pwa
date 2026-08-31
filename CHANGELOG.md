@@ -1,5 +1,15 @@
 # Changelog
 
+## Unreleased — Phase 17 test infrastructure cleanup
+
+- Removed the unsupported Docker/local-Supabase test runner and its package alias.
+- Retired unreachable legacy/no-op structural validators and the historical hosted-test sentinel.
+- Separated the normal behavioral Playwright suite from the dedicated visual matrix and 44-case Chromium admin geometry suite.
+- Kept canonical pgTAP discovery, transaction/plan/rollback structure, and security-critical migration/service boundaries in the repository database gate.
+- Stopped JavaScript validators from duplicating exact pgTAP plan counts and assertion prose; hosted rollback-safe SQL execution remains authoritative for database behavior.
+- Aligned CI and Supabase documentation with the supported hosted-only database workflow and current full local acceptance gate.
+- Added no product, scoring, authorization, persistence, migration, Edge Function, or hosted-environment change.
+
 ## Unreleased — Phase 15.9 recipient inbox deletion + member-only group chat
 
 - Added recipient-only deletion for received platform messages without rewriting shared message content, other deliveries, revision history, or administrator audit.

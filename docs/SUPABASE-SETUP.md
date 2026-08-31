@@ -121,8 +121,6 @@ Every canonical suite must:
 - prove the relevant RLS/RPC/security invariants;
 - finish with `ROLLBACK`.
 
-The historical `_all-hosted-tests.sql` file is a compatibility sentinel, not a canonical suite and not a concatenation target.
-
 ## 8. Type generation
 
 When the hosted public schema changes, regenerate `src/types/database.generated.ts` from the linked hosted project rather than a local schema.

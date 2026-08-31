@@ -41,7 +41,7 @@ test('legal and platform operations retain their hierarchy at 320px', async ({ p
   await page.goto('/app-composition.e2e.html?surface=admin');
   await expect(page.locator('[data-admin-composition]')).toBeVisible();
   await expect(page.locator('[data-admin-surface="telemetry"]')).toBeVisible();
-  await expect(page.getByRole('heading', { name: 'Platform overview', level: 1 })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Capacity overview', level: 1 })).toBeVisible();
   await expect(page.getByText('Supabase connected')).toBeVisible();
   await expectNoHorizontalOverflow(page);
 });

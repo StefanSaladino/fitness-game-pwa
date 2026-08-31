@@ -4,7 +4,6 @@ This repository uses **hosted Supabase as the authoritative runtime database env
 
 - `migrations/`: authoritative versioned schema changes.
 - `tests/*.test.sql`: canonical rollback-safe pgTAP database/RLS suites.
-- `_all-hosted-tests.sql`: historical compatibility sentinel only; it is not part of canonical `*.test.sql` discovery.
 - `seed.sql`: historical/reproducibility artifact retained with the migration history; the current hosted-first workflow does not reset a local database from it.
 - `config.toml`: non-secret Supabase project configuration retained for repository compatibility; it does not imply a local Docker stack.
 - `functions/`: Edge Functions used when a trusted server-side boundary is required.
@@ -43,17 +42,11 @@ Hosted runtime execution and repository structural validation are intentionally 
 
 ## GitHub Actions
 
-GitHub Actions runs application, browser, and repository database-contract jobs. The database job runs:
+GitHub Actions is intentionally limited to the production build-sanity check.
+The broader application, browser, structural, and repository database-contract
+gates remain required local release checks; runtime migration and pgTAP proof
+remain hosted-Supabase operations. See `docs/CI-VALIDATION.md` for the complete
+contract.
 
-```text
-npm ci
-npm run db:test:ci
-```
-
-It must not depend on Docker, `supabase start`, local database resets, or local pgTAP execution. See `docs/CI-VALIDATION.md` for the complete contract.
-
-## Legacy local-runner artifacts
-
-`scripts/run-canonical-db-tests.cjs` and the `db:test:local` package alias are retained only for historical structural compatibility. They are not part of the supported developer or CI workflow and must not be invoked by GitHub Actions.
-
-Do not reintroduce a Docker/local-Supabase dependency merely because those legacy artifacts remain in repository history.
+Do not reintroduce a Docker or local-Supabase dependency into the supported
+developer or release workflow.

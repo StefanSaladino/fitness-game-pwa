@@ -1138,7 +1138,7 @@ Create imagery **only when an approved page has a real communication need**. Do 
 
 Exit criterion: the application presents a coherent, polished, mobile-native visual experience page by page, with deliberate desktop adaptations and only purposeful approved imagery.
 
-## Phase 17 — Public/broader release hardening — LATER
+## Phase 17 — Public/broader release hardening — IN PROGRESS
 
 Phase 15 platform administration/moderation and the Phase 16 visual-overhaul integration gate should be complete before a broader public launch.
 

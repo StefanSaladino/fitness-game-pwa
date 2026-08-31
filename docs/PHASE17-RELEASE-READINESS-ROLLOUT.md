@@ -58,6 +58,15 @@ This is the only product-rule exception to the Phase 17 feature freeze.
 
 Exit gate: group competition exposes no All-Time mode, the global Top 10/current-user rank is authoritative and deterministic, no chat/social affordance exists on the global board, and targeted release gates pass.
 
+## 17.2D — Scoring scale hardening — IMPLEMENTED LOCALLY, HOSTED VALIDATION PENDING
+
+- Reconcile only the affected scoring-date suffix after historical workout edits while preserving full authoritative rebuild parity.
+- Bound client mutation replay to 30 days and completed server receipt retention to 90 days without purging active-workout receipts.
+- Keep the full authoritative reconciler unchanged as the correctness oracle.
+- Apply only `20260830210000_phase17_scoring_scale_hardening.sql` after a hosted rollback dry run proves canonical suite 046 and all changes disappear on rollback.
+
+Exit gate: rollback and installed-migration pgTAP parity both pass on hosted Supabase, cron/function/permission state is verified, and advisors are reviewed.
+
 ## 17.3 — Production statistics reset mechanism — IMPLEMENTED, VALIDATION IN PROGRESS
 
 Build and test a release-only, explicitly destructive reset procedure. Do **not** execute it during implementation.
@@ -75,17 +84,15 @@ Current implementation:
 
 Exit gate: targeted unit/E2E/structural/database gates pass, rollback-safe tests prove the reset scope and preservation contract, persistence epoch 2 ignores pre-release durable state, and production reset remains unexecuted.
 
-## 17.4 — Supabase Free-plan capacity implementation — NOT STARTED
+## 17.4 — Measurable Supabase capacity — IMPLEMENTED LOCALLY, HOSTED VALIDATION PENDING
 
-- Verify current Free-plan quotas from official Supabase documentation immediately before implementation.
-- Keep quota values server-owned/configured, never cosmetic frontend constants.
-- Reuse guarded local telemetry for authoritative database/storage/connection measurements.
-- Complete provider-backed Supabase Management telemetry only where an authoritative usage signal exists.
-- Keep unavailable usage explicitly unavailable rather than estimating or displaying zero.
-- Include current usage, Free-plan limit, utilization, source/scope, measured time, and warning state in Platform Overview.
-- Cover provider failures, stale/invalid payloads, and plan-limit changes with tests.
+- Keep the corrected Capacity surface limited to three authoritative project signals: database size, Postgres connections, and project Storage.
+- Keep the verified 500 MB database allowance server-owned in the corrected migration.
+- Do not show invented provider percentages, unavailable-provider cards, Auth-user proxies, or unused provider/Netlify network paths.
+- Apply only `20260829194000_phase17_4_supabase_free_capacity.sql` after migration-history reconciliation, then run canonical suite 045 against hosted Supabase.
+- Add Nano CPU/memory/compute telemetry later only if an authoritative secured source is available.
 
-Exit gate: hosted Supabase telemetry and allowances are verified, pgTAP passes, and Security/Performance advisors are reviewed.
+Exit gate: the corrected migration and pgTAP pass on hosted Supabase, the three live signals render correctly, and Security/Performance advisors are reviewed.
 
 ## 17.5 — Netlify hosting + production configuration — NOT STARTED
 
@@ -120,6 +127,7 @@ npm run test:structure
 npm run test:internal
 npm run db:test:ci
 npm run test:e2e
+npm run test:e2e:admin-layout
 npm run test:e2e:visual
 ```
 

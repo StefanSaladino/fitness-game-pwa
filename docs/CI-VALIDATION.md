@@ -22,11 +22,12 @@ Before a phase is committed/published, the supported local release gate remains:
 npm run typecheck
 npm test
 npm run test:integration
-npm run build
-npm run test:structure
 npm run test:internal
 npm run db:test:ci
+npm run test:structure
 npm run test:e2e
+npm run build
+npm run test:e2e:admin-layout
 ```
 
 These checks remain release requirements even though they are not duplicated in the lightweight GitHub Actions workflow.
@@ -53,6 +54,12 @@ Phase 16.10A.5 adds deterministic Auth, Onboarding, Legal, and Capacity/Admin fi
 
 Phase 16.10A.6 adds a 320px shell-action fixture proving that Messages, Settings, and Sign out remain independently visible, touch-sized, non-overlapping, and horizontally contained. The repaired reliability fixture starts incomplete so its completion-control assertion tests the intended state; the install lifecycle assertion uses current Top Set naming.
 
+The normal Playwright config excludes the separately invoked exhaustive visual
+matrix and 44-case Chromium admin geometry suite. Those suites use
+`playwright.visual.config.ts` and `playwright.admin.config.ts` respectively, so
+normal behavioral E2E remains bounded and each specialized gate runs exactly
+once.
+
 ## Database validation
 
 The repository database contract gate remains:
@@ -75,6 +82,11 @@ That gate validates:
 - notification-persistence and push-delivery database contracts;
 - and the static repository contracts that can be proven without starting a local Supabase stack.
 
+The JavaScript gate intentionally does not mirror exact pgTAP plan counts or
+assertion descriptions. Runtime behavior and detailed coverage belong to the
+canonical SQL suites; repository validators own file structure and durable
+implementation/security boundaries.
+
 Runtime database migrations and pgTAP execution remain authoritative on the **hosted Supabase project**. The project does not require Docker, `supabase start`, or local database resets for the supported developer/release workflow.
 
 The database contract validator deliberately does not inspect GitHub Actions orchestration. Database correctness and CI scheduling are separate responsibilities.
@@ -86,8 +98,6 @@ Only files matching this convention are canonical database suites:
 ```text
 supabase/tests/*.test.sql
 ```
-
-The historical `_all-hosted-tests.sql` path remains a compatibility sentinel and is not part of canonical `*.test.sql` discovery.
 
 ## Hosted Supabase workflow
 
@@ -103,10 +113,6 @@ For database-bearing slices:
 
 No service-role secret, database password, or privileged Supabase credential belongs in GitHub workflow source merely to reproduce hosted validation.
 
-## Legacy local runner
-
-`scripts/run-canonical-db-tests.cjs` and the `db:test:local` package alias are retained only for historical structural compatibility. They are not part of the supported developer or GitHub CI workflow and must not be invoked by CI.
-
 ## Local Windows release gate
 
 The normal non-Docker application gate is:
@@ -116,11 +122,12 @@ npm install
 npm run typecheck
 npm test
 npm run test:integration
-npm run build
-npm run test:structure
-npm run test:e2e
 npm run test:internal
 npm run db:test:ci
+npm run test:structure
+npm run test:e2e
+npm run build
+npm run test:e2e:admin-layout
 ```
 
 Database migrations and pgTAP are executed against the hosted Supabase project instead of a local Docker stack.

@@ -3,7 +3,6 @@ const path = require('node:path');
 
 const root = path.resolve(__dirname, '..');
 const migrationPath = 'supabase/migrations/20260823175728_phase15_6b_notification_preferences.sql';
-const testPath = 'supabase/tests/038_phase15_6b_notification_preferences.test.sql';
 const servicePath = 'src/features/settings/notificationPreferenceService.ts';
 
 function fail(message) {
@@ -45,23 +44,6 @@ if (!/revoke all on function public\.update_my_notification_preferences\([\s\S]*
 }
 if (!/grant execute on function public\.update_my_notification_preferences\([\s\S]*?to authenticated;/i.test(migration)) {
   fail('notification RPC must explicitly grant only the authenticated role');
-}
-
-const test = read(testPath);
-if (!/select\s+plan\s*\(\s*37\s*\)\s*;/i.test(test)) {
-  fail('pgTAP suite must retain its 37-assertion plan');
-}
-for (const coverage of [
-  'all optional notification preferences default off',
-  'RLS exposes only the current user notification preference row',
-  'RLS hides another user notification preference row',
-  'master OFF preserves individual category selections',
-  'master ON restores the previously preserved category selections',
-  'suspended users cannot update notification preferences',
-  'notification preference updates do not create scoring events',
-  'notification preference updates do not award badges',
-]) {
-  if (!test.includes(coverage)) fail(`pgTAP suite missing coverage: ${coverage}`);
 }
 
 const service = read(servicePath);

@@ -6,8 +6,6 @@ const migrationPath = 'supabase/migrations/20260823182658_phase15_6c_pwa_push_de
 const repairPath = 'supabase/migrations/20260823182930_phase15_6c_fix_push_target_conflict.sql';
 const reconciliationPath = 'supabase/migrations/20260823191313_phase15_6c_reconcile_pg_net_extension.sql';
 const indexPath = 'supabase/migrations/20260823191540_phase15_6c_push_foreign_key_indexes.sql';
-const testPath = 'supabase/tests/039_phase15_6c_pwa_push_delivery.test.sql';
-const reconciliationTestPath = 'supabase/tests/040_phase15_6c_pg_net_reconciliation.test.sql';
 const edgePath = 'supabase/functions/push-notifications/index.ts';
 const pushServicePath = 'src/pwa/pushNotificationService.ts';
 const hookPath = 'src/features/settings/hooks/useNotificationSettings.ts';
@@ -96,42 +94,6 @@ for (const invariant of [
   'on private.push_delivery_targets (subscription_id)',
 ]) {
   if (!indexMigration.includes(invariant)) fail(`push foreign-key index migration missing: ${invariant}`);
-}
-
-const test = read(testPath);
-if (!/select\s+plan\s*\(\s*79\s*\)\s*;/i.test(test)) {
-  fail('pgTAP suite must retain its hosted-verified 79-assertion plan');
-}
-for (const coverage of [
-  'multiple authorized devices are retained independently',
-  'shared-browser endpoint ownership moves to the current authenticated account',
-  'suspended users cannot register push subscriptions',
-  'default-off accounts do not enqueue optional badge push',
-  'authoritative exercise-progression event enqueues one personal-record push',
-  'group invitation enqueues one privacy-bounded invitation push',
-  'delivery preparation suppresses queued optional push after master preference turns off',
-  'one optional event prepares one delivery target per active account device',
-  'provider-expired endpoint is revoked for future deliveries',
-  'transient provider failure keeps queue retryable',
-  'delivery suppression never clears persisted category selections',
-]) {
-  if (!test.includes(coverage)) fail(`pgTAP suite missing coverage: ${coverage}`);
-}
-
-const reconciliationTest = read(reconciliationTestPath);
-if (!/select\s+plan\s*\(\s*14\s*\)\s*;/i.test(reconciliationTest)) {
-  fail('pg_net reconciliation pgTAP suite must retain its hosted-verified 14-assertion plan');
-}
-for (const coverage of [
-  'pg_net extension is registered outside public',
-  'private push dispatcher remains security definer',
-  'anonymous browser role cannot use private schema',
-  'authenticated browser role cannot use private schema',
-  'authenticated browser role cannot execute private push dispatcher',
-  'hosted push retry cron remains active and exact',
-  'private dispatcher can still invoke recreated pg_net API',
-]) {
-  if (!reconciliationTest.includes(coverage)) fail(`pg_net reconciliation suite missing coverage: ${coverage}`);
 }
 
 const edge = read(edgePath);

@@ -108,11 +108,6 @@ for (const invariant of [
   if (!migration153a.includes(invariant)) fail(`Phase 15.3A migration missing invariant: ${invariant}`);
 }
 
-const test153a = read(phase153aTest);
-if (!/select\s+plan\s*\(\s*68\s*\)\s*;/i.test(test153a)) {
-  fail('Phase 15.3A pgTAP suite must retain its 68-assertion plan');
-}
-
 const migration153b = read(phase153bMigration);
 for (const invariant of [
   'private.platform_auth_coordination',
@@ -125,11 +120,6 @@ for (const invariant of [
   'profile_pictures_insert_own',
 ]) {
   if (!migration153b.includes(invariant)) fail(`Phase 15.3B migration missing invariant: ${invariant}`);
-}
-
-const test153b = read(phase153bTest);
-if (!/select\s+plan\s*\(\s*52\s*\)\s*;/i.test(test153b)) {
-  fail('Phase 15.3B pgTAP suite must retain its 52-assertion plan');
 }
 
 const hardening153b = read(phase153bHardeningMigration);
@@ -175,19 +165,6 @@ if (/\b(?:delete\s+from|insert\s+into|update)\s+storage\.(?:objects|buckets)\b/i
   fail('Phase 15.3C migration must never mutate Supabase Storage metadata with SQL');
 }
 
-const test153c = read(phase153cTest);
-if (!/select\s+plan\s*\(\s*68\s*\)\s*;/i.test(test153c)) {
-  fail('Phase 15.3C pgTAP suite must retain its 68-assertion plan');
-}
-for (const coverage of [
-  'hard Auth deletion is blocked before Storage cleanup completes',
-  'authoritative scoring history follows the documented profile cascade',
-  'self-service exact confirmation prepares the same deletion engine',
-  'direct hard Auth deletion cannot bypass pending-state and preparation checks',
-]) {
-  if (!test153c.includes(coverage)) fail(`Phase 15.3C pgTAP missing coverage: ${coverage}`);
-}
-
 const migration153e = read(phase153eMigration);
 for (const invariant of [
   'private.user_reports',
@@ -218,22 +195,6 @@ if (/['"]MESSAGE['"]/.test(
   migration153e.match(/create type public\.user_report_reference_type[\s\S]*?\);/)?.[0] || '',
 )) {
   fail('Phase 15.3E must not invent message evidence before a durable message source exists');
-}
-
-const test153e = read(phase153eTest);
-if (!/select\s+plan\s*\(\s*88\s*\)\s*;/i.test(test153e)) {
-  fail('Phase 15.3E pgTAP suite must retain its 88-assertion plan');
-}
-for (const coverage of [
-  'users cannot report themselves',
-  'reported users cannot read case detail or reporter identity',
-  'normalized duplicate incidents are rejected for 24 hours',
-  'a reporter is limited to ten submissions in a rolling 24-hour window',
-  'closed cases retain report, evidence, notes, and history for at least two years',
-  'submission, assignment, note, review, and resolution remain in append-only history',
-  'message evidence is not fabricated before a message source exists',
-]) {
-  if (!test153e.includes(coverage)) fail(`Phase 15.3E pgTAP missing coverage: ${coverage}`);
 }
 
 const migration153f = read(phase153fMigration);
@@ -273,23 +234,6 @@ for (const forbiddenField of ['w.notes', 'workout_sets', 'auth.users', 'auth.ide
   }
 }
 
-const test153f = read(phase153fTest);
-if (!/select\s+plan\s*\(\s*45\s*\)\s*;/i.test(test153f)) {
-  fail('Phase 15.3F pgTAP suite must retain its 45-assertion plan');
-}
-for (const coverage of [
-  'ordinary users cannot begin sensitive activity review',
-  'review grants are bound to the moderator who declared the purpose',
-  'activity source selection is enforced server-side',
-  'workout notes are redacted from moderation review',
-  'report activity links back to its originating moderation case',
-  'sensitive access audit is append-only',
-  'identity snapshots preserve deletion-safe retained review context',
-  'later Phase 15.4 adds communication only after creating a durable message source',
-]) {
-  if (!test153f.includes(coverage)) fail(`Phase 15.3F pgTAP missing coverage: ${coverage}`);
-}
-
 const migration154Enum = read(phase154EnumMigration);
 const migration154 = read(phase154Migration);
 if (!migration154Enum.includes("alter type public.moderation_activity_type add value if not exists 'COMMUNICATION'")) {
@@ -321,22 +265,6 @@ for (const invariant of [
 if (/grant\s+[^;]*\bon\s+(?:table\s+|function\s+)?private\./i.test(migration154)) {
   fail('Phase 15.4 must not grant browser roles direct access to private messaging objects');
 }
-const test154 = read(phase154Test);
-if (!/select\s+plan\s*\(\s*96\s*\)\s*;/i.test(test154)) {
-  fail('Phase 15.4 pgTAP suite must retain its 96-assertion plan');
-}
-for (const coverage of [
-  'group preview excludes suspended current members',
-  'retrying a completed preview returns the original message idempotently',
-  'recipient must read and acknowledge a newly edited revision again',
-  'full-platform what-is-new popup cannot demand acknowledgement',
-  'dismissed full-platform blast will not reopen on the next inbox load',
-  'purpose-bounded moderation timeline includes retained communication activity',
-  'administrator messaging does not create or alter XP events',
-]) {
-  if (!test154.includes(coverage)) fail(`Phase 15.4 pgTAP missing coverage: ${coverage}`);
-}
-
 const inboxDeletionMigrationPath = 'supabase/migrations/20260827195328_recipient_inbox_deletion.sql';
 const inboxDeletionTestPath = 'supabase/tests/041_recipient_inbox_deletion.test.sql';
 const groupChatMigrationPath = 'supabase/migrations/20260827195329_group_chat.sql';
@@ -357,17 +285,6 @@ for (const invariant of [
 ]) {
   if (!inboxDeletionMigration.includes(invariant)) fail(`recipient inbox deletion migration missing invariant: ${invariant}`);
 }
-const inboxDeletionTest = read(inboxDeletionTestPath);
-if (!/select\s+plan\s*\(\s*27\s*\)\s*;/i.test(inboxDeletionTest)) fail('recipient inbox deletion pgTAP suite must retain its 27-assertion plan');
-for (const coverage of [
-  'first recipient deletion does not affect the second recipient inbox',
-  'required current revision cannot be deleted before acknowledgement',
-  'recipient deletion never hard-deletes the retained delivery row',
-  'inbox deletion does not create or alter XP events',
-]) {
-  if (!inboxDeletionTest.includes(coverage)) fail(`recipient inbox deletion pgTAP missing coverage: ${coverage}`);
-}
-
 const groupChatMigration = read(groupChatMigrationPath);
 for (const invariant of [
   'public.group_chat_messages',
@@ -398,19 +315,6 @@ for (const invariant of [
 ]) {
   if (!groupChatIndexMigration.includes(invariant)) fail(`group chat index migration missing invariant: ${invariant}`);
 }
-const groupChatTest = read(groupChatTestPath);
-if (!/select\s+plan\s*\(\s*45\s*\)\s*;/i.test(groupChatTest)) fail('group chat pgTAP suite must retain its 45-assertion plan');
-for (const coverage of [
-  'outsider cannot read group chat',
-  'ordinary member cannot delete another member message',
-  'group owner can moderate another member message',
-  'eleventh rolling-minute message is rate limited',
-  'removed member immediately loses authoritative chat read access',
-  'group chat messages and reactions never create or alter XP events',
-]) {
-  if (!groupChatTest.includes(coverage)) fail(`group chat pgTAP missing coverage: ${coverage}`);
-}
-
 const migration155 = read(phase155Migration);
 for (const invariant of [
   'alter default privileges for role postgres in schema public',
@@ -421,21 +325,6 @@ for (const invariant of [
   'Function execution is deny-by-default',
 ]) {
   if (!migration155.includes(invariant)) fail(`Phase 15.5 migration missing invariant: ${invariant}`);
-}
-
-const test155 = read(phase155Test);
-if (!/select\s+plan\s*\(\s*27\s*\)\s*;/i.test(test155)) {
-  fail('Phase 15.5 pgTAP suite must retain its 27-assertion plan');
-}
-for (const coverage of [
-  'new public functions require an explicit authenticated grant',
-  'anonymous callers cannot execute any existing public function',
-  'authenticated callers cannot invoke trigger-only functions as RPCs',
-  'group ownership does not grant platform administration',
-  'global Data API pre-request guard blocks a suspended account across every feature RPC',
-  'active platform administrator retains the integrated messaging boundary',
-]) {
-  if (!test155.includes(coverage)) fail(`Phase 15.5 pgTAP missing coverage: ${coverage}`);
 }
 
 const migration156a = read(phase156aMigration);
@@ -452,24 +341,9 @@ for (const invariant of [
   if (!migration156a.includes(invariant)) fail(`Phase 15.6A migration missing invariant: ${invariant}`);
 }
 
-const test156a = read(phase156aTest);
-if (!/select\s+plan\s*\(\s*31\s*\)\s*;/i.test(test156a)) {
-  fail('Phase 15.6A pgTAP suite must retain its 31-assertion plan');
-}
-for (const coverage of [
-  'username cannot be updated directly',
-  'self-profile RPC cannot alter another user',
-  'scheduled weekly targets begin on a future Monday in the updated timezone',
-  'suspended users cannot update profile settings',
-  'profile preferences do not create or alter scoring events',
-  'all settings updates leave authoritative weekly-goal history unchanged',
-]) {
-  if (!test156a.includes(coverage)) fail(`Phase 15.6A pgTAP missing coverage: ${coverage}`);
-}
-
 // Database validation intentionally stops at repository database contracts.
 // GitHub Actions orchestration is a separate policy concern. Keeping those
 // responsibilities decoupled prevents a CI trigger/job change from weakening
 // or falsely failing the database contract gate.
 console.log(`Database contract gate passed: ${migrations.length} migrations, ${tests.length} canonical pgTAP suites.`);
-console.log('Runtime SQL execution remains hosted-Supabase authoritative; this repository contract gate does not start Docker or a local Supabase stack.');
+console.log('Runtime SQL execution remains hosted-Supabase authoritative; this repository contract gate performs structural validation only.');
