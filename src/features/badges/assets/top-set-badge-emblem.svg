@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" role="img" aria-labelledby="title desc">
+  <title id="title">Top Set badge emblem</title>
+  <desc id="desc">A barbell plate with a rising top-set chevron.</desc>
+  <circle cx="80" cy="80" r="69" fill="none" stroke="currentColor" stroke-width="10"/>
+  <circle cx="80" cy="80" r="50" fill="none" stroke="currentColor" stroke-width="4" opacity=".68"/>
+  <path d="M44 83h16m40 0h16" fill="none" stroke="currentColor" stroke-width="10" stroke-linecap="round"/>
+  <path d="M59 69v28m42-28v28" fill="none" stroke="currentColor" stroke-width="8" stroke-linecap="round"/>
+  <path d="M65 93 80 64l15 29" fill="none" stroke="currentColor" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M70 93h20" fill="none" stroke="currentColor" stroke-width="7" stroke-linecap="round"/>
+</svg>

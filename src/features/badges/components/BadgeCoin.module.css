@@ -1,0 +1,182 @@
+.coinButton {
+  --badge-size: 10rem;
+  appearance: none;
+  background: transparent;
+  border: 0;
+  border-radius: 999px;
+  color: inherit;
+  cursor: grab;
+  display: inline-grid;
+  padding: 0;
+  perspective: 900px;
+  touch-action: pan-y;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.coinButton:active {
+  cursor: grabbing;
+}
+
+.coinButton:focus-visible {
+  outline: 3px solid var(--badge-accent);
+  outline-offset: 5px;
+}
+
+.sm { --badge-size: 7.25rem; }
+.md { --badge-size: 10rem; }
+.lg { --badge-size: 13rem; }
+
+.scene {
+  display: block;
+  height: var(--badge-size);
+  width: var(--badge-size);
+}
+
+.coin {
+  height: 100%;
+  position: relative;
+  transform-style: preserve-3d;
+  transition: transform 320ms cubic-bezier(.2, .75, .25, 1);
+  width: 100%;
+  will-change: transform;
+}
+
+.face {
+  align-items: center;
+  backface-visibility: hidden;
+  background:
+    radial-gradient(circle at 34% 27%, color-mix(in srgb, var(--badge-rim-highlight) 30%, transparent), transparent 25%),
+    radial-gradient(circle at 50% 48%, var(--badge-face), var(--badge-face-deep) 75%);
+  border: clamp(5px, calc(var(--badge-size) * .045), 9px) solid var(--badge-rim);
+  border-radius: 50%;
+  box-shadow:
+    inset 0 0 0 2px color-mix(in srgb, var(--badge-rim-highlight) 46%, transparent),
+    inset 0 0 1.25rem color-mix(in srgb, #000 35%, transparent),
+    0 .6rem 1.6rem color-mix(in srgb, #000 34%, transparent),
+    .35rem 0 .45rem color-mix(in srgb, var(--badge-face-deep) 72%, transparent);
+  color: var(--badge-text);
+  display: flex;
+  inset: 0;
+  justify-content: center;
+  overflow: hidden;
+  position: absolute;
+}
+
+.face::before {
+  background: linear-gradient(125deg, color-mix(in srgb, #fff 28%, transparent), transparent 24% 70%, color-mix(in srgb, #000 22%, transparent));
+  content: '';
+  inset: 0;
+  pointer-events: none;
+  position: absolute;
+}
+
+.rim {
+  border: 2px solid color-mix(in srgb, var(--badge-rim-highlight) 62%, transparent);
+  border-radius: 50%;
+  inset: 3%;
+  pointer-events: none;
+  position: absolute;
+}
+
+.innerRing {
+  border: 1px solid color-mix(in srgb, var(--badge-accent) 42%, transparent);
+  border-radius: 50%;
+  inset: 14%;
+  pointer-events: none;
+  position: absolute;
+}
+
+.front {
+  flex-direction: column;
+  gap: calc(var(--badge-size) * .025);
+}
+
+.emblem {
+  background: var(--badge-accent);
+  display: block;
+  height: 54%;
+  mask-position: center;
+  mask-repeat: no-repeat;
+  mask-size: contain;
+  opacity: .96;
+  width: 54%;
+  -webkit-mask-position: center;
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-size: contain;
+}
+
+.frontLabel {
+  bottom: 12%;
+  color: var(--badge-accent);
+  font-size: clamp(.48rem, calc(var(--badge-size) * .055), .72rem);
+  font-weight: 900;
+  letter-spacing: .18em;
+  position: absolute;
+}
+
+.back {
+  flex-direction: column;
+  gap: calc(var(--badge-size) * .035);
+  padding: 18%;
+  text-align: center;
+  transform: rotateY(180deg);
+}
+
+.back strong {
+  color: var(--badge-text);
+  font-size: clamp(.82rem, calc(var(--badge-size) * .105), 1.35rem);
+  line-height: 1.02;
+  max-width: 90%;
+  text-wrap: balance;
+}
+
+.status {
+  color: var(--badge-accent);
+  font-size: clamp(.42rem, calc(var(--badge-size) * .045), .62rem);
+  font-weight: 900;
+  letter-spacing: .1em;
+}
+
+.description {
+  color: color-mix(in srgb, var(--badge-text) 82%, transparent);
+  font-size: clamp(.52rem, calc(var(--badge-size) * .058), .76rem);
+  line-height: 1.25;
+  max-width: 94%;
+}
+
+.date {
+  color: var(--badge-accent);
+  font-size: clamp(.45rem, calc(var(--badge-size) * .047), .62rem);
+  font-weight: 800;
+}
+
+.locked .scene {
+  filter: grayscale(.68) saturate(.5) brightness(.72);
+  opacity: .78;
+}
+
+.locked .face {
+  box-shadow:
+    inset 0 0 0 2px color-mix(in srgb, var(--badge-rim-highlight) 30%, transparent),
+    inset 0 0 1.25rem color-mix(in srgb, #000 48%, transparent),
+    0 .45rem 1.15rem color-mix(in srgb, #000 25%, transparent);
+}
+
+.accessibleText {
+  border: 0;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  padding: 0;
+  position: absolute;
+  white-space: nowrap;
+  width: 1px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .coin {
+    transition-duration: 1ms;
+  }
+}
