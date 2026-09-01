@@ -23,7 +23,11 @@ for (const removed of ['Storage objects', 'Auth users', 'Recent sign-ins', 'Mont
 }
 
 ok(dashboard.includes('Provider quota boundaries'), 'dashboard must explain provider quota boundaries without inventing usage');
-ok(dashboard.includes('Supabase organization-level'), 'dashboard must keep organization-level Supabase usage explicitly out of project utilization');
+ok(
+  dashboard.includes('Organization-level quotas and billing-cycle meters are not inferred here.')
+    && dashboard.includes('Supabase MAU, egress, Realtime, and Storage usage'),
+  'dashboard must keep organization-level Supabase usage explicitly out of project utilization',
+);
 ok(service.includes("client.rpc('get_platform_capacity_current')"), 'Capacity page must keep the guarded database-local current RPC');
 ok(service.includes("client.rpc('get_platform_capacity_history'"), 'Capacity page must keep the guarded database-local history RPC');
 ok(!service.includes('VITE_NETLIFY_CAPACITY_ENABLED'), 'Capacity page must not revive the retired browser Netlify capacity switch');
