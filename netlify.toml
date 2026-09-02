@@ -7,6 +7,10 @@
 
 [build.environment]
   NODE_VERSION = "24"
+  # Public fallback only. Browser auth still validates window.location.origin,
+  # so deploy previews keep their own origin and production can never fall back
+  # to localhost because of a stale environment variable.
+  VITE_APP_URL = "https://topset2026.netlify.app"
 
 # Global, low-risk security headers that do not depend on a final production origin.
 [[headers]]

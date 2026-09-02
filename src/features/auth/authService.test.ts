@@ -31,24 +31,28 @@ describe('authService confirmation flow', () => {
     mocks.verifyOtp.mockResolvedValue({ data: {}, error: null });
   });
 
-  it('sends signup confirmation back to the current app origin', async () => {
+  it('binds signup confirmation to the validated confirmation route', async () => {
     await signUp({ email: 'member@example.com', password: 'password123', displayName: 'Member' });
 
     expect(mocks.signUp).toHaveBeenCalledWith(expect.objectContaining({
       options: expect.objectContaining({
-        emailRedirectTo: 'https://topset.example/',
+        data: expect.objectContaining({
+          display_name: 'Member',
+          registration_origin: 'https://topset.example',
+        }),
+        emailRedirectTo: 'https://topset.example/confirm-signup',
       }),
     }));
   });
 
-  it('resends signup confirmation using the same safe redirect origin', async () => {
+  it('resends signup confirmation using the same validated confirmation route', async () => {
     await resendSignUpConfirmation('member@example.com');
 
     expect(mocks.resend).toHaveBeenCalledWith({
       type: 'signup',
       email: 'member@example.com',
       options: {
-        emailRedirectTo: 'https://topset.example/',
+        emailRedirectTo: 'https://topset.example/confirm-signup',
       },
     });
   });
