@@ -53,4 +53,31 @@ code {
   html::-webkit-scrollbar {
     display: none;
   }
+
+  /*
+   * Mobile Safari automatically zooms the viewport when a focused form
+   * control renders below 16px. Keep tappable text controls at 16px so
+   * focus does not hard-zoom the app.
+   *
+   * Checkbox, radio, range, and color controls are excluded because their
+   * native UI does not use the text-focus zoom behavior.
+   */
+  input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='color']),
+  textarea,
+  select {
+    font-size: 16px !important;
+  }
+
+  /*
+   * Remove double-tap zoom behavior from app controls while keeping normal
+   * pinch-to-zoom available for accessibility.
+   */
+  button,
+  a,
+  input,
+  textarea,
+  select,
+  [role='button'] {
+    touch-action: manipulation;
+  }
 }
