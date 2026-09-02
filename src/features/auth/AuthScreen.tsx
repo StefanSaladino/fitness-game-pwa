@@ -50,7 +50,14 @@ export function AuthScreen() {
   if (mode === 'verify-email') {
     return (
       <AuthLayout description="We sent a confirmation link so we can verify the address belongs to you." eyebrow="VERIFY EMAIL" title="Check your email">
-        <VerifyEmailPanel email={verificationEmail} onBackToSignIn={() => move('signin')} />
+        <VerifyEmailPanel
+          busy={actions.busy}
+          email={verificationEmail}
+          error={actions.error}
+          message={actions.message}
+          onBackToSignIn={() => move('signin')}
+          onResend={() => actions.resendConfirmation(verificationEmail)}
+        />
       </AuthLayout>
     );
   }

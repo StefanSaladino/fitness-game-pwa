@@ -2,6 +2,7 @@ import { lazy, Suspense, useEffect } from 'react';
 import { TopSetLoadingScreen } from '../components/feedback/TopSetLoadingScreen';
 import { AuthProvider, useAuth } from '../features/auth/AuthProvider';
 import { AuthScreen } from '../features/auth/AuthScreen';
+import { ConfirmSignupScreen } from '../features/auth/ConfirmSignupScreen';
 import { ResetPasswordScreen } from '../features/auth/ResetPasswordScreen';
 import { AuthConfigurationPanel } from '../features/auth/components/AuthConfigurationPanel';
 import { AuthLayout } from '../features/auth/components/AuthLayout';
@@ -144,6 +145,7 @@ function ConfigurationHelp() {
 }
 
 function RoutedApp({ pathname }: { pathname: string }) {
+  if (pathname === '/confirm-signup') return <ConfirmSignupScreen />;
   if (pathname === '/reset-password') return <ResetPasswordScreen />;
   return <AuthenticatedApp pathname={pathname} />;
 }

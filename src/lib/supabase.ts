@@ -28,8 +28,8 @@ export function getSupabaseClient(): SupabaseClient {
 }
 
 export function getAppUrl(): string {
+  if (typeof window !== 'undefined') return window.location.origin;
   const configured = import.meta.env.VITE_APP_URL;
   if (configured) return configured.replace(/\/$/, '');
-  if (typeof window !== 'undefined') return window.location.origin;
   return 'http://localhost:5173';
 }

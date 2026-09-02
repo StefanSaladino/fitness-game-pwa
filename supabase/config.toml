@@ -13,6 +13,10 @@ additional_redirect_urls = [
   "http://localhost:5173/reset-password",
 ]
 
+[auth.email.template.confirmation]
+subject = "Confirm your Top Set account"
+content_path = "./supabase/templates/confirmation.html"
+
 [functions.platform-capacity-supabase]
 # The function is called by authenticated administrators and must receive a real
 # user JWT. Provider credentials remain server-side secrets and never authorize

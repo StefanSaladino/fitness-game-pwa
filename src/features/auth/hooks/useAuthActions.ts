@@ -1,6 +1,7 @@
 import { useCallback, useState } from 'react';
 import {
   requestPasswordReset,
+  resendSignUpConfirmation,
   signIn,
   signUp,
   updatePassword,
@@ -44,11 +45,24 @@ export function useAuthActions() {
       const { data, error } = await signUp(input);
       if (error) throw error;
       const requiresEmailConfirmation = !data.session;
-      succeed(requiresEmailConfirmation ? 'Check your email to confirm your account.' : 'Account created.');
+      succeed(requiresEmailConfirmation ? '' : 'Account created.');
       return { ok: true, requiresEmailConfirmation } as const;
     } catch (error) {
       fail(toUserFacingAuthError('sign-up', error));
       return { ok: false, requiresEmailConfirmation: false } as const;
+    }
+  }, [begin, fail, succeed]);
+
+  const performResendConfirmation = useCallback(async (email: string) => {
+    begin();
+    try {
+      const { error } = await resendSignUpConfirmation(email);
+      if (error) throw error;
+      succeed('A new confirmation email has been sent.');
+      return true;
+    } catch (error) {
+      fail(toUserFacingAuthError('resend-confirmation', error));
+      return false;
     }
   }, [begin, fail, succeed]);
 
@@ -83,6 +97,7 @@ export function useAuthActions() {
     clearFeedback,
     signIn: performSignIn,
     signUp: performSignUp,
+    resendConfirmation: performResendConfirmation,
     requestPasswordReset: performPasswordReset,
     updatePassword: performPasswordUpdate,
   };

@@ -6,14 +6,35 @@ export interface SignUpInput {
   displayName: string;
 }
 
+function authRedirect(path = ''): string {
+  return `${getAppUrl()}${path}`;
+}
+
 export async function signUp({ email, password, displayName }: SignUpInput) {
   return getSupabaseClient().auth.signUp({
     email,
     password,
     options: {
       data: { display_name: displayName.trim() },
-      emailRedirectTo: `${getAppUrl()}/`,
+      emailRedirectTo: authRedirect('/'),
     },
+  });
+}
+
+export async function resendSignUpConfirmation(email: string) {
+  return getSupabaseClient().auth.resend({
+    type: 'signup',
+    email,
+    options: {
+      emailRedirectTo: authRedirect('/'),
+    },
+  });
+}
+
+export async function confirmSignUp(tokenHash: string) {
+  return getSupabaseClient().auth.verifyOtp({
+    token_hash: tokenHash,
+    type: 'email',
   });
 }
 
@@ -27,7 +48,7 @@ export async function signOut() {
 
 export async function requestPasswordReset(email: string) {
   return getSupabaseClient().auth.resetPasswordForEmail(email, {
-    redirectTo: `${getAppUrl()}/reset-password`,
+    redirectTo: authRedirect('/reset-password'),
   });
 }
 
