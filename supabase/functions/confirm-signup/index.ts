@@ -2,6 +2,8 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 
 const PRODUCTION_ORIGIN = "https://topset2026.netlify.app";
 const CONFIRM_PATH = "/confirm-signup";
+const NETLIFY_PREVIEW_HOST = /^[a-z0-9-]+--topset2026\.netlify\.app$/i;
+const LOCAL_DEVELOPMENT_HOSTS = new Set(["localhost", "127.0.0.1"]);
 
 const baseHeaders = {
   "Cache-Control": "no-store, max-age=0",
@@ -14,34 +16,39 @@ function validTokenHash(value: string): boolean {
   return /^[A-Za-z0-9_-]{20,512}$/.test(value);
 }
 
-function allowedRedirectOrigin(origin: string): boolean {
-  if (origin === PRODUCTION_ORIGIN || origin === "http://localhost:5173") return true;
+function productionTarget(): URL {
+  return new URL(CONFIRM_PATH, PRODUCTION_ORIGIN);
+}
+
+function validConfirmationTarget(value: string | null): URL | null {
+  if (!value) return null;
 
   try {
-    const url = new URL(origin);
-    return url.protocol === "https:"
-      && /^[a-z0-9-]+--topset2026\.netlify\.app$/i.test(url.hostname);
+    const candidate = new URL(value);
+
+    if (candidate.username || candidate.password || candidate.search || candidate.hash) return null;
+    if (candidate.pathname !== CONFIRM_PATH) return null;
+
+    if (candidate.origin === PRODUCTION_ORIGIN) return candidate;
+
+    const isPreview = candidate.protocol === "https:"
+      && !candidate.port
+      && NETLIFY_PREVIEW_HOST.test(candidate.hostname);
+    if (isPreview) return candidate;
+
+    const isLocalDevelopment = candidate.protocol === "http:"
+      && candidate.port === "5173"
+      && LOCAL_DEVELOPMENT_HOSTS.has(candidate.hostname);
+    if (isLocalDevelopment) return candidate;
   } catch {
-    return false;
+    // Invalid redirect targets fall back to production below.
   }
+
+  return null;
 }
 
 function confirmationTarget(redirectTo: string | null): URL {
-  if (redirectTo) {
-    try {
-      const candidate = new URL(redirectTo);
-      if (allowedRedirectOrigin(candidate.origin)) {
-        candidate.pathname = CONFIRM_PATH;
-        candidate.search = "";
-        candidate.hash = "";
-        return candidate;
-      }
-    } catch {
-      // Fall through to the production origin for malformed input.
-    }
-  }
-
-  return new URL(CONFIRM_PATH, PRODUCTION_ORIGIN);
+  return validConfirmationTarget(redirectTo) ?? productionTarget();
 }
 
 function redirectToApp(requestUrl: URL, tokenHash?: string): Response {
