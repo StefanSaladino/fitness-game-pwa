@@ -20,11 +20,21 @@ describe('resolveTopSetAppOrigin', () => {
     })).toBe('https://deploy-preview-42--topset2026.netlify.app');
   });
 
-  it('allows localhost only in a development build', () => {
+  it('allows only the canonical localhost port in a development build', () => {
     expect(resolveTopSetAppOrigin({
       browserOrigin: 'http://localhost:5173',
       isDev: true,
     })).toBe('http://localhost:5173');
+
+    expect(resolveTopSetAppOrigin({
+      browserOrigin: 'http://127.0.0.1:5173',
+      isDev: true,
+    })).toBe('http://127.0.0.1:5173');
+
+    expect(() => resolveTopSetAppOrigin({
+      browserOrigin: 'http://localhost:5174',
+      isDev: true,
+    })).toThrow('Top Set authentication is not allowed from browser origin');
 
     expect(() => resolveTopSetAppOrigin({
       browserOrigin: 'http://localhost:5173',
