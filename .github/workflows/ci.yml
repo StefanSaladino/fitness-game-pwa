@@ -54,6 +54,49 @@ jobs:
       - name: Database contract checks
         run: npm run db:test:ci
 
+      - name: Live confirmation bridge smoke tests
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE='https://ijkmevahyojfkxqykcjp.supabase.co/functions/v1/confirm-signup'
+          TOKEN='abcdefghijklmnopqrstuvwxyz123456'
+
+          assert_redirect() {
+            local redirect_to="$1"
+            local expected="$2"
+            local headers
+            headers="$(mktemp)"
+            curl -sS -D "$headers" -o /dev/null -G "$BASE" \
+              --data-urlencode "token_hash=$TOKEN" \
+              --data-urlencode "redirect_to=$redirect_to"
+            grep -Eq '^HTTP/.* 303' "$headers"
+            tr -d '\r' < "$headers" | grep -Fxi "location: $expected"
+          }
+
+          assert_redirect \
+            'https://topset2026.netlify.app/confirm-signup' \
+            "https://topset2026.netlify.app/confirm-signup?token_hash=$TOKEN&type=email"
+
+          assert_redirect \
+            'http://localhost:5173/confirm-signup' \
+            "http://localhost:5173/confirm-signup?token_hash=$TOKEN&type=email"
+
+          assert_redirect \
+            'https://evil.example/confirm-signup' \
+            "https://topset2026.netlify.app/confirm-signup?token_hash=$TOKEN&type=email"
+
+          assert_redirect \
+            'https://topset2026.netlify.app/' \
+            "https://topset2026.netlify.app/confirm-signup?token_hash=$TOKEN&type=email"
+
+          headers="$(mktemp)"
+          curl -sS -I -D "$headers" -o /dev/null "$BASE"
+          grep -Eq '^HTTP/.* 200' "$headers"
+          if tr -d '\r' < "$headers" | grep -Eqi '^location:'; then
+            echo 'HEAD unexpectedly redirected'
+            exit 1
+          fi
+
       - name: Install Playwright browsers
         run: npx playwright install --with-deps chromium webkit
 
