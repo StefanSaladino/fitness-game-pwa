@@ -73,21 +73,45 @@ jobs:
             tr -d '\r' < "$headers" | grep -Fxi "location: $expected"
           }
 
+          PROD="https://topset2026.netlify.app/confirm-signup?token_hash=$TOKEN&type=email"
+
           assert_redirect \
             'https://topset2026.netlify.app/confirm-signup' \
-            "https://topset2026.netlify.app/confirm-signup?token_hash=$TOKEN&type=email"
+            "$PROD"
 
           assert_redirect \
             'http://localhost:5173/confirm-signup' \
             "http://localhost:5173/confirm-signup?token_hash=$TOKEN&type=email"
 
           assert_redirect \
+            'http://localhost:5174/confirm-signup' \
+            "$PROD"
+
+          assert_redirect \
+            'http://127.0.0.1:5173/confirm-signup' \
+            "$PROD"
+
+          assert_redirect \
             'https://evil.example/confirm-signup' \
-            "https://topset2026.netlify.app/confirm-signup?token_hash=$TOKEN&type=email"
+            "$PROD"
 
           assert_redirect \
             'https://topset2026.netlify.app/' \
-            "https://topset2026.netlify.app/confirm-signup?token_hash=$TOKEN&type=email"
+            "$PROD"
+
+          assert_redirect \
+            'https://deploy-preview-42--topset2026.netlify.app/confirm-signup' \
+            "https://deploy-preview-42--topset2026.netlify.app/confirm-signup?token_hash=$TOKEN&type=email"
+
+          headers="$(mktemp)"
+          curl -sS -D "$headers" -o /dev/null -G "$BASE" --data-urlencode "token_hash=$TOKEN"
+          grep -Eq '^HTTP/.* 303' "$headers"
+          tr -d '\r' < "$headers" | grep -Fxi "location: $PROD"
+
+          headers="$(mktemp)"
+          curl -sS -D "$headers" -o /dev/null -G "$BASE" --data-urlencode 'token_hash=bad'
+          grep -Eq '^HTTP/.* 303' "$headers"
+          tr -d '\r' < "$headers" | grep -Fxi 'location: https://topset2026.netlify.app/confirm-signup'
 
           headers="$(mktemp)"
           curl -sS -I -D "$headers" -o /dev/null "$BASE"
