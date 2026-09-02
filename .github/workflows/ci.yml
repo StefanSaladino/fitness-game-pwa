@@ -18,10 +18,10 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  sanity:
-    name: Build sanity
+  full-validation:
+    name: Full pre-deploy validation
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 20
 
     steps:
       - uses: actions/checkout@v4
@@ -33,6 +33,29 @@ jobs:
 
       - run: npm ci
 
-      # npm run build already runs TypeScript compilation
-      # and the bundle-size guard in this repository.
-      - run: npm run build
+      - name: TypeScript
+        run: npm run typecheck
+
+      - name: Unit tests
+        run: npm test
+
+      - name: Integration tests
+        run: npm run test:integration
+
+      - name: Production build
+        run: npm run build
+
+      - name: Structure and hosting checks
+        run: npm run test:structure
+
+      - name: Internal checks
+        run: npm run test:internal
+
+      - name: Database contract checks
+        run: npm run db:test:ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium webkit
+
+      - name: E2E tests
+        run: npm run test:e2e
