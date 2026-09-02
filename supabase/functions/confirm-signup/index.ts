@@ -1,9 +1,9 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 
 const PRODUCTION_ORIGIN = "https://topset2026.netlify.app";
+const LOCAL_DEVELOPMENT_ORIGIN = "http://localhost:5173";
 const CONFIRM_PATH = "/confirm-signup";
 const NETLIFY_PREVIEW_HOST = /^[a-z0-9-]+--topset2026\.netlify\.app$/i;
-const LOCAL_DEVELOPMENT_HOSTS = new Set(["localhost", "127.0.0.1"]);
 
 const baseHeaders = {
   "Cache-Control": "no-store, max-age=0",
@@ -30,16 +30,12 @@ function validConfirmationTarget(value: string | null): URL | null {
     if (candidate.pathname !== CONFIRM_PATH) return null;
 
     if (candidate.origin === PRODUCTION_ORIGIN) return candidate;
+    if (candidate.origin === LOCAL_DEVELOPMENT_ORIGIN) return candidate;
 
     const isPreview = candidate.protocol === "https:"
       && !candidate.port
       && NETLIFY_PREVIEW_HOST.test(candidate.hostname);
     if (isPreview) return candidate;
-
-    const isLocalDevelopment = candidate.protocol === "http:"
-      && candidate.port === "5173"
-      && LOCAL_DEVELOPMENT_HOSTS.has(candidate.hostname);
-    if (isLocalDevelopment) return candidate;
   } catch {
     // Invalid redirect targets fall back to production below.
   }
