@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  TOP_SET_LOCAL_DEVELOPMENT_ORIGIN,
   TOP_SET_PRODUCTION_ORIGIN,
   resolveTopSetAppOrigin,
 } from './appOrigin';
@@ -8,7 +9,7 @@ describe('resolveTopSetAppOrigin', () => {
   it('uses the production origin for the production site', () => {
     expect(resolveTopSetAppOrigin({
       browserOrigin: TOP_SET_PRODUCTION_ORIGIN,
-      configuredOrigin: 'http://localhost:5173',
+      configuredOrigin: TOP_SET_LOCAL_DEVELOPMENT_ORIGIN,
       isDev: false,
     })).toBe(TOP_SET_PRODUCTION_ORIGIN);
   });
@@ -20,16 +21,11 @@ describe('resolveTopSetAppOrigin', () => {
     })).toBe('https://deploy-preview-42--topset2026.netlify.app');
   });
 
-  it('allows only the canonical localhost port in a development build', () => {
+  it('allows only the canonical localhost origin in a development build', () => {
     expect(resolveTopSetAppOrigin({
-      browserOrigin: 'http://localhost:5173',
+      browserOrigin: TOP_SET_LOCAL_DEVELOPMENT_ORIGIN,
       isDev: true,
-    })).toBe('http://localhost:5173');
-
-    expect(resolveTopSetAppOrigin({
-      browserOrigin: 'http://127.0.0.1:5173',
-      isDev: true,
-    })).toBe('http://127.0.0.1:5173');
+    })).toBe(TOP_SET_LOCAL_DEVELOPMENT_ORIGIN);
 
     expect(() => resolveTopSetAppOrigin({
       browserOrigin: 'http://localhost:5174',
@@ -37,7 +33,12 @@ describe('resolveTopSetAppOrigin', () => {
     })).toThrow('Top Set authentication is not allowed from browser origin');
 
     expect(() => resolveTopSetAppOrigin({
-      browserOrigin: 'http://localhost:5173',
+      browserOrigin: 'http://127.0.0.1:5173',
+      isDev: true,
+    })).toThrow('Top Set authentication is not allowed from browser origin');
+
+    expect(() => resolveTopSetAppOrigin({
+      browserOrigin: TOP_SET_LOCAL_DEVELOPMENT_ORIGIN,
       configuredOrigin: TOP_SET_PRODUCTION_ORIGIN,
       isDev: false,
     })).toThrow('Top Set authentication is not allowed from browser origin');
@@ -52,7 +53,7 @@ describe('resolveTopSetAppOrigin', () => {
 
   it('never uses a localhost configured fallback in production', () => {
     expect(() => resolveTopSetAppOrigin({
-      configuredOrigin: 'http://localhost:5173',
+      configuredOrigin: TOP_SET_LOCAL_DEVELOPMENT_ORIGIN,
       isDev: false,
     })).toThrow('Top Set authentication is not allowed from configured origin');
   });
