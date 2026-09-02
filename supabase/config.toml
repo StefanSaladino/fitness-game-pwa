@@ -7,10 +7,14 @@ project_id = "fitness-game-pwa"
 major_version = 17
 
 [auth]
-site_url = "http://localhost:5173"
+# Production is the only default. Local development must always be explicit.
+site_url = "https://topset2026.netlify.app"
 additional_redirect_urls = [
-  "http://localhost:5173",
+  "https://topset2026.netlify.app/confirm-signup",
+  "https://topset2026.netlify.app/reset-password",
+  "http://localhost:5173/confirm-signup",
   "http://localhost:5173/reset-password",
+  "https://**--topset2026.netlify.app/**",
 ]
 
 [auth.email.template.confirmation]
