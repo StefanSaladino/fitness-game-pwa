@@ -6,17 +6,25 @@ export interface SignUpInput {
   displayName: string;
 }
 
-function authRedirect(path = ''): string {
-  return `${getAppUrl()}${path}`;
+function authRedirect(path: string): string {
+  const origin = getAppUrl();
+  return new URL(path, `${origin}/`).toString();
 }
 
 export async function signUp({ email, password, displayName }: SignUpInput) {
+  const registrationOrigin = getAppUrl();
+
   return getSupabaseClient().auth.signUp({
     email,
     password,
     options: {
-      data: { display_name: displayName.trim() },
-      emailRedirectTo: authRedirect('/'),
+      data: {
+        display_name: displayName.trim(),
+        // Diagnostic only. Never use user metadata for authorization decisions.
+        registration_origin: registrationOrigin,
+        registration_build: import.meta.env.DEV ? 'development' : 'production',
+      },
+      emailRedirectTo: new URL('/confirm-signup', `${registrationOrigin}/`).toString(),
     },
   });
 }
@@ -26,12 +34,14 @@ export async function resendSignUpConfirmation(email: string) {
     type: 'signup',
     email,
     options: {
-      emailRedirectTo: authRedirect('/'),
+      emailRedirectTo: authRedirect('/confirm-signup'),
     },
   });
 }
 
 export async function confirmSignUp(tokenHash: string) {
+  // getSupabaseClient validates that a production build is running on an approved
+  // Top Set origin before the one-time token can be exchanged.
   return getSupabaseClient().auth.verifyOtp({
     token_hash: tokenHash,
     type: 'email',
