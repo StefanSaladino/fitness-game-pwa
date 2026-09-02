@@ -17,6 +17,11 @@ additional_redirect_urls = [
 subject = "Confirm your Top Set account"
 content_path = "./supabase/templates/confirmation.html"
 
+[functions.confirm-signup]
+# Public GET/HEAD bridge only. It never verifies a token; it redirects to the
+# browser confirmation screen where the user must explicitly confirm.
+verify_jwt = false
+
 [functions.platform-capacity-supabase]
 # The function is called by authenticated administrators and must receive a real
 # user JWT. Provider credentials remain server-side secrets and never authorize
