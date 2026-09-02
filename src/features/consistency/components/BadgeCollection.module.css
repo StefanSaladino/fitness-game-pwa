@@ -1,0 +1,220 @@
+.collection {
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--app-surface-padding);
+  background: var(--color-surface);
+}
+
+.header {
+  display: flex;
+  min-width: 0;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-4);
+  margin-bottom: var(--space-5);
+}
+
+.header > div {
+  min-width: 0;
+}
+
+.kicker {
+  margin: 0 0 7px;
+  color: var(--color-accent);
+  font-size: 0.7rem;
+  font-weight: 760;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.header h2 {
+  margin: 0;
+  color: var(--color-text);
+  font-size: 1.24rem;
+  letter-spacing: -0.03em;
+  line-height: 1.2;
+}
+
+.intro {
+  max-width: 620px;
+  margin: 7px 0 0;
+  color: var(--color-text-muted);
+  font-size: 0.8rem;
+  line-height: 1.5;
+}
+
+.total {
+  flex: 0 0 auto;
+  border: 1px solid var(--color-border-strong);
+  border-radius: 999px;
+  padding: 7px 10px;
+  color: var(--color-text-soft);
+  font-size: 0.74rem;
+  white-space: nowrap;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-3);
+}
+
+.badge {
+  --badge-accent: var(--color-accent);
+  display: grid;
+  min-width: 0;
+  grid-template-columns: 76px minmax(0, 1fr);
+  align-items: center;
+  gap: var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-3);
+  background: rgba(255, 255, 255, 0.025);
+  box-shadow: inset 3px 0 0 var(--badge-accent);
+}
+
+.badge[data-badge-category='PR'] { --badge-accent: #f15a08; }
+.badge[data-badge-category='LIFTING'] { --badge-accent: #ff9b55; }
+.badge[data-badge-category='CONSISTENCY'] { --badge-accent: #35c67a; }
+.badge[data-badge-category='CARDIO'] { --badge-accent: #43b8e8; }
+
+.badge[data-badge-status='locked'] {
+  box-shadow: inset 2px 0 0 rgba(255, 255, 255, 0.12);
+}
+
+.artwork {
+  display: grid;
+  width: 72px;
+  height: 72px;
+  place-items: center;
+}
+
+.artwork img {
+  display: block;
+  width: 72px;
+  height: 72px;
+}
+
+.earnedArtwork {
+  filter: none;
+}
+
+.lockedArtwork {
+  opacity: 0.34;
+  filter: grayscale(1) saturate(0.2);
+}
+
+.copy {
+  display: grid;
+  min-width: 0;
+  gap: 5px;
+}
+
+.status {
+  color: var(--badge-accent);
+  font-size: 0.62rem;
+  font-weight: 780;
+  letter-spacing: 0.075em;
+  text-transform: uppercase;
+}
+
+.badge[data-badge-status='locked'] .status {
+  color: var(--color-text-muted);
+}
+
+.copy strong {
+  color: var(--color-text);
+  font-size: 0.92rem;
+}
+
+.copy p,
+.copy time,
+.lockedText,
+.progressCopy {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: 0.73rem;
+  line-height: 1.4;
+}
+
+.copy time {
+  color: var(--color-text-soft);
+}
+
+.progressCopy {
+  display: flex;
+  min-width: 0;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-2);
+  margin-top: 2px;
+}
+
+.progressCopy span {
+  min-width: 0;
+  color: var(--color-text-soft);
+  font-weight: 720;
+  overflow-wrap: anywhere;
+}
+
+.progressCopy small {
+  flex: 0 0 auto;
+  color: var(--color-text-muted);
+  font-size: 0.66rem;
+}
+
+.progressTrack {
+  position: relative;
+  height: 7px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.09);
+}
+
+.progressFill {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--badge-accent);
+  transition: width 180ms ease-out;
+}
+
+.badge[data-badge-status='locked'] .progressFill {
+  opacity: 0.72;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .progressFill {
+    transition: none;
+  }
+}
+
+@media (min-width: 620px) {
+  .grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1120px) {
+  .grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 419px) {
+  .header {
+    flex-direction: column;
+  }
+
+  .badge {
+    grid-template-columns: 64px minmax(0, 1fr);
+  }
+
+  .artwork,
+  .artwork img {
+    width: 60px;
+    height: 60px;
+  }
+}

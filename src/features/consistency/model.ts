@@ -30,6 +30,15 @@ export interface EarnedLiftingBadge {
   earnedAt: string;
 }
 
+export interface LiftingBadgeProgressSnapshot {
+  prCount: number;
+  liftingDayCount: number;
+  goalsHit: number;
+  bestCompletedWeekStreak: number;
+  cardioBonusDayCount: number;
+  badges: EarnedLiftingBadge[];
+}
+
 export interface WeeklyLiftingSnapshot {
   weekStart: string;
   target: number;

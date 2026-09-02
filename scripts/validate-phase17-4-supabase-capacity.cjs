@@ -22,14 +22,8 @@ for (const removed of ['Storage objects', 'Auth users', 'Recent sign-ins', 'Mont
   ok(!dashboard.includes(`>${removed}<`) && !dashboard.includes(`'${removed}'`), `dashboard still renders ${removed}`);
 }
 
-ok(dashboard.includes('Provider quota boundaries'), 'dashboard must explain provider quota boundaries without inventing usage');
-ok(
-  dashboard.includes('Organization-level quotas and billing-cycle meters are not inferred here.')
-    && dashboard.includes('Supabase MAU, egress, Realtime, and Storage usage'),
-  'dashboard must keep organization-level Supabase usage explicitly out of project utilization',
-);
-ok(service.includes("client.rpc('get_platform_capacity_current')"), 'Capacity page must keep the guarded database-local current RPC');
-ok(service.includes("client.rpc('get_platform_capacity_history'"), 'Capacity page must keep the guarded database-local history RPC');
-ok(!service.includes('VITE_NETLIFY_CAPACITY_ENABLED'), 'Capacity page must not revive the retired browser Netlify capacity switch');
-
-console.log('Phase 17.4 measurable-capacity validation passed: the three authoritative database-local signals remain intact while later provider phases may add separate secured telemetry.');
+ok(dashboard.includes('Organization-level quotas'), 'dashboard must explain omitted organization quotas');
+ok(dashboard.includes('Supabase Usage'), 'dashboard must point admins to authoritative organization usage');
+ok(!service.includes('client.functions.invoke'), 'Capacity page must not invoke provider Edge Functions');
+ok(!service.includes('VITE_NETLIFY_CAPACITY_ENABLED'), 'Capacity page must not initialize unused Netlify telemetry');
+console.log('Phase 17.4 measurable-capacity validation passed: 3 live signals, no fake provider telemetry or provider network calls.');

@@ -1,6 +1,6 @@
 # Environment Variables and Secret Handling
 
-This document is the source of truth for browser environment configuration and server-only provider secrets in Top Set.
+This document is the source of truth for browser environment configuration in Top Set.
 
 ## 1. Browser environment
 
@@ -69,9 +69,6 @@ DATABASE_URL
 Postgres passwords
 JWT signing private keys
 NETLIFY_AUTH_TOKEN
-NETLIFY_ACCESS_TOKEN
-NETLIFY_ACCOUNT_ID
-NETLIFY_SITE_ID
 ```
 
 Server-only credentials belong only in the relevant provider's secret store and only when a server-side feature actually requires them.
@@ -93,49 +90,27 @@ git check-ignore -v .env.local
 
 Phase 17.5 keeps `netlify.toml` free of application values and secrets.
 
-Configure only these browser-safe values through Netlify's environment-variable UI for deploy contexts that need the PWA:
+When the first Netlify project is created, configure these through Netlify's environment-variable UI for the deploy contexts that need the app:
 
 ```text
 VITE_SUPABASE_URL
 VITE_SUPABASE_PUBLISHABLE_KEY
 ```
 
-For Deploy Previews, do **not** set `VITE_APP_URL`. This lets the preview use its exact `window.location.origin`.
+For the first Deploy Preview, do **not** set `VITE_APP_URL`. This lets the preview use its exact `window.location.origin`.
 
-Do not add the retired `VITE_NETLIFY_CAPACITY_ENABLED` flag. Phase 17.6 uses a server-side provider boundary instead of exposing a Netlify credential or capacity switch to the browser.
+Do not add the retired `VITE_NETLIFY_CAPACITY_ENABLED` flag. The Capacity dashboard remains limited to authoritative database-local/Supabase signals; no Netlify capacity provider is configured.
 
-## 6. Phase 17.6 Netlify provider secrets
-
-The Netlify capacity adapter runs in the Supabase Edge Function `platform-capacity-netlify`. Its provider credentials belong in **Supabase Edge Function secrets**, never in Netlify's frontend build environment and never in a `VITE_*` variable.
-
-Required server-only values:
-
-```text
-NETLIFY_ACCESS_TOKEN
-NETLIFY_ACCOUNT_ID
-NETLIFY_SITE_ID
-```
-
-`NETLIFY_ACCESS_TOKEN` is a Netlify personal access token with enough access to read the configured account/team and project. Do not paste it into issues, logs, screenshots, frontend environment files, or source code.
-
-`NETLIFY_ACCOUNT_ID` must be the Netlify REST API account/team `id`, not merely the display name. Netlify documents retrieving it by querying `GET /api/v1/accounts/{account_slug}`.
-
-`NETLIFY_SITE_ID` is the Netlify Project ID used by `GET /api/v1/sites/{site_id}`. For the current Top Set project, the verified Netlify Project ID is:
-
-```text
-20b8ab71-b089-497c-89bc-25af47d80ea8
-```
-
-The Edge Function uses these values only to verify that the configured account and project are reachable through Netlify's documented REST API. Netlify's documented public API does not currently expose authoritative Account Usage Insights billing-period totals for bandwidth, web requests, or credit usage. Those values therefore remain unavailable in Top Set instead of being estimated.
-
-## 7. Supabase Auth URL configuration for Netlify
+## 6. Supabase Auth URL configuration for Netlify
 
 The app sends:
 
 - signup/email-confirmation redirects to the app root;
 - password resets to `/reset-password`.
 
-For Netlify previews, add the specific preview pattern to **Authentication -> URL Configuration -> Redirect URLs**:
+Before testing a Netlify preview, add the specific Netlify preview pattern to **Authentication -> URL Configuration -> Redirect URLs**.
+
+Supabase supports wildcard redirect patterns for Netlify previews. Once the Netlify site slug exists, add only the pattern needed for that site, for example:
 
 ```text
 https://**--YOUR_SITE_SLUG.netlify.app/**
@@ -149,11 +124,11 @@ http://localhost:5173/**
 
 Do not change Supabase **Site URL** to a temporary preview. When the final production origin is chosen, set Site URL to that exact production origin and add exact production redirects, including `/reset-password`.
 
-## 8. Production promotion
+## 7. First production promotion
 
-After the release candidate is approved:
+After the Deploy Preview is approved:
 
-1. confirm the intended production deploy source;
+1. confirm the production branch in Netlify is `master`;
 2. confirm `npm run build` and `dist` are read from `netlify.toml`;
 3. set the required public Supabase values for production;
 4. choose the final Netlify/custom production origin;
@@ -161,6 +136,6 @@ After the release candidate is approved:
 6. deploy the exact approved release commit;
 7. run the Phase 17.7 deployed-auth/PWA/direct-route/security checks before the Phase 17.8 reset and launch.
 
-## 9. If a secret is exposed
+## 8. If a secret is exposed
 
 Revoke/rotate it immediately. `.gitignore` does not make a previously committed secret safe.

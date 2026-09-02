@@ -16,29 +16,10 @@ const snapshot: CapacityDashboardSnapshot = {
     { code: 'auth_users_30d', source: 'DATABASE_LOCAL', scope: 'PROJECT', unit: 'count', value: 3, limit: null, measuredAt, available: true, status: 'UNCONFIGURED', utilizationPercent: null },
   ],
   history: [],
-  supabase: { source: 'SUPABASE_MANAGEMENT', scope: 'ORGANIZATION', fetchedAt: measuredAt, metrics: [] },
-  netlify: {
-    source: 'NETLIFY_API',
-    scope: 'ACCOUNT',
-    fetchedAt: measuredAt,
-    capability: {
-      providerReachable: true,
-      apiConfigured: true,
-      accountVerified: true,
-      siteConfigured: true,
-      siteVerified: true,
-      billingUsageApi: 'UNAVAILABLE',
-    },
-    metrics: [
-      { code: 'netlify_bandwidth_bytes', source: 'NETLIFY_API', scope: 'ACCOUNT', unit: 'bytes', value: null, limit: null, measuredAt, available: false, note: 'Usage Insights totals are not exposed.' },
-      { code: 'netlify_requests', source: 'NETLIFY_API', scope: 'ACCOUNT', unit: 'count', value: null, limit: null, measuredAt, available: false, note: 'Usage Insights totals are not exposed.' },
-      { code: 'netlify_build_usage', source: 'NETLIFY_API', scope: 'ACCOUNT', unit: 'credits', value: null, limit: null, measuredAt, available: false, note: 'Usage Insights totals are not exposed.' },
-    ],
-  },
-};
+  supabase: { source: 'SUPABASE_MANAGEMENT', scope: 'ORGANIZATION', fetchedAt: measuredAt, metrics: [] },};
 
 describe('CapacityDashboard', () => {
-  it('renders trustworthy database metrics and explicit Netlify provider boundaries', () => {
+  it('renders only trustworthy measurable capacity signals', () => {
     render(<CapacityDashboard snapshot={snapshot} onRefresh={vi.fn()} onCaptureSnapshot={vi.fn()} />);
 
     expect(screen.getByRole('heading', { name: 'Measured capacity' })).toBeInTheDocument();
@@ -56,35 +37,18 @@ describe('CapacityDashboard', () => {
     expect(within(storageCard!).getByText('Measured')).toBeInTheDocument();
     expect(within(storageCard!).queryByLabelText(/utilization/i)).not.toBeInTheDocument();
 
-    expect(screen.getByRole('heading', { name: 'Netlify account telemetry' })).toBeInTheDocument();
-    expect(screen.getByText('Account and project verified')).toBeInTheDocument();
-    expect(screen.getByText('Bandwidth')).toBeInTheDocument();
-    expect(screen.getByText('Web requests')).toBeInTheDocument();
-    expect(screen.getByText('Build / credit usage')).toBeInTheDocument();
-    expect(screen.getAllByText('Not exposed')).toHaveLength(3);
-    expect(screen.getByText('Provider quota boundaries')).toBeInTheDocument();
-  });
+    for (const removed of [
+      'Storage objects',
+      'Auth users',
+      'Recent sign-ins',
+      'Monthly active users',
+      'Usage unavailable',
+      'Provider status',
+    ]) {
+      expect(screen.queryByText(removed)).not.toBeInTheDocument();
+    }
 
-  it('shows provider configuration failure without inventing zero usage', () => {
-    const unconfigured: CapacityDashboardSnapshot = {
-      ...snapshot,
-      netlify: {
-        ...snapshot.netlify,
-        capability: {
-          providerReachable: true,
-          apiConfigured: false,
-          accountVerified: false,
-          siteConfigured: false,
-          siteVerified: false,
-          billingUsageApi: 'UNAVAILABLE',
-        },
-      },
-    };
-
-    render(<CapacityDashboard snapshot={unconfigured} onRefresh={vi.fn()} onCaptureSnapshot={vi.fn()} />);
-    expect(screen.getByText('Provider secrets not configured')).toBeInTheDocument();
-    expect(screen.queryByText('0 credits')).not.toBeInTheDocument();
-    expect(screen.getAllByText('Not exposed')).toHaveLength(3);
+    expect(screen.getByText('Organization-level quotas')).toBeInTheDocument();
   });
 
   it('wires refresh and snapshot actions', () => {

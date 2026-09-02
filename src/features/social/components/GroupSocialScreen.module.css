@@ -149,7 +149,7 @@
 
 .viewTabs {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: var(--space-1);
   padding: var(--space-1);
   background: var(--color-bg-elevated);
@@ -587,4 +587,8 @@
     padding-inline: 5px;
     font-size: 0.64rem;
   }
+}
+
+.badgePanel {
+  min-width: 0;
 }

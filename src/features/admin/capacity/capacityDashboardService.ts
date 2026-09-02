@@ -3,8 +3,6 @@ import { getSupabaseClient } from '../../../lib/supabase';
 import { assessCapacityMetric } from './capacityMath';
 import type { CapacityDashboardSnapshot } from './dashboardModel';
 import type { CapacityMetricCode, CapacityMetricMeasurement, CapacityMetricUnit, CapacitySnapshot } from './model';
-import { createSupabaseNetlifyCapacityProvider } from './netlifyApiProvider';
-import type { CapacityTelemetryProvider } from './provider';
 
 const DATABASE_LOCAL_CODES = new Set<CapacityMetricCode>([
   'database_bytes',
@@ -47,7 +45,6 @@ export interface CapacityDashboardService {
 
 interface CapacityDashboardServiceOptions {
   historyLimit?: number;
-  netlifyProvider?: CapacityTelemetryProvider;
 }
 
 function numeric(value: number | string | null): number | null {
@@ -127,14 +124,12 @@ export function createCapacityDashboardService(
   options: CapacityDashboardServiceOptions = {},
 ): CapacityDashboardService {
   const historyLimit = options.historyLimit ?? 30;
-  const netlifyProvider = options.netlifyProvider ?? createSupabaseNetlifyCapacityProvider(client);
 
   return {
     async load() {
-      const [currentResult, historyResult, netlify] = await Promise.all([
+      const [currentResult, historyResult] = await Promise.all([
         client.rpc('get_platform_capacity_current'),
         client.rpc('get_platform_capacity_history', { p_snapshot_limit: historyLimit }),
-        netlifyProvider.read(),
       ]);
 
       if (currentResult.error) throw currentResult.error;
@@ -160,7 +155,6 @@ export function createCapacityDashboardService(
           fetchedAt,
           metrics: [],
         },
-        netlify,
       };
     },
 

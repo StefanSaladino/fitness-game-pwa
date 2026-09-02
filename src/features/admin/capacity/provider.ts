@@ -24,5 +24,5 @@ export interface CapacityTelemetryProvider {
 export interface CapacityProviderRegistry {
   databaseLocal?: CapacityTelemetryProvider;
   supabaseManagement?: CapacityTelemetryProvider;
-  netlifyApi?: CapacityTelemetryProvider;
+
 }

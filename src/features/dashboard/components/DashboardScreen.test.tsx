@@ -66,8 +66,8 @@ describe('DashboardScreen', () => {
     expect(screen.getByText('Bench Press')).toBeInTheDocument();
     expect(screen.getByText('Stefan (You)')).toBeInTheDocument();
     expect(screen.getByText('Cardio bonus')).toBeInTheDocument();
-    expect(screen.getByText('2-Week Streak')).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: 'Completed weeks & badges' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Completed weeks' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'See your badges' })).toBeInTheDocument();
     expect(container.querySelectorAll('[data-app-surface]').length).toBeGreaterThanOrEqual(6);
     expect(container.querySelector('[data-app-media-banner] img[src*="top-set-plate-banner"]')).toBeInTheDocument();
 
@@ -82,6 +82,9 @@ describe('DashboardScreen', () => {
     expect(onNavigate).toHaveBeenCalledWith('cardio');
     fireEvent.click(screen.getByRole('button', { name: 'View competition' }));
     expect(onNavigate).toHaveBeenCalledWith('compete');
+    fireEvent.click(screen.getByRole('button', { name: 'See your badges' }));
+    expect(window.location.pathname).toBe('/compete');
+    expect(window.location.search).toBe('?view=badges');
   });
 
   it('keeps the complete personal dashboard useful without group membership', () => {

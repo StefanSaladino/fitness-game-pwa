@@ -53,7 +53,7 @@ describe('Supabase management capacity provider', () => {
 
   it('filters out non-Supabase metric requests instead of querying unrelated sources', async () => {
     const result = await createSupabaseManagementCapacityProvider(async () => unavailableEnvelope()).read({
-      metricCodes: ['database_bytes', 'netlify_requests'],
+      metricCodes: ['database_bytes', 'storage_bytes'],
     });
     expect(result.metrics).toEqual([]);
   });
