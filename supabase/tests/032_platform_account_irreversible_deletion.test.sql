@@ -149,12 +149,13 @@ values (
   '15330400-0000-4000-8000-000000000004'
 );
 
-insert into public.group_members (group_id, user_id, role, status)
+insert into public.group_members (group_id, user_id, role, status, removed_at)
 values (
   '15334000-0000-4000-8000-000000000004',
   '15330200-0000-4000-8000-000000000002',
   'MEMBER',
-  'ACTIVE'
+  'REMOVED',
+  now()
 );
 
 set local role authenticated;
@@ -163,11 +164,11 @@ set local request.jwt.claim.sub = '15330100-0000-4000-8000-000000000001';
 select throws_ok(
   $$select public.request_platform_account_deletion(
       '15330400-0000-4000-8000-000000000004',
-      'Owner deletion must wait for transfer'
+      'Owner deletion must fail without an eligible successor'
     )$$,
   '42501',
-  'Group ownership must be transferred before account deletion',
-  'administrator cannot request deletion while the target owns a group'
+  'Owned group has no active successor; transfer ownership or remove the group before account deletion',
+  'administrator deletion fails closed when an owned group has no eligible active successor'
 );
 
 select lives_ok(
