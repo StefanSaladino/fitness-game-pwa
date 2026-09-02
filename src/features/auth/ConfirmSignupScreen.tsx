@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import { Button } from '../../components/ui';
+import { replacePath } from '../../lib/appNavigation';
 import { AuthLayout } from './components/AuthLayout';
 import styles from './components/AuthForm.module.css';
 import { confirmSignUp } from './authService';
@@ -26,12 +27,21 @@ export function ConfirmSignupScreen() {
     setError('');
 
     try {
-      const { error: confirmError } = await confirmSignUp(tokenHash);
+      const { data, error: confirmError } = await confirmSignUp(tokenHash);
       if (confirmError) throw confirmError;
 
       if (typeof window !== 'undefined') {
         window.history.replaceState({}, '', '/confirm-signup');
       }
+
+      // verifyOtp persists the returned session in the shared Supabase client and
+      // AuthProvider observes the SIGNED_IN event. Move straight into the normal
+      // app gate so a new member reaches onboarding instead of seeing sign-in.
+      if (data.session) {
+        replacePath('/');
+        return;
+      }
+
       setState('confirmed');
     } catch (confirmError) {
       setError(toUserFacingAuthError('confirm-signup', confirmError));
