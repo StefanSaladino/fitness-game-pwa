@@ -17,19 +17,35 @@ export function AuthProvider({ children }: PropsWithChildren) {
 
   useEffect(() => {
     const supabase = getSupabaseClient();
-    void supabase.auth.getSession().then(({ data }) => {
-      setSession(data.session);
-      setLoading(false);
-    });
+    let active = true;
+    let receivedAuthEvent = false;
 
     const { data } = supabase.auth.onAuthStateChange((event, nextSession) => {
+      if (!active) return;
+      receivedAuthEvent = true;
       setSession(nextSession);
       if (event === 'PASSWORD_RECOVERY') setPasswordRecovery(true);
       if (event === 'SIGNED_OUT') setPasswordRecovery(false);
       setLoading(false);
     });
 
-    return () => data.subscription.unsubscribe();
+    // getSession is a fallback for clients/tests where INITIAL_SESSION is delayed.
+    // Never let this initial snapshot overwrite a newer callback/session event.
+    void supabase.auth.getSession()
+      .then(({ data: sessionData }) => {
+        if (!active || receivedAuthEvent) return;
+        setSession(sessionData.session);
+        setLoading(false);
+      })
+      .catch(() => {
+        if (!active || receivedAuthEvent) return;
+        setLoading(false);
+      });
+
+    return () => {
+      active = false;
+      data.subscription.unsubscribe();
+    };
   }, []);
 
   const value = useMemo(() => ({ session, loading, passwordRecovery }), [session, loading, passwordRecovery]);
