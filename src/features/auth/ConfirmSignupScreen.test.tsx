@@ -31,6 +31,21 @@ describe('ConfirmSignupScreen', () => {
     expect(window.location.search).toBe('');
   });
 
+  it('hands a newly created confirmation session directly to the app route', async () => {
+    const user = userEvent.setup();
+    mocks.confirmSignUp.mockResolvedValue({
+      data: { session: { user: { id: 'member-id' } } },
+      error: null,
+    });
+
+    render(<ConfirmSignupScreen />);
+    await user.click(screen.getByRole('button', { name: 'Confirm email' }));
+
+    expect(mocks.confirmSignUp).toHaveBeenCalledWith('test-token');
+    expect(window.location.pathname).toBe('/');
+    expect(window.location.search).toBe('');
+  });
+
   it('turns an already-used or expired token into a recovery-oriented message', async () => {
     const user = userEvent.setup();
     mocks.confirmSignUp.mockResolvedValue({
