@@ -1,7 +1,7 @@
 export const TOP_SET_PRODUCTION_ORIGIN = 'https://topset2026.netlify.app';
+export const TOP_SET_LOCAL_DEVELOPMENT_ORIGIN = 'http://localhost:5173';
 
 const TOP_SET_NETLIFY_PREVIEW_HOST = /^[a-z0-9-]+--topset2026\.netlify\.app$/i;
-const LOCAL_DEVELOPMENT_HOSTS = new Set(['localhost', '127.0.0.1']);
 
 function parseOrigin(value: string): URL | null {
   try {
@@ -39,8 +39,7 @@ export function isLocalDevelopmentOrigin(origin: string): boolean {
   const url = parseOrigin(origin);
   return Boolean(
     url
-    && url.protocol === 'http:'
-    && LOCAL_DEVELOPMENT_HOSTS.has(url.hostname)
+    && url.origin === TOP_SET_LOCAL_DEVELOPMENT_ORIGIN
     && url.pathname === '/'
     && !url.search
     && !url.hash,
