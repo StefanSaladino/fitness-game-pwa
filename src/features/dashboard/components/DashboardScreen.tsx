@@ -2,7 +2,7 @@ import type { ReactNode } from 'react';
 import plateBanner from '../../../assets/fitness/top-set-plate-banner.jpg';
 import { AppShell, DestinationBanner, type AppSection } from '../../../components/layout';
 import { Button } from '../../../components/ui';
-import { liftingBadgeDefinition } from '../../consistency';
+import { navigateToPath } from '../../../lib/appNavigation';
 import type { GroupSummary } from '../../groups';
 import type { OnboardingProfile } from '../../onboarding';
 import { ProfilePicture } from '../../profile-picture';
@@ -100,7 +100,7 @@ export function DashboardScreen({ profile, group, groupNotice, snapshot, onNavig
   const completed = new Set(snapshot.completedLiftingDates);
   const currentRank = snapshot.leaderboard.find((entry) => entry.isCurrentUser);
   const targetPercent = Math.min(100, Math.round((snapshot.completedLiftingDays / snapshot.weeklyTarget) * 100));
-  const earnedBadges = snapshot.consistency.badges.slice(0, 2);
+
   const visibleLeaderboard = currentRank && currentRank.rank > 3
     ? [...snapshot.leaderboard.slice(0, 2), currentRank]
     : snapshot.leaderboard.slice(0, 3);
@@ -223,8 +223,9 @@ export function DashboardScreen({ profile, group, groupNotice, snapshot, onNavig
             <div className={styles.sectionHeadingCompact}>
               <div>
                 <p className={styles.sectionLabel}>Consistency</p>
-                <h2 id="consistency-heading">Completed weeks & badges</h2>
+                <h2 id="consistency-heading">Completed weeks</h2>
               </div>
+              <Button onClick={() => navigateToPath('/compete?view=badges')} variant="ghost">See your badges</Button>
             </div>
 
             <dl className={styles.consistencyStats}>
@@ -233,27 +234,7 @@ export function DashboardScreen({ profile, group, groupNotice, snapshot, onNavig
               <div><dt>Goals hit</dt><dd>{snapshot.consistency.goalsHit} / {snapshot.consistency.completedWeeks}</dd></div>
             </dl>
 
-            <div className={styles.badgeHeading}>
-              <strong>Earned badges</strong>
-              <span>{snapshot.consistency.badges.length}</span>
-            </div>
-            {earnedBadges.length === 0 ? (
-              <p className={styles.empty}>Complete lift days, weekly goals, and personal records to earn recognition badges.</p>
-            ) : (
-              <ul className={styles.badgeList}>
-                {earnedBadges.map((badge) => {
-                  const definition = liftingBadgeDefinition(badge.badgeKey);
-                  return (
-                    <li key={badge.badgeKey}>
-                      <span className={styles.badgeCategory}>EARNED · {definition.category}</span>
-                      <strong>{definition.title}</strong>
-                      <p>{definition.description}</p>
-                      <time dateTime={badge.earnedAt}>Earned {formatTimestamp(badge.earnedAt)}</time>
-                    </li>
-                  );
-                })}
-              </ul>
-            )}
+
           </section>
 
           <section className={styles.rankBlock} aria-labelledby="group-rank-heading" data-app-surface="category">
@@ -295,6 +276,7 @@ export function DashboardScreen({ profile, group, groupNotice, snapshot, onNavig
             )}
           </section>
         </section>
+
 
         {groupNotice && <div className={styles.supportingContent}>{groupNotice}</div>}
       </div>

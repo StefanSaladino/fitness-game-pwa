@@ -27,6 +27,7 @@ const feed: GroupSocialFeedItem[] = [{
 }];
 
 function renderScreen(options: { reportService?: UserReportService; onShowGlobal?: () => void; onReact?: (activityKey: string, reaction: 'FIRE' | 'STRONG' | 'CLAP') => void; onSelectGroup?: (id: string) => void } = {}) {
+  window.history.replaceState({}, '', '/compete');
   return render(
     <GroupSocialScreen
       busyReactionKey={null} error="" feed={feed} group={group} groups={[group, secondGroup]} hasMore={false}

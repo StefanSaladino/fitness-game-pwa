@@ -350,7 +350,8 @@ describe('group-to-product integration journey', () => {
     });
     render(<JourneyHarness service={service} />);
     await screen.findByRole('heading', { name: 'Your lifting week' });
-    expect(screen.getByRole('heading', { name: 'Completed weeks & badges' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Completed weeks' })).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: 'See your badges' })).toBeInTheDocument();
     await user.click(screen.getAllByRole('button', { name: 'Groups' })[0]!);
     const manageAlex = await screen.findByRole('button', { name: 'Manage Alex' });
     await user.click(manageAlex);
@@ -372,7 +373,8 @@ describe('group-to-product integration journey', () => {
     });
     render(<JourneyHarness service={service} />);
     expect(await screen.findByRole('heading', { name: 'Your lifting week' })).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: 'Completed weeks & badges' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Completed weeks' })).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: 'See your badges' })).toBeInTheDocument();
     await user.click(screen.getAllByRole('button', { name: 'Groups' })[0]!);
     expect(await screen.findByRole('heading', { name: 'Your crew' })).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /^Manage / })).not.toBeInTheDocument();

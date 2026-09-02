@@ -15,19 +15,15 @@ export type CapacityMetricCode =
   | 'supabase_egress_bytes'
   | 'supabase_cached_egress_bytes'
   | 'supabase_realtime_messages'
-  | 'supabase_realtime_peak_connections'
-  | 'netlify_bandwidth_bytes'
-  | 'netlify_requests'
-  | 'netlify_build_usage';
+  | 'supabase_realtime_peak_connections';
 
 export type CapacityMetricUnit = 'bytes' | 'count' | 'credits';
 
-export type CapacityMetricScope = 'PROJECT' | 'ORGANIZATION' | 'ACCOUNT';
+export type CapacityMetricScope = 'PROJECT' | 'ORGANIZATION';
 
 export type CapacityTelemetrySource =
   | 'DATABASE_LOCAL'
-  | 'SUPABASE_MANAGEMENT'
-  | 'NETLIFY_API';
+  | 'SUPABASE_MANAGEMENT';
 
 export type CapacityStatus =
   | 'UNAVAILABLE'

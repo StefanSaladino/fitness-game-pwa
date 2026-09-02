@@ -19,10 +19,6 @@ additional_redirect_urls = [
 # the incoming browser request by themselves.
 verify_jwt = true
 
-[functions.platform-capacity-netlify]
-# Same authorization boundary as the Supabase provider adapter: a real signed-in
-# user JWT reaches the function, then platform-admin access is re-checked inside.
-verify_jwt = true
 
 [functions.platform-account-auth]
 # Suspension/restore reaches Supabase Auth Admin only after the caller JWT and

@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import competitionBanner from '../../../assets/fitness/top-set-kettlebell-chalk.jpg';
 import { AppShell, DestinationBanner, type AppSection } from '../../../components/layout';
 import { Button, SelectField } from '../../../components/ui';
-import { liftingBadgeDefinition } from '../../consistency';
+import { liftingBadgeDefinition, type LiftingBadgeProgressService } from '../../consistency';
 import type { GroupSummary } from '../../groups';
 import type { OnboardingProfile } from '../../onboarding';
 import { UserReportDialog, type UserReportReference, type UserReportService } from '../../moderation';
@@ -18,6 +18,7 @@ import type {
 } from '../model';
 import styles from './GroupSocialScreen.module.css';
 import reportStyles from './GroupSocialReports.module.css';
+import { PersonalBadgeCollectionPanel } from './PersonalBadgeCollectionPanel';
 
 interface Props {
   profile: OnboardingProfile;
@@ -30,6 +31,7 @@ interface Props {
   busyReactionKey: string | null;
   error: string;
   reportService?: UserReportService;
+  badgeProgressService?: LiftingBadgeProgressService;
   onNavigate: (section: AppSection) => void;
   onSignOut: () => void;
   onSelectGroup: (groupId: string) => void;
@@ -51,7 +53,7 @@ interface ActivityContent {
   detail: string;
 }
 
-type SocialView = 'standings' | 'activity';
+export type SocialView = 'standings' | 'activity' | 'badges';
 
 const reactionCopy: Record<GroupReactionType, string> = {
   FIRE: 'Fire',
@@ -148,6 +150,12 @@ function groupMeta(group: GroupSummary): string {
   return `${members} · ${group.role.toLowerCase()}`;
 }
 
+function initialSocialView(): SocialView {
+  if (typeof window === 'undefined') return 'standings';
+  const requested = new URLSearchParams(window.location.search).get('view');
+  return requested === 'activity' || requested === 'badges' ? requested : 'standings';
+}
+
 export function GroupSocialScreen(props: Props) {
   const {
     profile,
@@ -160,6 +168,7 @@ export function GroupSocialScreen(props: Props) {
     busyReactionKey,
     error,
     reportService,
+    badgeProgressService,
     onNavigate,
     onSignOut,
     onSelectGroup,
@@ -168,9 +177,16 @@ export function GroupSocialScreen(props: Props) {
     onReact,
   } = props;
 
-  const [view, setView] = useState<SocialView>('standings');
+  const [view, setView] = useState<SocialView>(initialSocialView);
   const [reportTarget, setReportTarget] = useState<ReportTarget | null>(null);
   const [reportNotice, setReportNotice] = useState('');
+
+  const selectView = (nextView: SocialView) => {
+    setView(nextView);
+    if (typeof window === 'undefined') return;
+    const nextPath = nextView === 'standings' ? '/compete' : `/compete?view=${nextView}`;
+    window.history.replaceState(window.history.state, '', nextPath);
+  };
   const board = weekly;
   const currentUser = useMemo(
     () => board.entries.find((entry) => entry.isCurrentUser) ?? null,
@@ -231,11 +247,14 @@ export function GroupSocialScreen(props: Props) {
           {reportNotice && <p className={reportStyles.reportNotice} role="status">{reportNotice}</p>}
 
           <nav className={styles.viewTabs} aria-label="Competition sections">
-            <button aria-selected={view === 'standings'} onClick={() => setView('standings')} role="tab" type="button">
+            <button aria-selected={view === 'standings'} onClick={() => selectView('standings')} role="tab" type="button">
               Standings
             </button>
-            <button aria-selected={view === 'activity'} onClick={() => setView('activity')} role="tab" type="button">
+            <button aria-selected={view === 'activity'} onClick={() => selectView('activity')} role="tab" type="button">
               Activity
+            </button>
+            <button aria-selected={view === 'badges'} onClick={() => selectView('badges')} role="tab" type="button">
+              Badges
             </button>
           </nav>
 
@@ -398,6 +417,11 @@ export function GroupSocialScreen(props: Props) {
                 </div>
               )}
             </section>
+          )}
+          {view === 'badges' && (
+            <div className={styles.badgePanel} data-social-surface="badges" role="tabpanel">
+              <PersonalBadgeCollectionPanel service={badgeProgressService} />
+            </div>
           )}
         </div>
       </AppShell>

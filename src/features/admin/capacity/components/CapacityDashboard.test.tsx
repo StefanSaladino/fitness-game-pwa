@@ -16,9 +16,7 @@ const snapshot: CapacityDashboardSnapshot = {
     { code: 'auth_users_30d', source: 'DATABASE_LOCAL', scope: 'PROJECT', unit: 'count', value: 3, limit: null, measuredAt, available: true, status: 'UNCONFIGURED', utilizationPercent: null },
   ],
   history: [],
-  supabase: { source: 'SUPABASE_MANAGEMENT', scope: 'ORGANIZATION', fetchedAt: measuredAt, metrics: [] },
-  netlify: { source: 'NETLIFY_API', scope: 'ACCOUNT', fetchedAt: measuredAt, metrics: [] },
-};
+  supabase: { source: 'SUPABASE_MANAGEMENT', scope: 'ORGANIZATION', fetchedAt: measuredAt, metrics: [] },};
 
 describe('CapacityDashboard', () => {
   it('renders only trustworthy measurable capacity signals', () => {

@@ -46,9 +46,7 @@ describe('capacity dashboard service', () => {
       value: 11,
       limit: 60,
     });
-    expect(snapshot.supabase.metrics).toEqual([]);
-    expect(snapshot.netlify.metrics).toEqual([]);
-    expect(client.functions.invoke).not.toHaveBeenCalled();
+    expect(snapshot.supabase.metrics).toEqual([]);    expect(client.functions.invoke).not.toHaveBeenCalled();
   });
 
   it('captures database-local snapshots through the guarded RPC', async () => {

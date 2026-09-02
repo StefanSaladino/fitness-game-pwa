@@ -155,12 +155,6 @@ export function createCapacityDashboardService(
           fetchedAt,
           metrics: [],
         },
-        netlify: {
-          source: 'NETLIFY_API',
-          scope: 'ACCOUNT',
-          fetchedAt,
-          metrics: [],
-        },
       };
     },
 

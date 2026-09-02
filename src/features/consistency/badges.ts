@@ -1,4 +1,4 @@
-import type { LiftingBadgeDefinition, LiftingBadgeKey } from './model';
+import { LIFTING_BADGE_KEYS, type LiftingBadgeDefinition, type LiftingBadgeKey } from './model';
 
 const BADGES: Readonly<Record<LiftingBadgeKey, LiftingBadgeDefinition>> = Object.freeze({
   FIRST_PR: { key: 'FIRST_PR', title: 'First PR', description: 'Improved a personal record for the first time.', category: 'PR' },
@@ -17,6 +17,12 @@ const BADGES: Readonly<Record<LiftingBadgeKey, LiftingBadgeDefinition>> = Object
   CARDIO_BONUS_DAYS_10: { key: 'CARDIO_BONUS_DAYS_10', title: '10 Cardio Bonus Days', description: 'Earned the accessory cardio bonus on ten days.', category: 'CARDIO' },
 });
 
+const BADGE_LIST = Object.freeze(LIFTING_BADGE_KEYS.map((key) => BADGES[key]));
+
 export function liftingBadgeDefinition(key: LiftingBadgeKey): LiftingBadgeDefinition {
   return BADGES[key];
+}
+
+export function liftingBadgeDefinitions(): readonly LiftingBadgeDefinition[] {
+  return BADGE_LIST;
 }

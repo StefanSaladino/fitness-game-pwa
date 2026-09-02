@@ -8,6 +8,4 @@ export interface CapacityDashboardSnapshot {
   fetchedAt: string;
   current: CapacityMetricAssessment[];
   history: CapacitySnapshot[];
-  supabase: CapacityTelemetryResult;
-  netlify: CapacityTelemetryResult;
-}
+  supabase: CapacityTelemetryResult;}

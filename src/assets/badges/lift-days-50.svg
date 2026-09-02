@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 112 112" role="img">
+  <title>50 Lift Days badge</title>
+  <defs>
+    <linearGradient id="g" x1="18" y1="14" x2="94" y2="98" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFC06A"/>
+      <stop offset="1" stop-color="#FF8A34"/>
+    </linearGradient>
+    <filter id="s" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="5" stdDeviation="5" flood-color="#000" flood-opacity=".32"/>
+    </filter>
+  </defs>
+  <path d="M56 5 94 19 103 57 83 94 56 106 29 94 9 57 18 19Z" fill="#111821" stroke="#FF8A34" stroke-width="3" filter="url(#s)"/>
+  <path d="M56 13 87 25 95 57 78 87 56 97 34 87 17 57 25 25Z" fill="url(#g)" opacity=".94"/>
+  <circle cx="56" cy="55" r="34" fill="#10161E" opacity=".28"/>
+  
+        <g fill="none" stroke="white" stroke-width="6" stroke-linecap="round">
+          <path d="M32 56 H80"/>
+          <path d="M27 43 V69"/>
+          <path d="M36 47 V65"/>
+          <path d="M76 47 V65"/>
+          <path d="M85 43 V69"/>
+        </g>
+        
+  <rect x="37" y="82" width="38" height="17" rx="8.5" fill="#10161E" opacity=".88"/>
+  <text x="56" y="94" text-anchor="middle" fill="white" font-family="Arial, Helvetica, sans-serif" font-size="11" font-weight="800" letter-spacing=".8">50</text>
+</svg>

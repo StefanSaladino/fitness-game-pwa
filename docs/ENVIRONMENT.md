@@ -99,7 +99,7 @@ VITE_SUPABASE_PUBLISHABLE_KEY
 
 For the first Deploy Preview, do **not** set `VITE_APP_URL`. This lets the preview use its exact `window.location.origin`.
 
-Do not add the retired `VITE_NETLIFY_CAPACITY_ENABLED` flag. Netlify capacity work belongs to Phase 17.6 and must use a server-side provider boundary if implemented.
+Do not add the retired `VITE_NETLIFY_CAPACITY_ENABLED` flag. The Capacity dashboard remains limited to authoritative database-local/Supabase signals; no Netlify capacity provider is configured.
 
 ## 6. Supabase Auth URL configuration for Netlify
 

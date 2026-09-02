@@ -1,13 +1,21 @@
 import { useEffect, useState } from 'react';
 import type { AppSection } from '../../../components/layout';
+import { navigateToPath } from '../../../lib/appNavigation';
 import type { GroupSummary } from '../../groups';
 import type { UserReportService } from '../../moderation';
 import type { OnboardingProfile } from '../../onboarding';
 import type { GroupSocialService } from '../socialService';
 import { GlobalAllTimeLeaderboardController } from './GlobalAllTimeLeaderboardController';
 import { GroupSocialController } from './GroupSocialController';
+import { PersonalBadgesScreen } from './PersonalBadgesScreen';
 
 type CompetitionScope = 'GROUP' | 'GLOBAL';
+
+function requestedCompetitionView(): 'standings' | 'activity' | 'badges' {
+  if (typeof window === 'undefined') return 'standings';
+  const requested = new URLSearchParams(window.location.search).get('view');
+  return requested === 'activity' || requested === 'badges' ? requested : 'standings';
+}
 
 interface Props {
   profile: OnboardingProfile;
@@ -22,11 +30,16 @@ interface Props {
 
 export function CompetitionController(props: Props) {
   const hasGroup = props.groups.length > 0;
+  const requestedView = requestedCompetitionView();
   const [scope, setScope] = useState<CompetitionScope>(hasGroup ? 'GROUP' : 'GLOBAL');
 
   useEffect(() => {
     if (!hasGroup && scope === 'GROUP') setScope('GLOBAL');
   }, [hasGroup, scope]);
+
+  if (!hasGroup && requestedView === 'badges') {
+    return <PersonalBadgesScreen onNavigate={props.onNavigate} onShowStandings={() => navigateToPath('/compete')} onSignOut={props.onSignOut} profile={props.profile} />;
+  }
 
   if (scope === 'GLOBAL' || !hasGroup) {
     return <GlobalAllTimeLeaderboardController hasGroup={hasGroup} onNavigate={props.onNavigate} onShowGroup={() => setScope('GROUP')} onSignOut={props.onSignOut} profile={props.profile} service={props.service} />;
