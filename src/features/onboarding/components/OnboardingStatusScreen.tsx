@@ -24,8 +24,8 @@ export function OnboardingStatusScreen({ status, message, onRetry, onBackToLogin
         </Button>
       ) : null}
       {onBackToLogin ? (
-        <Button onClick={() => void onBackToLogin()} variant="secondary">
-          Back to login
+        <Button aria-label="Back to login" onClick={() => void onBackToLogin()} variant="secondary">
+          <span aria-hidden="true">‹</span> Login
         </Button>
       ) : null}
     </>
