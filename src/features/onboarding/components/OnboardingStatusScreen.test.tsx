@@ -18,4 +18,18 @@ describe('OnboardingStatusScreen', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Try again' }));
     expect(retry).toHaveBeenCalledTimes(1);
   });
+
+  it('offers a route back to login after a profile-load error', async () => {
+    const backToLogin = vi.fn(async () => undefined);
+    render(
+      <OnboardingStatusScreen
+        message="Profile unavailable."
+        onBackToLogin={backToLogin}
+        status="error"
+      />,
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: 'Back to login' }));
+    expect(backToLogin).toHaveBeenCalledTimes(1);
+  });
 });
