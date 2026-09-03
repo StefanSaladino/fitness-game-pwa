@@ -56,7 +56,7 @@ export function ProfilePictureManager({ userId, displayName, service }: ProfileP
         <ProfilePicture displayName={displayName} size="xl" src={picture.picture.url} />
         <div>
           <strong>{picture.picture.path ? 'Profile picture' : 'Add a profile picture'}</strong>
-          <p>JPEG, PNG, or WebP. Maximum 2 MB. Images display as a centered square crop.</p>
+          <p>JPEG, PNG, or WebP. Maximum 10 MB. Images display as a centered square crop.</p>
         </div>
       </div>
 

@@ -21,6 +21,11 @@ additional_redirect_urls = [
 subject = "Confirm your Top Set account"
 content_path = "./supabase/templates/confirmation.html"
 
+[storage.buckets.profile-pictures]
+public = true
+file_size_limit = "10MB"
+allowed_mime_types = ["image/jpeg", "image/png", "image/webp"]
+
 [functions.confirm-signup]
 # Public GET/HEAD bridge only. It never verifies a token; it redirects to the
 # browser confirmation screen where the user must explicitly confirm.

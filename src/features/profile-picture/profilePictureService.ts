@@ -61,12 +61,27 @@ export function createProfilePictureService(client: SupabaseClient = getSupabase
         .eq('id', userId);
 
       if (profileUpdate.error) {
-        await storage.remove([path]).catch(() => undefined);
+        const cleanup = await storage.remove([path]);
+        if (cleanup.error) throw cleanup.error;
         throw profileUpdate.error;
       }
 
       if (previousPath && previousPath !== path) {
-        await storage.remove([previousPath]).catch(() => undefined);
+        const previousRemoval = await storage.remove([previousPath]);
+        if (previousRemoval.error) {
+          // Do not report a successful replacement while leaving an abandoned
+          // profile image behind. Restore the old profile reference and remove
+          // the newly uploaded object before surfacing the cleanup failure.
+          const profileRollback = await client
+            .from('profiles')
+            .update({ profile_picture_path: previousPath })
+            .eq('id', userId);
+          const newRemoval = await storage.remove([path]);
+
+          if (profileRollback.error) throw profileRollback.error;
+          if (newRemoval.error) throw newRemoval.error;
+          throw previousRemoval.error;
+        }
       }
 
       return { path, url: publicUrl(path)! };
@@ -80,7 +95,17 @@ export function createProfilePictureService(client: SupabaseClient = getSupabase
       if (profileUpdate.error) throw profileUpdate.error;
 
       if (currentPath) {
-        await client.storage.from(PROFILE_PICTURE_BUCKET).remove([currentPath]).catch(() => undefined);
+        const storage = client.storage.from(PROFILE_PICTURE_BUCKET);
+        const removal = await storage.remove([currentPath]);
+        if (removal.error) {
+          // Keep the database reference aligned with Storage when deletion fails.
+          const profileRollback = await client
+            .from('profiles')
+            .update({ profile_picture_path: currentPath })
+            .eq('id', userId);
+          if (profileRollback.error) throw profileRollback.error;
+          throw removal.error;
+        }
       }
     },
 
