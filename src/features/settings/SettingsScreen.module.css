@@ -12,12 +12,18 @@
   top: 0;
   display: grid;
   min-height: calc(var(--shell-header-height) + env(safe-area-inset-top));
-  grid-template-columns: minmax(64px, 1fr) auto minmax(64px, 1fr);
+  grid-template-columns: minmax(84px, 1fr) auto minmax(84px, 1fr);
   align-items: center;
-  gap: var(--space-3);
+  gap: var(--space-2);
   border-bottom: 1px solid var(--color-border);
   padding: env(safe-area-inset-top) var(--app-page-gutter) 0;
   background: var(--color-bg-elevated);
+  text-align: center;
+}
+
+.headerTitle {
+  min-width: 0;
+  justify-self: center;
   text-align: center;
 }
 
@@ -25,20 +31,24 @@
 .section h2,
 .confirmDeletion h3,
 .settingsGroup h2 { margin: 0; }
-.header h1 { font-size: 1rem; letter-spacing: -0.01em; }
+.header h1 { overflow: hidden; font-size: 1rem; letter-spacing: -0.01em; text-overflow: ellipsis; white-space: nowrap; }
 .header .eyebrow { display: none; }
 
 .back {
+  display: grid;
+  width: 44px;
+  height: 44px;
+  place-items: center;
   justify-self: start;
-  min-height: 44px;
   border: 0;
-  padding: 0 8px 0 0;
+  border-radius: var(--radius-md);
+  padding: 0;
   color: var(--color-accent);
   background: transparent;
   cursor: pointer;
-  font: inherit;
-  font-weight: 750;
 }
+
+.back:hover { background: rgba(255, 255, 255, 0.035); }
 
 .back:focus-visible,
 .headerSignOut:focus-visible,
@@ -377,7 +387,6 @@
 }
 
 @media (max-width: 519px) {
-  .header { grid-template-columns: auto minmax(0, 1fr) auto; text-align: left; }
   .header { gap: 4px; padding-right: 10px; padding-left: 10px; }
   .headerActions { gap: 0; }
   .sectionHeading { align-items: flex-start; }
