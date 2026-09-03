@@ -1,0 +1,49 @@
+name: Stale branch cleanup 2026-09-03
+
+on:
+  pull_request:
+    branches:
+      - master
+    paths:
+      - '.github/workflows/stale-branch-cleanup-20260903.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  cleanup:
+    if: github.head_ref == 'maintenance/stale-branch-cleanup-20260903'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Delete confirmed stale branches
+        shell: bash
+        run: |
+          set -euo pipefail
+          stale_branches=(
+            'fix/app-shell-navigation-consistency'
+            'fix/auth-confirmation-audit'
+            'fix/iphone-profile-images-invite-copy'
+            'fix/profile-error-login-fallback'
+            'fix/profile-picture-upload-limit'
+            'fix/registration-origin-consistency'
+            'fix/registration-origin-contract'
+            'validation/registration-full-gate'
+          )
+
+          git fetch origin --prune
+
+          for branch in "${stale_branches[@]}"; do
+            if git ls-remote --exit-code --heads origin "refs/heads/${branch}" >/dev/null 2>&1; then
+              echo "Deleting ${branch}"
+              git push origin --delete "${branch}"
+            else
+              echo "Already absent: ${branch}"
+            fi
+          done
+
+          echo "Deleting cleanup branch"
+          git push origin --delete 'maintenance/stale-branch-cleanup-20260903'
