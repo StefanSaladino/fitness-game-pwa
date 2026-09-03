@@ -96,7 +96,7 @@ export function ConfirmSignupScreen() {
             </Button>
           </>
         ) : null}
-        <a className={`${styles.actionLink} ${styles.secondaryActionLink}`} href="/">Back to sign in</a>
+        <a aria-label="Back to sign in" className={`${styles.actionLink} ${styles.secondaryActionLink}`} href="/">‹ Sign in</a>
       </div>
     </AuthLayout>
   );
