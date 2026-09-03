@@ -1,7 +1,8 @@
 import { useRef, useState } from 'react';
 import { Button } from '../../../components/ui';
+import { prepareProfilePictureFile } from '../prepareProfilePictureFile';
 import type { ProfilePictureService } from '../profilePictureService';
-import { PROFILE_PICTURE_ACCEPT, validateProfilePictureFile } from '../validation';
+import { PROFILE_PICTURE_ACCEPT } from '../validation';
 import { useProfilePicture } from '../hooks/useProfilePicture';
 import { ProfilePicture } from './ProfilePicture';
 import styles from './ProfilePictureManager.module.css';
@@ -16,18 +17,24 @@ export function ProfilePictureManager({ userId, displayName, service }: ProfileP
   const picture = useProfilePicture(userId, service);
   const fileRef = useRef<HTMLInputElement | null>(null);
   const [selected, setSelected] = useState<File | null>(null);
+  const [preparing, setPreparing] = useState(false);
   const [localError, setLocalError] = useState('');
 
-  const choose = (file: File | null) => {
+  const choose = async (file: File | null) => {
     setSelected(null);
     setLocalError('');
     if (!file) return;
-    const validation = validateProfilePictureFile(file);
-    if (validation) {
-      setLocalError(validation);
-      return;
+
+    setPreparing(true);
+    try {
+      const prepared = await prepareProfilePictureFile(file);
+      setSelected(prepared);
+    } catch (caught) {
+      setLocalError(caught instanceof Error ? caught.message : 'This image could not be prepared for upload.');
+      if (fileRef.current) fileRef.current.value = '';
+    } finally {
+      setPreparing(false);
     }
-    setSelected(file);
   };
 
   const save = async () => {
@@ -50,24 +57,25 @@ export function ProfilePictureManager({ userId, displayName, service }: ProfileP
   }
 
   const error = localError || picture.error;
+  const busy = picture.busy || preparing;
   return (
     <section className={styles.manager} aria-label="Profile picture settings">
       <div className={styles.previewRow}>
         <ProfilePicture displayName={displayName} size="xl" src={picture.picture.url} />
         <div>
           <strong>{picture.picture.path ? 'Profile picture' : 'Add a profile picture'}</strong>
-          <p>JPEG, PNG, or WebP. Maximum 10 MB. Images display as a centered square crop.</p>
+          <p>JPEG, PNG, WebP, HEIC, or HEIF. Maximum 10 MB. iPhone HEIC/HEIF photos are converted to JPEG before upload.</p>
         </div>
       </div>
 
       <label className={styles.fileLabel}>
-        <span>Choose image</span>
+        <span>{preparing ? 'Preparing image…' : 'Choose image'}</span>
         <input
           ref={fileRef}
           type="file"
           accept={PROFILE_PICTURE_ACCEPT}
-          disabled={picture.busy}
-          onChange={(event) => choose(event.currentTarget.files?.[0] ?? null)}
+          disabled={busy}
+          onChange={(event) => void choose(event.currentTarget.files?.[0] ?? null)}
         />
       </label>
 
@@ -75,11 +83,11 @@ export function ProfilePictureManager({ userId, displayName, service }: ProfileP
       {error ? <p className={styles.error} role="alert">{error}</p> : null}
 
       <div className={styles.actions}>
-        <Button disabled={!selected || picture.busy} onClick={() => void save()}>
+        <Button disabled={!selected || busy} onClick={() => void save()}>
           {picture.busy ? 'Saving…' : picture.picture.path ? 'Replace picture' : 'Save picture'}
         </Button>
         {picture.picture.path ? (
-          <Button variant="secondary" disabled={picture.busy} onClick={() => void picture.remove()}>
+          <Button variant="secondary" disabled={busy} onClick={() => void picture.remove()}>
             Remove
           </Button>
         ) : null}
