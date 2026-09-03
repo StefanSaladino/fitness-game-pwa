@@ -49,7 +49,7 @@ export function SignUpForm({ busy, error, onSubmit, onBack }: SignUpFormProps) {
       <Button className={styles.primaryButton} disabled={busy} fullWidth type="submit">
         {busy ? 'Creating account…' : 'Create account'}
       </Button>
-      <button className={`${styles.textButton} ${styles.backButton}`} type="button" onClick={onBack}>Back to sign in</button>
+      <button aria-label="Back to sign in" className={`${styles.textButton} ${styles.backButton}`} type="button" onClick={onBack}>‹ Sign in</button>
     </form>
   );
 }
