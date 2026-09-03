@@ -18,12 +18,8 @@ const profile: OnboardingProfile = {
 
 describe('ProfileSettingsForm invite ID', () => {
   it('shows the complete invite ID in its own row and copies the full value', async () => {
-    const writeText = vi.fn(async () => undefined);
-    Object.defineProperty(navigator, 'clipboard', {
-      configurable: true,
-      value: { writeText },
-    });
     const user = userEvent.setup();
+    const writeText = vi.spyOn(navigator.clipboard, 'writeText');
 
     render(
       <ProfileSettingsForm
