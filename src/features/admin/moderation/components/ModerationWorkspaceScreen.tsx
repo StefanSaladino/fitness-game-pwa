@@ -171,7 +171,7 @@ export function ModerationWorkspaceScreen(props: Props) {
         {props.directory && props.directory.total > 0 && <nav className={styles.pagination} aria-label="Moderation case pages"><button disabled={props.page <= 1 || props.directoryLoading} onClick={() => props.onChangePage(props.page - 1)} type="button">Previous</button><span>{props.page} / {totalPages}</span><button disabled={props.page >= totalPages || props.directoryLoading} onClick={() => props.onChangePage(props.page + 1)} type="button">Next</button></nav>}
       </section>
       <section className={styles.detail} data-admin-surface="detail" aria-label="Moderation case detail">
-        {(props.selectedCaseId || props.directReview) && <button className={styles.mobileBack} onClick={props.onClearSelection} type="button">‹ Back to cases</button>}
+        {(props.selectedCaseId || props.directReview) && <button aria-label="Back to cases" className={styles.mobileBack} onClick={props.onClearSelection} type="button">‹ Cases</button>}
         {!props.selectedCaseId && !props.directReview && <div className={styles.detailEmpty}><strong>Select a case</strong><p>Report evidence, private history, and audited activity review will appear here.</p></div>}
         {props.detailLoading && !props.record && <div className={styles.state} role="status">Loading case…</div>}
         {props.detailError && !props.record && <div className={styles.state} role="alert"><p>{props.detailError}</p><button onClick={props.onRetryDetail} type="button">Try again</button></div>}
