@@ -14,6 +14,7 @@ describe('AppShell', () => {
     );
 
     expect(screen.getByRole('heading', { name: 'Dashboard' })).toBeInTheDocument();
+    expect(within(screen.getByRole('banner')).getByText('Home')).toBeInTheDocument();
 
     const homeItems = screen.getAllByRole('button', { name: 'Home' });
     expect(homeItems.every((item) => item.getAttribute('aria-current') === 'page')).toBe(true);
@@ -33,16 +34,29 @@ describe('AppShell', () => {
     expect(onSignOut).toHaveBeenCalledOnce();
   });
 
-  it('can replace the mobile brand lockup with a grounded page title while preserving Settings access', async () => {
+  it('derives a page title from every active destination when a screen does not override it', () => {
+    const { rerender } = render(
+      <AppShell activeItem="workouts" userLabel="Stefan"><p>Lift content</p></AppShell>,
+    );
+    expect(within(screen.getByRole('banner')).getByText('Lift')).toBeInTheDocument();
+
+    rerender(<AppShell activeItem="compete" userLabel="Stefan"><p>Compete content</p></AppShell>);
+    expect(within(screen.getByRole('banner')).getByText('Compete')).toBeInTheDocument();
+
+    rerender(<AppShell activeItem="cardio" userLabel="Stefan"><p>Cardio content</p></AppShell>);
+    expect(within(screen.getByRole('banner')).getByText('Cardio')).toBeInTheDocument();
+  });
+
+  it('can override the active destination with a grounded page title while preserving Settings access', async () => {
     const onNavigate = vi.fn();
     render(
-      <AppShell mobileTitle="Groups" onNavigate={onNavigate} userLabel="Stefan">
+      <AppShell activeItem="groups" mobileTitle="Crew settings" onNavigate={onNavigate} userLabel="Stefan">
         <h1>Groups are optional.</h1>
       </AppShell>,
     );
 
     const mobileHeader = screen.getByRole('banner');
-    expect(within(mobileHeader).getByText('Groups')).toBeInTheDocument();
+    expect(within(mobileHeader).getByText('Crew settings')).toBeInTheDocument();
     await userEvent.click(within(mobileHeader).getByRole('button', { name: 'Open Profile and Settings for Stefan' }));
     expect(onNavigate).toHaveBeenCalledWith('profile');
   });
