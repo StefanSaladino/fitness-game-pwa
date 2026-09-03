@@ -15,6 +15,16 @@ interface AppShellProps {
   onSignOut?: () => void;
 }
 
+const sectionTitles: Record<AppSection, string> = {
+  home: 'Home',
+  workouts: 'Lift',
+  cardio: 'Cardio',
+  groups: 'Groups',
+  progress: 'Progress',
+  compete: 'Compete',
+  profile: 'Settings',
+};
+
 export function AppShell({
   children,
   activeItem = 'home',
@@ -25,6 +35,10 @@ export function AppShell({
   onNavigate,
   onSignOut,
 }: PropsWithChildren<AppShellProps>) {
+  const resolvedMobileTitle = mobileTitle
+    ?? navigationItems.find((item) => item.id === activeItem)?.label
+    ?? sectionTitles[activeItem];
+
   return (
     <div className={styles.shell}>
       <DesktopSidebar
@@ -36,7 +50,7 @@ export function AppShell({
         userMeta={userMeta}
       />
       <div className={styles.viewport}>
-        <ShellHeader onNavigate={onNavigate} onSignOut={onSignOut} title={mobileTitle} userLabel={userLabel} />
+        <ShellHeader onNavigate={onNavigate} onSignOut={onSignOut} title={resolvedMobileTitle} userLabel={userLabel} />
         <main className={styles.main} data-app-scroll-owner>{children}</main>
       </div>
       <MobileNav activeItem={activeItem} items={navigationItems} onNavigate={onNavigate} />
