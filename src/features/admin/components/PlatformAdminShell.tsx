@@ -50,7 +50,7 @@ export function PlatformAdminShell({
             </button>
           ))}
         </nav>
-        <button className={styles.railButton} onClick={onBackToApp} type="button">Back to app</button>
+        <button aria-label="Back to app" className={styles.railButton} onClick={onBackToApp} type="button">‹ App</button>
       </aside>
 
       <div className={styles.content} data-admin-scroll-owner>
