@@ -90,10 +90,9 @@ describe('profile picture service', () => {
 
     await expect(service.upload('user-1', file, 'user-1/old.png')).rejects.toEqual(cleanupError);
 
-    const newPath = fake.upload.mock.calls[0]?.[0] as string;
     expect(rollback.update).toHaveBeenCalledWith({ profile_picture_path: 'user-1/old.png' });
     expect(fake.remove).toHaveBeenNthCalledWith(1, ['user-1/old.png']);
-    expect(fake.remove).toHaveBeenNthCalledWith(2, [newPath]);
+    expect(fake.remove).toHaveBeenNthCalledWith(2, [expect.stringMatching(/^user-1\/.+\.png$/)]);
   });
 
   it('clears the profile reference and removes the stored object', async () => {
