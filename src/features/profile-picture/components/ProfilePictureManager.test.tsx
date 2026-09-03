@@ -14,7 +14,7 @@ function service(): ProfilePictureService {
 }
 
 describe('ProfilePictureManager', () => {
-  it('validates and delegates a supported file through the profile-picture hook', async () => {
+  it('validates, prepares, and delegates a supported file through the profile-picture hook', async () => {
     const user = userEvent.setup();
     const api = service();
     render(<ProfilePictureManager displayName="Stefan" service={api} userId="user-1" />);
@@ -23,6 +23,7 @@ describe('ProfilePictureManager', () => {
     const input = screen.getByLabelText('Choose image');
     const file = new File(['image'], 'stefan.webp', { type: 'image/webp' });
     await user.upload(input, file);
+    expect(await screen.findByText('Selected: stefan.webp')).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Save picture' }));
 
     await waitFor(() => expect(api.upload).toHaveBeenCalledWith('user-1', file, null));
