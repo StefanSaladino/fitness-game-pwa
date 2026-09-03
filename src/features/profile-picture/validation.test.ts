@@ -12,8 +12,8 @@ describe('profile picture validation', () => {
     expect(validateProfilePictureFile(file)).toMatch(/JPEG, PNG, or WebP/i);
   });
 
-  it('rejects files larger than 2 MB', () => {
+  it('rejects files larger than 10 MB', () => {
     const file = new File([new Uint8Array(PROFILE_PICTURE_MAX_BYTES + 1)], 'large.jpg', { type: 'image/jpeg' });
-    expect(validateProfilePictureFile(file)).toMatch(/2 MB/i);
+    expect(validateProfilePictureFile(file)).toMatch(/10 MB/i);
   });
 });
