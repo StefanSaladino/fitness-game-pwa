@@ -1,0 +1,32 @@
+name: Cleanup merged mobile header branch
+
+on:
+  pull_request:
+    branches:
+      - master
+    paths:
+      - '.github/workflows/cleanup-mobile-header-branch.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  cleanup:
+    if: github.head_ref == 'maintenance/cleanup-mobile-header-branch'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Delete merged fix branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch origin --prune
+
+          if git ls-remote --exit-code --heads origin 'refs/heads/fix/mobile-header-descenders' >/dev/null 2>&1; then
+            git push origin --delete 'fix/mobile-header-descenders'
+          fi
+
+          git push origin --delete 'maintenance/cleanup-mobile-header-branch'
