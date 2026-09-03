@@ -8,17 +8,33 @@ interface OnboardingStatusScreenProps {
   status: 'loading' | 'error';
   message?: string;
   onRetry?: () => Promise<unknown> | unknown;
+  onBackToLogin?: () => Promise<unknown> | unknown;
 }
 
-export function OnboardingStatusScreen({ status, message, onRetry }: OnboardingStatusScreenProps) {
+export function OnboardingStatusScreen({ status, message, onRetry, onBackToLogin }: OnboardingStatusScreenProps) {
   if (status === 'loading') {
     return <TopSetLoadingScreen label="Loading your profile…" />;
   }
 
+  const action = onRetry || onBackToLogin ? (
+    <>
+      {onRetry ? (
+        <Button className={styles.primaryButton} onClick={() => void onRetry()}>
+          Try again
+        </Button>
+      ) : null}
+      {onBackToLogin ? (
+        <Button onClick={() => void onBackToLogin()} variant="secondary">
+          Back to login
+        </Button>
+      ) : null}
+    </>
+  ) : undefined;
+
   return (
     <OnboardingLayout>
       <AppStateSurface
-        action={onRetry ? <Button className={styles.primaryButton} onClick={() => void onRetry()}>Try again</Button> : undefined}
+        action={action}
         description={message || 'Try loading your profile again.'}
         eyebrow="Profile unavailable"
         headingLevel={1}

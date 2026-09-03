@@ -4,6 +4,7 @@ import { AuthProvider, useAuth } from '../features/auth/AuthProvider';
 import { AuthScreen } from '../features/auth/AuthScreen';
 import { ConfirmSignupScreen } from '../features/auth/ConfirmSignupScreen';
 import { ResetPasswordScreen } from '../features/auth/ResetPasswordScreen';
+import { signOut } from '../features/auth/authService';
 import { AuthConfigurationPanel } from '../features/auth/components/AuthConfigurationPanel';
 import { AuthLayout } from '../features/auth/components/AuthLayout';
 import { GroupGate } from '../features/groups/components/GroupGate';
@@ -57,6 +58,7 @@ function ProfileGate({ userId, userEmail, memberSince, pathname }: { userId: str
     return (
       <OnboardingStatusScreen
         message={onboarding.error || 'Try loading your profile again.'}
+        onBackToLogin={signOut}
         onRetry={onboarding.retry}
         status="error"
       />
