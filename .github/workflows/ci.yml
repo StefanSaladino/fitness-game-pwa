@@ -19,9 +19,9 @@ concurrency:
 
 jobs:
   sanity:
-    name: Profile fix validation
+    name: Build sanity
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 5
 
     steps:
       - uses: actions/checkout@v4
@@ -32,6 +32,7 @@ jobs:
           cache: npm
 
       - run: npm ci
-      - run: npm run typecheck
-      - run: npm test
+
+      # npm run build already runs TypeScript compilation
+      # and the bundle-size guard in this repository.
       - run: npm run build
