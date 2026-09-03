@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import { TopSetMark } from '../../../components/brand/TopSetMark';
+import { Icon } from '../../../components/ui';
 import styles from './PlatformAdminShell.module.css';
 
 export type PlatformAdminSection = 'capacity' | 'users' | 'moderation' | 'messages';
@@ -49,12 +50,14 @@ export function PlatformAdminShell({
             </button>
           ))}
         </nav>
-        <button className={styles.railButton} onClick={onBackToApp} type="button">Back to app</button>
+        <button aria-label="Back to app" className={styles.railButton} onClick={onBackToApp} type="button">‹ App</button>
       </aside>
 
       <div className={styles.content} data-admin-scroll-owner>
         <div className={styles.mobileBar}>
-          <button aria-label="Back to Top Set" className={styles.mobileBack} onClick={onBackToApp} type="button">‹ App</button>
+          <button aria-label="Back to Top Set" className={styles.mobileBack} onClick={onBackToApp} type="button">
+            <Icon name="chevron-left" size={24} />
+          </button>
           <strong className={styles.mobileTitle}>{mobileTitle}</strong>
           <span aria-hidden="true" />
         </div>

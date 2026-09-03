@@ -31,8 +31,8 @@ export function VerifyEmailPanel({
       <Button className={styles.primaryButton} disabled={busy} fullWidth onClick={() => void onResend()}>
         {busy ? 'Sending…' : 'Resend confirmation email'}
       </Button>
-      <Button className={styles.secondaryButton} disabled={busy} fullWidth variant="secondary" onClick={onBackToSignIn}>
-        Back to sign in
+      <Button aria-label="Back to sign in" className={styles.secondaryButton} disabled={busy} fullWidth variant="secondary" onClick={onBackToSignIn}>
+        <span aria-hidden="true">‹</span> Sign in
       </Button>
     </div>
   );

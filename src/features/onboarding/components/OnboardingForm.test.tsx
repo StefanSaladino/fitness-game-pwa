@@ -26,6 +26,9 @@ describe('OnboardingForm', () => {
 
     await user.type(username, 'IronWolf_23');
     await user.click(screen.getByRole('button', { name: 'Continue' }));
+    const back = screen.getByRole('button', { name: 'Back' });
+    expect(back).toBeInTheDocument();
+    expect(back).not.toHaveTextContent('Back');
     expect(screen.getByRole('combobox', { name: 'Timezone' })).toHaveTextContent('America/Toronto');
     await user.click(screen.getByRole('button', { name: 'Continue' }));
     await user.click(screen.getByRole('button', { name: '5' }));

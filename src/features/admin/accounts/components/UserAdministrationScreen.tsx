@@ -308,7 +308,7 @@ export function UserAdministrationScreen(props: UserAdministrationScreenProps) {
             </div>
           )}
           {selectedUserId && (
-            <button className={styles.mobileDetailBack} onClick={onClearSelection} type="button">‹ Back to users</button>
+            <button aria-label="Back to users" className={styles.mobileDetailBack} onClick={onClearSelection} type="button">‹ Users</button>
           )}
           {selectedUserId && detailState === 'loading' && !detail && <div className={styles.detailState} role="status">Loading account…</div>}
           {selectedUserId && detailError && !detail && (

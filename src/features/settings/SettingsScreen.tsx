@@ -118,8 +118,10 @@ export function SettingsScreen({
   return (
     <div className={styles.page}>
       <header className={styles.header}>
-        <button className={styles.back} onClick={goBack} type="button">Back</button>
-        <div>
+        <button aria-label="Back" className={styles.back} onClick={goBack} type="button">
+          <Icon name="chevron-left" size={26} />
+        </button>
+        <div className={styles.headerTitle}>
           <p className={styles.eyebrow}>{panel ? 'SETTINGS' : 'YOUR ACCOUNT'}</p>
           <h1>{panel ? panelTitles[panel] : 'Settings'}</h1>
         </div>

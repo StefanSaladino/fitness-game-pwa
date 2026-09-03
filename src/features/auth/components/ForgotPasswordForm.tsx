@@ -27,12 +27,14 @@ export function ForgotPasswordForm({ busy, error, message, onSubmit, onBack }: F
     await onSubmit(normalized);
   }
 
+  const signInLabel = <><span aria-hidden="true">‹</span> Sign in</>;
+
   if (message) {
     return (
       <div className={styles.completion} role="status">
         <p className={`${styles.feedback} ${styles.success}`}>{message}</p>
         <p className={styles.metaLine}>Use the newest recovery email if you request more than one link.</p>
-        <Button className={styles.secondaryButton} fullWidth variant="secondary" onClick={onBack}>Back to sign in</Button>
+        <Button aria-label="Back to sign in" className={styles.secondaryButton} fullWidth variant="secondary" onClick={onBack}>{signInLabel}</Button>
       </div>
     );
   }
@@ -42,7 +44,7 @@ export function ForgotPasswordForm({ busy, error, message, onSubmit, onBack }: F
       <TextField autoComplete="email" className={styles.field} error={emailError} label="Email" leadingIcon={<MailIcon />} onChange={(event) => setEmail(event.target.value)} placeholder="you@yourmail.com" type="email" value={email} />
       {error ? <p className={`${styles.feedback} ${styles.error}`} role="alert">{error}</p> : null}
       <Button className={styles.primaryButton} disabled={busy} fullWidth type="submit">{busy ? 'Sending…' : 'Send reset email'}</Button>
-      <button className={`${styles.textButton} ${styles.backButton}`} type="button" onClick={onBack}>Back to sign in</button>
+      <button aria-label="Back to sign in" className={`${styles.textButton} ${styles.backButton}`} type="button" onClick={onBack}>‹ Sign in</button>
     </form>
   );
 }

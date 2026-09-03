@@ -33,7 +33,7 @@ export function LegalPage({ eyebrow, title, intro, children }: LegalPageProps) {
             <TopSetMark className={styles.mark} size={28} />
             <span>TOP SET</span>
           </a>
-          <a className={styles.back} href="/" onClick={home}>Back to sign in</a>
+          <a aria-label="Back to sign in" className={styles.back} href="/" onClick={home}>‹ Sign in</a>
         </div>
       </header>
       <article className={styles.content}>

@@ -1,5 +1,5 @@
 import { useMemo, useState, type FormEvent } from 'react';
-import { Button, SelectField, TextField } from '../../../components/ui';
+import { Button, Icon, SelectField, TextField } from '../../../components/ui';
 import type { OnboardingField, OnboardingInput, OnboardingProfile } from '../model';
 import { getBrowserTimeZone, getTimeZoneOptions } from '../timezones';
 import { validateOnboardingInput } from '../validation';
@@ -156,8 +156,8 @@ export function OnboardingForm({ profile, busy, error, onSubmit }: OnboardingFor
 
       <footer className={styles.actions}>
         {step > 0 ? (
-          <Button className={styles.backButton} disabled={busy} onClick={() => setStep((current) => Math.max(current - 1, 0) as OnboardingStep)} type="button" variant="secondary">
-            Back
+          <Button aria-label="Back" className={styles.backButton} disabled={busy} onClick={() => setStep((current) => Math.max(current - 1, 0) as OnboardingStep)} type="button" variant="secondary">
+            <Icon name="chevron-left" size={22} />
           </Button>
         ) : <span aria-hidden="true" />}
         <Button className={styles.primaryButton} disabled={busy} type="submit">
