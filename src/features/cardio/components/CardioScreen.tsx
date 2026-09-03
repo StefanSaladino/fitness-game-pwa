@@ -111,11 +111,12 @@ export function CardioScreen({
             <p>A small daily bonus. Cardio never counts as a lifting day.</p>
           </div>
           <button
+            aria-label="Back to Lift"
             className={styles.backToLift}
             onClick={() => onNavigate('workouts')}
             type="button"
           >
-            Back to Lift
+            <span aria-hidden="true">‹</span> Lift
           </button>
         </DestinationBanner>
 
