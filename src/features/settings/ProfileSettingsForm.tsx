@@ -18,6 +18,25 @@ interface Props {
 }
 
 type FieldErrors = Partial<Record<OnboardingField, string>>;
+type CopyState = 'idle' | 'copied' | 'error';
+
+async function copyText(value: string): Promise<void> {
+  if (navigator.clipboard?.writeText) {
+    await navigator.clipboard.writeText(value);
+    return;
+  }
+
+  const textarea = document.createElement('textarea');
+  textarea.value = value;
+  textarea.setAttribute('readonly', '');
+  textarea.style.position = 'fixed';
+  textarea.style.opacity = '0';
+  document.body.appendChild(textarea);
+  textarea.select();
+  const copied = document.execCommand('copy');
+  textarea.remove();
+  if (!copied) throw new Error('Clipboard copy failed.');
+}
 
 export function ProfileSettingsForm({ profile, busy, error, notice, onSave, mode = 'both' }: Props) {
   const [values, setValues] = useState<ProfileSettingsInput>({
@@ -28,6 +47,7 @@ export function ProfileSettingsForm({ profile, busy, error, notice, onSave, mode
     preferredWeightUnit: profile.preferredWeightUnit,
   });
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
+  const [copyState, setCopyState] = useState<CopyState>('idle');
   const timezoneOptions = useMemo(() => getTimeZoneOptions(values.timezone), [values.timezone]);
   const showProfile = mode === 'profile' || mode === 'both';
   const showTraining = mode === 'training' || mode === 'both';
@@ -41,6 +61,7 @@ export function ProfileSettingsForm({ profile, busy, error, notice, onSave, mode
       weeklyTarget: profile.pendingWeeklyWorkoutTarget ?? profile.weeklyWorkoutTarget,
       preferredWeightUnit: profile.preferredWeightUnit,
     });
+    setCopyState('idle');
   }, [profile]);
 
   const update = <K extends keyof ProfileSettingsInput>(key: K, value: ProfileSettingsInput[K]) => {
@@ -57,6 +78,16 @@ export function ProfileSettingsForm({ profile, busy, error, notice, onSave, mode
     await onSave({ ...validation.value, preferredWeightUnit: values.preferredWeightUnit });
   };
 
+  const copyInviteId = async () => {
+    if (!profile.profileCode) return;
+    try {
+      await copyText(profile.profileCode);
+      setCopyState('copied');
+    } catch {
+      setCopyState('error');
+    }
+  };
+
   return (
     <form className={styles.profileForm} onSubmit={submit} noValidate>
       {showProfile ? <section className={styles.section} aria-labelledby="settings-profile-heading" data-app-surface="category">
@@ -65,7 +96,21 @@ export function ProfileSettingsForm({ profile, busy, error, notice, onSave, mode
             <p className={styles.eyebrow}>IDENTITY</p>
             <h2 id="settings-profile-heading">Profile</h2>
           </div>
-          <span className={styles.profileCode}>Invite ID {profile.profileCode ?? 'Unavailable'}</span>
+        </div>
+        <div className={styles.inviteCodeRow}>
+          <div className={styles.inviteCodeValue}>
+            <span>Invite ID</span>
+            <code>{profile.profileCode ?? 'Unavailable'}</code>
+          </div>
+          <Button
+            aria-label="Copy invite ID"
+            disabled={!profile.profileCode}
+            onClick={() => void copyInviteId()}
+            variant="secondary"
+          >
+            {copyState === 'copied' ? 'Copied' : 'Copy'}
+          </Button>
+          {copyState === 'error' ? <p className={styles.copyError} role="alert">Couldn’t copy the invite ID. Press and hold the full code to copy it manually.</p> : null}
         </div>
         <div className={styles.formGrid}>
           <TextField
