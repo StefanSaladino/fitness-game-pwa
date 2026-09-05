@@ -810,6 +810,8 @@ export type Database = {
           id: string
           order_index: number
           revision: number
+          superset_group_id: string | null
+          superset_order: number | null
           workout_id: string
         }
         Insert: {
@@ -818,6 +820,8 @@ export type Database = {
           id?: string
           order_index: number
           revision?: number
+          superset_group_id?: string | null
+          superset_order?: number | null
           workout_id: string
         }
         Update: {
@@ -826,6 +830,8 @@ export type Database = {
           id?: string
           order_index?: number
           revision?: number
+          superset_group_id?: string | null
+          superset_order?: number | null
           workout_id?: string
         }
         Relationships: [

@@ -220,6 +220,8 @@ export function WorkoutController({ profile, onNavigate, onSignOut, service, exe
       }}
       onAddExercise={composition.addExercise}
       onMoveExercise={composition.moveExercise}
+      onSaveSuperset={composition.saveSuperset}
+      onClearSuperset={composition.clearSuperset}
       onNavigate={onNavigate}
       onPause={workout.pause}
       onRemoveExercise={composition.removeExercise}

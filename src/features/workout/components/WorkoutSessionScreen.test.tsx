@@ -18,8 +18,8 @@ const active: ActiveWorkoutSession = {
 };
 
 const exercises: WorkoutExercise[] = [
-  { id: 'we-1', workoutId: 'workout-1', exerciseId: 'exercise-1', orderIndex: 0, revision: 0, canonicalName: 'Barbell Bench Press', measurementType: 'WEIGHT_REPS' },
-  { id: 'we-2', workoutId: 'workout-1', exerciseId: 'exercise-2', orderIndex: 1, revision: 0, canonicalName: 'Pull Up', measurementType: 'BODYWEIGHT_REPS' },
+  { id: 'we-1', workoutId: 'workout-1', exerciseId: 'exercise-1', orderIndex: 0, supersetGroupId: null, supersetOrder: null, revision: 0, canonicalName: 'Barbell Bench Press', measurementType: 'WEIGHT_REPS' },
+  { id: 'we-2', workoutId: 'workout-1', exerciseId: 'exercise-2', orderIndex: 1, supersetGroupId: null, supersetOrder: null, revision: 0, canonicalName: 'Pull Up', measurementType: 'BODYWEIGHT_REPS' },
 ];
 
 const compositionProps = {
@@ -33,6 +33,8 @@ const compositionProps = {
   onAddExercise: vi.fn(async () => true),
   onMoveExercise: vi.fn(async () => true),
   onRemoveExercise: vi.fn(async () => true),
+  onSaveSuperset: vi.fn(async () => true),
+  onClearSuperset: vi.fn(async () => true),
   onRetryExercisePicker: vi.fn(async () => []),
   onRetryExercises: vi.fn(async () => [] as WorkoutExercise[]),
   workoutSets: [],
@@ -96,6 +98,23 @@ describe('workout session presentation', () => {
     render(activeScreen({ workout: { ...active, activeDurationSeconds: 60, pausedAt: new Date().toISOString(), lastResumedAt: null } }));
     expect(screen.getByRole('heading', { name: 'Workout paused' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Resume timer' })).toBeInTheDocument();
+  });
+
+  it('renders one compact timer after normal-flow workout metadata', () => {
+    render(activeScreen());
+
+    const timer = screen.getByLabelText('Active workout timer');
+    const sessionState = screen.getByLabelText('Workout session state');
+    const pauseButton = within(timer).getByRole('button', { name: 'Pause timer' });
+
+    expect(timer).toBeInTheDocument();
+    expect(within(timer).getByText('Active lift')).toBeInTheDocument();
+    expect(within(timer).getByText(/\d{2}:\d{2}/)).toBeInTheDocument();
+    expect(pauseButton).toBeInTheDocument();
+    expect(pauseButton).toHaveTextContent('');
+    expect(sessionState).toHaveTextContent('Started');
+    expect(sessionState).toHaveTextContent('Scoring date');
+    expect(sessionState.compareDocumentPosition(timer) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });
 
   it('does not add extra seconds when a paused response retains the previous resume timestamp', () => {
@@ -195,6 +214,86 @@ describe('workout session presentation', () => {
     fireEvent.click(screen.getByText('Pull Up').closest('button') as HTMLButtonElement);
     fireEvent.click(screen.getByRole('button', { name: 'Move Pull Up up' }));
     expect(onMoveExercise).toHaveBeenCalledWith('we-2', 0);
+  });
+
+  it('creates and orders a Superset from the exercise management flow', async () => {
+    const onSaveSuperset = vi.fn(async () => true);
+    render(activeScreen({ exercises, onSaveSuperset }));
+
+    fireEvent.click(screen.getByRole('button', { name: 'Create Superset for Barbell Bench Press' }));
+    const dialog = screen.getByRole('dialog', { name: 'Create Superset' });
+    expect(within(dialog).getByText('1 selected')).toBeInTheDocument();
+
+    fireEvent.click(within(dialog).getByRole('checkbox', { name: /Pull Up/ }));
+    expect(within(dialog).getByText('2 selected')).toBeInTheDocument();
+    expect(within(dialog).getByText('A1')).toBeInTheDocument();
+    expect(within(dialog).getByText('A2')).toBeInTheDocument();
+
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Move Pull Up earlier in Superset' }));
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Create Superset' }));
+
+    await waitFor(() => expect(onSaveSuperset).toHaveBeenCalledWith(null, ['we-2', 'we-1']));
+    await waitFor(() => expect(screen.queryByRole('dialog', { name: 'Create Superset' })).not.toBeInTheDocument());
+  });
+
+  it('labels grouped exercises and can break an existing Superset apart', async () => {
+    const groupId = '77777777-7777-4777-8777-777777777777';
+    const grouped = exercises.map((exercise, index) => ({
+      ...exercise,
+      supersetGroupId: groupId,
+      supersetOrder: index,
+    }));
+    const onClearSuperset = vi.fn(async () => true);
+    render(activeScreen({ exercises: grouped, onClearSuperset }));
+
+    expect(screen.getByLabelText('Superset A group')).toBeInTheDocument();
+    expect(screen.getByText('2 exercises · A1 → A2')).toBeInTheDocument();
+    expect(screen.getByText('Superset A1')).toBeInTheDocument();
+    expect(screen.getByText('Superset A2')).toBeInTheDocument();
+    expect(screen.getByText('Barbell Bench Press').closest('button')).toHaveAttribute('aria-expanded', 'true');
+    expect(screen.getByText('Pull Up').closest('button')).toHaveAttribute('aria-expanded', 'false');
+    expect(screen.getByRole('button', { name: 'Move Barbell Bench Press down' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Remove Barbell Bench Press' })).toBeDisabled();
+
+    expect(screen.queryByRole('button', { name: 'Manage Superset for Barbell Bench Press' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Manage Superset for Pull Up' })).not.toBeInTheDocument();
+    expect(screen.getAllByRole('button', { name: 'Manage Superset A' })).toHaveLength(1);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Manage Superset A' }));
+    const dialog = screen.getByRole('dialog', { name: 'Manage Superset' });
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Break Superset apart' }));
+
+    await waitFor(() => expect(onClearSuperset).toHaveBeenCalledWith(groupId));
+  });
+
+  it('guides an active Superset round-robin without forcing navigation', () => {
+    const groupId = '77777777-7777-4777-8777-777777777777';
+    const grouped = exercises.map((exercise, index) => ({
+      ...exercise,
+      supersetGroupId: groupId,
+      supersetOrder: index,
+    }));
+    render(activeScreen({
+      exercises: grouped,
+      workoutSets: [
+        { id: 'a1-1', workoutExerciseId: 'we-1', setNumber: 1, setType: 'WORKING', weightKg: 100, reps: 5, bodyweightMode: null, completed: true, completedAt: '2026-09-05T12:00:00.000Z', revision: 1 },
+        { id: 'a2-1', workoutExerciseId: 'we-2', setNumber: 1, setType: 'WORKING', weightKg: null, reps: 8, bodyweightMode: 'BODYWEIGHT', completed: false, completedAt: null, revision: 0 },
+        { id: 'a1-2', workoutExerciseId: 'we-1', setNumber: 2, setType: 'WORKING', weightKg: 100, reps: 5, bodyweightMode: null, completed: false, completedAt: null, revision: 0 },
+        { id: 'a2-2', workoutExerciseId: 'we-2', setNumber: 2, setType: 'WORKING', weightKg: null, reps: 8, bodyweightMode: 'BODYWEIGHT', completed: false, completedAt: null, revision: 0 },
+      ],
+    }));
+
+    expect(screen.getByText('Next: A2 Pull Up · Set 1')).toBeInTheDocument();
+    expect(screen.getByText('1 of 4 sets complete')).toBeInTheDocument();
+    expect(screen.getByRole('progressbar', { name: 'Superset A progress' })).toHaveAttribute('aria-valuenow', '1');
+    expect(screen.getByText('Pull Up').closest('li')).toHaveAttribute('aria-current', 'step');
+    expect(screen.getByText('Barbell Bench Press').closest('button')).toHaveAttribute('aria-expanded', 'true');
+    expect(screen.getByText('Pull Up').closest('button')).toHaveAttribute('aria-expanded', 'false');
+
+    fireEvent.click(screen.getByRole('button', { name: 'Go to A2 Pull Up' }));
+
+    expect(screen.getByText('Pull Up').closest('button')).toHaveAttribute('aria-expanded', 'true');
+    expect(screen.getByText('Barbell Bench Press').closest('button')).toHaveAttribute('aria-expanded', 'false');
   });
 
   it('renders independent dense per-set entry for weighted exercises without invented RPE or notes fields', () => {
@@ -331,7 +430,7 @@ describe('workout session presentation', () => {
     expect(onUseServerVersion).toHaveBeenCalledTimes(1);
   });
 
-  it('keeps the recovered workout visible while gating structural actions but allowing queued set completion offline', () => {
+  it('keeps the recovered workout visible while gating structural actions but allowing queued set completion offline', async () => {
     const onSaveSet = vi.fn(async () => true);
     render(activeScreen({
       onSaveSet,
@@ -351,7 +450,9 @@ describe('workout session presentation', () => {
     expect(screen.getByLabelText('Set 1 weight in lb')).toHaveValue(225);
     expect(screen.getByLabelText('Set 1 weight in lb')).toBeEnabled();
     expect(screen.getByRole('button', { name: 'Mark set 1 complete' })).toBeEnabled();
-    fireEvent.click(screen.getByRole('button', { name: 'Mark set 1 complete' }));
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: 'Mark set 1 complete' }));
+    });
     expect(onSaveSet).toHaveBeenCalledWith('set-1', expect.objectContaining({ completed: true, reps: 6 }));
 
     expect(screen.getByRole('button', { name: 'Add exercise' })).toBeDisabled();

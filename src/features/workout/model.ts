@@ -22,12 +22,14 @@ export interface WorkoutExercise {
   workoutId: string;
   exerciseId: string;
   orderIndex: number;
+  supersetGroupId: string | null;
+  supersetOrder: number | null;
   revision: number;
   canonicalName: string;
   measurementType: ExerciseMeasurementType;
 }
 
-export type WorkoutCompositionAction = 'add' | 'remove' | 'move' | null;
+export type WorkoutCompositionAction = 'add' | 'remove' | 'move' | 'superset' | null;
 
 
 export type ExerciseMuscleGroup =

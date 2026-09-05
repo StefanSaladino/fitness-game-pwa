@@ -2,12 +2,24 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import { getSupabaseClient } from '../../lib/supabase';
 import type { ExerciseMeasurementType, WorkoutExercise } from './model';
 
-type WorkoutExerciseRow = {
+type LegacyWorkoutExerciseRow = {
   id: string;
   workout_id: string;
   exercise_id: string;
   order_index: number;
   revision: number;
+};
+
+type WorkoutExerciseRow = LegacyWorkoutExerciseRow & {
+  superset_group_id: string | null;
+  superset_order: number | null;
+};
+
+type PostgrestErrorLike = {
+  code?: unknown;
+  message?: unknown;
+  details?: unknown;
+  hint?: unknown;
 };
 
 type ExerciseCatalogRow = {
@@ -23,17 +35,51 @@ export interface WorkoutExerciseService {
   moveExercise(workoutExerciseId: string, newOrderIndex: number): Promise<void>;
 }
 
+function isMissingSupersetColumnError(error: unknown): boolean {
+  if (typeof error !== 'object' || error === null) return false;
+  const candidate = error as PostgrestErrorLike;
+  if (candidate.code !== '42703' && candidate.code !== 'PGRST204') return false;
+
+  const detail = [candidate.message, candidate.details, candidate.hint]
+    .filter((value): value is string => typeof value === 'string')
+    .join(' ')
+    .toLowerCase();
+
+  return detail.includes('superset_group_id') || detail.includes('superset_order');
+}
+
+async function loadWorkoutExerciseRows(client: SupabaseClient, workoutId: string): Promise<WorkoutExerciseRow[]> {
+  const groupedResult = await client
+    .from('workout_exercises')
+    .select('id, workout_id, exercise_id, order_index, superset_group_id, superset_order, revision')
+    .eq('workout_id', workoutId)
+    .order('order_index', { ascending: true });
+
+  if (!groupedResult.error) return (groupedResult.data ?? []) as WorkoutExerciseRow[];
+  if (!isMissingSupersetColumnError(groupedResult.error)) throw groupedResult.error;
+
+  // Phase 18.2 is shipped as a local overlay before its migration is applied to
+  // production. During that narrow window, keep active lifts readable against
+  // the pre-Superset schema. This fallback is intentionally limited to the two
+  // missing additive columns and must not mask unrelated PostgREST failures.
+  const legacyResult = await client
+    .from('workout_exercises')
+    .select('id, workout_id, exercise_id, order_index, revision')
+    .eq('workout_id', workoutId)
+    .order('order_index', { ascending: true });
+
+  if (legacyResult.error) throw legacyResult.error;
+  return ((legacyResult.data ?? []) as LegacyWorkoutExerciseRow[]).map((row) => ({
+    ...row,
+    superset_group_id: null,
+    superset_order: null,
+  }));
+}
+
 export function createWorkoutExerciseService(client: SupabaseClient = getSupabaseClient()): WorkoutExerciseService {
   return {
     async loadWorkoutExercises(workoutId) {
-      const exerciseRows = await client
-        .from('workout_exercises')
-        .select('id, workout_id, exercise_id, order_index, revision')
-        .eq('workout_id', workoutId)
-        .order('order_index', { ascending: true });
-
-      if (exerciseRows.error) throw exerciseRows.error;
-      const rows = (exerciseRows.data ?? []) as WorkoutExerciseRow[];
+      const rows = await loadWorkoutExerciseRows(client, workoutId);
       if (rows.length === 0) return [];
 
       const catalogRows = await client
@@ -54,6 +100,8 @@ export function createWorkoutExerciseService(client: SupabaseClient = getSupabas
           workoutId: row.workout_id,
           exerciseId: row.exercise_id,
           orderIndex: row.order_index,
+          supersetGroupId: row.superset_group_id,
+          supersetOrder: row.superset_order,
           revision: row.revision,
           canonicalName: exercise.canonical_name,
           measurementType: exercise.measurement_type,

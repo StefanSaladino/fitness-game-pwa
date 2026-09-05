@@ -17,9 +17,11 @@ import type { WorkoutRecoverySetDraft, WorkoutRecoveryState } from '../recovery/
 import type { WorkoutExerciseStatus } from '../hooks/useWorkoutExercises';
 import type { ExercisePickerStatus } from '../hooks/useExercisePickerCatalog';
 import type { WorkoutSetBusyState, WorkoutSetStatus } from '../hooks/useWorkoutSets';
+import { deriveSupersetFlow } from '../supersetFlow';
 import { elapsedWorkoutSeconds, formatWorkoutDuration } from '../workoutTime';
 import { ExerciseMiniIcon } from './ExerciseMiniIcon';
 import { ExercisePicker } from './ExercisePicker';
+import { SupersetBuilder } from './SupersetBuilder';
 import { WorkoutSetList } from './WorkoutSetList';
 import styles from './WorkoutSessionScreen.module.css';
 
@@ -48,6 +50,8 @@ interface ActiveProps extends SharedProps {
   onAddExercise: (exerciseId: string) => Promise<boolean>;
   onMoveExercise: (workoutExerciseId: string, newOrderIndex: number) => Promise<boolean>;
   onRemoveExercise: (workoutExerciseId: string) => Promise<boolean>;
+  onSaveSuperset: (supersetGroupId: string | null, workoutExerciseIds: string[]) => Promise<boolean>;
+  onClearSuperset: (supersetGroupId: string) => Promise<boolean>;
   onRetryExercisePicker: () => Promise<ExercisePickerItem[]>;
   workoutSets: WorkoutSet[];
   setStatus: WorkoutSetStatus;
@@ -140,6 +144,35 @@ function measurementLabel(exercise: WorkoutExercise): string {
     case 'DURATION': return 'Duration';
     default: return 'Tracked exercise';
   }
+}
+
+
+function supersetGroupLabel(exercises: WorkoutExercise[], groupId: string): string {
+  const groupIds = [...new Set(
+    exercises
+      .filter((item) => item.supersetGroupId !== null)
+      .sort((a, b) => a.orderIndex - b.orderIndex)
+      .map((item) => item.supersetGroupId as string),
+  )];
+  const groupIndex = groupIds.indexOf(groupId);
+  return groupIndex >= 0 && groupIndex < 26 ? String.fromCharCode(65 + groupIndex) : String(groupIndex + 1);
+}
+
+function supersetMarker(exercises: WorkoutExercise[], exercise: WorkoutExercise): string | null {
+  if (!exercise.supersetGroupId || exercise.supersetOrder === null) return null;
+  return `Superset ${supersetGroupLabel(exercises, exercise.supersetGroupId)}${exercise.supersetOrder + 1}`;
+}
+
+function TimerControlIcon({ paused }: { paused: boolean }) {
+  return paused ? (
+    <svg aria-hidden="true" className={styles.timerControlIcon} viewBox="0 0 24 24">
+      <path d="M8 5.5v13l10-6.5z" />
+    </svg>
+  ) : (
+    <svg aria-hidden="true" className={styles.timerControlIcon} viewBox="0 0 24 24">
+      <path d="M7.5 5.5h3.5v13H7.5zM13 5.5h3.5v13H13z" />
+    </svg>
+  );
 }
 
 function syncPresentation(
@@ -269,6 +302,7 @@ export function ActiveWorkoutScreen(props: ActiveProps) {
   const [expandedExerciseId, setExpandedExerciseId] = useState<string | null>(() => props.exercises[0]?.id ?? null);
   const hasInitializedExerciseExpansionRef = useRef(props.exercises.length > 0);
   const [lifecycleConfirm, setLifecycleConfirm] = useState<'finish' | 'cancel' | null>(null);
+  const [supersetAnchorId, setSupersetAnchorId] = useState<string | null>(null);
   const workoutContentRef = useRef<HTMLDivElement | null>(null);
   const lifecycleDialogRef = useRef<HTMLElement | null>(null);
   const cancelButtonRef = useRef<HTMLButtonElement | null>(null);
@@ -307,7 +341,10 @@ export function ActiveWorkoutScreen(props: ActiveProps) {
   }, [props.initialWeightUnit, props.workout.id]);
 
   useEffect(() => {
-    if (!serverMutationsEnabled) setPickerOpen(false);
+    if (!serverMutationsEnabled) {
+      setPickerOpen(false);
+      setSupersetAnchorId(null);
+    }
   }, [serverMutationsEnabled]);
 
   useEffect(() => {
@@ -366,11 +403,11 @@ export function ActiveWorkoutScreen(props: ActiveProps) {
   }, [lifecycleMutationsEnabled]);
 
   useEffect(() => {
-    if (!pickerOpen) return undefined;
+    if (!pickerOpen && !supersetAnchorId) return undefined;
     const content = workoutContentRef.current;
     content?.setAttribute('inert', '');
     return () => content?.removeAttribute('inert');
-  }, [pickerOpen]);
+  }, [pickerOpen, supersetAnchorId]);
 
   const changeWeightUnit = (unit: WeightDisplayUnit) => {
     setWeightUnit(unit);
@@ -395,42 +432,28 @@ export function ActiveWorkoutScreen(props: ActiveProps) {
     setLifecycleConfirm(null);
   };
 
+  const goToSupersetExercise = (exerciseId: string) => {
+    setExpandedExerciseId(exerciseId);
+    window.requestAnimationFrame(() => {
+      document.getElementById(`workout-exercise-row-${exerciseId}`)?.scrollIntoView?.({ behavior: 'smooth', block: 'center' });
+    });
+  };
+
   const dialogIsFinish = lifecycleConfirm === 'finish';
 
   return (
     <WorkoutShell {...props}>
       <div className={styles.active}>
-        <div ref={workoutContentRef} className={styles.workoutContent} aria-hidden={(Boolean(lifecycleConfirm) || pickerOpen) || undefined}>
-          <section className={styles.sessionPanel} data-app-surface="primary">
+        <div ref={workoutContentRef} className={styles.workoutContent} aria-hidden={(Boolean(lifecycleConfirm) || pickerOpen || Boolean(supersetAnchorId)) || undefined}>
+          <section className={styles.sessionOverview} data-app-surface="primary">
             <header className={styles.activeHeader}>
               <div className={styles.activeTitle}>
                 <p className={styles.kicker}>ACTIVE LIFT</p>
                 <h1>{displayPaused ? 'Workout paused' : 'Workout in progress'}</h1>
               </div>
-              {persistedPaused ? (
-                <button
-                  aria-label="Resume timer"
-                  className={styles.timerControl}
-                  disabled={!lifecycleMutationsEnabled || lifecycleBusy}
-                  onClick={resumeNow}
-                  type="button"
-                >{props.busyAction === 'resume' ? 'Resuming…' : 'Resume'}</button>
-              ) : (
-                <button
-                  aria-label="Pause timer"
-                  className={styles.timerControl}
-                  disabled={!lifecycleMutationsEnabled || lifecycleBusy}
-                  onClick={pauseNow}
-                  type="button"
-                >{props.busyAction === 'pause' ? 'Pausing…' : 'Pause'}</button>
-              )}
             </header>
 
             <div className={styles.sessionMeta} aria-label="Workout session state">
-              <div className={styles.elapsedMeta}>
-                <span>Elapsed</span>
-                <time className={styles.timer} dateTime={`PT${seconds}S`}>{formatWorkoutDuration(seconds)}</time>
-              </div>
               <div><span>Started</span><strong>{new Intl.DateTimeFormat('en-CA', { hour: 'numeric', minute: '2-digit' }).format(new Date(props.workout.startedAt))}</strong></div>
               <div><span>Scoring date</span><strong>{props.workout.scoringDate}</strong></div>
             </div>
@@ -462,6 +485,22 @@ export function ActiveWorkoutScreen(props: ActiveProps) {
             </section>
           )}
 
+          <div className={styles.stickyTimerBar} aria-label="Active workout timer">
+            <div className={styles.stickyTimerState}>
+              <span>{displayPaused ? 'Paused' : 'Active lift'}</span>
+              <time className={styles.stickyTimer} dateTime={`PT${seconds}S`}>{formatWorkoutDuration(seconds)}</time>
+            </div>
+            <button
+              aria-label={persistedPaused ? 'Resume timer' : 'Pause timer'}
+              className={styles.stickyTimerControl}
+              disabled={!lifecycleMutationsEnabled || lifecycleBusy}
+              onClick={persistedPaused ? resumeNow : pauseNow}
+              type="button"
+            >
+              <TimerControlIcon paused={persistedPaused} />
+            </button>
+          </div>
+
           <section className={styles.exerciseStage} aria-labelledby="workout-exercises-heading" data-app-surface="category">
             <div className={styles.exerciseHeading}>
               <div>
@@ -492,75 +531,182 @@ export function ActiveWorkoutScreen(props: ActiveProps) {
 
             {props.exerciseStatus === 'ready' && props.exercises.length > 0 && (
               <ol className={styles.exerciseList}>
-                {props.exercises.map((exercise, index) => {
-                  const expanded = expandedExerciseId === exercise.id;
-                  const panelId = `workout-exercise-${exercise.id}`;
-                  return (
-                    <li className={`${styles.exerciseRow}${expanded ? ` ${styles.exerciseExpanded}` : ''}`} key={exercise.id}>
-                      <div className={styles.exerciseTopline}>
-                        <button
-                          aria-controls={panelId}
-                          aria-expanded={expanded}
-                          className={styles.exerciseToggle}
-                          onClick={() => setExpandedExerciseId((current) => current === exercise.id ? null : exercise.id)}
-                          type="button"
-                        >
-                          <span className={styles.exerciseIconFrame}>
-                            <ExerciseMiniIcon canonicalName={exercise.canonicalName} className={styles.exerciseIcon} />
-                          </span>
-                          <span className={styles.exerciseIdentity}>
-                            <strong>{exercise.canonicalName}</strong>
-                            <span>{measurementLabel(exercise)}</span>
-                          </span>
-                          <span className={styles.exerciseChevron} aria-hidden="true">{expanded ? '⌃' : '⌄'}</span>
-                        </button>
-                      </div>
-                      {expanded && (
-                        <>
-                          <div className={styles.exerciseActions} aria-label={`${exercise.canonicalName} management`} role="group">
-                            <button
-                              aria-label={`Move ${exercise.canonicalName} up`}
-                              disabled={!serverMutationsEnabled || compositionBusy || index === 0}
-                              onClick={() => void props.onMoveExercise(exercise.id, index - 1)}
-                              type="button"
-                            ><span aria-hidden="true">↑</span><span className={styles.exerciseActionLabel}>Move up</span></button>
-                            <button
-                              aria-label={`Move ${exercise.canonicalName} down`}
-                              disabled={!serverMutationsEnabled || compositionBusy || index === props.exercises.length - 1}
-                              onClick={() => void props.onMoveExercise(exercise.id, index + 1)}
-                              type="button"
-                            ><span aria-hidden="true">↓</span><span className={styles.exerciseActionLabel}>Move down</span></button>
-                            <button
-                              aria-label={`Remove ${exercise.canonicalName}`}
-                              className={styles.removeExercise}
-                              disabled={!serverMutationsEnabled || compositionBusy}
-                              onClick={() => void props.onRemoveExercise(exercise.id)}
-                              type="button"
-                            >Remove</button>
+                {(() => {
+                  const renderedSupersetIds = new Set<string>();
+
+                  const renderExerciseRow = (exercise: WorkoutExercise, index: number, supersetCurrent = false) => {
+                    const expanded = expandedExerciseId === exercise.id;
+                    const panelId = `workout-exercise-${exercise.id}`;
+                    return (
+                      <li
+                        aria-current={supersetCurrent ? 'step' : undefined}
+                        className={`${styles.exerciseRow}${expanded ? ` ${styles.exerciseExpanded}` : ''}${supersetCurrent ? ` ${styles.supersetCurrentMember}` : ''}`}
+                        id={`workout-exercise-row-${exercise.id}`}
+                        key={exercise.id}
+                      >
+                        <div className={styles.exerciseTopline}>
+                          <button
+                            aria-controls={panelId}
+                            aria-expanded={expanded}
+                            className={styles.exerciseToggle}
+                            onClick={() => setExpandedExerciseId((current) => current === exercise.id ? null : exercise.id)}
+                            type="button"
+                          >
+                            <span className={styles.exerciseIconFrame}>
+                              <ExerciseMiniIcon canonicalName={exercise.canonicalName} className={styles.exerciseIcon} />
+                            </span>
+                            <span className={styles.exerciseIdentity}>
+                              <strong>{exercise.canonicalName}</strong>
+                              <span>{supersetMarker(props.exercises, exercise) ?? measurementLabel(exercise)}</span>
+                            </span>
+                            <span className={styles.exerciseChevron} aria-hidden="true">{expanded ? '⌃' : '⌄'}</span>
+                          </button>
+                        </div>
+                        {expanded && (
+                          <>
+                            <div
+                              className={`${styles.exerciseActions}${exercise.supersetGroupId ? ` ${styles.groupedExerciseActions}` : ''}`}
+                              aria-label={`${exercise.canonicalName} management`}
+                              role="group"
+                            >
+                              <button
+                                aria-label={`Move ${exercise.canonicalName} up`}
+                                className={styles.moveExercise}
+                                disabled={!serverMutationsEnabled || compositionBusy || index === 0 || exercise.supersetGroupId !== null}
+                                title={exercise.supersetGroupId ? 'Manage the Superset before moving this exercise.' : undefined}
+                                onClick={() => void props.onMoveExercise(exercise.id, index - 1)}
+                                type="button"
+                              ><span aria-hidden="true">↑</span><span className={styles.exerciseActionLabel}>Move up</span></button>
+                              <button
+                                aria-label={`Move ${exercise.canonicalName} down`}
+                                className={styles.moveExercise}
+                                disabled={!serverMutationsEnabled || compositionBusy || index === props.exercises.length - 1 || exercise.supersetGroupId !== null}
+                                title={exercise.supersetGroupId ? 'Manage the Superset before moving this exercise.' : undefined}
+                                onClick={() => void props.onMoveExercise(exercise.id, index + 1)}
+                                type="button"
+                              ><span aria-hidden="true">↓</span><span className={styles.exerciseActionLabel}>Move down</span></button>
+                              {!exercise.supersetGroupId && (
+                                <button
+                                  aria-label={`Create Superset for ${exercise.canonicalName}`}
+                                  className={styles.supersetExercise}
+                                  disabled={!serverMutationsEnabled || compositionBusy || props.exercises.length < 2}
+                                  onClick={() => setSupersetAnchorId(exercise.id)}
+                                  type="button"
+                                >Superset</button>
+                              )}
+                              <button
+                                aria-label={`Remove ${exercise.canonicalName}`}
+                                className={styles.removeExercise}
+                                disabled={!serverMutationsEnabled || compositionBusy || exercise.supersetGroupId !== null}
+                                title={exercise.supersetGroupId ? 'Manage or break apart the Superset before removing this exercise.' : undefined}
+                                onClick={() => void props.onRemoveExercise(exercise.id)}
+                                type="button"
+                              >Remove</button>
+                            </div>
+                            <div className={styles.exerciseSets} id={panelId}>
+                              <WorkoutSetList
+                                busy={props.setBusy}
+                                exercise={exercise}
+                                onAddSet={props.onAddSet}
+                                onCopySet={props.onCopySet}
+                                onDraftChange={props.onSetDraftChange}
+                                onDraftPersisted={props.onSetDraftPersisted}
+                                onRemoveSet={props.onRemoveSet}
+                                onSaveSet={props.onSaveSet}
+                                recoveryDrafts={props.recoveryDrafts}
+                                serverMutationsEnabled={serverMutationsEnabled}
+                                setEditsEnabled={setEditsEnabled}
+                                sets={props.workoutSets.filter((set) => set.workoutExerciseId === exercise.id)}
+                                status={props.setStatus}
+                                unit={weightUnit}
+                              />
+                            </div>
+                          </>
+                        )}
+                      </li>
+                    );
+                  };
+
+                  return props.exercises.map((exercise, index) => {
+                    if (!exercise.supersetGroupId) return renderExerciseRow(exercise, index);
+                    if (renderedSupersetIds.has(exercise.supersetGroupId)) return null;
+
+                    const groupId = exercise.supersetGroupId;
+                    renderedSupersetIds.add(groupId);
+                    const members = props.exercises
+                      .filter((item) => item.supersetGroupId === groupId)
+                      .sort((left, right) => (left.supersetOrder ?? 0) - (right.supersetOrder ?? 0));
+                    const groupLabel = supersetGroupLabel(props.exercises, groupId);
+                    const flow = deriveSupersetFlow(members, props.workoutSets);
+                    const currentMember = flow.currentExerciseId
+                      ? members.find((member) => member.id === flow.currentExerciseId) ?? null
+                      : null;
+                    const currentPosition = flow.currentSupersetOrder === null
+                      ? null
+                      : `${groupLabel}${flow.currentSupersetOrder + 1}`;
+                    const flowStatus = flow.complete
+                      ? 'Superset complete'
+                      : currentMember && flow.currentSetNumber !== null
+                        ? `Next: ${currentPosition} ${currentMember.canonicalName} · Set ${flow.currentSetNumber}`
+                        : currentMember
+                          ? `Start with ${currentPosition} ${currentMember.canonicalName}`
+                          : 'Superset ready';
+                    const progressLabel = flow.totalSets > 0
+                      ? `${flow.completedSets} of ${flow.totalSets} sets complete`
+                      : 'No sets logged yet';
+                    const progressPercent = flow.totalSets > 0
+                      ? Math.round((flow.completedSets / flow.totalSets) * 100)
+                      : 0;
+
+                    return (
+                      <li aria-label={`Superset ${groupLabel} group`} className={styles.supersetGroup} key={groupId}>
+                        <div className={styles.supersetGroupHeader}>
+                          <span className={styles.supersetGroupBadge}>Superset {groupLabel}</span>
+                          <span className={styles.supersetGroupSummary}>{members.length} exercises · {groupLabel}1 → {groupLabel}{members.length}</span>
+                          <button
+                            aria-label={`Manage Superset ${groupLabel}`}
+                            className={styles.supersetManageButton}
+                            disabled={!serverMutationsEnabled || compositionBusy}
+                            onClick={() => setSupersetAnchorId(members[0]?.id ?? null)}
+                            type="button"
+                          >Manage</button>
+                        </div>
+                        <div className={`${styles.supersetFlow}${flow.complete ? ` ${styles.supersetFlowComplete}` : ''}`} aria-live="polite">
+                          <div className={styles.supersetFlowCopy}>
+                            <span className={styles.supersetFlowEyebrow}>Active sequence</span>
+                            <strong>{flowStatus}</strong>
+                            <span>{progressLabel}</span>
+                            <div
+                              aria-label={`Superset ${groupLabel} progress`}
+                              aria-valuemax={Math.max(flow.totalSets, 1)}
+                              aria-valuemin={0}
+                              aria-valuenow={flow.completedSets}
+                              className={styles.supersetProgressTrack}
+                              role="progressbar"
+                            >
+                              <span className={styles.supersetProgressFill} style={{ width: `${progressPercent}%` }} />
+                            </div>
                           </div>
-                          <div className={styles.exerciseSets} id={panelId}>
-                          <WorkoutSetList
-                            busy={props.setBusy}
-                            exercise={exercise}
-                            onAddSet={props.onAddSet}
-                            onCopySet={props.onCopySet}
-                            onDraftChange={props.onSetDraftChange}
-                            onDraftPersisted={props.onSetDraftPersisted}
-                            onRemoveSet={props.onRemoveSet}
-                            onSaveSet={props.onSaveSet}
-                            recoveryDrafts={props.recoveryDrafts}
-                            serverMutationsEnabled={serverMutationsEnabled}
-                            setEditsEnabled={setEditsEnabled}
-                            sets={props.workoutSets.filter((set) => set.workoutExerciseId === exercise.id)}
-                            status={props.setStatus}
-                            unit={weightUnit}
-                          />
-                          </div>
-                        </>
-                      )}
-                    </li>
-                  );
-                })}
+                          {!flow.complete && currentMember && currentPosition && (
+                            <button
+                              aria-label={`Go to ${currentPosition} ${currentMember.canonicalName}`}
+                              className={styles.supersetGoButton}
+                              onClick={() => goToSupersetExercise(currentMember.id)}
+                              type="button"
+                            >Go to {currentPosition}</button>
+                          )}
+                        </div>
+                        <ol className={styles.supersetMemberList}>
+                          {members.map((member) => renderExerciseRow(
+                            member,
+                            props.exercises.findIndex((item) => item.id === member.id),
+                            member.id === flow.currentExerciseId && !flow.complete,
+                          ))}
+                        </ol>
+                      </li>
+                    );
+                  });
+                })()}
               </ol>
             )}
 
@@ -588,6 +734,17 @@ export function ActiveWorkoutScreen(props: ActiveProps) {
             >Cancel workout</button>
           </div>
         </div>
+
+        {supersetAnchorId && (
+          <SupersetBuilder
+            anchorExerciseId={supersetAnchorId}
+            busy={compositionBusy}
+            exercises={props.exercises}
+            onBreakApart={props.onClearSuperset}
+            onClose={() => setSupersetAnchorId(null)}
+            onSave={props.onSaveSuperset}
+          />
+        )}
 
         <ExercisePicker
           catalog={props.exerciseCatalog}

@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { useState, type ComponentProps } from 'react';
 import { describe, expect, it, vi } from 'vitest';
@@ -7,12 +7,14 @@ import { WorkoutSetList } from './WorkoutSetList';
 
 const weightedExercise: WorkoutExercise = {
   id: 'we-1', workoutId: 'workout-1', exerciseId: 'exercise-1', orderIndex: 0,
+  supersetGroupId: null, supersetOrder: null,
   revision: 0,
   canonicalName: 'Barbell Bench Press', measurementType: 'WEIGHT_REPS',
 };
 
 const bodyweightExercise: WorkoutExercise = {
   id: 'we-2', workoutId: 'workout-1', exerciseId: 'exercise-2', orderIndex: 1,
+  supersetGroupId: null, supersetOrder: null,
   revision: 0,
   canonicalName: 'Pull Up', measurementType: 'BODYWEIGHT_REPS',
 };
@@ -65,6 +67,46 @@ describe('WorkoutSetList', () => {
 
     await waitFor(() => expect(onSaveSet).toHaveBeenCalled());
     expect(onSaveSet).toHaveBeenLastCalledWith('set-2', expect.objectContaining({ weightKg: 102.5, reps: 6, completed: true }));
+    const collapsed = await screen.findByRole('button', { name: 'Expand set 2' });
+    expect(collapsed).toHaveTextContent('Set 2:');
+    expect(within(collapsed).getByText('6 reps • 102.5 kg')).toBeInTheDocument();
+  });
+
+  it('collapses a completed weighted set into a compact reps and weight summary and lets it reopen for editing', () => {
+    const completedSet: WorkoutSet = {
+      ...sets[1],
+      completed: true,
+      completedAt: '2026-09-04T20:00:00.000Z',
+      reps: 6,
+      weightKg: 102.5,
+    };
+    render(<WorkoutSetList {...props({ sets: [completedSet] })} />);
+
+    const expand = screen.getByRole('button', { name: 'Expand set 2' });
+    expect(expand).toHaveTextContent('Set 2:');
+    expect(expand).toHaveTextContent('6 reps • 102.5 kg');
+    expect(screen.queryByLabelText('Set 2 weight in kg')).not.toBeInTheDocument();
+
+    fireEvent.click(expand);
+    expect(screen.getByLabelText('Set 2 weight in kg')).toHaveValue(102.5);
+    expect(screen.getByLabelText('Set 2 reps')).toHaveValue(6);
+    const done = screen.getByRole('button', { name: 'Reopen set 2' });
+    const collapse = screen.getByRole('button', { name: 'Collapse set 2' });
+    expect(collapse).toHaveAttribute('aria-expanded', 'true');
+    expect(done.compareDocumentPosition(collapse) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
+  it('summarizes completed bodyweight sets without inventing a load', () => {
+    const completedBodyweightSet: WorkoutSet = {
+      id: 'set-bw-complete', workoutExerciseId: 'we-2', setNumber: 1, setType: 'WORKING',
+      weightKg: null, reps: 8, bodyweightMode: 'BODYWEIGHT', completed: true,
+      completedAt: '2026-09-04T20:00:00.000Z', revision: 0,
+    };
+    render(<WorkoutSetList {...props({ exercise: bodyweightExercise, sets: [completedBodyweightSet] })} />);
+
+    const expand = screen.getByRole('button', { name: 'Expand set 1' });
+    expect(expand).toHaveTextContent('Set 1:');
+    expect(within(expand).getByText('8 reps • Bodyweight')).toBeInTheDocument();
   });
 
   it('adds a fresh set or copies the last set into a new independent row', () => {

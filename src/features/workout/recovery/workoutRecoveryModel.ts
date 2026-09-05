@@ -25,6 +25,8 @@ export interface WorkoutRecoveryExerciseSnapshot {
   workoutId: string;
   exerciseId: string;
   orderIndex: number;
+  supersetGroupId: string | null;
+  supersetOrder: number | null;
   revision: number;
   canonicalName: string;
   measurementType: WorkoutExercise['measurementType'];
@@ -86,6 +88,8 @@ function snapshotExercise(exercise: WorkoutExercise): WorkoutRecoveryExerciseSna
     workoutId: exercise.workoutId,
     exerciseId: exercise.exerciseId,
     orderIndex: exercise.orderIndex,
+    supersetGroupId: exercise.supersetGroupId,
+    supersetOrder: exercise.supersetOrder,
     revision: exercise.revision,
     canonicalName: exercise.canonicalName,
     measurementType: exercise.measurementType,
@@ -209,10 +213,20 @@ export function parseWorkoutRecoverySnapshot(value: unknown, expectedUserId: str
     && isString(exercise.exerciseId)
     && typeof exercise.orderIndex === 'number'
     && Number.isInteger(exercise.orderIndex)
+    && (exercise.supersetGroupId === undefined || exercise.supersetGroupId === null || isString(exercise.supersetGroupId))
+    && (exercise.supersetOrder === undefined || exercise.supersetOrder === null
+      || (typeof exercise.supersetOrder === 'number' && Number.isInteger(exercise.supersetOrder) && exercise.supersetOrder >= 0))
+    && ((exercise.supersetGroupId === undefined || exercise.supersetGroupId === null)
+      === (exercise.supersetOrder === undefined || exercise.supersetOrder === null))
     && (exercise.revision === undefined || (typeof exercise.revision === 'number' && Number.isInteger(exercise.revision) && exercise.revision >= 0))
     && isString(exercise.canonicalName)
     && ['WEIGHT_REPS', 'BODYWEIGHT_REPS', 'DURATION', 'OTHER'].includes(String(exercise.measurementType)));
   if (!exercisesValid) return null;
+
+  const supersetMembershipKeys = exercises
+    .filter((exercise) => isRecord(exercise) && typeof exercise.supersetGroupId === 'string')
+    .map((exercise) => `${String((exercise as Record<string, unknown>).supersetGroupId)}:${String((exercise as Record<string, unknown>).supersetOrder)}`);
+  if (new Set(supersetMembershipKeys).size !== supersetMembershipKeys.length) return null;
 
   const exerciseIds = new Set(exercises.map((exercise) => (exercise as Record<string, unknown>).id));
   const setsValid = value.sets.every((set) => isRecord(set)
@@ -234,6 +248,12 @@ export function parseWorkoutRecoverySnapshot(value: unknown, expectedUserId: str
     ...(value as unknown as ActiveWorkoutRecoverySnapshot),
     exercises: exercises.map((exercise) => ({
       ...(exercise as unknown as WorkoutRecoveryExerciseSnapshot),
+      supersetGroupId: typeof (exercise as Record<string, unknown>).supersetGroupId === 'string'
+        ? (exercise as Record<string, unknown>).supersetGroupId as string
+        : null,
+      supersetOrder: typeof (exercise as Record<string, unknown>).supersetOrder === 'number'
+        ? (exercise as Record<string, unknown>).supersetOrder as number
+        : null,
       revision: typeof (exercise as Record<string, unknown>).revision === 'number'
         ? (exercise as Record<string, unknown>).revision as number
         : 0,

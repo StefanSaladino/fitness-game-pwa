@@ -18,8 +18,13 @@ export default defineConfig({
   ],
   webServer: {
     command: 'npm run build && npm run preview -- --host 127.0.0.1 --port 4173',
-    env: { FITNESS_E2E_RELIABILITY: '1' },
+    env: {
+      FITNESS_E2E_RELIABILITY: '1',
+      VITE_APP_URL: '',
+      VITE_SUPABASE_URL: '',
+      VITE_SUPABASE_PUBLISHABLE_KEY: '',
+    },
     url: 'http://127.0.0.1:4173',
-    reuseExistingServer: !process.env.CI,
+    reuseExistingServer: false,
   },
 });

@@ -34,6 +34,7 @@ const exercise: WorkoutExercise = {
   workoutId: workout.id,
   exerciseId: '74444444-4444-4444-8444-444444444444',
   orderIndex: 0,
+  supersetGroupId: null, supersetOrder: null,
   revision: 0,
   canonicalName: 'Barbell Bench Press',
   measurementType: 'WEIGHT_REPS',
@@ -83,6 +84,8 @@ function Harness() {
       onNavigate={() => undefined}
       onPause={async () => undefined}
       onRemoveExercise={async () => true}
+      onSaveSuperset={async () => true}
+      onClearSuperset={async () => true}
       onRemoveSet={async () => true}
       onResume={async () => undefined}
       onRetryExercisePicker={async () => []}

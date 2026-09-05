@@ -27,7 +27,7 @@ const snapshot: ActiveWorkoutRecoverySnapshot = {
     timezoneAtStart: 'America/Toronto', scoringDate: '2026-08-19', pausedAt: null, lastResumedAt: '2026-08-20T02:55:00.000Z',
   },
   exercises: [
-    { id: 'we-1', workoutId: 'workout-1', exerciseId: 'e-1', orderIndex: 0, revision: 0, canonicalName: 'Barbell Bench Press', measurementType: 'WEIGHT_REPS' },
+    { id: 'we-1', workoutId: 'workout-1', exerciseId: 'e-1', orderIndex: 0, supersetGroupId: null, supersetOrder: null, revision: 0, canonicalName: 'Barbell Bench Press', measurementType: 'WEIGHT_REPS' },
   ],
   sets: [
     { id: 'set-1', workoutExerciseId: 'we-1', setNumber: 1, setType: 'WORKING', weightKg: 100, reps: 5, bodyweightMode: null, completed: false, completedAt: null, revision: 0 },

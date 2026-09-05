@@ -21,7 +21,7 @@ const session: ActiveWorkoutSession = {
   lastResumedAt: '2026-08-20T01:00:00.000Z',
 };
 const exercises: WorkoutExercise[] = [
-  { id: 'we-1', workoutId: 'workout-1', exerciseId: 'e-1', orderIndex: 0, revision: 0, canonicalName: 'Bench Press', measurementType: 'WEIGHT_REPS' },
+  { id: 'we-1', workoutId: 'workout-1', exerciseId: 'e-1', orderIndex: 0, supersetGroupId: null, supersetOrder: null, revision: 0, canonicalName: 'Bench Press', measurementType: 'WEIGHT_REPS' },
 ];
 const sets: WorkoutSet[] = [
   { id: 'set-1', workoutExerciseId: 'we-1', setNumber: 1, setType: 'WORKING', weightKg: 100, reps: 5, bodyweightMode: null, completed: false, completedAt: null, revision: 0 },

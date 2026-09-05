@@ -59,6 +59,8 @@ describe('WorkoutController preset start', () => {
       workoutId: session.id,
       exerciseId: exercise.id,
       orderIndex: index,
+      supersetGroupId: null,
+      supersetOrder: null,
       revision: 0,
       canonicalName: exercise.canonicalName,
       measurementType: exercise.measurementType,

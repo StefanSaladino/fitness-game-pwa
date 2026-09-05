@@ -61,6 +61,22 @@ function parseWeight(value: string, unit: WeightDisplayUnit): number | null | 'i
   return displayWeightToKg(parsed, unit);
 }
 
+function collapsedSetSummary(exercise: WorkoutExercise, draft: SetDraft, unit: WeightDisplayUnit): string {
+  const reps = draft.reps.trim();
+  const repLabel = reps === '1' ? 'rep' : 'reps';
+  const repSummary = reps ? `${reps} ${repLabel}` : 'Reps not set';
+
+  if (exercise.measurementType === 'BODYWEIGHT_REPS') {
+    if (draft.bodyweightMode === 'BODYWEIGHT') return `${repSummary} • Bodyweight`;
+    const load = draft.weight.trim() || '0';
+    const suffix = draft.bodyweightMode === 'ASSISTED' ? 'assisted' : 'added';
+    return `${repSummary} • ${load} ${weightUnitLabel(unit)} ${suffix}`;
+  }
+
+  const weight = draft.weight.trim() || '0';
+  return `${repSummary} • ${weight} ${weightUnitLabel(unit)}`;
+}
+
 function TrashIcon() {
   return (
     <svg aria-hidden="true" className={styles.actionIcon} viewBox="0 0 24 24">
@@ -85,6 +101,8 @@ function SetRow({
 }: Omit<WorkoutSetListProps, 'sets' | 'status' | 'onAddSet' | 'recoveryDrafts'> & { set: WorkoutSet; recoveryDraft?: WorkoutRecoverySetDraft }) {
   const [draft, setDraft] = useState<SetDraft>(() => recoveryDraft ?? draftFromSet(set, unit));
   const draftRef = useRef(draft);
+  const [collapsed, setCollapsed] = useState(set.completed);
+  const previousCompleted = useRef(set.completed);
   const [validationError, setValidationError] = useState('');
   const previousUnit = useRef(unit);
   const rowBusy = busy?.targetId === set.id;
@@ -97,6 +115,12 @@ function SetRow({
     setDraft(next);
     setValidationError('');
   }, [recoveryDraft, set.id, set.setType, set.weightKg, set.reps, set.bodyweightMode, set.completed]);
+
+  useEffect(() => {
+    if (previousCompleted.current === set.completed) return;
+    setCollapsed(set.completed);
+    previousCompleted.current = set.completed;
+  }, [set.completed]);
 
   useEffect(() => {
     if (previousUnit.current === unit) return;
@@ -174,8 +198,31 @@ function SetRow({
     const input = buildInput(!set.completed);
     if (!input || !setEditsEnabled) return;
     const saved = await onSaveSet(set.id, input);
-    if (saved) onDraftPersisted?.(set.id);
+    if (saved) {
+      setCollapsed(!set.completed);
+      onDraftPersisted?.(set.id);
+    }
   };
+
+  if (collapsed) {
+    return (
+      <li className={`${styles.collapsedSetRow} ${styles.completed}`}>
+        <button
+          aria-expanded="false"
+          aria-label={`Expand set ${set.setNumber}`}
+          className={styles.collapsedSetButton}
+          onClick={() => setCollapsed(false)}
+          type="button"
+        >
+          <span className={styles.collapsedSetSummary}>
+            <strong>Set {set.setNumber}:</strong>
+            <span>{collapsedSetSummary(exercise, draft, unit)}</span>
+          </span>
+          <span className={styles.collapsedSetChevron} aria-hidden="true">⌄</span>
+        </button>
+      </li>
+    );
+  }
 
   return (
     <li className={`${styles.setRow} ${isBodyweight ? styles.bodyweightRow : styles.weightedRow}${set.completed ? ` ${styles.completed}` : ''}`}>
@@ -266,16 +313,29 @@ function SetRow({
         </button>
       </div>
 
-      <button
-        aria-label={set.completed ? `Reopen set ${set.setNumber}` : `Mark set ${set.setNumber} complete`}
-        className={styles.completeButton}
-        disabled={Boolean(rowBusy) || !setEditsEnabled}
-        onClick={() => void toggleCompleted()}
-        type="button"
-      >
-        <span aria-hidden="true">{set.completed ? '✓' : ''}</span>
-        <span className={styles.completeLabel}>Done</span>
-      </button>
+      <div className={styles.completionControls}>
+        <button
+          aria-label={set.completed ? `Reopen set ${set.setNumber}` : `Mark set ${set.setNumber} complete`}
+          className={styles.completeButton}
+          disabled={Boolean(rowBusy) || !setEditsEnabled}
+          onClick={() => void toggleCompleted()}
+          type="button"
+        >
+          <span aria-hidden="true">{set.completed ? '✓' : ''}</span>
+          <span className={styles.completeLabel}>Done</span>
+        </button>
+        {set.completed ? (
+          <button
+            aria-expanded="true"
+            aria-label={`Collapse set ${set.setNumber}`}
+            className={styles.setCollapseButton}
+            onClick={() => setCollapsed(true)}
+            type="button"
+          >
+            <span className={styles.setNumberChevron} aria-hidden="true">⌃</span>
+          </button>
+        ) : null}
+      </div>
 
       {validationError && <p className={styles.validationError} role="alert">{validationError}</p>}
     </li>

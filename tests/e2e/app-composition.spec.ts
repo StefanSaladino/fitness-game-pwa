@@ -51,16 +51,18 @@ test('mobile Messages, Settings, and Sign out remain separate one-tap header act
   await page.goto('/app-composition.e2e.html?surface=header');
 
   const controls = [
-    page.getByRole('button', { name: 'Messages' }),
+    page.locator('[data-app-message-slot="mobile"]').getByRole('button', { name: 'Messages' }),
     page.getByRole('button', { name: 'Open Profile and Settings for Alex' }),
     page.getByRole('button', { name: 'Sign out' }),
   ];
   for (const control of controls) await expect(control).toBeVisible();
 
-  const boxes = await Promise.all(controls.map((control) => control.boundingBox()));
-  expect(boxes.every(Boolean)).toBe(true);
-  expect((boxes[0]?.x ?? 0) + (boxes[0]?.width ?? 0)).toBeLessThanOrEqual(boxes[1]?.x ?? 0);
-  expect((boxes[1]?.x ?? 0) + (boxes[1]?.width ?? 0)).toBeLessThanOrEqual(boxes[2]?.x ?? 0);
+  await expect.poll(async () => {
+    const boxes = await Promise.all(controls.map((control) => control.boundingBox()));
+    if (!boxes.every(Boolean)) return false;
+    return (boxes[0]!.x + boxes[0]!.width <= boxes[1]!.x)
+      && (boxes[1]!.x + boxes[1]!.width <= boxes[2]!.x);
+  }).toBe(true);
   await expectNoHorizontalOverflow(page);
 });
 

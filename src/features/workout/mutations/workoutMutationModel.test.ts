@@ -67,4 +67,47 @@ describe('workout mutation model', () => {
     expect(parseWorkoutMutationQueue([legacy], 'user-1')?.[0]?.payload).toEqual(expect.objectContaining({ expectedRevision: null }));
   });
 
+  it('accepts only complete contiguous Superset mutation payloads', () => {
+    const setRequest = {
+      kind: 'SET_SUPERSET' as const,
+      payload: {
+        supersetGroupId: '77777777-7777-4777-8777-777777777777',
+        expectedMembers: [],
+        members: [
+          { workoutExerciseId: 'we-1', supersetOrder: 0, expectedRevision: 2, expectedSupersetGroupId: null },
+          { workoutExerciseId: 'we-2', supersetOrder: 1, expectedRevision: 4, expectedSupersetGroupId: null },
+        ],
+      },
+    };
+    const item = createWorkoutMutationQueueItem('user-1', 'workout-1', setRequest, '11111111-1111-4111-8111-111111111111', 123);
+
+    expect(parseWorkoutMutationQueue([item], 'user-1')).toHaveLength(1);
+    expect(parseWorkoutMutationQueue([{ ...item, payload: { ...item.payload, members: [
+      { workoutExerciseId: 'we-1', supersetOrder: 0, expectedRevision: 2, expectedSupersetGroupId: null },
+      { workoutExerciseId: 'we-2', supersetOrder: 2, expectedRevision: 4, expectedSupersetGroupId: null },
+    ] } }], 'user-1')).toBeNull();
+  });
+
+  it('requires a complete expected membership snapshot before clearing a Superset', () => {
+    const item = createWorkoutMutationQueueItem(
+      'user-1',
+      'workout-1',
+      {
+        kind: 'CLEAR_SUPERSET',
+        payload: {
+          supersetGroupId: '77777777-7777-4777-8777-777777777777',
+          expectedMembers: [
+            { workoutExerciseId: 'we-1', expectedRevision: 2 },
+            { workoutExerciseId: 'we-2', expectedRevision: 4 },
+          ],
+        },
+      },
+      '22222222-2222-4222-8222-222222222222',
+      123,
+    );
+
+    expect(parseWorkoutMutationQueue([item], 'user-1')).toHaveLength(1);
+    expect(parseWorkoutMutationQueue([{ ...item, payload: { ...item.payload, expectedMembers: [{ workoutExerciseId: 'we-1', expectedRevision: 2 }] } }], 'user-1')).toBeNull();
+  });
+
 });

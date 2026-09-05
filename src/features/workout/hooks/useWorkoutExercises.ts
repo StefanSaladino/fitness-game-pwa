@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { WorkoutCompositionAction, WorkoutExercise } from '../model';
-import type { WorkoutMutationExecutor, WorkoutMutationRequest } from '../mutations/workoutMutationModel';
+import { createIdempotencyKey, type WorkoutMutationExecutor, type WorkoutMutationRequest } from '../mutations/workoutMutationModel';
 import { toUserFacingWorkoutError } from '../workoutMessages';
 import { createWorkoutExerciseService, type WorkoutExerciseService } from '../workoutExerciseService';
 
@@ -100,9 +100,90 @@ export function useWorkoutExercises(workoutId: string | null, injectedService?: 
     );
   }, [exercises, runMutation]);
 
+  const saveSuperset = useCallback(async (supersetGroupId: string | null, workoutExerciseIds: string[]) => {
+    if (!workoutId || !mutationExecutor) {
+      setError('Superset changes require the protected workout mutation queue.');
+      return false;
+    }
+
+    const memberIds = [...new Set(workoutExerciseIds)];
+    if (memberIds.length < 2) {
+      setError('A Superset needs at least two exercises.');
+      return false;
+    }
+
+    const selected = memberIds.map((id) => exercises.find((exercise) => exercise.id === id));
+    if (selected.some((exercise) => !exercise)) {
+      setError('One of the selected exercises is no longer in this workout.');
+      return false;
+    }
+
+    const targetGroupId = supersetGroupId ?? createIdempotencyKey();
+    const currentMembers = supersetGroupId
+      ? exercises.filter((exercise) => exercise.supersetGroupId === supersetGroupId)
+      : [];
+
+    if (supersetGroupId && currentMembers.length < 2) {
+      setError('This Superset is no longer available. Reload the workout and try again.');
+      return false;
+    }
+
+    const targetMembers = selected as WorkoutExercise[];
+    if (targetMembers.some((exercise) => exercise.supersetGroupId !== null && exercise.supersetGroupId !== supersetGroupId)) {
+      setError('An exercise can only belong to one Superset at a time.');
+      return false;
+    }
+
+    return runMutation(
+      'superset',
+      {
+        kind: 'SET_SUPERSET',
+        payload: {
+          supersetGroupId: targetGroupId,
+          expectedMembers: currentMembers
+            .sort((a, b) => (a.supersetOrder ?? 0) - (b.supersetOrder ?? 0))
+            .map((exercise) => ({ workoutExerciseId: exercise.id, expectedRevision: exercise.revision })),
+          members: targetMembers.map((exercise, supersetOrder) => ({
+            workoutExerciseId: exercise.id,
+            supersetOrder,
+            expectedRevision: exercise.revision,
+            expectedSupersetGroupId: exercise.supersetGroupId,
+          })),
+        },
+      },
+      async () => { throw new Error('Superset changes require the protected workout mutation queue.'); },
+    );
+  }, [exercises, mutationExecutor, runMutation, workoutId]);
+
+  const clearSuperset = useCallback(async (supersetGroupId: string) => {
+    if (!workoutId || !mutationExecutor) {
+      setError('Superset changes require the protected workout mutation queue.');
+      return false;
+    }
+    const currentMembers = exercises
+      .filter((exercise) => exercise.supersetGroupId === supersetGroupId)
+      .sort((a, b) => (a.supersetOrder ?? 0) - (b.supersetOrder ?? 0));
+    if (currentMembers.length < 2) {
+      setError('This Superset is no longer available. Reload the workout and try again.');
+      return false;
+    }
+
+    return runMutation(
+      'superset',
+      {
+        kind: 'CLEAR_SUPERSET',
+        payload: {
+          supersetGroupId,
+          expectedMembers: currentMembers.map((exercise) => ({ workoutExerciseId: exercise.id, expectedRevision: exercise.revision })),
+        },
+      },
+      async () => { throw new Error('Superset changes require the protected workout mutation queue.'); },
+    );
+  }, [exercises, mutationExecutor, runMutation, workoutId]);
+
   const resolvedForCurrentWorkout = workoutId === null || resolvedWorkoutId === workoutId;
   const effectiveStatus: WorkoutExerciseStatus = resolvedForCurrentWorkout ? status : 'loading';
   const effectiveExercises = resolvedForCurrentWorkout ? exercises : [];
 
-  return { status: effectiveStatus, exercises: effectiveExercises, busyAction, error, retry: load, addExercise, removeExercise, moveExercise };
+  return { status: effectiveStatus, exercises: effectiveExercises, busyAction, error, retry: load, addExercise, removeExercise, moveExercise, saveSuperset, clearSuperset };
 }

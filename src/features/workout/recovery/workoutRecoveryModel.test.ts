@@ -14,8 +14,8 @@ const workout: ActiveWorkoutSession = {
   lastResumedAt: '2026-08-20T01:01:30.000Z',
 };
 const exercises: WorkoutExercise[] = [
-  { id: 'we-2', workoutId: 'workout-1', exerciseId: 'e-2', orderIndex: 1, revision: 0, canonicalName: 'Pull Up', measurementType: 'BODYWEIGHT_REPS' },
-  { id: 'we-1', workoutId: 'workout-1', exerciseId: 'e-1', orderIndex: 0, revision: 0, canonicalName: 'Bench Press', measurementType: 'WEIGHT_REPS' },
+  { id: 'we-2', workoutId: 'workout-1', exerciseId: 'e-2', orderIndex: 1, supersetGroupId: '11111111-1111-4111-8111-111111111111', supersetOrder: 1, revision: 0, canonicalName: 'Pull Up', measurementType: 'BODYWEIGHT_REPS' },
+  { id: 'we-1', workoutId: 'workout-1', exerciseId: 'e-1', orderIndex: 0, supersetGroupId: '11111111-1111-4111-8111-111111111111', supersetOrder: 0, revision: 0, canonicalName: 'Bench Press', measurementType: 'WEIGHT_REPS' },
 ];
 const sets: WorkoutSet[] = [
   { id: 'set-2', workoutExerciseId: 'we-1', setNumber: 2, setType: 'WORKING', weightKg: 100, reps: 5, bodyweightMode: null, completed: false, completedAt: null, revision: 0 },
@@ -28,12 +28,16 @@ describe('workout recovery snapshot model', () => {
 
     expect(snapshot.savedAtMs).toBe(1234);
     expect(snapshot.exercises.map((exercise) => exercise.id)).toEqual(['we-1', 'we-2']);
+    expect(snapshot.exercises.map((exercise) => [exercise.supersetGroupId, exercise.supersetOrder])).toEqual([
+      ['11111111-1111-4111-8111-111111111111', 0],
+      ['11111111-1111-4111-8111-111111111111', 1],
+    ]);
     expect(snapshot.sets.map((set) => set.id)).toEqual(['set-1', 'set-2']);
     expect(snapshot.session).not.toHaveProperty('status');
     expect(snapshot.session).not.toHaveProperty('endedAt');
 
     expect(restoreWorkoutSession(snapshot.session)).toEqual(workout);
-    expect(restoreWorkoutExercises(snapshot).map((exercise) => exercise.id)).toEqual(['we-1', 'we-2']);
+    expect(restoreWorkoutExercises(snapshot).map((exercise) => [exercise.id, exercise.supersetOrder])).toEqual([['we-1', 0], ['we-2', 1]]);
     expect(restoreWorkoutSets(snapshot).map((set) => set.id)).toEqual(['set-1', 'set-2']);
   });
 
@@ -51,14 +55,20 @@ describe('workout recovery snapshot model', () => {
   });
 
 
-  it('normalizes pre-6.4C recovery snapshots to revision zero instead of losing the local workout', () => {
+  it('normalizes legacy recovery snapshots without conflict revisions or Superset metadata', () => {
     const snapshot = createWorkoutRecoverySnapshot('user-1', workout, exercises, sets, null, 1234) as unknown as Record<string, unknown>;
-    const legacyExercises = (snapshot.exercises as Array<Record<string, unknown>>).map(({ revision: _revision, ...exercise }) => exercise);
+    const legacyExercises = (snapshot.exercises as Array<Record<string, unknown>>).map(({
+      revision: _revision,
+      supersetGroupId: _supersetGroupId,
+      supersetOrder: _supersetOrder,
+      ...exercise
+    }) => exercise);
     const legacySets = (snapshot.sets as Array<Record<string, unknown>>).map(({ revision: _revision, ...set }) => set);
     const parsed = parseWorkoutRecoverySnapshot({ ...snapshot, exercises: legacyExercises, sets: legacySets }, 'user-1');
 
     expect(parsed).not.toBeNull();
     expect(parsed?.exercises.every((exercise) => exercise.revision === 0)).toBe(true);
+    expect(parsed?.exercises.every((exercise) => exercise.supersetGroupId === null && exercise.supersetOrder === null)).toBe(true);
     expect(parsed?.sets.every((set) => set.revision === 0)).toBe(true);
   });
 
@@ -68,5 +78,15 @@ describe('workout recovery snapshot model', () => {
     expect(parseWorkoutRecoverySnapshot(snapshot, 'user-2')).toBeNull();
     expect(parseWorkoutRecoverySnapshot({ ...snapshot, version: 99 }, 'user-1')).toBeNull();
     expect(parseWorkoutRecoverySnapshot({ ...snapshot, exercises: [{ nope: true }] }, 'user-1')).toBeNull();
+    expect(parseWorkoutRecoverySnapshot({
+      ...snapshot,
+      exercises: snapshot.exercises.map((exercise, index) => index === 0
+        ? { ...exercise, supersetGroupId: null, supersetOrder: 0 }
+        : exercise),
+    }, 'user-1')).toBeNull();
+    expect(parseWorkoutRecoverySnapshot({
+      ...snapshot,
+      exercises: snapshot.exercises.map((exercise) => ({ ...exercise, supersetOrder: 0 })),
+    }, 'user-1')).toBeNull();
   });
 });

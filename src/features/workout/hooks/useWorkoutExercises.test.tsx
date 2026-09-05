@@ -7,6 +7,7 @@ import { useWorkoutExercises } from './useWorkoutExercises';
 
 const bench: WorkoutExercise = {
   id: 'we-1', workoutId: 'workout-1', exerciseId: 'exercise-1', orderIndex: 0,
+  supersetGroupId: null, supersetOrder: null,
   revision: 0,
   canonicalName: 'Barbell Bench Press', measurementType: 'WEIGHT_REPS',
 };
@@ -110,4 +111,81 @@ describe('useWorkoutExercises', () => {
     expect(api.moveExercise).toHaveBeenCalledWith('we-2', 0);
     expect(result.current.exercises[0]?.id).toBe('we-2');
   });
+
+  it('routes Superset creation through the protected mutation executor with exercise revisions', async () => {
+    const row: WorkoutExercise = {
+      ...bench,
+      id: 'we-2',
+      exerciseId: 'exercise-2',
+      canonicalName: 'Barbell Row',
+      orderIndex: 1,
+      revision: 3,
+    };
+    const api = service({ loadWorkoutExercises: vi.fn(async () => [{ ...bench, revision: 2 }, row]) });
+    const executor: WorkoutMutationExecutor = {
+      execute: vi.fn(async () => ({ state: 'applied' as const, idempotencyKey: '44444444-4444-4444-8444-444444444444' })),
+    };
+    const { result } = renderHook(() => useWorkoutExercises('workout-1', api, executor));
+    await waitFor(() => expect(result.current.exercises).toHaveLength(2));
+
+    await act(async () => { await result.current.saveSuperset(null, ['we-1', 'we-2']); });
+
+    expect(executor.execute).toHaveBeenCalledWith({
+      kind: 'SET_SUPERSET',
+      payload: {
+        supersetGroupId: expect.any(String),
+        expectedMembers: [],
+        members: [
+          { workoutExerciseId: 'we-1', supersetOrder: 0, expectedRevision: 2, expectedSupersetGroupId: null },
+          { workoutExerciseId: 'we-2', supersetOrder: 1, expectedRevision: 3, expectedSupersetGroupId: null },
+        ],
+      },
+    });
+    expect(api.loadWorkoutExercises).toHaveBeenCalledTimes(2);
+  });
+
+  it('sends the complete current membership snapshot when editing and breaking apart a Superset', async () => {
+    const groupId = '77777777-7777-4777-8777-777777777777';
+    const groupedBench: WorkoutExercise = { ...bench, revision: 5, supersetGroupId: groupId, supersetOrder: 0 };
+    const groupedRow: WorkoutExercise = {
+      ...bench,
+      id: 'we-2', exerciseId: 'exercise-2', canonicalName: 'Barbell Row', orderIndex: 1,
+      revision: 6, supersetGroupId: groupId, supersetOrder: 1,
+    };
+    const api = service({ loadWorkoutExercises: vi.fn(async () => [groupedBench, groupedRow]) });
+    const executor: WorkoutMutationExecutor = {
+      execute: vi.fn(async () => ({ state: 'queued' as const, idempotencyKey: '55555555-5555-4555-8555-555555555555' })),
+    };
+    const { result } = renderHook(() => useWorkoutExercises('workout-1', api, executor));
+    await waitFor(() => expect(result.current.exercises).toHaveLength(2));
+
+    await act(async () => { await result.current.saveSuperset(groupId, ['we-2', 'we-1']); });
+    await act(async () => { await result.current.clearSuperset(groupId); });
+
+    expect(executor.execute).toHaveBeenNthCalledWith(1, {
+      kind: 'SET_SUPERSET',
+      payload: {
+        supersetGroupId: groupId,
+        expectedMembers: [
+          { workoutExerciseId: 'we-1', expectedRevision: 5 },
+          { workoutExerciseId: 'we-2', expectedRevision: 6 },
+        ],
+        members: [
+          { workoutExerciseId: 'we-2', supersetOrder: 0, expectedRevision: 6, expectedSupersetGroupId: groupId },
+          { workoutExerciseId: 'we-1', supersetOrder: 1, expectedRevision: 5, expectedSupersetGroupId: groupId },
+        ],
+      },
+    });
+    expect(executor.execute).toHaveBeenNthCalledWith(2, {
+      kind: 'CLEAR_SUPERSET',
+      payload: {
+        supersetGroupId: groupId,
+        expectedMembers: [
+          { workoutExerciseId: 'we-1', expectedRevision: 5 },
+          { workoutExerciseId: 'we-2', expectedRevision: 6 },
+        ],
+      },
+    });
+  });
+
 });

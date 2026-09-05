@@ -288,6 +288,11 @@ async function waitForCanonicalWorkout() {
   });
 }
 
+async function expandCompletedSet(user: ReturnType<typeof userEvent.setup>, setNumber: number) {
+  const expand = await screen.findByRole('button', { name: `Expand set ${setNumber}` });
+  await user.click(expand);
+}
+
 afterEach(async () => {
   cleanup();
   await createWorkoutRecoveryStorage().clear(USER_ID);
@@ -306,6 +311,7 @@ describe('workout reliability integration gate', () => {
     await act(async () => { setOnline(false); });
     expect(await screen.findByText('Offline workout copy')).toBeInTheDocument();
 
+    await expandCompletedSet(user, 1);
     const weight = await screen.findByRole('spinbutton', { name: 'Set 1 weight in kg' });
     await user.clear(weight);
     await user.type(weight, '110');
@@ -318,6 +324,7 @@ describe('workout reliability integration gate', () => {
     renderWorkout(backend);
 
     expect(await screen.findByText('Offline workout copy')).toBeInTheDocument();
+    await expandCompletedSet(user, 1);
     expect(await screen.findByRole('spinbutton', { name: 'Set 1 weight in kg' })).toHaveValue(110);
     expect(screen.getByText('1 workout change queued')).toBeInTheDocument();
 
@@ -345,7 +352,8 @@ describe('workout reliability integration gate', () => {
     await user.click(screen.getByRole('button', { name: 'Retry sync' }));
 
     await waitFor(() => expect(screen.queryByText('1 workout change queued')).not.toBeInTheDocument());
-    await waitFor(() => expect(screen.getAllByRole('spinbutton', { name: /Set \d+ weight in kg/ })).toHaveLength(2));
+    expect(await screen.findByRole('button', { name: 'Expand set 1' })).toBeInTheDocument();
+    expect(await screen.findByRole('spinbutton', { name: 'Set 2 weight in kg' })).toBeInTheDocument();
     expect(backend.sets).toHaveLength(2);
     expect(backend.addSetEffects).toBe(1);
     expect(backend.mutationCalls).toHaveLength(2);
@@ -382,7 +390,8 @@ describe('workout reliability integration gate', () => {
 
     expect(await screen.findByText('1 workout change queued')).toBeInTheDocument();
     await waitFor(() => expect(screen.queryByText('1 workout change queued')).not.toBeInTheDocument());
-    await waitFor(() => expect(screen.getAllByRole('spinbutton', { name: /Set \d+ weight in kg/ })).toHaveLength(2));
+    expect(await screen.findByRole('button', { name: 'Expand set 1' })).toBeInTheDocument();
+    expect(await screen.findByRole('spinbutton', { name: 'Set 2 weight in kg' })).toBeInTheDocument();
 
     expect(backend.sets).toHaveLength(2);
     expect(backend.addSetEffects).toBe(1);
@@ -398,6 +407,7 @@ describe('workout reliability integration gate', () => {
     await waitForCanonicalWorkout();
 
     await act(async () => { setOnline(false); });
+    await expandCompletedSet(user, 1);
     const weight = await screen.findByRole('spinbutton', { name: 'Set 1 weight in kg' });
     await user.clear(weight);
     await user.type(weight, '110');

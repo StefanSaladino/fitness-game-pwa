@@ -6,6 +6,26 @@ export type WorkoutMutationRequest =
   | { kind: 'ADD_EXERCISE'; payload: { exerciseId: string } }
   | { kind: 'REMOVE_EXERCISE'; payload: { workoutExerciseId: string; expectedRevision: number | null } }
   | { kind: 'MOVE_EXERCISE'; payload: { workoutExerciseId: string; newOrderIndex: number; expectedRevision: number | null } }
+  | {
+      kind: 'SET_SUPERSET';
+      payload: {
+        supersetGroupId: string;
+        expectedMembers: Array<{ workoutExerciseId: string; expectedRevision: number }>;
+        members: Array<{
+          workoutExerciseId: string;
+          supersetOrder: number;
+          expectedRevision: number;
+          expectedSupersetGroupId: string | null;
+        }>;
+      };
+    }
+  | {
+      kind: 'CLEAR_SUPERSET';
+      payload: {
+        supersetGroupId: string;
+        expectedMembers: Array<{ workoutExerciseId: string; expectedRevision: number }>;
+      };
+    }
   | { kind: 'ADD_SET'; payload: { workoutExerciseId: string; setType: 'WARMUP' | 'WORKING' } }
   | { kind: 'COPY_SET'; payload: { workoutSetId: string; expectedRevision: number | null } }
   | {
@@ -72,6 +92,48 @@ function isExpectedRevision(value: unknown): value is number | null {
   return value === null || (typeof value === 'number' && Number.isInteger(value) && value >= 0);
 }
 
+function isSupersetExpectedMembers(value: unknown): value is Array<{ workoutExerciseId: string; expectedRevision: number }> {
+  if (!Array.isArray(value)) return false;
+  const ids = new Set<string>();
+  for (const member of value) {
+    if (!isRecord(member)
+      || !isNonEmptyString(member.workoutExerciseId)
+      || !isExpectedRevision(member.expectedRevision)
+      || member.expectedRevision === null
+      || ids.has(member.workoutExerciseId)) return false;
+    ids.add(member.workoutExerciseId);
+  }
+  return true;
+}
+
+function isSupersetMembers(value: unknown): value is Array<{
+  workoutExerciseId: string;
+  supersetOrder: number;
+  expectedRevision: number;
+  expectedSupersetGroupId: string | null;
+}> {
+  if (!Array.isArray(value) || value.length < 2) return false;
+  const ids = new Set<string>();
+  const orders = new Set<number>();
+  for (const member of value) {
+    if (!isRecord(member)
+      || !isNonEmptyString(member.workoutExerciseId)
+      || typeof member.supersetOrder !== 'number'
+      || !Number.isInteger(member.supersetOrder)
+      || member.supersetOrder < 0
+      || !isExpectedRevision(member.expectedRevision)
+      || member.expectedRevision === null
+      || !(member.expectedSupersetGroupId === null || isNonEmptyString(member.expectedSupersetGroupId))
+      || ids.has(member.workoutExerciseId)
+      || orders.has(member.supersetOrder)) return false;
+    ids.add(member.workoutExerciseId);
+    orders.add(member.supersetOrder);
+  }
+  return orders.size === value.length
+    && Math.min(...orders) === 0
+    && Math.max(...orders) === value.length - 1;
+}
+
 export function isWorkoutMutationRequest(value: unknown): value is WorkoutMutationRequest {
   if (!isRecord(value) || !isRecord(value.payload) || typeof value.kind !== 'string') return false;
   const payload = value.payload;
@@ -87,6 +149,14 @@ export function isWorkoutMutationRequest(value: unknown): value is WorkoutMutati
         && Number.isInteger(payload.newOrderIndex)
         && payload.newOrderIndex >= 0
         && isExpectedRevision(payload.expectedRevision);
+    case 'SET_SUPERSET':
+      return isNonEmptyString(payload.supersetGroupId)
+        && isSupersetExpectedMembers(payload.expectedMembers)
+        && isSupersetMembers(payload.members);
+    case 'CLEAR_SUPERSET':
+      return isNonEmptyString(payload.supersetGroupId)
+        && isSupersetExpectedMembers(payload.expectedMembers)
+        && payload.expectedMembers.length >= 2;
     case 'ADD_SET':
       return isNonEmptyString(payload.workoutExerciseId)
         && (payload.setType === 'WARMUP' || payload.setType === 'WORKING');
