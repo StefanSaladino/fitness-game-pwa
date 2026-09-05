@@ -1,5 +1,7 @@
 # Phase 18.4 — Active Superset Flow
 
+Status: **DONE** — full Phase 18.4 validation passed.
+
 ## Purpose
 
 Make an existing Superset useful during the live workout without introducing a second set model, changing scoring, or forcing the user through a rigid wizard.
@@ -19,12 +21,20 @@ Only sets that actually exist participate. The flow never invents or automatical
 - The first incomplete step in round-robin order is presented as `Next`.
 - The corresponding nested exercise is visually highlighted with `aria-current="step"`.
 - `Go to A#` expands and scrolls to that member when requested.
-- Completing a set updates the derived next target through normal workout-set state refresh.
+- Completing or editing a set updates the derived next target through normal workout-set state refresh.
 - The UI does not auto-scroll, auto-expand, or prevent manual access to another Superset member.
 - Once all existing sets are complete, the card reports `Superset complete`.
+
+## Rest behavior
+
+Top Set facilitates Supersets without enforcing one rest style. Users may rest between exercises, after a full round, skip rest, or manually change timers. Superset sequencing remains independent from rest-timer policy.
 
 ## Boundaries
 
 No database migration is required for Phase 18.4. No XP, PR, scoring, rest-timer, set persistence, Superset membership, or workout recovery contract changes are introduced here.
 
-Drop Sets are explicitly reserved for Phase 18.7A. Pyramid training does not need a dedicated set type because each set already supports independent weight and rep values.
+Drop Sets remain deferred and are not part of the current Phase 18 → native execution sequence. Pyramid training does not need a dedicated set type because each set already supports independent weight and rep values.
+
+## Validation
+
+The full Phase 18.4 validation gate passed before this phase was marked DONE.
