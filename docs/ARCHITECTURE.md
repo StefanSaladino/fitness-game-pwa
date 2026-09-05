@@ -1,106 +1,95 @@
-# Architecture
+# Top Set Architecture
 
-## Product/domain boundary
+This document describes the current application architecture. Historical phase files explain how individual slices were introduced; they do not override this document.
 
-The active scoring model is `lifting-v1`. Lifting is primary; cardio is an accessory bonus. `docs/DOMAIN-RULES.md` is the behavioral source of truth.
-
-## Layering
+## Runtime shape
 
 ```text
-React screen / feature component
-        ↓
-focused hook/controller
-        ↓
-feature service/repository
-        ↓
-Supabase
-
-Pure lifting/scoring rules live separately in src/domain/.
+React / TypeScript / Vite PWA
+            ↓
+screen + feature components
+            ↓
+focused hooks / controllers
+            ↓
+feature services / repositories
+            ↓
+Supabase Auth / Postgres / Storage / RPC / Edge Functions
 ```
 
-Presentation components do not import Supabase and do not calculate authoritative XP.
+Framework-independent scoring, validation, and other pure domain rules live under `src/domain/`.
 
-## Scoring persistence
+## Frontend ownership
 
-v0.3 introduces:
+- `src/app/`: application composition, route/state integration, top-level gates;
+- `src/components/`: reusable presentation/layout primitives;
+- `src/features/`: feature-owned components, hooks/controllers, services, models, and styles;
+- `src/domain/`: pure rules/calculations with no React/Supabase dependency;
+- `src/lib/`: infrastructure clients and cross-cutting technical utilities;
+- `src/pwa/`: PWA/service-worker/install behavior;
+- `src/styles/`: global tokens/reset/base/shared utilities only;
+- `src/types/`: shared/generated TypeScript types.
 
-- `scoring_events`: authoritative lifting-v1 XP ledger target;
-- `exercise_progress_observations`: canonical exercise performance observations;
-- `exercise_progress`: current personal-best snapshot per user/exercise/metric.
+Presentation components do not directly own authoritative persistence or scoring. Supabase communication belongs behind feature services/repositories or reviewed infrastructure boundaries.
 
-The v0.2 `xp_events`, `performance_observations`, and `performance_benchmarks` tables remain only as migration history. New lifting-v1 scoring logic must not write to them.
+## Workout architecture
 
-Authoritative writes will be implemented server-side/database-side during the scoring persistence phase. Authenticated clients receive read access only to their own derived scoring/progression state.
+Workout sessions, exercises, and sets remain the core lifting model.
 
-## Canonical exercise identity
+Top Set deliberately avoids creating separate set models for special workout styles. Supersets are structural metadata on ordinary `workout_exercises`; their sets remain ordinary `workout_sets`.
 
-`exercise_catalog.id` is the stable identity for:
+The active Superset sequence is derived from:
 
-- workout exercise rows;
-- exercise-completion scoring;
-- progression observations;
-- personal-best snapshots;
-- future aliases/search labels.
+- Superset member/order metadata;
+- the sets that actually exist;
+- current completed-set state.
 
-Aliases such as RDL/OHP must resolve to canonical IDs and must never create separate progression identities accidentally.
+It is guidance, not independently persisted wizard progress.
 
-## Weekly goals
+## Durability and mutation safety
 
-Existing weekly target persistence now means **lifting days**. Cardio-only dates never satisfy the target.
+Active workout recovery uses browser-side durable state (IndexedDB) plus the existing synchronization/reconciliation flow. Server mutations that require retry safety use idempotent, guarded mutation boundaries and revision/conflict snapshots.
 
-## UI/CSS
+Design rules:
 
-Follow `docs/UI-ARCHITECTURE.md` and `docs/CSS-ARCHITECTURE.md`. New feature CSS is colocated with its feature/component rather than added to the legacy global stylesheet.
+- retries must not duplicate domain actions;
+- offline/reconnect behavior must converge on authoritative server state;
+- conflict handling must fail visibly rather than silently overwrite unrelated edits;
+- terminal workout actions must not leave recoverable ghost state.
 
+Phase 18.5 extends these guarantees specifically across Superset structure and active-flow recovery.
 
-## Group application boundary
+## Scoring and progression
 
-Group membership is many-to-many. The application never assumes a user belongs to exactly one group or that a group has four members.
+The active scoring model is `lifting-v1`; [`DOMAIN-RULES.md`](DOMAIN-RULES.md) is authoritative.
 
-`src/features/groups/` follows the standard feature layering:
+Authoritative scoring/progression state is server-owned. Browser clients may render and request supported operations but do not directly write authoritative scoring ledgers or personal-best snapshots.
 
-```text
-future group screen
-      ↓
-useGroups / useCreateGroup / useJoinGroup
-      ↓
-groupService
-      ↓
-Supabase RLS + existing group RPCs
-```
+Canonical exercise identity is `exercise_catalog.id`; aliases/search labels must never create accidental duplicate progression identities.
 
-Group creation uses the existing `groups` insert policy and database trigger that adds the creator as the active OWNER. Invite joining always uses `join_group_by_invite`; clients do not mutate membership rows directly.
+## Groups and social features
 
-## Security invariants
+Group membership is optional and many-to-many. The application must not assume a user belongs to exactly one group or that a group has a fixed member count.
 
-- users can mutate only their own raw workout rows through RLS;
-- clients cannot directly write authoritative scoring/progression state;
-- group permissions are role-controlled server-side;
-- no client-supplied `qualifies`/XP value is trusted as authoritative;
-- future concurrency/idempotency scoring work must reconcile duplicate, retry, edit, and delete cases.
+Group roles/permissions are enforced server-side. Competition, social activity, chat, invitations, and administrator actions use purpose-built guarded data boundaries instead of weakening raw-table access for convenience.
 
+## Authentication, administration, and secrets
 
-## Group setup UI boundary
+Supabase Auth provides identity/session infrastructure. Authorization is re-checked by server/database boundaries; client navigation is never an authorization boundary.
 
-Phase 5.5B keeps group setup split into presentation and controller layers:
+Privileged credentials are server-only. Anything compiled through a `VITE_*` variable is public browser configuration.
 
-```text
-CreateGroupForm / JoinGroupForm
-        ↓
-GroupSetupScreen
-        ↓
-GroupSetupController
-        ↓
-useCreateGroup / useJoinGroup
-        ↓
-groupService
-        ↓
-Supabase
-```
+Platform administration/moderation uses bounded RPC/Edge Function surfaces and must not expose raw Auth secrets, service credentials, unrestricted session data, or unrelated user data.
 
-`GroupGate` owns only the zero-vs-one-or-more membership transition. It does not collapse the data model to a single group. New group feature styles use CSS Modules colocated under `src/features/groups/components/`.
+## Storage
 
+Profile image bytes live in Supabase Storage; the profile stores the object path/reference. Replacement/removal must clean up obsolete owned objects instead of accumulating abandoned profile images.
 
-## Profile-picture boundary
+## UI and CSS
 
-`ProfilePicture` and `ProfilePictureManager` own presentation, `useProfilePicture` owns async UI state, and `profilePictureService` is the only Supabase boundary. New PFP styles are CSS Modules and do not add selectors to `global.css`.
+See [`UI-ARCHITECTURE.md`](UI-ARCHITECTURE.md) and [`CSS-ARCHITECTURE.md`](CSS-ARCHITECTURE.md). Mobile composition is primary; desktop is an intentional adaptation rather than the source layout.
+
+## Future native boundary
+
+Phase 19 investigates a Capacitor-based native shell without rewriting Top Set in Swift/Kotlin. React/Supabase remains authoritative. Native integrations will consume a narrow explicit workout-state bridge rather than reaching arbitrarily into React state.
+
+Nothing in current PWA architecture depends on Phase 20 Live Activities/live workout surfaces.

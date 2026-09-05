@@ -1,110 +1,74 @@
 # UI Development Gate
 
-This document is a required checkpoint before substantial user-facing UI work.
+Use this checkpoint for substantial user-facing UI or interaction changes. Small copy/spacing repairs do not need a ceremonial design phase, but any change that materially alters hierarchy, workflow, or responsive behavior should pass this gate.
 
-## Why this exists
+## 1. Define behavior first
 
-The project should not discover its visual architecture while production components are already being written. Each major experience first gets a visual concept, then a component/data plan, then implementation.
+Document the user goal, entry/exit conditions, required data, actions, permissions, loading/empty/error/offline/conflict states, and success condition before styling.
 
-This keeps product decisions separate from code structure and prevents a polished mockup from turning into one large, tightly coupled React component.
+## 2. Establish the mobile-first hierarchy
 
-## Required sequence
+Decide what must remain visible and actionable on a phone before adding desktop composition. Use real product data/actions rather than invented placeholder metrics.
 
-### 1. Define behavior before appearance
+For a material visual redesign, create/review a concept before committing the production layout direction.
 
-Write down:
+## 3. Define responsive/interaction ownership
 
-- user goal;
-- entry and exit conditions;
-- required data;
-- user actions;
-- loading state;
-- empty state;
-- validation errors;
-- network/server errors;
-- success state;
-- permission-dependent states.
+Before coding, decide:
 
-No visual design is required yet.
+- scroll owner;
+- safe-area behavior;
+- fixed/sticky elements;
+- keyboard-open behavior;
+- focus management/restoration;
+- 320px containment;
+- tablet/desktop adaptation;
+- reduced-motion behavior where animation exists.
 
-### 2. Generate a concept image
-
-Before implementing the substantial screen, generate a phone-first image that explores:
-
-- hierarchy;
-- navigation;
-- information density;
-- typography scale;
-- card/list treatment;
-- gamification tone;
-- primary and secondary actions.
-
-The concept image is a design reference, not a production asset and not a background image to be copied into the app.
-
-### 3. Review before coding
-
-Review the generated concept and explicitly decide what to keep/change. Do not begin production layout implementation until the direction is accepted.
-
-### 4. Define responsive behavior
-
-Document how the approved phone layout changes at larger widths. Watch-sized requirements should be component contracts, not a promise that the web PWA is a native watch app.
-
-### 5. Define component boundaries
-
-Before implementation, map the component tree. Use these boundaries:
+## 4. Define component boundaries
 
 ```text
-screen/page
-  -> feature sections
-      -> feature components
-          -> shared primitives (only when genuinely reused)
+screen / page
+  -> feature sections/components
+      -> shared primitives only when genuinely reusable
 
-screen/page
-  -> feature hook/controller
+screen / page
+  -> focused hook/controller
       -> feature service/repository
           -> Supabase
 
-pure validators/domain helpers
+pure domain helpers
   -> no React
   -> no Supabase
 ```
 
-Rules:
+Pages compose. Visual components do not become persistence layers. Services do not make presentational decisions.
 
-- pages compose; they do not become service layers;
-- visual components do not call Supabase directly;
-- services do not contain presentational decisions;
-- pure business rules remain framework-independent;
-- hooks coordinate UI state and async operations;
-- reusable primitives should be extracted after a real reuse case exists;
-- split components by responsibility rather than arbitrary line count.
+## 5. Implement accessibly
 
-### 6. Implement the approved layout
+Use semantic HTML and accessibility contracts from the start. Hiding an unauthorized action in the UI never replaces server-side authorization.
 
-Build the approved concept with semantic HTML and accessibility from the start. The implementation may refine the mockup where real content, interaction, or accessibility requires it.
+## 6. Validate before closing
 
-### 7. Validate before closing the gate
+At minimum, for affected surfaces verify:
 
-At minimum verify:
+- 320px-class phone;
+- current iPhone/Android-class phone sizes;
+- desktop;
+- keyboard and focus behavior;
+- labels/accessible names;
+- loading/error/empty/offline/conflict states that apply;
+- no horizontal page overflow;
+- relevant Chromium/WebKit tests.
 
-- phone viewport;
-- desktop viewport;
-- smallest supported component/watch contract where relevant;
-- keyboard navigation;
-- focus visibility;
-- labels and accessible names;
-- reduced-motion behavior for nonessential animation;
-- loading/error/empty/success states;
-- no horizontal overflow;
-- browser tests for the critical flow.
+## Current major checkpoints
 
-## Major checkpoints currently expected
+A deliberate UI review is expected for the remaining Phase 18 surfaces when they materially change presentation:
 
-A new concept/review gate is required before:
+- 18.6 Superset history grouping;
+- 18.7 Superset presets;
+- 18.7B tracked-exercise analytics and exercise-picker Recent hierarchy;
+- 18.8 complete active-workout polish;
+- Phase 19/20 native and live workout surfaces.
 
-1. authentication/onboarding/group setup UI;
-2. authenticated dashboard;
-3. workout capture/exercise search UI;
-4. leaderboard/social UI;
-5. analytics/history UI;
-6. native/watch companion UI if that phase is reached.
+See [`UI-ARCHITECTURE.md`](UI-ARCHITECTURE.md), [`CSS-ARCHITECTURE.md`](CSS-ARCHITECTURE.md), and [`../CONTRIBUTING.md`](../CONTRIBUTING.md).

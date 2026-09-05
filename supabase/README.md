@@ -1,52 +1,28 @@
-# Supabase directory
+# Supabase Directory
 
-This repository uses **hosted Supabase as the authoritative runtime database environment**. Docker and a local Supabase stack are not part of the supported developer workflow or GitHub Actions pipeline.
+Hosted Supabase is Top Set's authoritative runtime database environment. Docker and a local Supabase stack are not part of the supported developer or GitHub Actions workflow.
 
-- `migrations/`: authoritative versioned schema changes.
-- `tests/*.test.sql`: canonical rollback-safe pgTAP database/RLS suites.
-- `seed.sql`: historical/reproducibility artifact retained with the migration history; the current hosted-first workflow does not reset a local database from it.
-- `config.toml`: non-secret Supabase project configuration retained for repository compatibility; it does not imply a local Docker stack.
-- `functions/`: Edge Functions used when a trusted server-side boundary is required.
+## Directory ownership
 
-## Supported developer workflow
+- `migrations/` — immutable versioned schema changes;
+- `tests/*.test.sql` — canonical rollback-safe pgTAP database/RLS suites;
+- `functions/` — trusted server-side Edge Function boundaries;
+- `config.toml` — non-secret Supabase project configuration;
+- `seed.sql` — historical/reproducibility seed artifact; it does not imply a supported local reset workflow;
+- `release/` — database release-support artifacts where required.
 
-Run the application gates locally:
+## Database-bearing changes
 
-```text
-npm install
-npm run typecheck
-npm test
-npm run test:integration
-npm run build
-npm run test:structure
-npm run test:e2e
-npm run test:internal
-npm run db:test:ci
-```
+For every migration-bearing slice:
 
-`npm run db:test:ci` is a **repository database-contract gate**. It validates migration/test structure and phase invariants; it does not start PostgreSQL, Docker, or a local Supabase stack.
+1. author a new timestamped migration;
+2. apply it to the linked hosted project;
+3. run the relevant hosted pgTAP suite;
+4. regenerate committed public database types when schema changes require it;
+5. review hosted Security/Performance advisors where applicable;
+6. run `npm run db:test:ci` for repository contract validation;
+7. run the broader acceptance gate from [`../docs/CI-VALIDATION.md`](../docs/CI-VALIDATION.md).
 
-## Database-bearing slices
+`npm run db:test:ci` does not start PostgreSQL/Docker and does not prove hosted migration execution.
 
-For every migration-bearing phase:
-
-1. author the versioned migration under `supabase/migrations/`;
-2. apply that migration to the linked hosted Supabase project;
-3. execute the corresponding canonical `supabase/tests/*.test.sql` suite against hosted Supabase;
-4. require the pgTAP transaction to finish successfully and roll back its test fixtures;
-5. regenerate committed database types from the hosted schema when the public schema changes;
-6. run hosted security and performance advisors after DDL changes;
-7. run `npm run db:test:ci` so GitHub validates the repository-side migration/pgTAP contract.
-
-Hosted runtime execution and repository structural validation are intentionally separate gates. A migration is not considered database-validated merely because the static CI contract passes.
-
-## GitHub Actions
-
-GitHub Actions is intentionally limited to the production build-sanity check.
-The broader application, browser, structural, and repository database-contract
-gates remain required local release checks; runtime migration and pgTAP proof
-remain hosted-Supabase operations. See `docs/CI-VALIDATION.md` for the complete
-contract.
-
-Do not reintroduce a Docker or local-Supabase dependency into the supported
-developer or release workflow.
+Do not edit already-applied migrations or reintroduce a Docker/local-Supabase dependency into the supported workflow. See [`../docs/SUPABASE-SETUP.md`](../docs/SUPABASE-SETUP.md) for the full operating procedure.

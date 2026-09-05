@@ -31,6 +31,17 @@ supabase/.branches/
 supabase/.env
 supabase/.env.*
 
+# Temporary delivery artifacts — use Git history + canonical docs instead
+/HANDOFF*.txt
+/*-HANDOFF.txt
+/*-PATCH-MANIFEST.txt
+/*-PATCH-MANIFEST.md
+/PATCH-FILES.txt
+/PATCH-MANIFEST.md
+/README-HOTFIX*
+/README-PHASE*.txt
+/README-PHASE*.md
+
 # Logs / OS / editor noise
 *.log
 .DS_Store

@@ -1,113 +1,96 @@
-# Database Model
+# Database Model and Persistence Boundaries
 
-## Core identity/social tables
+This is a current architectural map, not a substitute for the schema itself. The authoritative database history is `supabase/migrations/`; generated public-schema types live in `src/types/database.generated.ts`.
 
-- `profiles`: Auth-linked profile, timezone, onboarding state, and weekly target. From v0.3, the weekly target means **lifting days per Monday-Sunday week**.
-- `groups`, `group_members`, `group_invites`: expandable friend-group model with OWNER/ADMIN/MEMBER roles.
+## Principles
+
+- committed/applied migrations are immutable;
+- schema repairs use new timestamped migrations;
+- RLS/RPC/function boundaries enforce authorization server-side;
+- browser clients do not directly write authoritative scoring/progression state;
+- retry-sensitive mutations use explicit idempotency/revision contracts;
+- hosted Supabase is the authoritative runtime database environment.
+
+## Identity and account data
+
+`profiles` is the Auth-linked application identity/profile record and carries application preferences/identity fields introduced across onboarding/settings phases.
+
+Account lifecycle, suspension/deletion coordination, platform administration, moderation, and audit data use guarded/private boundaries rather than exposing unrestricted Auth internals to the browser.
+
+Profile image bytes are stored in the `profile-pictures` Storage bucket; profile data stores the current path/reference. Account/profile-picture replacement and deletion flows must clean up owned Storage objects deliberately.
+
+## Groups, invitations, competition, and social
+
+The model supports optional many-to-many group membership with OWNER/ADMIN/MEMBER roles.
+
+Current group capabilities include:
+
+- groups and active memberships;
+- targeted user invitations;
+- group administration/ownership transfer;
+- competition/leaderboard read models;
+- social activity and reactions;
+- member-only group chat;
+- server-enforced role/active-membership authorization.
+
+Do not restore assumptions that a user has one group or a group has a fixed size.
 
 ## Workout capture
 
-- `exercise_catalog`: canonical exercise identity and measurement type.
-- `workout_sessions`: session category/status/timing plus derived scoring-date flags.
-- `workout_exercises`: ordered canonical exercises inside a workout.
-- `workout_sets`: independent ordered set rows with per-set type, canonical `weight_kg`, reps, bodyweight loading mode, and completion state.
+Core lifting persistence is built around:
 
-Phase 5.4 adds explicit session flags:
+- `exercise_catalog`: canonical exercise identity and measurement type;
+- `workout_sessions`: lifecycle/category/timing/scoring-date context;
+- `workout_exercises`: ordered canonical exercises in a workout;
+- `workout_sets`: ordered per-exercise sets with independent weight/reps/type/completion data.
 
-- `qualifies_lifting`
-- `qualifies_cardio_bonus`
+Set and exercise mutations that require protection are performed through authenticated RPC/guarded mutation boundaries rather than unrestricted browser table writes.
 
-The old `qualifies` column remains temporarily as a transitional aggregate flag.
+## Supersets
 
-Phase 6.3 moves set writes behind authenticated active-workout RPCs (`add_lifting_workout_set`, `copy_lifting_workout_set`, `save_lifting_workout_set`, and `remove_lifting_workout_set`). Authenticated clients retain RLS-scoped read access but no longer insert/update/delete `workout_sets` directly.
+Supersets do not create a second exercise or set model.
 
-## lifting-v1 scoring persistence
+`workout_exercises` carries nullable structural metadata:
 
-### `scoring_events`
+- `superset_group_id` — groups linked workout exercises;
+- `superset_order` — zero-based member order within the Superset.
 
-New authoritative XP ledger target with:
+Phase 18.3 adds guarded `SET_SUPERSET` / `CLEAR_SUPERSET` mutation handling, revision snapshots, idempotency receipts, and database integrity protection for valid grouped membership/order.
 
-- user
-- scoring date
-- optional workout
-- optional canonical exercise
-- event type
-- XP amount
-- `scoring_version`
-- metadata
+Phase 18.4 active-flow position is derived from persisted group/order metadata plus ordinary set completion state. There is no separate database row representing “current Superset step.”
 
-Event types:
+## Workout durability boundary
 
-- `LIFTING_WORKOUT`
-- `EXERCISE_COMPLETE`
-- `EXERCISE_PROGRESS`
-- `CARDIO_BONUS`
+Unfinished-workout recovery also uses browser-side IndexedDB. That local state is a recovery mechanism, not an alternative authoritative database.
 
-Unique indexes prevent more than one lifting-workout/cardio event per user/date and more than one exercise-completion/progression event per canonical exercise/date.
+On reconnect, queued/retried operations must converge through the guarded server mutation contract without manufacturing duplicate actions.
 
-### `exercise_progress_observations`
+## Scoring and progression
 
-Stores valid exercise-specific performance observations for:
+The active model is `lifting-v1`.
 
-- `E1RM`
-- `BODYWEIGHT_REPS`
+Key authoritative persistence includes:
 
-### `exercise_progress`
+- `scoring_events`: XP ledger with scoring version/category context;
+- `exercise_progress_observations`: valid exercise performance observations;
+- `exercise_progress`: current personal-best snapshot per user/canonical exercise/metric.
 
-Stores the current personal best per user + canonical exercise + metric type, including source workout and achieved time.
+Legacy v0.2 scoring/performance tables remain migration history only and must not receive new `lifting-v1` writes.
 
-## Legacy v0.2 scoring tables
+See [`DOMAIN-RULES.md`](DOMAIN-RULES.md) for the behavioral scoring contract.
 
-These remain in the database for migration safety but are no longer the target for new scoring logic:
+## Weekly goals and badges
 
-- `xp_events`
-- `performance_observations`
-- `performance_benchmarks`
+Weekly target persistence represents lifting days, not general activity days. Badge/achievement persistence is non-XP unless the domain rules are explicitly changed in a later version.
 
-## Weekly goals
+## Messaging and moderation
 
-`weekly_goals` remains a historical target snapshot table. Its `target` now means lifting days. Cardio does not increment weekly lifting consistency.
+Platform messages use durable per-recipient delivery/read/acknowledgement state. Recipient inbox deletion does not rewrite shared content or other recipients' delivery history.
 
-## RLS
+User reports and moderation-case data are privacy-bounded and administrator-authorized. Historical/audit records that are intentionally retained across user deletion must not rely on a profile foreign key that would erase them accidentally.
 
-Raw workout rows remain user-owned. The v0.3 scoring/progression tables are read-only to authenticated clients and filtered to `auth.uid()`.
+## Database testing
 
-Authoritative scoring writes will be performed through controlled server/database logic in the scoring persistence phase.
+Canonical database tests live under `supabase/tests/*.test.sql` and are rollback-safe pgTAP suites. Repository structural validation (`npm run db:test:ci`) does not replace applying migrations and executing relevant pgTAP tests against hosted Supabase.
 
-
-## Profile pictures — Phase 5.5C
-
-`profiles.profile_picture_path` stores the current object reference. Image bytes live in the `profile-pictures` Supabase Storage bucket. Paths are constrained to the owning profile UUID folder. The bucket is public-read for social rendering, while Storage mutation is authenticated and folder-scoped by RLS.
-
-Phase 15.3C account deletion removes every object under the user's UUID folder through the Storage API before hard Auth deletion. It never deletes Storage metadata with SQL. The Auth/profile cascade deletes profile-owned workouts, scoring/progression, badges, memberships/invites/reactions, and preferences. Group ownership is `ON DELETE RESTRICT`, so ownership must be transferred first. UUID-only deletion coordination and append-only platform audit records intentionally survive without profile foreign keys.
-
-## User reports and moderation cases — Phase 15.3E
-
-Report evidence and moderation workflow state live only in the `private` schema:
-
-- `user_reports`: immutable reporter/target identity snapshots, category/reason, optional validated GROUP/WORKOUT/SOCIAL_ACTIVITY reference, and duplicate fingerprint;
-- `moderation_cases`: NEW/IN_REVIEW/RESOLVED/DISMISSED queue state, assignment, resolution, closure, and minimum retention boundary;
-- `moderation_case_notes`: append-only private moderator notes;
-- `moderation_case_events`: append-only submission/assignment/note/status history.
-
-Browser roles receive no table access. Active users may only call `submit_user_report`; ACTIVE platform administrators may call the bounded queue/detail/mutation RPCs. Reporter/target UUIDs intentionally do not reference `profiles`, so retained cases survive account deletion. Closed-case data is retained for at least two years; a later operator-only purge must honor legal/safety holds.
-
-
-## Dashboard read model
-
-Phase 5.5D adds `get_group_lifting_leaderboard(group_id, week_start)`. The function is `SECURITY DEFINER`, requires the caller to be an active member of the requested group, and returns only active group members with their lifting-v1 XP total for the supplied Monday-Sunday scoring week. It exists because raw `scoring_events` remain self-readable only under RLS; the dashboard must not weaken that policy just to render a group leaderboard.
-
-
-## Targeted group invitations (v0.4.4)
-
-`profiles.profile_code` is a stable, system-assigned `FG-...` identifier. It is an alternate lookup key for inviting a specific user; it is **not** a reusable group join secret.
-
-`group_invites` now represents pending recipient-specific invitations only:
-
-- one pending row per `(group_id, invited_user_id)`;
-- owners/admins create invitations by username or profile invite ID through `create_group_invite`;
-- recipients read their inbox through `get_my_pending_group_invites`;
-- recipients explicitly accept or decline;
-- accept, decline, and revoke hard-delete the invite row;
-- direct authenticated table mutation is revoked;
-- the old token/URL `join_group_by_invite` flow is retired.
+See [`SUPABASE-SETUP.md`](SUPABASE-SETUP.md) and [`CI-VALIDATION.md`](CI-VALIDATION.md).
