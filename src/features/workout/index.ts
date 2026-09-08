@@ -22,3 +22,7 @@ export * from './mutations/workoutMutationStorage';
 export * from './mutations/workoutMutationService';
 export * from './mutations/workoutMutationReplay';
 export * from './hooks/useWorkoutMutationQueue';
+export * from './workoutHistoryModel';
+export * from './workoutHistoryService';
+export * from './hooks/useWorkoutHistory';
+export * from './components/WorkoutHistoryPanel';

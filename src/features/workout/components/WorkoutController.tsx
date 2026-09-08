@@ -5,6 +5,7 @@ import type { OnboardingProfile } from '../../onboarding';
 import type { WorkoutExerciseService } from '../workoutExerciseService';
 import type { ExercisePickerService } from '../exercisePickerService';
 import type { WorkoutService } from '../workoutService';
+import type { WorkoutHistoryService } from '../workoutHistoryService';
 import type { WorkoutSetService } from '../workoutSetService';
 import { toUserFacingWorkoutError } from '../workoutMessages';
 import type { WorkoutMutationService } from '../mutations/workoutMutationService';
@@ -14,6 +15,7 @@ import { useWorkoutSets } from '../hooks/useWorkoutSets';
 import { useExercisePickerCatalog } from '../hooks/useExercisePickerCatalog';
 import { useWorkoutRecovery } from '../hooks/useWorkoutRecovery';
 import { useWorkoutMutationQueue } from '../hooks/useWorkoutMutationQueue';
+import { useWorkoutHistory } from '../hooks/useWorkoutHistory';
 import { presetWorkoutById, resolvePresetExerciseIds, type PresetWorkoutId } from '../presetWorkouts';
 import {
   restoreWorkoutExercises,
@@ -22,7 +24,7 @@ import {
   type WorkoutRecoveryState,
 } from '../recovery/workoutRecoveryModel';
 import { ActiveWorkoutScreen, WorkoutSyncConflictScreen } from './WorkoutSessionScreen';
-import { WorkoutPresetStartScreen } from './WorkoutPresetStartScreen';
+import { WorkoutPresetStartScreen, type WorkoutPresetStartScreenProps } from './WorkoutPresetStartScreen';
 import styles from './WorkoutSessionScreen.module.css';
 
 interface WorkoutControllerProps {
@@ -34,9 +36,31 @@ interface WorkoutControllerProps {
   pickerService?: ExercisePickerService;
   setService?: WorkoutSetService;
   mutationService?: WorkoutMutationService;
+  historyService?: WorkoutHistoryService;
 }
 
-export function WorkoutController({ profile, onNavigate, onSignOut, service, exerciseService, pickerService, setService, mutationService }: WorkoutControllerProps) {
+const EMPTY_WORKOUT_HISTORY_SERVICE: WorkoutHistoryService = {
+  load: async () => [],
+};
+
+function WorkoutStartWithHistory({
+  historyService,
+  ...props
+}: WorkoutPresetStartScreenProps & { historyService?: WorkoutHistoryService }) {
+  const history = useWorkoutHistory(props.profile.id, historyService);
+
+  return (
+    <WorkoutPresetStartScreen
+      {...props}
+      history={history.history}
+      historyError={history.error}
+      historyStatus={history.status}
+      onRetryHistory={history.retry}
+    />
+  );
+}
+
+export function WorkoutController({ profile, onNavigate, onSignOut, service, exerciseService, pickerService, setService, mutationService, historyService }: WorkoutControllerProps) {
   const recovery = useWorkoutRecovery(profile.id);
   const workout = useActiveWorkout(profile.id, service);
   const [presetError, setPresetError] = useState('');
@@ -159,7 +183,7 @@ export function WorkoutController({ profile, onNavigate, onSignOut, service, exe
     };
 
     return (
-      <WorkoutPresetStartScreen
+      <WorkoutStartWithHistory
         busyAction={workout.busyAction}
         error={presetError || workout.error}
         exerciseCatalog={picker.catalog}
@@ -171,6 +195,7 @@ export function WorkoutController({ profile, onNavigate, onSignOut, service, exe
         onStart={workout.start}
         onStartPreset={startPreset}
         profile={profile}
+        historyService={historyService ?? (service ? EMPTY_WORKOUT_HISTORY_SERVICE : undefined)}
       />
     );
   }

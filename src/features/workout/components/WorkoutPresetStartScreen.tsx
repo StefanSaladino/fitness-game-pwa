@@ -5,12 +5,14 @@ import { Button } from '../../../components/ui';
 import type { OnboardingProfile } from '../../onboarding';
 import { TrainingTipSurface, trainingTipForDate } from '../../training-content';
 import type { ExercisePickerStatus } from '../hooks/useExercisePickerCatalog';
+import type { WorkoutHistorySession, WorkoutHistoryStatus } from '../workoutHistoryModel';
 import type { ExercisePickerItem, WorkoutLifecycleAction } from '../model';
 import { presetWorkouts, type PresetWorkoutId } from '../presetWorkouts';
 import { formatWorkoutDuration } from '../workoutTime';
+import { WorkoutHistoryPanel } from './WorkoutHistoryPanel';
 import styles from './WorkoutPresetStartScreen.module.css';
 
-interface WorkoutPresetStartScreenProps {
+export interface WorkoutPresetStartScreenProps {
   profile: OnboardingProfile;
   onNavigate: (section: AppSection) => void;
   onSignOut: () => void;
@@ -22,6 +24,10 @@ interface WorkoutPresetStartScreenProps {
   onRetryExercisePicker: () => Promise<ExercisePickerItem[]>;
   onStart: (actionAtMs?: number) => Promise<unknown>;
   onStartPreset: (presetId: PresetWorkoutId, actionAtMs?: number) => Promise<unknown>;
+  historyStatus?: WorkoutHistoryStatus;
+  history?: WorkoutHistorySession[];
+  historyError?: string;
+  onRetryHistory?: () => Promise<unknown> | unknown;
 }
 
 function useStartingClock(startingAtMs: number | null): number {
@@ -142,6 +148,16 @@ export function WorkoutPresetStartScreen(props: WorkoutPresetStartScreenProps) {
             })}
           </ul>
         </section>
+
+        {props.historyStatus && (
+          <WorkoutHistoryPanel
+            error={props.historyError ?? ''}
+            history={props.history ?? []}
+            onRetry={props.onRetryHistory ?? (() => undefined)}
+            profile={props.profile}
+            status={props.historyStatus}
+          />
+        )}
 
         <section className={styles.tipRegion} data-app-surface="category">
           <TrainingTipSurface compact tip={tip} />
