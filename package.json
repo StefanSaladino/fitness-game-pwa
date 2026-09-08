@@ -16,14 +16,12 @@
     "test:integration": "vitest run --config vitest.integration.config.ts",
     "test:coverage": "vitest run --coverage",
     "test:e2e": "playwright test",
-    "test:internal": "node scripts/internal-test.cjs",
     "supabase:init": "supabase init",
-    "db:test:ci": "node scripts/validate-db-ci.cjs && node scripts/validate-phase15-6b.cjs && node scripts/validate-phase15-6c.cjs && node scripts/validate-phase15-8.cjs && node scripts/validate-phase17-4-supabase-capacity.cjs && node scripts/validate-phase17-scoring-scale-hardening.cjs && node scripts/validate-phase18-2-superset-foundation.cjs && node scripts/validate-phase18-3-superset-builder.cjs",
-    "validate": "npm run typecheck && npm test && npm run build",
-    "test:hosting": "node scripts/validate-phase17-5-netlify-hosting.cjs",
-    "test:structure": "node scripts/validate-test-hygiene.cjs && node scripts/validate-structure-current.cjs && node scripts/validate-phase16-app-composition.cjs && node scripts/validate-phase17-3-release-reset.cjs && node scripts/validate-phase17-admin-ui.cjs && node scripts/validate-phase17-5-netlify-hosting.cjs",
+    "db:test:ci": "node scripts/validate-db-ci.cjs",
+    "validate": "npm run typecheck && npm test && npm run test:integration && npm run build && npm run db:test:ci",
     "test:e2e:visual": "playwright test --config playwright.visual.config.ts",
-    "test:e2e:admin-layout": "playwright test --config playwright.admin.config.ts"
+    "test:e2e:admin-layout": "playwright test --config playwright.admin.config.ts",
+    "test:release": "npm run validate && npm run test:e2e"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.112.3",

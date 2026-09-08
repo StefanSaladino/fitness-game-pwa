@@ -193,13 +193,35 @@ function isSetDraft(value: unknown): value is WorkoutRecoverySetDraft {
     && (value.bodyweightMode === 'BODYWEIGHT' || value.bodyweightMode === 'ADDED_WEIGHT' || value.bodyweightMode === 'ASSISTED');
 }
 
+function hasContiguousZeroBasedIndexes(values: readonly number[]): boolean {
+  if (values.length === 0) return true;
+  if (new Set(values).size !== values.length) return false;
+  return [...values]
+    .sort((left, right) => left - right)
+    .every((value, index) => value === index);
+}
+
+function hasValidSupersetRecoveryShape(exercises: readonly Record<string, unknown>[]): boolean {
+  const groups = new Map<string, number[]>();
+
+  for (const exercise of exercises) {
+    if (typeof exercise.supersetGroupId !== 'string') continue;
+    if (typeof exercise.supersetOrder !== 'number') return false;
+    const orders = groups.get(exercise.supersetGroupId) ?? [];
+    orders.push(exercise.supersetOrder);
+    groups.set(exercise.supersetGroupId, orders);
+  }
+
+  return [...groups.values()].every((orders) => orders.length >= 2 && hasContiguousZeroBasedIndexes(orders));
+}
+
 export function parseWorkoutRecoverySnapshot(value: unknown, expectedUserId: string): ActiveWorkoutRecoverySnapshot | null {
   if (!isRecord(value) || value.version !== WORKOUT_RECOVERY_VERSION || value.userId !== expectedUserId) return null;
   if (typeof value.savedAtMs !== 'number' || !Number.isFinite(value.savedAtMs)) return null;
   if (!isRecord(value.session) || value.session.userId !== expectedUserId) return null;
   const session = value.session;
   if (!isString(session.id) || !isString(session.startedAt) || !isString(session.timezoneAtStart) || !isString(session.scoringDate)) return null;
-  if (typeof session.activeDurationSeconds !== 'number' || !Number.isFinite(session.activeDurationSeconds)) return null;
+  if (typeof session.activeDurationSeconds !== 'number' || !Number.isFinite(session.activeDurationSeconds) || session.activeDurationSeconds < 0) return null;
   if (!isNullableString(session.pausedAt) || !isNullableString(session.lastResumedAt)) return null;
   if (!Array.isArray(value.exercises) || !Array.isArray(value.sets) || !isRecord(value.ui)) return null;
   if (value.ui.weightUnit !== 'KG' && value.ui.weightUnit !== 'LB') return null;
@@ -213,6 +235,7 @@ export function parseWorkoutRecoverySnapshot(value: unknown, expectedUserId: str
     && isString(exercise.exerciseId)
     && typeof exercise.orderIndex === 'number'
     && Number.isInteger(exercise.orderIndex)
+    && exercise.orderIndex >= 0
     && (exercise.supersetGroupId === undefined || exercise.supersetGroupId === null || isString(exercise.supersetGroupId))
     && (exercise.supersetOrder === undefined || exercise.supersetOrder === null
       || (typeof exercise.supersetOrder === 'number' && Number.isInteger(exercise.supersetOrder) && exercise.supersetOrder >= 0))
@@ -223,18 +246,25 @@ export function parseWorkoutRecoverySnapshot(value: unknown, expectedUserId: str
     && ['WEIGHT_REPS', 'BODYWEIGHT_REPS', 'DURATION', 'OTHER'].includes(String(exercise.measurementType)));
   if (!exercisesValid) return null;
 
-  const supersetMembershipKeys = exercises
-    .filter((exercise) => isRecord(exercise) && typeof exercise.supersetGroupId === 'string')
-    .map((exercise) => `${String((exercise as Record<string, unknown>).supersetGroupId)}:${String((exercise as Record<string, unknown>).supersetOrder)}`);
-  if (new Set(supersetMembershipKeys).size !== supersetMembershipKeys.length) return null;
+  const recoveryExercises = exercises as Record<string, unknown>[];
+  const workoutExerciseIds = recoveryExercises.map((exercise) => String(exercise.id));
+  if (new Set(workoutExerciseIds).size !== workoutExerciseIds.length) return null;
 
-  const exerciseIds = new Set(exercises.map((exercise) => (exercise as Record<string, unknown>).id));
+  const canonicalExerciseIds = recoveryExercises.map((exercise) => String(exercise.exerciseId));
+  if (new Set(canonicalExerciseIds).size !== canonicalExerciseIds.length) return null;
+
+  const exerciseOrderIndexes = recoveryExercises.map((exercise) => Number(exercise.orderIndex));
+  if (!hasContiguousZeroBasedIndexes(exerciseOrderIndexes)) return null;
+  if (!hasValidSupersetRecoveryShape(recoveryExercises)) return null;
+
+  const exerciseIds = new Set(workoutExerciseIds);
   const setsValid = value.sets.every((set) => isRecord(set)
     && isString(set.id)
     && isString(set.workoutExerciseId)
     && exerciseIds.has(set.workoutExerciseId)
     && typeof set.setNumber === 'number'
     && Number.isInteger(set.setNumber)
+    && set.setNumber >= 1
     && ['WARMUP', 'WORKING', 'DROP', 'FAILURE'].includes(String(set.setType))
     && (set.weightKg === null || (typeof set.weightKg === 'number' && Number.isFinite(set.weightKg)))
     && (set.reps === null || (typeof set.reps === 'number' && Number.isInteger(set.reps)))
@@ -243,6 +273,18 @@ export function parseWorkoutRecoverySnapshot(value: unknown, expectedUserId: str
     && isNullableString(set.completedAt)
     && (set.revision === undefined || (typeof set.revision === 'number' && Number.isInteger(set.revision) && set.revision >= 0)));
   if (!setsValid) return null;
+
+  const recoverySets = value.sets as Record<string, unknown>[];
+  const setIds = recoverySets.map((set) => String(set.id));
+  if (new Set(setIds).size !== setIds.length) return null;
+
+  const setIdentityKeys = recoverySets.map((set) => `${String(set.workoutExerciseId)}:${String(set.setNumber)}`);
+  if (new Set(setIdentityKeys).size !== setIdentityKeys.length) return null;
+
+  const validSetIds = new Set(setIds);
+  const normalizedSetDrafts = Object.fromEntries(
+    Object.entries(value.ui.setDrafts).filter(([setId]) => validSetIds.has(setId)),
+  ) as Record<string, WorkoutRecoverySetDraft>;
 
   return {
     ...(value as unknown as ActiveWorkoutRecoverySnapshot),
@@ -264,5 +306,9 @@ export function parseWorkoutRecoverySnapshot(value: unknown, expectedUserId: str
         ? (set as Record<string, unknown>).revision as number
         : 0,
     })),
+    ui: {
+      weightUnit: value.ui.weightUnit as WeightDisplayUnit,
+      setDrafts: normalizedSetDrafts,
+    },
   };
 }
