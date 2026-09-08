@@ -27,6 +27,20 @@ test('lifting analytics stays readable and complete across responsive product sh
   await expect(page.getByText('128.3 kg', { exact: true }).first()).toBeVisible();
   await expect(page.getByText(/8,520 kg·reps/).first()).toBeVisible();
 
+  const unitControl = page.getByRole('group', { name: 'Progress weight unit' });
+  const kilogramsButton = unitControl.getByRole('button', { name: 'kg', exact: true });
+  const poundsButton = unitControl.getByRole('button', { name: 'lb', exact: true });
+
+  await expect(kilogramsButton).toHaveAttribute('aria-pressed', 'true');
+  await expect(poundsButton).toHaveAttribute('aria-pressed', 'false');
+
+  await poundsButton.click();
+
+  await expect(poundsButton).toHaveAttribute('aria-pressed', 'true');
+  await expect(kilogramsButton).toHaveAttribute('aria-pressed', 'false');
+  await expect(page.getByText('282.9 lb', { exact: true }).first()).toBeVisible();
+  await expect(page.getByText(/18,783 lb·reps/).first()).toBeVisible();
+
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
   expect(overflow).toBeLessThanOrEqual(1);
 });

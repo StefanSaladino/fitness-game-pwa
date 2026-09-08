@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import { Button } from '../../../components/ui';
+import type { WeightDisplayUnit } from '../../workout/model';
+import { kgToDisplayWeight, weightUnitLabel } from '../../workout/weightUnits';
 import type { LiftingCalendarAnalytics, LiftingCalendarDelta } from '../liftingCalendarAnalytics';
 import type { ExerciseProgressStatus } from '../hooks/useExerciseProgress';
 import type { LiftingCalendarSummary as LiftingCalendarSummaryRow } from '../model';
@@ -8,6 +10,7 @@ import styles from './LiftingCalendarSummary.module.css';
 
 interface LiftingCalendarSummaryProps {
   analytics: LiftingCalendarAnalytics;
+  displayUnit: WeightDisplayUnit;
   status: ExerciseProgressStatus;
   error: string;
   onRetry: () => void;
@@ -17,6 +20,10 @@ type PeriodSelection = 'week' | 'month';
 
 function formatNumber(value: number, digits = 0): string {
   return value.toLocaleString('en-CA', { maximumFractionDigits: digits });
+}
+
+function formatVolume(valueKgReps: number, displayUnit: WeightDisplayUnit): string {
+  return `${formatNumber(kgToDisplayWeight(valueKgReps, displayUnit))} ${weightUnitLabel(displayUnit)}·reps`;
 }
 
 function formatPeriod(row: LiftingCalendarSummaryRow): string {
@@ -36,17 +43,18 @@ function deltaText(value: number | null, noun: string): string {
   return `${sign}${formatNumber(value)} vs prior ${noun}`;
 }
 
-function volumeDeltaText(value: number | null, noun: string): string {
+function volumeDeltaText(value: number | null, noun: string, displayUnit: WeightDisplayUnit): string {
   if (value === null) return 'No prior period yet';
   if (value === 0) return `No change vs prior ${noun}`;
   const sign = value > 0 ? '+' : '';
-  return `${sign}${formatNumber(value)} kg·reps vs prior ${noun}`;
+  return `${sign}${formatVolume(Math.abs(value), displayUnit)} vs prior ${noun}`;
 }
 
-function PeriodSummary({ row, delta, priorLabel }: {
+function PeriodSummary({ row, delta, priorLabel, displayUnit }: {
   row: LiftingCalendarSummaryRow | null;
   delta: LiftingCalendarDelta;
   priorLabel: 'week' | 'month';
+  displayUnit: WeightDisplayUnit;
 }) {
   if (!row) {
     return <p className={styles.empty}>Complete a lifting session to start calendar summaries.</p>;
@@ -80,15 +88,15 @@ function PeriodSummary({ row, delta, priorLabel }: {
         </div>
         <div>
           <dt>Volume</dt>
-          <dd>{formatNumber(row.volumeKgReps)} kg·reps</dd>
-          <small>{volumeDeltaText(delta.volumeKgReps, priorLabel)}</small>
+          <dd>{formatVolume(row.volumeKgReps, displayUnit)}</dd>
+          <small>{volumeDeltaText(delta.volumeKgReps, priorLabel, displayUnit)}</small>
         </div>
       </dl>
     </div>
   );
 }
 
-export function LiftingCalendarSummaryPanel({ analytics, status, error, onRetry }: LiftingCalendarSummaryProps) {
+export function LiftingCalendarSummaryPanel({ analytics, displayUnit, status, error, onRetry }: LiftingCalendarSummaryProps) {
   const [period, setPeriod] = useState<PeriodSelection>('week');
   const weekly = period === 'week';
   const rows = weekly ? analytics.weekly : analytics.monthly;
@@ -131,10 +139,10 @@ export function LiftingCalendarSummaryPanel({ analytics, status, error, onRetry 
 
       {status === 'ready' && (
         <div className={styles.analyticsLayout}>
-          <PeriodSummary delta={delta} priorLabel={priorLabel} row={row} />
+          <PeriodSummary delta={delta} displayUnit={displayUnit} priorLabel={priorLabel} row={row} />
           <ExerciseTrendChart
             description={`${rows.length} calendar ${weekly ? 'week' : 'month'}${rows.length === 1 ? '' : 's'} · analytics only`}
-            formatValue={(value) => `${formatNumber(value)} kg·reps`}
+            formatValue={(value) => formatVolume(value, displayUnit)}
             points={volumePoints}
             title={weekly ? 'Weekly volume' : 'Monthly volume'}
             variant="bars"

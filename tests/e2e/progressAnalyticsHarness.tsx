@@ -15,6 +15,7 @@ const profile: OnboardingProfile = {
   pendingWeeklyWorkoutTarget: null,
   onboardingCompletedAt: '2026-08-20T20:00:00Z',
   profileCode: 'FG-8111111111',
+  preferredWeightUnit: 'KG',
 };
 
 const bench: ExerciseProgressSummary = {

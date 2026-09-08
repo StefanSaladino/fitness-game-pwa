@@ -112,6 +112,17 @@ describe('ExerciseProgressScreen', () => {
     expect(within(bestWeight!).getByText('10 kg', { selector: 'dd' })).toBeInTheDocument();
     expect(within(bestReps!).getByText('12', { selector: 'dd' })).toBeInTheDocument();
 
+    const poundsButton = screen.getByRole('button', { name: 'lb' });
+    await user.click(poundsButton);
+
+    expect(poundsButton).toHaveAttribute('aria-pressed', 'true');
+    expect(within(bestWeight!).getByText('22.1 lb', { selector: 'dd' })).toBeInTheDocument();
+    expect(screen.getAllByText(/882 lb·reps/).length).toBeGreaterThan(0);
+    expect(within(currentPr!).getByText('12 reps', { selector: 'dd' })).toBeInTheDocument();
+    expect(bodyweightHistory[1]!.heaviestWeightKg).toBe(10);
+    expect(bodyweightHistory[1]!.sessionVolumeKgReps).toBe(400);
+    expect(exercises[0]!.bestValue).toBe(122.5);
+
     await user.click(screen.getByRole('button', { name: /Bench Press/i }));
     expect(onSelectExercise).toHaveBeenCalledWith('bench');
   });

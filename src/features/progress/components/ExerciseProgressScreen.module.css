@@ -54,6 +54,51 @@
   line-height: 1.55;
 }
 
+.unitControl {
+  display: inline-flex;
+  width: fit-content;
+  align-items: center;
+  gap: 4px;
+  margin-top: var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  padding: 4px;
+  background: rgba(12, 13, 16, 0.78);
+}
+
+.unitControl > span {
+  padding: 0 6px 0 8px;
+  color: var(--color-text-muted);
+  font-size: 0.66rem;
+  font-weight: 720;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.unitControl button {
+  min-width: 42px;
+  min-height: 34px;
+  border: 0;
+  border-radius: 999px;
+  padding: 0 var(--space-3);
+  color: var(--color-text-soft);
+  background: transparent;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.76rem;
+  font-weight: 760;
+}
+
+.unitControl button[aria-pressed='true'] {
+  color: var(--color-text);
+  background: var(--color-accent);
+}
+
+.unitControl button:focus-visible {
+  outline: 2px solid var(--color-accent-hover);
+  outline-offset: 2px;
+}
+
 .progressGrid,
 .detailStack {
   display: grid;

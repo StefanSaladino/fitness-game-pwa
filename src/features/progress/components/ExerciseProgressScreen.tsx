@@ -1,8 +1,11 @@
+import { useState } from 'react';
 import progressBanner from '../../../assets/fitness/top-set-progress-log.jpg';
 import type { AppSection } from '../../../components/layout';
 import { AppShell, DestinationBanner } from '../../../components/layout';
 import { Button } from '../../../components/ui';
 import type { OnboardingProfile } from '../../onboarding';
+import type { WeightDisplayUnit } from '../../workout/model';
+import { kgToDisplayWeight, weightUnitLabel } from '../../workout/weightUnits';
 import type { ExerciseAnalyticsSnapshot, ExercisePrTimelineEntry } from '../exerciseAnalytics';
 import type { LiftingCalendarAnalytics } from '../liftingCalendarAnalytics';
 import type { ExerciseProgressHistoryEntry, ExerciseProgressMetricType, ExerciseProgressSummary } from '../model';
@@ -55,14 +58,27 @@ function metricTrendTitle(metric: ExerciseProgressMetricType | null): string {
   return 'Progress trend';
 }
 
-function formatMetric(metric: ExerciseProgressMetricType | null, value: number | null): string {
+function formatWeight(valueKg: number, displayUnit: WeightDisplayUnit, digits = 1): string {
+  return `${formatNumber(kgToDisplayWeight(valueKg, displayUnit), digits)} ${weightUnitLabel(displayUnit)}`;
+}
+
+function formatVolume(valueKgReps: number, displayUnit: WeightDisplayUnit): string {
+  return `${formatNumber(kgToDisplayWeight(valueKgReps, displayUnit), 0)} ${weightUnitLabel(displayUnit)}·reps`;
+}
+
+function formatMetric(metric: ExerciseProgressMetricType | null, value: number | null, displayUnit: WeightDisplayUnit): string {
   if (value === null || metric === null) return '—';
-  if (metric === 'E1RM') return `${formatNumber(value)} kg`;
+  if (metric === 'E1RM') return formatWeight(value, displayUnit);
   return `${Math.round(value)} reps`;
 }
 
-function bestSetDetail(metric: ExerciseProgressMetricType | null, weightKg: number | null, reps: number | null): string {
-  if (metric === 'E1RM' && weightKg !== null && reps !== null) return `${formatNumber(weightKg)} kg × ${reps}`;
+function bestSetDetail(
+  metric: ExerciseProgressMetricType | null,
+  weightKg: number | null,
+  reps: number | null,
+  displayUnit: WeightDisplayUnit,
+): string {
+  if (metric === 'E1RM' && weightKg !== null && reps !== null) return `${formatWeight(weightKg, displayUnit)} × ${reps}`;
   if (metric === 'BODYWEIGHT_REPS' && reps !== null) return `${reps} bodyweight reps`;
   return 'Comparable best set unavailable';
 }
@@ -83,14 +99,14 @@ function historyStatus(entry: ExerciseProgressHistoryEntry): string {
   return 'No comparable set';
 }
 
-function historyPerformance(entry: ExerciseProgressHistoryEntry): string {
+function historyPerformance(entry: ExerciseProgressHistoryEntry, displayUnit: WeightDisplayUnit): string {
   if (entry.metricValue !== null) {
-    const metric = formatMetric(entry.metricType, entry.metricValue);
-    const set = bestSetDetail(entry.metricType, entry.weightKg, entry.reps);
+    const metric = formatMetric(entry.metricType, entry.metricValue, displayUnit);
+    const set = bestSetDetail(entry.metricType, entry.weightKg, entry.reps, displayUnit);
     return `${metric} · ${set}`;
   }
   if (entry.addedWeightSets > 0) {
-    return `Added weight · ${entry.heaviestWeightKg === null ? 'load recorded' : `${formatNumber(entry.heaviestWeightKg)} kg max`}`;
+    return `Added weight · ${entry.heaviestWeightKg === null ? 'load recorded' : `${formatWeight(entry.heaviestWeightKg, displayUnit)} max`}`;
   }
   if (entry.assistedSets > 0) return 'Assisted bodyweight work';
   return `${entry.maxCompletedReps ?? 0} reps max`;
@@ -102,10 +118,11 @@ function prKindLabel(entry: ExercisePrTimelineEntry): string {
   return 'Baseline';
 }
 
-function ExerciseList({ exercises, selectedExerciseId, onSelectExercise }: {
+function ExerciseList({ exercises, selectedExerciseId, onSelectExercise, displayUnit }: {
   exercises: ExerciseProgressSummary[];
   selectedExerciseId: string | null;
   onSelectExercise: (exerciseId: string) => void;
+  displayUnit: WeightDisplayUnit;
 }) {
   const totalSessions = exercises.reduce((total, exercise) => total + exercise.sessionCount, 0);
 
@@ -139,7 +156,7 @@ function ExerciseList({ exercises, selectedExerciseId, onSelectExercise }: {
                 <strong>{exercise.canonicalName}</strong>
                 <small>{frequencyLabel(exercise)}</small>
               </span>
-              <b>{formatMetric(exercise.metricType, exercise.bestValue)}</b>
+              <b>{formatMetric(exercise.metricType, exercise.bestValue, displayUnit)}</b>
             </button>
           );
         })}
@@ -148,18 +165,22 @@ function ExerciseList({ exercises, selectedExerciseId, onSelectExercise }: {
   );
 }
 
-function AnalyticsSummary({ exercise, analytics }: { exercise: ExerciseProgressSummary; analytics: ExerciseAnalyticsSnapshot }) {
+function AnalyticsSummary({ exercise, analytics, displayUnit }: {
+  exercise: ExerciseProgressSummary;
+  analytics: ExerciseAnalyticsSnapshot;
+  displayUnit: WeightDisplayUnit;
+}) {
   return (
     <>
       <dl className={styles.prSummary} aria-label="Personal record summary">
         <div className={styles.currentPr}>
           <dt>Current PR</dt>
-          <dd>{formatMetric(exercise.metricType, exercise.bestValue)}</dd>
-          <small>{bestSetDetail(exercise.metricType, exercise.bestWeightKg, exercise.bestReps)}</small>
+          <dd>{formatMetric(exercise.metricType, exercise.bestValue, displayUnit)}</dd>
+          <small>{bestSetDetail(exercise.metricType, exercise.bestWeightKg, exercise.bestReps, displayUnit)}</small>
         </div>
         <div>
           <dt>Previous PR</dt>
-          <dd>{formatMetric(exercise.metricType, exercise.previousPrValue)}</dd>
+          <dd>{formatMetric(exercise.metricType, exercise.previousPrValue, displayUnit)}</dd>
           <small>{exercise.previousPrValue === null ? 'First baseline is still the best' : 'PR immediately before current best'}</small>
         </div>
       </dl>
@@ -167,7 +188,7 @@ function AnalyticsSummary({ exercise, analytics }: { exercise: ExerciseProgressS
       <dl className={styles.factStrip} aria-label="Exercise analytics facts">
         <div>
           <dt>Best weight</dt>
-          <dd>{analytics.bestWeightKg === null ? '—' : `${formatNumber(analytics.bestWeightKg)} kg`}</dd>
+          <dd>{analytics.bestWeightKg === null ? '—' : formatWeight(analytics.bestWeightKg, displayUnit)}</dd>
         </div>
         <div>
           <dt>Best reps</dt>
@@ -179,14 +200,18 @@ function AnalyticsSummary({ exercise, analytics }: { exercise: ExerciseProgressS
         </div>
         <div>
           <dt>Total volume</dt>
-          <dd>{analytics.totalVolumeKgReps > 0 ? `${formatNumber(analytics.totalVolumeKgReps, 0)} kg·reps` : '—'}</dd>
+          <dd>{analytics.totalVolumeKgReps > 0 ? formatVolume(analytics.totalVolumeKgReps, displayUnit) : '—'}</dd>
         </div>
       </dl>
     </>
   );
 }
 
-function ExerciseCharts({ exercise, analytics }: { exercise: ExerciseProgressSummary; analytics: ExerciseAnalyticsSnapshot }) {
+function ExerciseCharts({ exercise, analytics, displayUnit }: {
+  exercise: ExerciseProgressSummary;
+  analytics: ExerciseAnalyticsSnapshot;
+  displayUnit: WeightDisplayUnit;
+}) {
   const metricPoints = analytics.metricTrend.map((point) => ({ id: point.workoutId, observedAt: point.observedAt, value: point.value }));
   const volumePoints = analytics.volumeTrend.map((point) => ({ id: point.workoutId, observedAt: point.observedAt, value: point.value }));
 
@@ -207,13 +232,13 @@ function ExerciseCharts({ exercise, analytics }: { exercise: ExerciseProgressSum
       <div className={styles.chartGrid} aria-label="Exercise analytics charts">
         <ExerciseTrendChart
           description={`${metricPoints.length} comparable session${metricPoints.length === 1 ? '' : 's'}`}
-          formatValue={(value) => formatMetric(exercise.metricType, value)}
+          formatValue={(value) => formatMetric(exercise.metricType, value, displayUnit)}
           points={metricPoints}
           title={metricTrendTitle(exercise.metricType)}
         />
         <ExerciseTrendChart
           description={`${volumePoints.length} completed session${volumePoints.length === 1 ? '' : 's'} · analytics only`}
-          formatValue={(value) => `${formatNumber(value, 0)} kg·reps`}
+          formatValue={(value) => formatVolume(value, displayUnit)}
           points={volumePoints}
           title="Volume history"
           variant="bars"
@@ -223,7 +248,10 @@ function ExerciseCharts({ exercise, analytics }: { exercise: ExerciseProgressSum
   );
 }
 
-function PrTimeline({ entries }: { entries: ExercisePrTimelineEntry[] }) {
+function PrTimeline({ entries, displayUnit }: {
+  entries: ExercisePrTimelineEntry[];
+  displayUnit: WeightDisplayUnit;
+}) {
   return (
     <section
       className={styles.prTimeline}
@@ -248,8 +276,8 @@ function PrTimeline({ entries }: { entries: ExercisePrTimelineEntry[] }) {
               <span className={styles.timelineDot} data-pr={entry.kind !== 'baseline'} aria-hidden="true" />
               <time dateTime={entry.observedAt}>{formatDate(entry.observedAt)}</time>
               <span className={entry.kind === 'baseline' ? styles.statusBadge : styles.prBadge}>{prKindLabel(entry)}</span>
-              <strong>{formatMetric(entry.metricType, entry.metricValue)}</strong>
-              <small>{bestSetDetail(entry.metricType, entry.weightKg, entry.reps)}</small>
+              <strong>{formatMetric(entry.metricType, entry.metricValue, displayUnit)}</strong>
+              <small>{bestSetDetail(entry.metricType, entry.weightKg, entry.reps, displayUnit)}</small>
             </li>
           ))}
         </ol>
@@ -258,13 +286,14 @@ function PrTimeline({ entries }: { entries: ExercisePrTimelineEntry[] }) {
   );
 }
 
-function ExerciseDetail({ exercise, analytics, history, historyStatusValue, historyError, onRetryHistory }: {
+function ExerciseDetail({ exercise, analytics, history, historyStatusValue, historyError, onRetryHistory, displayUnit }: {
   exercise: ExerciseProgressSummary;
   analytics: ExerciseAnalyticsSnapshot | null;
   history: ExerciseProgressHistoryEntry[];
   historyStatusValue: ExerciseProgressStatus;
   historyError: string;
   onRetryHistory: () => void;
+  displayUnit: WeightDisplayUnit;
 }) {
   return (
     <div className={styles.detailStack} data-progress-detail>
@@ -292,7 +321,7 @@ function ExerciseDetail({ exercise, analytics, history, historyStatusValue, hist
 
         {historyStatusValue === 'ready' && analytics && (
           <>
-          <AnalyticsSummary analytics={analytics} exercise={exercise} />
+          <AnalyticsSummary analytics={analytics} displayUnit={displayUnit} exercise={exercise} />
 
           {exercise.measurementType === 'BODYWEIGHT_REPS' && (
             <p className={styles.ruleNote}>
@@ -305,8 +334,8 @@ function ExerciseDetail({ exercise, analytics, history, historyStatusValue, hist
 
       {historyStatusValue === 'ready' && analytics && (
         <>
-          <ExerciseCharts analytics={analytics} exercise={exercise} />
-          <PrTimeline entries={analytics.prTimeline} />
+          <ExerciseCharts analytics={analytics} displayUnit={displayUnit} exercise={exercise} />
+          <PrTimeline displayUnit={displayUnit} entries={analytics.prTimeline} />
 
           <section
             className={styles.historyPanel}
@@ -333,14 +362,14 @@ function ExerciseDetail({ exercise, analytics, history, historyStatusValue, hist
                         <time dateTime={entry.observedAt}>{formatDate(entry.observedAt)}</time>
                         <span className={entry.isCurrentPr || entry.isPr ? styles.prBadge : styles.statusBadge}>{historyStatus(entry)}</span>
                       </div>
-                      <strong>{historyPerformance(entry)}</strong>
+                      <strong>{historyPerformance(entry, displayUnit)}</strong>
                       {entry.previousPrValue !== null && entry.metricValue !== null && (
-                        <small>Previous best: {formatMetric(entry.metricType, entry.previousPrValue)}</small>
+                        <small>Previous best: {formatMetric(entry.metricType, entry.previousPrValue, displayUnit)}</small>
                       )}
                     </div>
                     <div className={styles.historyAnalytics}>
                       <span>{entry.completedWorkingSets} working sets</span>
-                      <span>{entry.sessionVolumeKgReps > 0 ? `${formatNumber(entry.sessionVolumeKgReps, 0)} kg·reps volume` : 'No weighted volume'}</span>
+                      <span>{entry.sessionVolumeKgReps > 0 ? `${formatVolume(entry.sessionVolumeKgReps, displayUnit)} volume` : 'No weighted volume'}</span>
                     </div>
                   </li>
                 ))}
@@ -370,6 +399,8 @@ export function ExerciseProgressScreen({
   onNavigate,
   onSignOut,
 }: ExerciseProgressScreenProps) {
+  const [displayUnit, setDisplayUnit] = useState<WeightDisplayUnit>(profile.preferredWeightUnit);
+
   return (
     <AppShell activeItem="progress" mobileTitle="Progress" onNavigate={onNavigate} onSignOut={onSignOut} userLabel={profile.displayName} userMeta={`@${profile.username}`}>
       <div className={styles.progressPage} data-progress-page>
@@ -379,10 +410,16 @@ export function ExerciseProgressScreen({
             <h1>Your lifting trend</h1>
             <span>Strength, volume, frequency, and PR history from your completed sessions. Analytics never changes XP.</span>
           </div>
+          <div aria-label="Progress weight unit" className={styles.unitControl} role="group">
+            <span>Display</span>
+            <button aria-pressed={displayUnit === 'KG'} onClick={() => setDisplayUnit('KG')} type="button">kg</button>
+            <button aria-pressed={displayUnit === 'LB'} onClick={() => setDisplayUnit('LB')} type="button">lb</button>
+          </div>
         </DestinationBanner>
 
         <LiftingCalendarSummaryPanel
           analytics={calendarAnalytics}
+          displayUnit={displayUnit}
           error={calendarError}
           onRetry={onRetryCalendar}
           status={calendarStatus}
@@ -396,10 +433,16 @@ export function ExerciseProgressScreen({
           </section>
         ) : (
           <div className={styles.progressGrid}>
-            <ExerciseList exercises={exercises} onSelectExercise={onSelectExercise} selectedExerciseId={selectedExercise?.exerciseId ?? null} />
+            <ExerciseList
+              displayUnit={displayUnit}
+              exercises={exercises}
+              onSelectExercise={onSelectExercise}
+              selectedExerciseId={selectedExercise?.exerciseId ?? null}
+            />
             {selectedExercise && (
               <ExerciseDetail
                 analytics={analytics}
+                displayUnit={displayUnit}
                 exercise={selectedExercise}
                 history={history}
                 historyError={historyError}
