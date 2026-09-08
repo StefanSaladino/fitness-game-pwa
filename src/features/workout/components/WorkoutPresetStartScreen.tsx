@@ -7,7 +7,7 @@ import { TrainingTipSurface, trainingTipForDate } from '../../training-content';
 import type { ExercisePickerStatus } from '../hooks/useExercisePickerCatalog';
 import type { WorkoutHistorySession, WorkoutHistoryStatus } from '../workoutHistoryModel';
 import type { ExercisePickerItem, WorkoutLifecycleAction } from '../model';
-import { presetWorkouts, type PresetWorkoutId } from '../presetWorkouts';
+import { presetStructureSummary, presetWorkouts, type PresetWorkoutId } from '../presetWorkouts';
 import { formatWorkoutDuration } from '../workoutTime';
 import { WorkoutHistoryPanel } from './WorkoutHistoryPanel';
 import styles from './WorkoutPresetStartScreen.module.css';
@@ -87,7 +87,7 @@ export function WorkoutPresetStartScreen(props: WorkoutPresetStartScreenProps) {
           <div className={styles.startCopy}>
             <p className={styles.kicker}>LIFT</p>
             <h1>Start a lift</h1>
-            <p>Start empty and build your own session, or preload a curated exercise list. Presets choose exercises only—sets, reps, weights, and substitutions stay yours.</p>
+            <p>Start empty and build your own session, or preload a curated structure. Presets may include Supersets—sets, reps, weights, and substitutions stay yours.</p>
           </div>
           <div className={styles.headerActions}>
             <Button disabled={starting} fullWidth onClick={startEmpty}>
@@ -132,7 +132,7 @@ export function WorkoutPresetStartScreen(props: WorkoutPresetStartScreenProps) {
                   <div className={styles.presetCopy}>
                     <strong>{preset.name}</strong>
                     <p>{preset.description}</p>
-                    <span>{preset.exerciseNames.length} exercises · {preset.exerciseNames.join(' · ')}</span>
+                    <span>{preset.exerciseNames.length} exercises · {presetStructureSummary(preset)}</span>
                     {props.exercisePickerStatus === 'ready' && !available && <em>Unavailable because one or more catalogue exercises are inactive.</em>}
                   </div>
                   <Button

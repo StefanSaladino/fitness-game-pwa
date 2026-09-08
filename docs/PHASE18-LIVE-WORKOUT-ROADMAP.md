@@ -13,14 +13,15 @@ Superset structure does not create bonus XP, alternate scoring rules, or a secon
 - **18.2 Superset data model/foundation — DONE**
 - **18.3 Superset builder — DONE**
 - **18.4 Active Superset flow — DONE** — full validation gate passed.
-- **18.5 Superset recovery & reliability — NEXT**
-- **18.6 Supersets in history — PLANNED**
-- **18.7 Supersets in preset workouts — PLANNED**
-- **18.7B Exercise analytics tracking + exercise-picker refinement — PLANNED**
+- **18.5 Superset recovery & reliability — DONE**
+- **18.6 Supersets in history — DONE**
+- **18.7 Supersets in preset workouts — IN VALIDATION**
+- **18.7A Drop Sets + Pyramid workflows — PLANNED**
+- **18.7B Selective E1RM/deep analytics tracking + exercise-picker refinement — PLANNED**
 - **18.8 Active workout polish pass — PLANNED**
 - **18.9 Regression & production release — PLANNED**
 
-Drop Sets remain deferred and are not part of the current Phase 18 → native execution sequence. Pyramid training does not require a dedicated set type because every set already supports independent weight and rep values.
+Drop Sets and Pyramid workflows are now explicitly scheduled for Phase 18.7A. Drop Sets use the existing DROP set classification. Full Pyramid and Ascending Pyramid are set-sequence workflows built on ordinary independent weight/rep sets rather than alternate scoring entities. All of them continue to contribute to normal lifting volume and do not receive bonus XP.
 
 ---
 
@@ -124,7 +125,7 @@ No Phase 18.4-specific database migration is required. No XP, PR, scoring, set-p
 
 ---
 
-# Phase 18.5 — Superset Recovery & Reliability
+# Phase 18.5 — Superset Recovery & Reliability — DONE
 
 Before expanding Supersets elsewhere, make sure they survive everything Top Set already handles.
 
@@ -169,7 +170,7 @@ Exit criterion: an interrupted Superset workout recovers as coherently as an ord
 
 ---
 
-# Phase 18.6 — Supersets in History
+# Phase 18.6 — Supersets in History — DONE
 
 Completed workouts should preserve the way the workout was actually performed.
 
@@ -205,7 +206,7 @@ Exercise-level history and progress remain independent.
 
 ---
 
-# Phase 18.7 — Supersets in Preset Workouts
+# Phase 18.7 — Supersets in Preset Workouts — IN VALIDATION
 
 Allow preset workouts to contain Supersets.
 
@@ -229,6 +230,8 @@ Starting the preset should atomically reproduce the grouping and ordering.
 
 Existing non-Superset presets continue to work unchanged.
 
+Implementation note: Phase 18.7 uses an overloaded Superset-aware preset-start RPC that delegates to the existing guarded preset-start function in the same transaction. Full Body Strength and Lower Strength remain ordinary presets; Upper Strength, Push, and Pull declare an initial accessory Superset.
+
 ## Preset principles
 
 - preset definitions may intentionally declare Superset groups and member order;
@@ -239,13 +242,71 @@ Existing non-Superset presets continue to work unchanged.
 
 ---
 
-# Phase 18.7B — Exercise Analytics Tracking + Picker Refinement
+# Phase 18.7A — Drop Sets + Pyramid Workflows
+
+Extend live set construction without creating alternate scoring systems.
+
+## Drop Sets
+
+Drop Sets use the existing `DROP` set classification and remain ordinary completed sets.
+
+Requirements:
+
+- users can add/mark Drop Sets clearly during an active workout;
+- Drop Sets remain attached to their normal exercise;
+- every completed Drop Set contributes to normal exercise/session/weekly/monthly volume;
+- Drop Sets do not create bonus XP, special PR math, or a separate progression model;
+- recovery/offline replay must preserve Drop Set classification exactly like other set mutations.
+
+## Full Pyramid
+
+A full Pyramid is a sequence pattern rather than a separate scoring entity.
+
+Conceptually:
+
+```text
+lighter / more reps
+        ↓
+heavier / fewer reps
+        ↓
+peak set
+        ↓
+lighter / more reps
+```
+
+Top Set may provide a quick-build/prefill helper, but every set remains independently editable and authoritative.
+
+## Ascending Pyramid
+
+An Ascending Pyramid generally increases load across successive sets while reps may decrease:
+
+```text
+Set 1: lighter
+Set 2: heavier
+Set 3: heavier
+Set 4: heaviest
+```
+
+Again, this is a workflow/pattern layered over ordinary sets. It does not require a new scoring entity.
+
+## Advanced-set invariants
+
+- all completed sets count toward total lifting volume;
+- normal exercise PR/evidence rules remain authoritative;
+- no pattern receives bonus XP;
+- no automatic weight/repetition rule is enforced;
+- users may edit the generated/prefilled values freely;
+- ordinary sets continue working unchanged.
+
+---
+
+# Phase 18.7B — Selective Exercise Analytics Tracking + Picker Refinement
 
 Give users explicit control over which exercises appear in their long-term lifting analytics, and clean up exercise-picker hierarchy before the final workout polish pass.
 
 ## User-selected tracked exercises
 
-Users should not be forced to treat every exercise they have ever logged as a permanent analytics lift.
+Users should not be forced to treat every exercise they have ever logged as a permanent E1RM/deep-analytics lift. Tracking is selective for per-exercise analytics only; it is not a filter on global training volume.
 
 During an active workout, each exercise should expose a clear **Track in analytics** checkbox before that exercise is completed.
 
@@ -260,7 +321,9 @@ When selected:
 When not selected:
 
 - the exercise is still logged normally in workout history;
-- it simply does not become one of the user's chosen tracked analytics exercises.
+- every completed set still contributes to session volume and weekly/monthly total lifting volume;
+- scoring/XP and retained PR evidence continue to use the normal completed-workout data;
+- it simply does not become one of the user's chosen E1RM/in-depth analytics exercises.
 
 ## Removing tracked exercises
 
@@ -273,7 +336,7 @@ Removing tracking should:
 - **not delete workout history, sets, PR evidence, or underlying completed-workout data**;
 - allow the same exercise to be tracked again later without data corruption.
 
-Tracking is a user preference/view-selection layer, not destructive workout-data retention.
+Tracking is a user preference/view-selection layer for E1RM and in-depth per-exercise statistics. It is not destructive workout-data retention and it never removes an exercise from aggregate volume totals.
 
 ## Exercise-picker recent section
 
@@ -622,7 +685,7 @@ A high-quality passive Live Activity may already provide most of the value.
 
 # Final execution order
 
-**Compact sticky workout timer → pause/resume icon → collapsible completed sets → Superset data model → Superset builder → active Superset flow → Superset recovery → Superset history → Superset presets → user-selected tracked exercise analytics + exercise-picker Recent refinement → complete mobile workout polish → full PWA regression/release → Capacitor proof → native shell → native workout bridge → native lifecycle hardening → iPhone Live Activity → Android live surface → optional interactive native controls.**
+**Compact sticky workout timer → pause/resume icon → collapsible completed sets → Superset data model → Superset builder → active Superset flow → Superset recovery → Superset history → Superset presets → Drop Sets + full/ascending Pyramid workflows → selective E1RM/deep exercise analytics + exercise-picker Recent refinement → complete mobile workout polish → full PWA regression/release → Capacitor proof → native shell → native workout bridge → native lifecycle hardening → iPhone Live Activity → Android live surface → optional interactive native controls.**
 
 The first chunk is intentionally strong because the **compact timer + collapsible sets** solve an immediate usability problem, while **Supersets** take advantage of that denser UI instead of worsening vertical-space pressure.
 

@@ -52,8 +52,12 @@ export function useActiveWorkout(userId: string, injectedService?: WorkoutServic
     return workout;
   }), [runSessionAction]);
 
-  const startPreset = useCallback(async (exerciseIds: string[], actionAtMs: number = Date.now()) => runSessionAction('start', async () => {
-    const workout = await serviceRef.current!.startPresetWorkout(exerciseIds, actionAtMs);
+  const startPreset = useCallback(async (
+    exerciseIds: string[],
+    actionAtMs: number = Date.now(),
+    supersetGroups: string[][] = [],
+  ) => runSessionAction('start', async () => {
+    const workout = await serviceRef.current!.startPresetWorkout(exerciseIds, actionAtMs, supersetGroups);
     setActiveWorkout(workout);
     setStatus('ready');
     return workout;

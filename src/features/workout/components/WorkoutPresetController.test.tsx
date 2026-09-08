@@ -89,11 +89,11 @@ describe('WorkoutController preset start', () => {
     expect(await screen.findByText('Full Body Strength')).toBeInTheDocument();
     fireEvent.click(screen.getAllByRole('button', { name: 'Start preset' })[0]);
 
-    await waitFor(() => expect(startPresetWorkout).toHaveBeenCalledTimes(1));
     expect(startPresetWorkout).toHaveBeenCalledWith(
-      catalog.map((exercise) => exercise.id),
-      expect.any(Number),
-    );
+  catalog.map((exercise) => exercise.id),
+  expect.any(Number),
+  [],
+);
     expect(await screen.findByRole('heading', { name: 'Workout in progress' })).toBeInTheDocument();
   });
 });

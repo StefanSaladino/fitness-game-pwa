@@ -1,14 +1,19 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import type { OnboardingProfile } from '../../onboarding';
-import type { ExercisePickerItem } from '../model';
+import type { ExercisePickerService } from '../exercisePickerService';
+import type { ExercisePickerItem, WorkoutExercise } from '../model';
 import { presetWorkoutById } from '../presetWorkouts';
-import { WorkoutPresetStartScreen } from './WorkoutPresetStartScreen';
+import type { WorkoutMutationService } from '../mutations/workoutMutationService';
+import type { WorkoutExerciseService } from '../workoutExerciseService';
+import type { WorkoutService } from '../workoutService';
+import type { WorkoutSetService } from '../workoutSetService';
+import { WorkoutController } from './WorkoutController';
 
 const profile: OnboardingProfile = {
-  id: 'user-1',
-  username: 'stefan',
-  displayName: 'Stefan',
+  id: 'user-preset',
+  username: 'preset-user',
+  displayName: 'Preset User',
   timezone: 'America/Toronto',
   weeklyWorkoutTarget: 4,
   pendingWeeklyWorkoutTarget: null,
@@ -16,80 +21,96 @@ const profile: OnboardingProfile = {
   preferredWeightUnit: 'KG',
 };
 
-function catalogForPreset(id: 'FULL_BODY'): ExercisePickerItem[] {
-  return presetWorkoutById(id).exerciseNames.map((canonicalName, index) => ({
-    id: `exercise-${index + 1}`,
-    canonicalName,
-    measurementType: 'WEIGHT_REPS',
-    primaryMuscleGroup: 'OTHER',
-    workoutType: 'OTHER',
-    aliases: [],
-    lastUsedAt: null,
-  }));
-}
+const preset = presetWorkoutById('FULL_BODY');
 
-describe('WorkoutPresetStartScreen', () => {
-  it('keeps empty-start available and makes preset exercise ownership explicit', () => {
-    const onStart = vi.fn(async () => null);
+const catalog: ExercisePickerItem[] = preset.exerciseNames.map((canonicalName, index) => ({
+  id: `exercise-${index + 1}`,
+  canonicalName,
+  measurementType: 'WEIGHT_REPS',
+  primaryMuscleGroup: 'OTHER',
+  workoutType: 'OTHER',
+  aliases: [],
+  lastUsedAt: null,
+}));
+
+const session = {
+  id: 'workout-preset',
+  userId: profile.id,
+  status: 'IN_PROGRESS' as const,
+  startedAt: '2026-08-23T22:00:00.000Z',
+  endedAt: null,
+  activeDurationSeconds: 0,
+  timezoneAtStart: 'America/Toronto',
+  scoringDate: '2026-08-23',
+  pausedAt: null,
+  lastResumedAt: '2026-08-23T22:00:00.000Z',
+};
+
+describe('WorkoutController preset start', () => {
+  it('resolves the selected preset through the canonical catalogue and starts it atomically', async () => {
+    const startPresetWorkout = vi.fn(async () => session);
+
+    const service = {
+      loadActiveWorkout: vi.fn(async () => null),
+      startOrResumeWorkout: vi.fn(async () => session),
+      startPresetWorkout,
+    } as unknown as WorkoutService;
+
+    const pickerService = {
+      loadCatalog: vi.fn(async () => catalog),
+    } as ExercisePickerService;
+
+    const presetExercises: WorkoutExercise[] = catalog.map((exercise, index) => ({
+      id: `workout-exercise-${index + 1}`,
+      workoutId: session.id,
+      exerciseId: exercise.id,
+      orderIndex: index,
+      supersetGroupId: null,
+      supersetOrder: null,
+      revision: 0,
+      canonicalName: exercise.canonicalName,
+      measurementType: exercise.measurementType,
+    }));
+
+    const exerciseService = {
+      loadWorkoutExercises: vi.fn(async () => presetExercises),
+    } as unknown as WorkoutExerciseService;
+
+    const setService = {
+      loadWorkoutSets: vi.fn(async () => []),
+    } as unknown as WorkoutSetService;
+
+    const mutationService = {
+      apply: vi.fn(async () => undefined),
+    } as WorkoutMutationService;
+
     render(
-      <WorkoutPresetStartScreen
-        busyAction={null}
-        error=""
-        exerciseCatalog={catalogForPreset('FULL_BODY')}
-        exercisePickerError=""
-        exercisePickerStatus="ready"
+      <WorkoutController
+        exerciseService={exerciseService}
+        mutationService={mutationService}
         onNavigate={() => undefined}
-        onRetryExercisePicker={async () => []}
         onSignOut={() => undefined}
-        onStart={onStart}
-        onStartPreset={async () => null}
+        pickerService={pickerService}
         profile={profile}
+        service={service}
+        setService={setService}
       />,
     );
 
-    expect(screen.getByText(/Presets choose exercises only/)).toBeInTheDocument();
-    expect(screen.getByLabelText('Training tip')).toBeInTheDocument();
-    fireEvent.click(screen.getByRole('button', { name: 'Start empty lift' }));
-    expect(onStart).toHaveBeenCalledTimes(1);
-  });
-
-  it('starts the selected preset only when the exercise catalogue is ready', () => {
-    const onStartPreset = vi.fn(async () => null);
-    const { rerender } = render(
-      <WorkoutPresetStartScreen
-        busyAction={null}
-        error=""
-        exerciseCatalog={[]}
-        exercisePickerError=""
-        exercisePickerStatus="loading"
-        onNavigate={() => undefined}
-        onRetryExercisePicker={async () => []}
-        onSignOut={() => undefined}
-        onStart={async () => null}
-        onStartPreset={onStartPreset}
-        profile={profile}
-      />,
-    );
-
-    expect(screen.getAllByRole('button', { name: 'Start preset' })[0]).toBeDisabled();
-
-    rerender(
-      <WorkoutPresetStartScreen
-        busyAction={null}
-        error=""
-        exerciseCatalog={catalogForPreset('FULL_BODY')}
-        exercisePickerError=""
-        exercisePickerStatus="ready"
-        onNavigate={() => undefined}
-        onRetryExercisePicker={async () => []}
-        onSignOut={() => undefined}
-        onStart={async () => null}
-        onStartPreset={onStartPreset}
-        profile={profile}
-      />,
-    );
+    expect(await screen.findByText('Full Body Strength')).toBeInTheDocument();
 
     fireEvent.click(screen.getAllByRole('button', { name: 'Start preset' })[0]);
-    expect(onStartPreset).toHaveBeenCalledWith('FULL_BODY', expect.any(Number));
+
+    await waitFor(() => expect(startPresetWorkout).toHaveBeenCalledTimes(1));
+
+    expect(startPresetWorkout).toHaveBeenCalledWith(
+      catalog.map((exercise) => exercise.id),
+      expect.any(Number),
+      [],
+    );
+
+    expect(
+      await screen.findByRole('heading', { name: 'Workout in progress' }),
+    ).toBeInTheDocument();
   });
 });

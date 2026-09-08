@@ -26,14 +26,27 @@ Historical details remain in the phase records and `CHANGELOG.md`. They are not 
 | 18.2 | **DONE** | Superset data model/foundation |
 | 18.3 | **DONE** | Revision-safe Superset builder/mutations |
 | 18.4 | **DONE** | Active round-robin Superset guidance; full validation passed |
-| 18.5 | **NEXT** | Superset recovery and reliability across refresh/offline/replay/conflicts |
-| 18.6 | **PLANNED** | Preserve Superset structure in completed-workout history |
-| 18.7 | **PLANNED** | Preserve Superset structure in preset workouts |
-| 18.7B | **PLANNED** | User-selected tracked-exercise analytics + exercise-picker Recent refinement |
+| 18.5 | **DONE** | Superset recovery and reliability across refresh/offline/replay/conflicts |
+| 18.6 | **DONE** | Preserve Superset structure in completed-workout history |
+| 18.7 | **IN VALIDATION** | Atomically reproduce declared Superset structure in preset workouts |
+| 18.7A | **PLANNED** | Drop Sets + full/ascending Pyramid set workflows |
+| 18.7B | **PLANNED** | Selective E1RM/deep exercise analytics tracking + exercise-picker Recent refinement |
 | 18.8 | **PLANNED** | Full active-workout mobile polish/density pass |
 | 18.9 | **PLANNED** | Full PWA regression and production release checkpoint |
 
-Drop Sets are deferred and are not on the current critical path. Pyramid training does not require a dedicated set type because each set already stores independent weight and rep values.
+### Phase 18.7A locked advanced-set plan
+
+- **Drop Sets** become an explicit live-workout workflow using the existing DROP set classification; they still count toward normal workout volume and never create bonus XP or alternate progression math.
+- **Full Pyramid** training is a set-sequence pattern: load can rise through earlier sets and fall through later sets while reps remain independently editable.
+- **Ascending Pyramid** training is a set-sequence pattern where load generally rises across successive sets while reps remain independently editable.
+- Pyramid patterns do **not** require a separate scoring entity or authoritative set type. Every set continues to store its own weight/reps and contributes to normal volume.
+- The UI may offer quick-build/prefill helpers for these patterns, but users remain free to edit every set.
+
+### Phase 18.7B locked selective-analytics contract
+
+- **Track in analytics** controls only whether an exercise appears in E1RM and other in-depth per-exercise analytics surfaces.
+- Untracked exercises still count fully toward workout/session volume, weekly/monthly aggregate volume, workout history, scoring/XP, and retained PR evidence.
+- Tracking/untracking is a non-destructive view preference; it never deletes or excludes completed lifting data from global totals.
 
 ### Phase 18.7B locked additions
 

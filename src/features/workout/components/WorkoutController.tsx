@@ -16,7 +16,7 @@ import { useExercisePickerCatalog } from '../hooks/useExercisePickerCatalog';
 import { useWorkoutRecovery } from '../hooks/useWorkoutRecovery';
 import { useWorkoutMutationQueue } from '../hooks/useWorkoutMutationQueue';
 import { useWorkoutHistory } from '../hooks/useWorkoutHistory';
-import { presetWorkoutById, resolvePresetExerciseIds, type PresetWorkoutId } from '../presetWorkouts';
+import { presetWorkoutById, resolvePresetWorkout, type PresetWorkoutId } from '../presetWorkouts';
 import {
   restoreWorkoutExercises,
   restoreWorkoutSession,
@@ -174,8 +174,12 @@ export function WorkoutController({ profile, onNavigate, onSignOut, service, exe
     const startPreset = async (presetId: PresetWorkoutId, actionAtMs?: number) => {
       setPresetError('');
       try {
-        const exerciseIds = resolvePresetExerciseIds(presetWorkoutById(presetId), picker.catalog);
-        return await workout.startPreset(exerciseIds, actionAtMs);
+        const resolvedPreset = resolvePresetWorkout(presetWorkoutById(presetId), picker.catalog);
+        return await workout.startPreset(
+          resolvedPreset.exerciseIds,
+          actionAtMs,
+          resolvedPreset.supersetGroups,
+        );
       } catch (caught) {
         setPresetError(toUserFacingWorkoutError(caught));
         return null;

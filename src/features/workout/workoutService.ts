@@ -20,7 +20,7 @@ const ACTIVE_COLUMNS = 'id, user_id, status, started_at, ended_at, active_durati
 export interface WorkoutService {
   loadActiveWorkout(userId: string): Promise<ActiveWorkoutSession | null>;
   startOrResumeWorkout(actionAtMs?: number): Promise<ActiveWorkoutSession>;
-  startPresetWorkout(exerciseIds: string[], actionAtMs?: number): Promise<ActiveWorkoutSession>;
+  startPresetWorkout(exerciseIds: string[], actionAtMs?: number, supersetGroups?: string[][]): Promise<ActiveWorkoutSession>;
   pauseWorkout(workoutId: string, actionAtMs?: number): Promise<ActiveWorkoutSession>;
   resumeWorkout(workoutId: string, actionAtMs?: number): Promise<ActiveWorkoutSession>;
   finishWorkout(workoutId: string): Promise<void>;
@@ -92,11 +92,17 @@ export function createWorkoutService(client: SupabaseClient = getSupabaseClient(
       return mapRpcWorkout(result.data);
     },
 
-    async startPresetWorkout(exerciseIds, actionAtMs) {
-      const result = await client.rpc('start_lifting_workout_from_preset', {
-        p_exercise_ids: exerciseIds,
-        p_action_at: actionTimestamp(actionAtMs),
-      });
+    async startPresetWorkout(exerciseIds, actionAtMs, supersetGroups = []) {
+      const result = supersetGroups.length === 0
+        ? await client.rpc('start_lifting_workout_from_preset', {
+            p_exercise_ids: exerciseIds,
+            p_action_at: actionTimestamp(actionAtMs),
+          })
+        : await client.rpc('start_lifting_workout_from_preset', {
+            p_exercise_ids: exerciseIds,
+            p_superset_groups: supersetGroups,
+            p_action_at: actionTimestamp(actionAtMs),
+          });
       if (result.error) throw result.error;
       return mapRpcWorkout(result.data);
     },
