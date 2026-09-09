@@ -43,6 +43,8 @@ const compositionProps = {
   setError: '',
   onRetrySets: vi.fn(async () => []),
   onAddSet: vi.fn(async () => true),
+  onAddAdvancedSet: vi.fn(async () => true),
+  onSaveAdvancedSet: vi.fn(async () => true),
   onCopySet: vi.fn(async () => true),
   onSaveSet: vi.fn(async () => true),
   onRemoveSet: vi.fn(async () => true),

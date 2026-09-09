@@ -5,6 +5,7 @@ import type {
   WorkoutExercise,
   WorkoutSet,
   WorkoutSetType,
+  WorkoutSetVariant,
 } from '../model';
 
 export const WORKOUT_RECOVERY_VERSION = 1 as const;
@@ -32,11 +33,21 @@ export interface WorkoutRecoveryExerciseSnapshot {
   measurementType: WorkoutExercise['measurementType'];
 }
 
+export interface WorkoutRecoverySetSegmentSnapshot {
+  id: string;
+  workoutSetId: string;
+  segmentIndex: number;
+  weightKg: number | null;
+  reps: number | null;
+}
+
 export interface WorkoutRecoverySetSnapshot {
   id: string;
   workoutExerciseId: string;
   setNumber: number;
   setType: WorkoutSetType;
+  setVariant?: WorkoutSetVariant;
+  segments?: WorkoutRecoverySetSegmentSnapshot[];
   weightKg: number | null;
   reps: number | null;
   bodyweightMode: BodyweightLoadMode | null;
@@ -45,11 +56,18 @@ export interface WorkoutRecoverySetSnapshot {
   revision: number;
 }
 
+export interface WorkoutRecoverySetSegmentDraft {
+  weight: string;
+  reps: string;
+}
+
 export interface WorkoutRecoverySetDraft {
-  setType: 'WARMUP' | 'WORKING';
+  setType: 'WARMUP' | 'WORKING' | 'DROP';
   weight: string;
   reps: string;
   bodyweightMode: BodyweightLoadMode;
+  setVariant?: WorkoutSetVariant;
+  segments?: WorkoutRecoverySetSegmentDraft[];
 }
 
 export interface WorkoutRecoveryUiSnapshot {
@@ -102,6 +120,8 @@ function snapshotSet(set: WorkoutSet): WorkoutRecoverySetSnapshot {
     workoutExerciseId: set.workoutExerciseId,
     setNumber: set.setNumber,
     setType: set.setType,
+    setVariant: set.setVariant ?? (set.setType === 'DROP' ? 'DROP' : 'STANDARD'),
+    segments: (set.segments ?? []).map((segment) => ({ ...segment })),
     weightKg: set.weightKg,
     reps: set.reps,
     bodyweightMode: set.bodyweightMode,
@@ -185,12 +205,27 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
+function isWorkoutSetVariant(value: unknown): value is WorkoutSetVariant {
+  return value === 'STANDARD' || value === 'DROP' || value === 'ASCENDING_PYRAMID' || value === 'FULL_PYRAMID';
+}
+
+function isSetSegmentDraft(value: unknown): value is WorkoutRecoverySetSegmentDraft {
+  return isRecord(value) && typeof value.weight === 'string' && typeof value.reps === 'string';
+}
+
 function isSetDraft(value: unknown): value is WorkoutRecoverySetDraft {
   if (!isRecord(value)) return false;
-  return (value.setType === 'WARMUP' || value.setType === 'WORKING')
-    && typeof value.weight === 'string'
-    && typeof value.reps === 'string'
-    && (value.bodyweightMode === 'BODYWEIGHT' || value.bodyweightMode === 'ADDED_WEIGHT' || value.bodyweightMode === 'ASSISTED');
+  if (!(value.setType === 'WARMUP' || value.setType === 'WORKING' || value.setType === 'DROP')
+    || typeof value.weight !== 'string'
+    || typeof value.reps !== 'string'
+    || !(value.bodyweightMode === 'BODYWEIGHT' || value.bodyweightMode === 'ADDED_WEIGHT' || value.bodyweightMode === 'ASSISTED')) return false;
+  if (value.setVariant !== undefined && !isWorkoutSetVariant(value.setVariant)) return false;
+  if (value.segments !== undefined && (!Array.isArray(value.segments) || !value.segments.every(isSetSegmentDraft))) return false;
+  if (value.setVariant && value.setVariant !== 'STANDARD') {
+    const minimum = value.setVariant === 'FULL_PYRAMID' ? 3 : 2;
+    if (!Array.isArray(value.segments) || value.segments.length < minimum || value.segments.length > 8) return false;
+  }
+  return true;
 }
 
 function hasContiguousZeroBasedIndexes(values: readonly number[]): boolean {
@@ -199,6 +234,34 @@ function hasContiguousZeroBasedIndexes(values: readonly number[]): boolean {
   return [...values]
     .sort((left, right) => left - right)
     .every((value, index) => value === index);
+}
+
+function hasValidSetSegments(set: Record<string, unknown>): boolean {
+  if (set.setVariant !== undefined && !isWorkoutSetVariant(set.setVariant)) return false;
+  if (set.segments === undefined) return true;
+  if (!Array.isArray(set.segments)) return false;
+  const segmentIndexes: number[] = [];
+  const ids = new Set<string>();
+  for (const segment of set.segments) {
+    if (!isRecord(segment)
+      || !isString(segment.id)
+      || segment.workoutSetId !== set.id
+      || typeof segment.segmentIndex !== 'number'
+      || !Number.isInteger(segment.segmentIndex)
+      || segment.segmentIndex < 0
+      || (segment.weightKg !== null && (typeof segment.weightKg !== 'number' || !Number.isFinite(segment.weightKg)))
+      || (segment.reps !== null && (typeof segment.reps !== 'number' || !Number.isInteger(segment.reps)))) return false;
+    if (ids.has(segment.id)) return false;
+    ids.add(segment.id);
+    segmentIndexes.push(segment.segmentIndex);
+  }
+  if (!hasContiguousZeroBasedIndexes(segmentIndexes)) return false;
+  const variant = set.setVariant ?? (set.setType === 'DROP' ? 'DROP' : 'STANDARD');
+  if (variant !== 'STANDARD') {
+    const minimum = variant === 'FULL_PYRAMID' ? 3 : 2;
+    if (set.segments.length < minimum || set.segments.length > 8) return false;
+  }
+  return true;
 }
 
 function hasValidSupersetRecoveryShape(exercises: readonly Record<string, unknown>[]): boolean {
@@ -266,6 +329,7 @@ export function parseWorkoutRecoverySnapshot(value: unknown, expectedUserId: str
     && Number.isInteger(set.setNumber)
     && set.setNumber >= 1
     && ['WARMUP', 'WORKING', 'DROP', 'FAILURE'].includes(String(set.setType))
+    && hasValidSetSegments(set)
     && (set.weightKg === null || (typeof set.weightKg === 'number' && Number.isFinite(set.weightKg)))
     && (set.reps === null || (typeof set.reps === 'number' && Number.isInteger(set.reps)))
     && (set.bodyweightMode === null || ['BODYWEIGHT', 'ADDED_WEIGHT', 'ASSISTED'].includes(String(set.bodyweightMode)))
@@ -302,6 +366,12 @@ export function parseWorkoutRecoverySnapshot(value: unknown, expectedUserId: str
     })),
     sets: value.sets.map((set) => ({
       ...(set as unknown as WorkoutRecoverySetSnapshot),
+      setVariant: isWorkoutSetVariant((set as Record<string, unknown>).setVariant)
+        ? (set as Record<string, unknown>).setVariant as WorkoutSetVariant
+        : ((set as Record<string, unknown>).setType === 'DROP' ? 'DROP' : 'STANDARD'),
+      segments: Array.isArray((set as Record<string, unknown>).segments)
+        ? ((set as Record<string, unknown>).segments as WorkoutRecoverySetSegmentSnapshot[]).map((segment) => ({ ...segment }))
+        : [],
       revision: typeof (set as Record<string, unknown>).revision === 'number'
         ? (set as Record<string, unknown>).revision as number
         : 0,

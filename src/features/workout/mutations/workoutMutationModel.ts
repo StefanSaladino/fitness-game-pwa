@@ -27,6 +27,7 @@ export type WorkoutMutationRequest =
       };
     }
   | { kind: 'ADD_SET'; payload: { workoutExerciseId: string; setType: 'WARMUP' | 'WORKING' } }
+  | { kind: 'ADD_ADVANCED_SET'; payload: { workoutExerciseId: string; variant: 'DROP' | 'ASCENDING_PYRAMID' | 'FULL_PYRAMID' } }
   | { kind: 'COPY_SET'; payload: { workoutSetId: string; expectedRevision: number | null } }
   | {
       kind: 'SAVE_SET';
@@ -36,6 +37,16 @@ export type WorkoutMutationRequest =
         weightKg: number | null;
         reps: number | null;
         bodyweightMode: 'BODYWEIGHT' | 'ADDED_WEIGHT' | 'ASSISTED' | null;
+        completed: boolean;
+        expectedRevision: number | null;
+      };
+    }
+  | {
+      kind: 'SAVE_ADVANCED_SET';
+      payload: {
+        workoutSetId: string;
+        variant: 'DROP' | 'ASCENDING_PYRAMID' | 'FULL_PYRAMID';
+        segments: Array<{ weightKg: number | null; reps: number | null }>;
         completed: boolean;
         expectedRevision: number | null;
       };
@@ -90,6 +101,21 @@ function isNullableInteger(value: unknown): value is number | null {
 
 function isExpectedRevision(value: unknown): value is number | null {
   return value === null || (typeof value === 'number' && Number.isInteger(value) && value >= 0);
+}
+
+function isAdvancedSetVariant(value: unknown): value is 'DROP' | 'ASCENDING_PYRAMID' | 'FULL_PYRAMID' {
+  return value === 'DROP' || value === 'ASCENDING_PYRAMID' || value === 'FULL_PYRAMID';
+}
+
+function isAdvancedSegments(value: unknown, variant: unknown): value is Array<{ weightKg: number | null; reps: number | null }> {
+  if (!Array.isArray(value)) return false;
+  const minimum = variant === 'FULL_PYRAMID' ? 3 : 2;
+  if (value.length < minimum || value.length > 8) return false;
+  return value.every((segment) => isRecord(segment)
+    && isNullableFiniteNumber(segment.weightKg)
+    && (segment.weightKg === null || segment.weightKg > 0)
+    && isNullableInteger(segment.reps)
+    && (segment.reps === null || (segment.reps >= 1 && segment.reps <= 999)));
 }
 
 function isSupersetExpectedMembers(value: unknown): value is Array<{ workoutExerciseId: string; expectedRevision: number }> {
@@ -160,6 +186,9 @@ export function isWorkoutMutationRequest(value: unknown): value is WorkoutMutati
     case 'ADD_SET':
       return isNonEmptyString(payload.workoutExerciseId)
         && (payload.setType === 'WARMUP' || payload.setType === 'WORKING');
+    case 'ADD_ADVANCED_SET':
+      return isNonEmptyString(payload.workoutExerciseId)
+        && isAdvancedSetVariant(payload.variant);
     case 'COPY_SET':
     case 'REMOVE_SET':
       return isNonEmptyString(payload.workoutSetId)
@@ -170,6 +199,12 @@ export function isWorkoutMutationRequest(value: unknown): value is WorkoutMutati
         && isNullableFiniteNumber(payload.weightKg)
         && isNullableInteger(payload.reps)
         && (payload.bodyweightMode === null || payload.bodyweightMode === 'BODYWEIGHT' || payload.bodyweightMode === 'ADDED_WEIGHT' || payload.bodyweightMode === 'ASSISTED')
+        && typeof payload.completed === 'boolean'
+        && isExpectedRevision(payload.expectedRevision);
+    case 'SAVE_ADVANCED_SET':
+      return isNonEmptyString(payload.workoutSetId)
+        && isAdvancedSetVariant(payload.variant)
+        && isAdvancedSegments(payload.segments, payload.variant)
         && typeof payload.completed === 'boolean'
         && isExpectedRevision(payload.expectedRevision);
     default:

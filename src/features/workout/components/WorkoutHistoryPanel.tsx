@@ -28,10 +28,13 @@ function dateLabel(value: string): string {
   }).format(new Date(`${value}T12:00:00Z`));
 }
 
-function setTypeLabel(value: WorkoutHistorySet['setType']): string {
-  if (value === 'WARMUP') return 'Warm-up';
-  if (value === 'DROP') return 'Drop';
-  if (value === 'FAILURE') return 'Failure';
+function setTypeLabel(set: WorkoutHistorySet): string {
+  if (set.setVariant === 'DROP') return 'Drop set';
+  if (set.setVariant === 'ASCENDING_PYRAMID') return 'Ascending pyramid';
+  if (set.setVariant === 'FULL_PYRAMID') return 'Full pyramid';
+  if (set.setType === 'WARMUP') return 'Warm-up';
+  if (set.setType === 'DROP') return 'Drop';
+  if (set.setType === 'FAILURE') return 'Failure';
   return 'Working';
 }
 
@@ -40,7 +43,24 @@ function formatWeight(weightKg: number, profile: OnboardingProfile): string {
   return `${value.toLocaleString('en-CA', { maximumFractionDigits: 1 })} ${weightUnitLabel(profile.preferredWeightUnit)}`;
 }
 
+function segmentPerformance(
+  weightKg: number | null,
+  reps: number | null,
+  profile: OnboardingProfile,
+): string {
+  if (weightKg !== null && reps !== null) return `${formatWeight(weightKg, profile)} × ${reps}`;
+  if (reps !== null) return `${reps} reps`;
+  if (weightKg !== null) return formatWeight(weightKg, profile);
+  return 'Incomplete stage';
+}
+
 function setPerformance(set: WorkoutHistorySet, profile: OnboardingProfile): string {
+  if (set.segments.length > 0) {
+    return set.segments
+      .map((segment) => segmentPerformance(segment.weightKg, segment.reps, profile))
+      .join(' → ');
+  }
+
   const reps = set.reps ?? 0;
 
   if (set.bodyweightMode === 'BODYWEIGHT') {
@@ -93,7 +113,7 @@ function ExerciseHistory({
         <ul className={styles.sets}>
           {exercise.sets.map((set) => (
             <li key={set.id}>
-              <span>Set {set.setNumber} · {setTypeLabel(set.setType)}</span>
+              <span>Set {set.setNumber} · {setTypeLabel(set)}</span>
               <strong>{setPerformance(set, profile)}</strong>
             </li>
           ))}
@@ -122,7 +142,7 @@ export function WorkoutHistoryPanel({
           <p>HISTORY</p>
           <h2 id="lifting-history-heading">Recent lifting</h2>
         </div>
-        <span>Completed sessions keep their original Superset structure.</span>
+        <span>Completed sessions keep their original Superset and advanced-set structure.</span>
       </div>
 
       {status === 'loading' && (

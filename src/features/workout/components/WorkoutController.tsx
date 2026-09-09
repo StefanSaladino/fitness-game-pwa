@@ -268,6 +268,8 @@ export function WorkoutController({ profile, onNavigate, onSignOut, service, exe
       setError={useRecoveredSets ? '' : sets.error}
       onRetrySets={sets.retry}
       onAddSet={sets.addSet}
+      onAddAdvancedSet={sets.addAdvancedSet}
+      onSaveAdvancedSet={sets.saveAdvancedSet}
       onCopySet={sets.copySet}
       onSaveSet={sets.saveSet}
       onRemoveSet={sets.removeSet}

@@ -31,7 +31,6 @@ export interface WorkoutExercise {
 
 export type WorkoutCompositionAction = 'add' | 'remove' | 'move' | 'superset' | null;
 
-
 export type ExerciseMuscleGroup =
   | 'CHEST' | 'BACK' | 'SHOULDERS' | 'BICEPS' | 'TRICEPS' | 'QUADS' | 'HAMSTRINGS'
   | 'GLUTES' | 'CALVES' | 'CORE' | 'OBLIQUES' | 'FOREARMS_GRIP' | 'NECK' | 'FULL_BODY' | 'OTHER';
@@ -56,6 +55,16 @@ export type ExerciseBrowseMode = 'muscle' | 'type';
 export type WorkoutSetType = 'WARMUP' | 'WORKING' | 'DROP' | 'FAILURE';
 export type BodyweightLoadMode = 'BODYWEIGHT' | 'ADDED_WEIGHT' | 'ASSISTED';
 export type WeightDisplayUnit = 'KG' | 'LB';
+export type WorkoutAdvancedSetVariant = 'DROP' | 'ASCENDING_PYRAMID' | 'FULL_PYRAMID';
+export type WorkoutSetVariant = 'STANDARD' | WorkoutAdvancedSetVariant;
+
+export interface WorkoutSetSegment {
+  id: string;
+  workoutSetId: string;
+  segmentIndex: number;
+  weightKg: number | null;
+  reps: number | null;
+}
 
 export interface WorkoutSet {
   id: string;
@@ -68,6 +77,9 @@ export interface WorkoutSet {
   completed: boolean;
   completedAt: string | null;
   revision: number;
+  // Optional for backwards-compatible recovery/test fixtures created before 18.7A.
+  setVariant?: WorkoutSetVariant;
+  segments?: WorkoutSetSegment[];
 }
 
 export interface WorkoutSetInput {
@@ -75,6 +87,17 @@ export interface WorkoutSetInput {
   weightKg: number | null;
   reps: number | null;
   bodyweightMode: BodyweightLoadMode | null;
+  completed: boolean;
+}
+
+export interface WorkoutAdvancedSetSegmentInput {
+  weightKg: number | null;
+  reps: number | null;
+}
+
+export interface WorkoutAdvancedSetInput {
+  variant: WorkoutAdvancedSetVariant;
+  segments: WorkoutAdvancedSetSegmentInput[];
   completed: boolean;
 }
 

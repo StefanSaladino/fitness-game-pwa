@@ -2,17 +2,27 @@ import type {
   BodyweightLoadMode,
   ExerciseMeasurementType,
   WorkoutSetType,
+  WorkoutSetVariant,
 } from './model';
 
 export type WorkoutHistoryStatus = 'loading' | 'ready' | 'error';
+
+export interface WorkoutHistorySetSegment {
+  id: string;
+  segmentIndex: number;
+  weightKg: number | null;
+  reps: number | null;
+}
 
 export interface WorkoutHistorySet {
   id: string;
   setNumber: number;
   setType: WorkoutSetType;
+  setVariant: WorkoutSetVariant;
   weightKg: number | null;
   reps: number | null;
   bodyweightMode: BodyweightLoadMode | null;
+  segments: WorkoutHistorySetSegment[];
 }
 
 export interface WorkoutHistoryExercise {

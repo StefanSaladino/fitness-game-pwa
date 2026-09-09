@@ -32,6 +32,8 @@ function props(overrides: Partial<ComponentProps<typeof WorkoutSetList>> = {}): 
     busy: null,
     unit: 'KG',
     onAddSet: vi.fn(async () => true),
+    onAddAdvancedSet: vi.fn(async () => true),
+    onSaveAdvancedSet: vi.fn(async () => true),
     onCopySet: vi.fn(async () => true),
     onSaveSet: vi.fn(async () => true),
     onRemoveSet: vi.fn(async () => true),
@@ -119,6 +121,68 @@ describe('WorkoutSetList', () => {
 
     expect(onAddSet).toHaveBeenCalledWith('we-1', 'WORKING');
     expect(onCopySet).toHaveBeenCalledWith('set-2');
+  });
+
+  it('creates one logical advanced set for Drop and both Pyramid variants', async () => {
+    const user = userEvent.setup();
+    const onAddAdvancedSet = vi.fn(async () => true);
+    render(<WorkoutSetList {...props({ onAddAdvancedSet })} />);
+
+    await user.click(screen.getByRole('button', { name: '+ Drop set' }));
+    await user.click(screen.getByRole('button', { name: '+ Ascending pyramid' }));
+    await user.click(screen.getByRole('button', { name: '+ Full pyramid' }));
+
+    expect(onAddAdvancedSet).toHaveBeenNthCalledWith(1, 'we-1', 'DROP');
+    expect(onAddAdvancedSet).toHaveBeenNthCalledWith(2, 'we-1', 'ASCENDING_PYRAMID');
+    expect(onAddAdvancedSet).toHaveBeenNthCalledWith(3, 'we-1', 'FULL_PYRAMID');
+  });
+
+  it('lets an incomplete standard set collapse and expand again', async () => {
+    const user = userEvent.setup();
+    render(<WorkoutSetList {...props({ sets: [sets[1]] })} />);
+
+    await user.click(screen.getByRole('button', { name: 'Collapse set 2' }));
+    expect(screen.getByRole('button', { name: 'Expand set 2' })).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Expand set 2' }));
+    expect(screen.getByRole('button', { name: 'Collapse set 2' })).toBeInTheDocument();
+  });
+
+  it('edits multiple load and rep stages inside one logical Drop Set', async () => {
+    const onSaveAdvancedSet = vi.fn(async () => true);
+    const dropSet: WorkoutSet = {
+      ...sets[1],
+      setType: 'DROP',
+      setVariant: 'DROP',
+      segments: [
+        { id: 'segment-1', workoutSetId: 'set-2', segmentIndex: 0, weightKg: 100, reps: 8 },
+        { id: 'segment-2', workoutSetId: 'set-2', segmentIndex: 1, weightKg: 80, reps: 10 },
+      ],
+    };
+    render(<WorkoutSetList {...props({ sets: [dropSet], onSaveAdvancedSet })} />);
+
+    const stages = screen.getByRole('list', { name: 'Set 2 stages' });
+    expect(within(stages).getAllByText('Weight (kg)')).toHaveLength(2);
+    expect(within(stages).getAllByText('Reps')).toHaveLength(2);
+    expect(screen.getByLabelText('Set 2 stage 1 weight in kg')).toHaveValue(100);
+    expect(screen.getByLabelText('Set 2 stage 2 weight in kg')).toHaveValue(80);
+
+    const user = userEvent.setup();
+    await user.click(screen.getByRole('button', { name: 'Collapse set 2' }));
+    expect(screen.getByRole('button', { name: 'Expand set 2' })).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Expand set 2' }));
+
+    fireEvent.change(screen.getByLabelText('Set 2 stage 2 weight in kg'), { target: { value: '75' } });
+    fireEvent.change(screen.getByLabelText('Set 2 stage 2 reps'), { target: { value: '12' } });
+    fireEvent.blur(screen.getByLabelText('Set 2 stage 2 reps'));
+
+    await waitFor(() => expect(onSaveAdvancedSet).toHaveBeenCalledWith('set-2', expect.objectContaining({
+      variant: 'DROP',
+      segments: [
+        expect.objectContaining({ weightKg: 100, reps: 8 }),
+        expect.objectContaining({ weightKg: 75, reps: 12 }),
+      ],
+    })));
   });
 
   it('persists plain, added-weight, and assisted bodyweight modes separately', async () => {

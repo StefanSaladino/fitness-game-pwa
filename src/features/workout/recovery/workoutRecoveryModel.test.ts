@@ -72,6 +72,33 @@ describe('workout recovery snapshot model', () => {
     expect(parsed?.sets.every((set) => set.revision === 0)).toBe(true);
   });
 
+  it('preserves segmented advanced sets and unsaved stage drafts across recovery', () => {
+    const advancedSet: WorkoutSet = {
+      ...sets[0],
+      setType: 'DROP',
+      setVariant: 'DROP',
+      segments: [
+        { id: 'segment-1', workoutSetId: 'set-2', segmentIndex: 0, weightKg: 100, reps: 8 },
+        { id: 'segment-2', workoutSetId: 'set-2', segmentIndex: 1, weightKg: 80, reps: 10 },
+      ],
+    };
+    const snapshot = createWorkoutRecoverySnapshot('user-1', workout, exercises, [sets[1], advancedSet], null, 1234);
+    snapshot.ui.setDrafts['set-2'] = {
+      setType: 'DROP',
+      setVariant: 'DROP',
+      weight: '',
+      reps: '',
+      bodyweightMode: 'BODYWEIGHT',
+      segments: [{ weight: '100', reps: '8' }, { weight: '75', reps: '12' }],
+    };
+
+    const parsed = parseWorkoutRecoverySnapshot(snapshot, 'user-1');
+
+    expect(parsed?.sets.find((set) => set.id === 'set-2')?.segments).toHaveLength(2);
+    expect(parsed?.ui.setDrafts['set-2']?.setVariant).toBe('DROP');
+    expect(parsed?.ui.setDrafts['set-2']?.segments?.[1]).toEqual({ weight: '75', reps: '12' });
+  });
+
   it('rejects corrupted or cross-user recovery payloads', () => {
     const snapshot = createWorkoutRecoverySnapshot('user-1', workout, exercises, sets, null);
     expect(parseWorkoutRecoverySnapshot(snapshot, 'user-1')).not.toBeNull();

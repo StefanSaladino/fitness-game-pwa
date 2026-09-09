@@ -28,19 +28,20 @@ Historical details remain in the phase records and `CHANGELOG.md`. They are not 
 | 18.4 | **DONE** | Active round-robin Superset guidance; full validation passed |
 | 18.5 | **DONE** | Superset recovery and reliability across refresh/offline/replay/conflicts |
 | 18.6 | **DONE** | Preserve Superset structure in completed-workout history |
-| 18.7 | **IN VALIDATION** | Atomically reproduce declared Superset structure in preset workouts |
-| 18.7A | **PLANNED** | Drop Sets + full/ascending Pyramid set workflows |
+| 18.7 | **DONE** | Atomically reproduce declared Superset structure in preset workouts |
+| 18.7A | **IN VALIDATION** | Drop Sets + full/ascending Pyramid set workflows |
 | 18.7B | **PLANNED** | Selective E1RM/deep exercise analytics tracking + exercise-picker Recent refinement |
 | 18.8 | **PLANNED** | Full active-workout mobile polish/density pass |
 | 18.9 | **PLANNED** | Full PWA regression and production release checkpoint |
 
 ### Phase 18.7A locked advanced-set plan
 
-- **Drop Sets** become an explicit live-workout workflow using the existing DROP set classification; they still count toward normal workout volume and never create bonus XP or alternate progression math.
-- **Full Pyramid** training is a set-sequence pattern: load can rise through earlier sets and fall through later sets while reps remain independently editable.
-- **Ascending Pyramid** training is a set-sequence pattern where load generally rises across successive sets while reps remain independently editable.
-- Pyramid patterns do **not** require a separate scoring entity or authoritative set type. Every set continues to store its own weight/reps and contributes to normal volume.
-- The UI may offer quick-build/prefill helpers for these patterns, but users remain free to edit every set.
+- A **Drop Set or Pyramid is one logical workout set** that may contain multiple ordered load/repetition stages. It is not expanded into several sibling workout sets.
+- **Drop Sets** use the existing DROP classification plus 2–8 editable stages (for example 100 × 8 → 80 × 10 → 60 × 12). Every completed stage contributes to normal lifting volume; the logical Drop Set does not create bonus XP or alternate PR math.
+- **Ascending Pyramid** is one WORKING set with 2–8 editable stages whose load may rise across the sequence. Top Set does not enforce a percentage or rep progression.
+- **Full Pyramid** is one WORKING set with 3–8 editable stages that may rise toward a peak and then descend. Every stage remains independently editable.
+- Pyramid stages contribute to volume, while the parent logical set counts once for completed-working-set semantics. For existing E1RM compatibility, the parent mirrors the best ordinary Epley-eligible stage rather than introducing a new progression formula.
+- Advanced stages must survive recovery/offline replay and completed-workout history without being flattened.
 
 ### Phase 18.7B locked selective-analytics contract
 
@@ -77,6 +78,6 @@ The PWA remains independently deployable. Native work must not fork product rule
 
 ## Execution order
 
-**Compact timer → collapsible sets → Superset foundation → Superset builder → active Superset flow → recovery → history → presets → tracked-exercise analytics/picker refinement → mobile workout polish → PWA regression/release → Capacitor proof → native shell → native workout bridge → native lifecycle hardening → iPhone Live Activity → Android live surface → optional interactive controls.**
+**Compact timer → collapsible sets → Superset foundation → Superset builder → active Superset flow → recovery → history → presets → Drop Sets/Pyramids → tracked-exercise analytics/picker refinement → mobile workout polish → PWA regression/release → Capacitor proof → native shell → native workout bridge → native lifecycle hardening → iPhone Live Activity → Android live surface → optional interactive controls.**
 
 Engineering/delivery rules live in [`../CONTRIBUTING.md`](../CONTRIBUTING.md); validation rules live in [`CI-VALIDATION.md`](CI-VALIDATION.md).

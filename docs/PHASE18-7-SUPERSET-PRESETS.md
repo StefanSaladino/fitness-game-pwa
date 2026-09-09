@@ -1,6 +1,6 @@
 # Phase 18.7 — Supersets in Preset Workouts
 
-Status: **IN VALIDATION**
+Status: **DONE**
 
 Phase 18.7 allows curated lifting presets to declare Superset structure while preserving Top Set's existing exercise, set, scoring, recovery, and progression models.
 
@@ -50,7 +50,7 @@ Targeted validation covers:
 - atomic exercise ordering and grouping;
 - rollback on duplicate group membership.
 
-After the targeted gate passes, run the full release gate before marking Phase 18.7 DONE.
+Phase 18.7 passed its targeted/full release and production migration validation before Phase 18.7A began.
 
 
 ## Roadmap continuation locked in this pass
@@ -59,10 +59,10 @@ After Phase 18.7 validation:
 
 ### Phase 18.7A — Drop Sets + Pyramid workflows
 
-- Drop Sets use the existing `DROP` set classification.
-- Full Pyramid and Ascending Pyramid are live set-sequence workflows layered over ordinary independently editable sets.
-- All completed sets, including Drop Sets and Pyramid-generated/prefilled sets, count toward normal lifting volume.
-- No advanced set pattern receives special XP or alternate scoring.
+- Drop Sets use the existing `DROP` parent classification but may contain multiple ordered load/rep stages inside one logical set.
+- Full Pyramid and Ascending Pyramid are one-set workflows with multiple editable stages, not helpers that create several sibling WORKING sets.
+- Every completed stage contributes to normal lifting volume while the parent logical set counts once.
+- No advanced set pattern receives special XP or alternate scoring; Pyramids reuse the established E1RM formula through a compatibility mirror on the parent set.
 
 ### Phase 18.7B — Selective E1RM / deep exercise analytics
 

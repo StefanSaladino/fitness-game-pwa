@@ -15,8 +15,8 @@ Superset structure does not create bonus XP, alternate scoring rules, or a secon
 - **18.4 Active Superset flow — DONE** — full validation gate passed.
 - **18.5 Superset recovery & reliability — DONE**
 - **18.6 Supersets in history — DONE**
-- **18.7 Supersets in preset workouts — IN VALIDATION**
-- **18.7A Drop Sets + Pyramid workflows — PLANNED**
+- **18.7 Supersets in preset workouts — DONE**
+- **18.7A Drop Sets + Pyramid workflows — IN VALIDATION**
 - **18.7B Selective E1RM/deep analytics tracking + exercise-picker refinement — PLANNED**
 - **18.8 Active workout polish pass — PLANNED**
 - **18.9 Regression & production release — PLANNED**
@@ -206,7 +206,7 @@ Exercise-level history and progress remain independent.
 
 ---
 
-# Phase 18.7 — Supersets in Preset Workouts — IN VALIDATION
+# Phase 18.7 — Supersets in Preset Workouts — DONE
 
 Allow preset workouts to contain Supersets.
 
@@ -242,61 +242,63 @@ Implementation note: Phase 18.7 uses an overloaded Superset-aware preset-start R
 
 ---
 
-# Phase 18.7A — Drop Sets + Pyramid Workflows
+# Phase 18.7A — Drop Sets + Pyramid Workflows — IN VALIDATION
 
 Extend live set construction without creating alternate scoring systems.
 
-## Drop Sets
+## Corrected logical-set model
 
-Drop Sets use the existing `DROP` set classification and remain ordinary completed sets.
+A Drop Set or Pyramid is **one logical workout set with ordered child stages**. Multiple weights/repetition targets inside the pattern are not stored as unrelated sibling sets.
 
-Requirements:
-
-- users can add/mark Drop Sets clearly during an active workout;
-- Drop Sets remain attached to their normal exercise;
-- every completed Drop Set contributes to normal exercise/session/weekly/monthly volume;
-- Drop Sets do not create bonus XP, special PR math, or a separate progression model;
-- recovery/offline replay must preserve Drop Set classification exactly like other set mutations.
-
-## Full Pyramid
-
-A full Pyramid is a sequence pattern rather than a separate scoring entity.
-
-Conceptually:
+Example Drop Set:
 
 ```text
-lighter / more reps
-        ↓
-heavier / fewer reps
-        ↓
-peak set
-        ↓
-lighter / more reps
+Set 3 — Drop Set
+100 × 8
+  ↓
+80 × 10
+  ↓
+60 × 12
 ```
 
-Top Set may provide a quick-build/prefill helper, but every set remains independently editable and authoritative.
+Example Full Pyramid:
+
+```text
+Set 2 — Full Pyramid
+60 × 12 → 80 × 8 → 100 × 5 → 80 × 8 → 60 × 12
+```
+
+## Drop Sets
+
+- use the existing `DROP` parent classification;
+- contain 2–8 ordered, independently editable weight/rep stages;
+- every completed stage contributes to normal exercise/session/weekly/monthly volume;
+- the parent Drop Set remains one logical set;
+- no bonus XP, special PR formula, or separate progression model is introduced.
 
 ## Ascending Pyramid
 
-An Ascending Pyramid generally increases load across successive sets while reps may decrease:
+- one `WORKING` parent set;
+- 2–8 ordered stages;
+- load/reps are suggestions/workflow only and remain freely editable;
+- Top Set does not enforce that every later stage is heavier.
 
-```text
-Set 1: lighter
-Set 2: heavier
-Set 3: heavier
-Set 4: heaviest
-```
+## Full Pyramid
 
-Again, this is a workflow/pattern layered over ordinary sets. It does not require a new scoring entity.
+- one `WORKING` parent set;
+- 3–8 ordered stages;
+- stages may rise toward a peak and descend afterward;
+- no fixed 5-stage shape is required.
 
 ## Advanced-set invariants
 
-- all completed sets count toward total lifting volume;
-- normal exercise PR/evidence rules remain authoritative;
-- no pattern receives bonus XP;
-- no automatic weight/repetition rule is enforced;
-- users may edit the generated/prefilled values freely;
-- ordinary sets continue working unchanged.
+- all stage volume counts;
+- one logical parent counts once for completed-working-set semantics;
+- Pyramid progression uses the existing E1RM formula by mirroring the best ordinary Epley-eligible stage onto the parent;
+- Drop Sets remain excluded from WORKING-only progression/XP rules;
+- recovery/offline replay persists the whole stage array atomically;
+- completed-workout history renders the original stages;
+- ordinary sets remain unchanged.
 
 ---
 

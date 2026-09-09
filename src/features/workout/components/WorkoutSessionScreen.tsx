@@ -59,6 +59,8 @@ interface ActiveProps extends SharedProps {
   setError: string;
   onRetrySets: () => Promise<WorkoutSet[]>;
   onAddSet: (workoutExerciseId: string, setType?: WorkoutSetType) => Promise<boolean>;
+  onAddAdvancedSet: (workoutExerciseId: string, variant: import('../model').WorkoutAdvancedSetVariant) => Promise<boolean>;
+  onSaveAdvancedSet: (workoutSetId: string, input: import('../model').WorkoutAdvancedSetInput) => Promise<boolean>;
   onCopySet: (workoutSetId: string) => Promise<boolean>;
   onSaveSet: (workoutSetId: string, input: WorkoutSetInput) => Promise<boolean>;
   onRemoveSet: (workoutSetId: string) => Promise<boolean>;
@@ -608,6 +610,8 @@ export function ActiveWorkoutScreen(props: ActiveProps) {
                                 busy={props.setBusy}
                                 exercise={exercise}
                                 onAddSet={props.onAddSet}
+                                onAddAdvancedSet={props.onAddAdvancedSet}
+                                onSaveAdvancedSet={props.onSaveAdvancedSet}
                                 onCopySet={props.onCopySet}
                                 onDraftChange={props.onSetDraftChange}
                                 onDraftPersisted={props.onSetDraftPersisted}

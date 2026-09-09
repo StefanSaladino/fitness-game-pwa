@@ -88,6 +88,42 @@ describe('workout mutation model', () => {
     ] } }], 'user-1')).toBeNull();
   });
 
+  it('accepts one logical advanced set with multiple ordered load/repetition stages', () => {
+    const add = createWorkoutMutationQueueItem(
+      'user-1',
+      'workout-1',
+      { kind: 'ADD_ADVANCED_SET', payload: { workoutExerciseId: 'we-1', variant: 'FULL_PYRAMID' } },
+      '33333333-3333-4333-8333-333333333333',
+      123,
+    );
+    const save = createWorkoutMutationQueueItem(
+      'user-1',
+      'workout-1',
+      {
+        kind: 'SAVE_ADVANCED_SET',
+        payload: {
+          workoutSetId: 'set-1',
+          variant: 'FULL_PYRAMID',
+          segments: [
+            { weightKg: 80, reps: 8 },
+            { weightKg: 100, reps: 5 },
+            { weightKg: 80, reps: 8 },
+          ],
+          completed: true,
+          expectedRevision: 2,
+        },
+      },
+      '44444444-4444-4444-8444-444444444444',
+      124,
+    );
+
+    expect(parseWorkoutMutationQueue([add, save], 'user-1')).toHaveLength(2);
+    expect(parseWorkoutMutationQueue([{ ...save, payload: { ...save.payload, segments: [{ weightKg: 100, reps: 5 }] } }], 'user-1')).toBeNull();
+    expect(parseWorkoutMutationQueue([{ ...save, payload: { ...save.payload, segments: [
+      { weightKg: 100, reps: 5 }, { weightKg: 80, reps: 8 },
+    ] } }], 'user-1')).toBeNull();
+  });
+
   it('requires a complete expected membership snapshot before clearing a Superset', () => {
     const item = createWorkoutMutationQueueItem(
       'user-1',
@@ -109,5 +145,4 @@ describe('workout mutation model', () => {
     expect(parseWorkoutMutationQueue([item], 'user-1')).toHaveLength(1);
     expect(parseWorkoutMutationQueue([{ ...item, payload: { ...item.payload, expectedMembers: [{ workoutExerciseId: 'we-1', expectedRevision: 2 }] } }], 'user-1')).toBeNull();
   });
-
 });

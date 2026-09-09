@@ -6,6 +6,7 @@ import { useWorkoutSets } from './useWorkoutSets';
 
 const setRow = {
   id: 'set-1', workoutExerciseId: 'we-1', setNumber: 1, setType: 'WORKING' as const,
+  setVariant: 'STANDARD' as const, segments: [],
   weightKg: 100, reps: 5, bodyweightMode: null, completed: false, completedAt: null, revision: 0,
 };
 
@@ -13,8 +14,10 @@ function service(): WorkoutSetService {
   return {
     loadWorkoutSets: vi.fn(async () => [setRow]),
     addSet: vi.fn(async () => 'set-2'),
+    addAdvancedSet: vi.fn(async () => 'set-2'),
     copySet: vi.fn(async () => 'set-2'),
     saveSet: vi.fn(async () => 'set-1'),
+    saveAdvancedSet: vi.fn(async () => 'set-1'),
     removeSet: vi.fn(async () => undefined),
   };
 }
@@ -27,7 +30,6 @@ describe('useWorkoutSets', () => {
     expect(result.current.sets).toEqual([setRow]);
     expect(injected.loadWorkoutSets).toHaveBeenCalledWith(['we-1']);
   });
-
 
   it('reports loading immediately when exercise identities change', async () => {
     let resolveLoad: ((value: typeof setRow[]) => void) | null = null;
@@ -42,7 +44,6 @@ describe('useWorkoutSets', () => {
 
     expect(result.current.status).toBe('ready');
     rerender({ ids: ['we-1'] });
-
     expect(result.current.status).toBe('loading');
     expect(result.current.sets).toEqual([]);
 
@@ -63,7 +64,6 @@ describe('useWorkoutSets', () => {
     expect(injected.saveSet).toHaveBeenCalledWith('set-1', expect.objectContaining({ weightKg: 105, reps: 4, completed: true }));
     expect(injected.loadWorkoutSets).toHaveBeenCalledTimes(2);
   });
-
 
   it('routes queued saves through the mutation executor and keeps the local row current', async () => {
     const injected = service();
@@ -88,7 +88,46 @@ describe('useWorkoutSets', () => {
     expect(injected.loadWorkoutSets).toHaveBeenCalledTimes(1);
   });
 
+  it('queues one logical advanced set and preserves all segment values during offline save', async () => {
+    const injected = service();
+    const executor: WorkoutMutationExecutor = {
+      execute: vi.fn(async () => ({ state: 'queued' as const, idempotencyKey: '99999999-9999-4999-8999-999999999999' })),
+    };
+    const { result } = renderHook(() => useWorkoutSets(['we-1'], injected, executor));
+    await waitFor(() => expect(result.current.status).toBe('ready'));
 
+    await act(async () => { await result.current.addAdvancedSet('we-1', 'FULL_PYRAMID'); });
+    await act(async () => {
+      await result.current.saveAdvancedSet('set-1', {
+        variant: 'FULL_PYRAMID',
+        segments: [
+          { weightKg: 80, reps: 8 },
+          { weightKg: 100, reps: 5 },
+          { weightKg: 80, reps: 8 },
+        ],
+        completed: true,
+      });
+    });
+
+    expect(executor.execute).toHaveBeenNthCalledWith(1, {
+      kind: 'ADD_ADVANCED_SET', payload: { workoutExerciseId: 'we-1', variant: 'FULL_PYRAMID' },
+    });
+    expect(executor.execute).toHaveBeenNthCalledWith(2, {
+      kind: 'SAVE_ADVANCED_SET',
+      payload: {
+        workoutSetId: 'set-1', variant: 'FULL_PYRAMID', completed: true, expectedRevision: 0,
+        segments: [{ weightKg: 80, reps: 8 }, { weightKg: 100, reps: 5 }, { weightKg: 80, reps: 8 }],
+      },
+    });
+    expect(result.current.sets[0]).toEqual(expect.objectContaining({
+      setVariant: 'FULL_PYRAMID', weightKg: 100, reps: 5, revision: 1,
+      segments: [
+        expect.objectContaining({ segmentIndex: 0, weightKg: 80, reps: 8 }),
+        expect.objectContaining({ segmentIndex: 1, weightKg: 100, reps: 5 }),
+        expect.objectContaining({ segmentIndex: 2, weightKg: 80, reps: 8 }),
+      ],
+    }));
+  });
 
   it('carries the loaded set revision into copy and remove mutations', async () => {
     const injected = service();
@@ -101,12 +140,8 @@ describe('useWorkoutSets', () => {
     await act(async () => { await result.current.copySet('set-1'); });
     await act(async () => { await result.current.removeSet('set-1'); });
 
-    expect(executor.execute).toHaveBeenNthCalledWith(1, {
-      kind: 'COPY_SET', payload: { workoutSetId: 'set-1', expectedRevision: 0 },
-    });
-    expect(executor.execute).toHaveBeenNthCalledWith(2, {
-      kind: 'REMOVE_SET', payload: { workoutSetId: 'set-1', expectedRevision: 0 },
-    });
+    expect(executor.execute).toHaveBeenNthCalledWith(1, { kind: 'COPY_SET', payload: { workoutSetId: 'set-1', expectedRevision: 0 } });
+    expect(executor.execute).toHaveBeenNthCalledWith(2, { kind: 'REMOVE_SET', payload: { workoutSetId: 'set-1', expectedRevision: 0 } });
   });
 
   it('does not optimistically overwrite a set when the server reports a revision conflict', async () => {
@@ -127,8 +162,6 @@ describe('useWorkoutSets', () => {
     expect(result.current.error).toContain('server version');
   });
 
-
-
   it('advances expected revisions synchronously across rapid queued saves', async () => {
     const injected = service();
     const execute = vi.fn(async () => ({ state: 'queued' as const, idempotencyKey: '88888888-8888-4888-8888-888888888888' }));
@@ -147,10 +180,7 @@ describe('useWorkoutSets', () => {
   });
 
   it('continues the optimistic revision chain from recovered sets after an offline restart', async () => {
-    const injected = {
-      ...service(),
-      loadWorkoutSets: vi.fn(async () => { throw new Error('network unavailable'); }),
-    };
+    const injected = { ...service(), loadWorkoutSets: vi.fn(async () => { throw new Error('network unavailable'); }) };
     const executor: WorkoutMutationExecutor = {
       execute: vi.fn(async () => ({ state: 'queued' as const, idempotencyKey: '77777777-7777-4777-8777-777777777777' })),
     };

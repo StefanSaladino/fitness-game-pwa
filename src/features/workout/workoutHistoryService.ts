@@ -4,11 +4,13 @@ import type {
   BodyweightLoadMode,
   ExerciseMeasurementType,
   WorkoutSetType,
+  WorkoutSetVariant,
 } from './model';
 import type {
   WorkoutHistoryExercise,
   WorkoutHistorySession,
   WorkoutHistorySet,
+  WorkoutHistorySetSegment,
 } from './workoutHistoryModel';
 
 type SessionRow = {
@@ -39,28 +41,49 @@ type SetRow = {
   workout_exercise_id: string;
   set_number: number;
   set_type: WorkoutSetType;
+  set_variant: WorkoutSetVariant;
   weight_kg: number | string | null;
   reps: number | null;
   bodyweight_mode: BodyweightLoadMode | null;
 };
 
+type SegmentRow = {
+  id: string;
+  workout_set_id: string;
+  segment_index: number;
+  weight_kg: number | string | null;
+  reps: number | null;
+};
+
 const SESSION_COLUMNS = 'id, scoring_date, started_at, ended_at, active_duration_seconds';
 const EXERCISE_COLUMNS = 'id, workout_id, exercise_id, order_index, superset_group_id, superset_order';
 const CATALOG_COLUMNS = 'id, canonical_name, measurement_type';
-const SET_COLUMNS = 'id, workout_exercise_id, set_number, set_type, weight_kg, reps, bodyweight_mode';
+const SET_COLUMNS = 'id, workout_exercise_id, set_number, set_type, set_variant, weight_kg, reps, bodyweight_mode';
+const SEGMENT_COLUMNS = 'id, workout_set_id, segment_index, weight_kg, reps';
 
 export interface WorkoutHistoryService {
   load(userId: string): Promise<WorkoutHistorySession[]>;
 }
 
-function mapSet(row: SetRow): WorkoutHistorySet {
+function mapSegment(row: SegmentRow): WorkoutHistorySetSegment {
+  return {
+    id: row.id,
+    segmentIndex: row.segment_index,
+    weightKg: row.weight_kg === null ? null : Number(row.weight_kg),
+    reps: row.reps,
+  };
+}
+
+function mapSet(row: SetRow, segments: WorkoutHistorySetSegment[]): WorkoutHistorySet {
   return {
     id: row.id,
     setNumber: row.set_number,
     setType: row.set_type,
+    setVariant: row.set_variant ?? (row.set_type === 'DROP' ? 'DROP' : 'STANDARD'),
     weightKg: row.weight_kg === null ? null : Number(row.weight_kg),
     reps: row.reps,
     bodyweightMode: row.bodyweight_mode,
+    segments: [...segments].sort((left, right) => left.segmentIndex - right.segmentIndex),
   };
 }
 
@@ -85,7 +108,6 @@ export function createWorkoutHistoryService(
       if (sessionRows.length === 0) return [];
 
       const workoutIds = sessionRows.map((row) => row.id);
-
       const exercisesResult = await client
         .from('workout_exercises')
         .select(EXERCISE_COLUMNS)
@@ -112,10 +134,7 @@ export function createWorkoutHistoryService(
       const workoutExerciseIds = exerciseRows.map((row) => row.id);
 
       const [catalogResult, setsResult] = await Promise.all([
-        client
-          .from('exercise_catalog')
-          .select(CATALOG_COLUMNS)
-          .in('id', exerciseIds),
+        client.from('exercise_catalog').select(CATALOG_COLUMNS).in('id', exerciseIds),
         client
           .from('workout_sets')
           .select(SET_COLUMNS)
@@ -127,14 +146,31 @@ export function createWorkoutHistoryService(
       if (catalogResult.error) throw catalogResult.error;
       if (setsResult.error) throw setsResult.error;
 
-      const catalogById = new Map(
-        ((catalogResult.data ?? []) as CatalogRow[]).map((row) => [row.id, row]),
-      );
+      const setRows = (setsResult.data ?? []) as SetRow[];
+      const setIds = setRows.map((row) => row.id);
+      const segmentRows: SegmentRow[] = [];
+      if (setIds.length > 0) {
+        const segmentResult = await client
+          .from('workout_set_segments')
+          .select(SEGMENT_COLUMNS)
+          .in('workout_set_id', setIds)
+          .order('segment_index', { ascending: true });
+        if (segmentResult.error) throw segmentResult.error;
+        segmentRows.push(...((segmentResult.data ?? []) as SegmentRow[]));
+      }
 
+      const segmentsBySetId = new Map<string, WorkoutHistorySetSegment[]>();
+      for (const row of segmentRows) {
+        const segments = segmentsBySetId.get(row.workout_set_id) ?? [];
+        segments.push(mapSegment(row));
+        segmentsBySetId.set(row.workout_set_id, segments);
+      }
+
+      const catalogById = new Map(((catalogResult.data ?? []) as CatalogRow[]).map((row) => [row.id, row]));
       const setsByExerciseId = new Map<string, WorkoutHistorySet[]>();
-      for (const row of (setsResult.data ?? []) as SetRow[]) {
+      for (const row of setRows) {
         const sets = setsByExerciseId.get(row.workout_exercise_id) ?? [];
-        sets.push(mapSet(row));
+        sets.push(mapSet(row, segmentsBySetId.get(row.id) ?? []));
         setsByExerciseId.set(row.workout_exercise_id, sets);
       }
 
@@ -152,9 +188,7 @@ export function createWorkoutHistoryService(
           orderIndex: row.order_index,
           supersetGroupId: row.superset_group_id,
           supersetOrder: row.superset_order,
-          sets: (setsByExerciseId.get(row.id) ?? []).sort(
-            (left, right) => left.setNumber - right.setNumber,
-          ),
+          sets: (setsByExerciseId.get(row.id) ?? []).sort((left, right) => left.setNumber - right.setNumber),
         });
         exercisesByWorkoutId.set(row.workout_id, exercises);
       }
@@ -167,9 +201,7 @@ export function createWorkoutHistoryService(
           startedAt: row.started_at,
           endedAt: row.ended_at,
           activeDurationSeconds: row.active_duration_seconds,
-          exercises: (exercisesByWorkoutId.get(row.id) ?? []).sort(
-            (left, right) => left.orderIndex - right.orderIndex,
-          ),
+          exercises: (exercisesByWorkoutId.get(row.id) ?? []).sort((left, right) => left.orderIndex - right.orderIndex),
         }));
     },
   };
