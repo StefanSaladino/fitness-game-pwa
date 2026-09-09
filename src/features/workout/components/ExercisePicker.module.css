@@ -187,6 +187,25 @@
   background: var(--color-surface);
 }
 
+.recentToggle {
+  min-height: 40px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: 0 12px;
+  background: transparent;
+  color: var(--color-text-soft);
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.72rem;
+  font-weight: 720;
+}
+
+.recentToggle:hover,
+.recentToggle:focus-visible {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+}
+
 .browseSurface {
   min-width: 0;
   overflow: hidden;
@@ -605,7 +624,6 @@
   .homeRecents,
   .browseSurface,
   .group { padding: 10px; }
-
 
   .resultRow {
     grid-template-columns: 38px minmax(0, 1fr) auto;

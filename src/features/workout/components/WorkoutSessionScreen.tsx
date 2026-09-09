@@ -53,6 +53,11 @@ interface ActiveProps extends SharedProps {
   onSaveSuperset: (supersetGroupId: string | null, workoutExerciseIds: string[]) => Promise<boolean>;
   onClearSuperset: (supersetGroupId: string) => Promise<boolean>;
   onRetryExercisePicker: () => Promise<ExercisePickerItem[]>;
+  analyticsTrackingStatus?: 'loading' | 'ready' | 'error';
+  trackedExerciseIds?: string[];
+  analyticsTrackingBusyExerciseId?: string | null;
+  analyticsTrackingError?: string;
+  onSetExerciseAnalyticsTracked?: (exerciseId: string, tracked: boolean) => Promise<boolean>;
   workoutSets: WorkoutSet[];
   setStatus: WorkoutSetStatus;
   setBusy: WorkoutSetBusyState | null;
@@ -147,7 +152,6 @@ function measurementLabel(exercise: WorkoutExercise): string {
     default: return 'Tracked exercise';
   }
 }
-
 
 function supersetGroupLabel(exercises: WorkoutExercise[], groupId: string): string {
   const groupIds = [...new Set(
@@ -539,6 +543,8 @@ export function ActiveWorkoutScreen(props: ActiveProps) {
                   const renderExerciseRow = (exercise: WorkoutExercise, index: number, supersetCurrent = false) => {
                     const expanded = expandedExerciseId === exercise.id;
                     const panelId = `workout-exercise-${exercise.id}`;
+                    const analyticsTracked = (props.trackedExerciseIds ?? []).includes(exercise.exerciseId);
+                    const analyticsTrackingBusy = props.analyticsTrackingBusyExerciseId === exercise.exerciseId;
                     return (
                       <li
                         aria-current={supersetCurrent ? 'step' : undefined}
@@ -605,6 +611,25 @@ export function ActiveWorkoutScreen(props: ActiveProps) {
                                 type="button"
                               >Remove</button>
                             </div>
+                            {props.onSetExerciseAnalyticsTracked && (
+                              <>
+                                <label className={styles.analyticsTrackingControl}>
+                                  <input
+                                    checked={analyticsTracked}
+                                    disabled={!serverMutationsEnabled || props.analyticsTrackingStatus !== 'ready' || analyticsTrackingBusy}
+                                    onChange={(event) => void props.onSetExerciseAnalyticsTracked?.(exercise.exerciseId, event.target.checked)}
+                                    type="checkbox"
+                                  />
+                                  <span>
+                                    <strong>Track in analytics</strong>
+                                    <small>Show this exercise in E1RM and deep per-exercise analytics.</small>
+                                  </span>
+                                </label>
+                                {props.analyticsTrackingError && (
+                                  <p className={styles.analyticsTrackingError} role="alert">{props.analyticsTrackingError}</p>
+                                )}
+                              </>
+                            )}
                             <div className={styles.exerciseSets} id={panelId}>
                               <WorkoutSetList
                                 busy={props.setBusy}

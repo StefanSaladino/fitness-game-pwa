@@ -70,13 +70,26 @@ describe('ExercisePicker', () => {
     expect(added).toHaveTextContent('Added');
   });
 
-  it('shows recent exercises on the library home without changing their canonical add behavior', () => {
+  it('places Recent below the body-part selector, collapsed by default, without changing canonical add behavior', () => {
     const onAdd = vi.fn(async () => true);
     render(picker({ onAdd }));
 
-    expect(screen.getByRole('heading', { name: 'Recent' })).toBeInTheDocument();
+    const chest = screen.getByRole('button', { name: 'Open Chest exercises' });
+    const recentHeading = screen.getByRole('heading', { name: 'Recent' });
+    const recentToggle = screen.getByRole('button', { name: 'Show 1' });
+
+    expect(chest.compareDocumentPosition(recentHeading) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(recentToggle).toHaveAttribute('aria-expanded', 'false');
+    expect(screen.queryByRole('button', { name: 'Add Barbell Bench Press' })).not.toBeInTheDocument();
+
+    fireEvent.click(recentToggle);
+    expect(screen.getByRole('button', { name: 'Hide' })).toHaveAttribute('aria-expanded', 'true');
     fireEvent.click(screen.getByRole('button', { name: 'Add Barbell Bench Press' }));
     expect(onAdd).toHaveBeenCalledWith('bench-bb');
+
+    fireEvent.click(screen.getByRole('button', { name: 'Hide' }));
+    expect(screen.queryByRole('button', { name: 'Add Barbell Bench Press' })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Open Chest exercises' })).toBeInTheDocument();
   });
 
   it('uses Escape as in-app back before closing the picker', () => {

@@ -1,6 +1,6 @@
 # Phase 18.7A — Drop Sets + Pyramid Workflows
 
-Status: **IN VALIDATION**
+Status: **DONE**
 
 Phase 18.7A models Drop Sets and Pyramids as **one logical workout set with multiple ordered load/repetition stages**.
 
@@ -149,4 +149,4 @@ Targeted validation covers:
 - RLS and function grants;
 - removal of the obsolete sequence helper.
 
-After targeted validation, run migration-history/dry-run checks and a live production preflight before applying the corrective migration. Do not release the frontend until the corrective production migration and full release gate are both green.
+Validation completed successfully. The corrective segmented-set migration is deployed in production and the full release gate is green.

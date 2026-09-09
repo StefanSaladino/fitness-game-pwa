@@ -29,8 +29,8 @@ Historical details remain in the phase records and `CHANGELOG.md`. They are not 
 | 18.5 | **DONE** | Superset recovery and reliability across refresh/offline/replay/conflicts |
 | 18.6 | **DONE** | Preserve Superset structure in completed-workout history |
 | 18.7 | **DONE** | Atomically reproduce declared Superset structure in preset workouts |
-| 18.7A | **IN VALIDATION** | Drop Sets + full/ascending Pyramid set workflows |
-| 18.7B | **PLANNED** | Selective E1RM/deep exercise analytics tracking + exercise-picker Recent refinement |
+| 18.7A | **DONE** | Drop Sets + full/ascending Pyramid set workflows |
+| 18.7B | **DONE** | Selective E1RM/deep exercise analytics tracking + exercise-picker Recent refinement |
 | 18.8 | **PLANNED** | Full active-workout mobile polish/density pass |
 | 18.9 | **PLANNED** | Full PWA regression and production release checkpoint |
 

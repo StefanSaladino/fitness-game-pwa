@@ -7,6 +7,7 @@ import type { OnboardingProfile } from '../../onboarding';
 import type { WeightDisplayUnit } from '../../workout/model';
 import { kgToDisplayWeight, weightUnitLabel } from '../../workout/weightUnits';
 import type { ExerciseAnalyticsSnapshot, ExercisePrTimelineEntry } from '../exerciseAnalytics';
+import type { ExerciseAnalyticsTrackingStatus } from '../hooks/useExerciseAnalyticsTracking';
 import type { LiftingCalendarAnalytics } from '../liftingCalendarAnalytics';
 import type { ExerciseProgressHistoryEntry, ExerciseProgressMetricType, ExerciseProgressSummary } from '../model';
 import type { ExerciseProgressStatus } from '../hooks/useExerciseProgress';
@@ -33,6 +34,10 @@ interface ExerciseProgressScreenProps extends ShellProps {
   onSelectExercise: (exerciseId: string) => void;
   onRetryHistory: () => void;
   onRetryCalendar: () => void;
+  analyticsTrackingStatus?: ExerciseAnalyticsTrackingStatus;
+  analyticsTrackingBusyExerciseId?: string | null;
+  analyticsTrackingError?: string;
+  onUntrackExercise?: (exerciseId: string) => Promise<void>;
 }
 
 function formatDate(value: string): string {
@@ -286,7 +291,7 @@ function PrTimeline({ entries, displayUnit }: {
   );
 }
 
-function ExerciseDetail({ exercise, analytics, history, historyStatusValue, historyError, onRetryHistory, displayUnit }: {
+function ExerciseDetail({ exercise, analytics, history, historyStatusValue, historyError, onRetryHistory, displayUnit, analyticsTrackingStatus, analyticsTrackingBusyExerciseId, analyticsTrackingError, onUntrackExercise }: {
   exercise: ExerciseProgressSummary;
   analytics: ExerciseAnalyticsSnapshot | null;
   history: ExerciseProgressHistoryEntry[];
@@ -294,6 +299,10 @@ function ExerciseDetail({ exercise, analytics, history, historyStatusValue, hist
   historyError: string;
   onRetryHistory: () => void;
   displayUnit: WeightDisplayUnit;
+  analyticsTrackingStatus: ExerciseAnalyticsTrackingStatus;
+  analyticsTrackingBusyExerciseId: string | null;
+  analyticsTrackingError: string;
+  onUntrackExercise?: (exerciseId: string) => Promise<void>;
 }) {
   return (
     <div className={styles.detailStack} data-progress-detail>
@@ -309,8 +318,19 @@ function ExerciseDetail({ exercise, analytics, history, historyStatusValue, hist
             <h2 id="exercise-detail-heading">{exercise.canonicalName}</h2>
             <span>Last performed {formatDate(exercise.lastPerformedAt)}</span>
           </div>
+          {onUntrackExercise && (
+            <button
+              className={styles.untrackButton}
+              disabled={analyticsTrackingStatus !== 'ready' || analyticsTrackingBusyExerciseId === exercise.exerciseId}
+              onClick={() => void onUntrackExercise(exercise.exerciseId)}
+              type="button"
+            >
+              {analyticsTrackingBusyExerciseId === exercise.exerciseId ? 'Removing…' : 'Untrack from analytics'}
+            </button>
+          )}
         </header>
 
+        {analyticsTrackingError && <p className={styles.trackingError} role="alert">{analyticsTrackingError}</p>}
         {historyStatusValue === 'loading' && <p className={styles.stateText}>Loading exercise analytics…</p>}
         {historyStatusValue === 'error' && (
           <div className={styles.inlineError} role="alert">
@@ -321,13 +341,13 @@ function ExerciseDetail({ exercise, analytics, history, historyStatusValue, hist
 
         {historyStatusValue === 'ready' && analytics && (
           <>
-          <AnalyticsSummary analytics={analytics} displayUnit={displayUnit} exercise={exercise} />
+            <AnalyticsSummary analytics={analytics} displayUnit={displayUnit} exercise={exercise} />
 
-          {exercise.measurementType === 'BODYWEIGHT_REPS' && (
-            <p className={styles.ruleNote}>
-              Added-weight and assisted sets stay visible as analytics, but they are not compared with plain bodyweight reps for PR or XP calculations.
-            </p>
-          )}
+            {exercise.measurementType === 'BODYWEIGHT_REPS' && (
+              <p className={styles.ruleNote}>
+                Added-weight and assisted sets stay visible as analytics, but they are not compared with plain bodyweight reps for PR or XP calculations.
+              </p>
+            )}
           </>
         )}
       </section>
@@ -398,6 +418,10 @@ export function ExerciseProgressScreen({
   profile,
   onNavigate,
   onSignOut,
+  analyticsTrackingStatus = 'ready',
+  analyticsTrackingBusyExerciseId = null,
+  analyticsTrackingError = '',
+  onUntrackExercise,
 }: ExerciseProgressScreenProps) {
   const [displayUnit, setDisplayUnit] = useState<WeightDisplayUnit>(profile.preferredWeightUnit);
 
@@ -427,8 +451,8 @@ export function ExerciseProgressScreen({
 
         {exercises.length === 0 ? (
           <section className={styles.emptyState} data-app-surface="category" data-progress-surface="empty">
-            <h2>No lift history yet</h2>
-            <p>Complete a strength session with working sets and your exercise analytics will appear here automatically.</p>
+            <h2>No tracked lifts yet</h2>
+            <p>Track exercises from an active lift to choose which movements appear in deep analytics. Your workout history and total volume remain intact.</p>
             <Button onClick={() => onNavigate('workouts')}>Start Lift</Button>
           </section>
         ) : (
@@ -448,6 +472,10 @@ export function ExerciseProgressScreen({
                 historyError={historyError}
                 historyStatusValue={historyStatus}
                 onRetryHistory={onRetryHistory}
+                analyticsTrackingStatus={analyticsTrackingStatus}
+                analyticsTrackingBusyExerciseId={analyticsTrackingBusyExerciseId}
+                analyticsTrackingError={analyticsTrackingError}
+                onUntrackExercise={onUntrackExercise}
               />
             )}
           </div>

@@ -16,12 +16,12 @@ Superset structure does not create bonus XP, alternate scoring rules, or a secon
 - **18.5 Superset recovery & reliability — DONE**
 - **18.6 Supersets in history — DONE**
 - **18.7 Supersets in preset workouts — DONE**
-- **18.7A Drop Sets + Pyramid workflows — IN VALIDATION**
-- **18.7B Selective E1RM/deep analytics tracking + exercise-picker refinement — PLANNED**
+- **18.7A Drop Sets + Pyramid workflows — DONE**
+- **18.7B Selective E1RM/deep analytics tracking + exercise-picker refinement — DONE**
 - **18.8 Active workout polish pass — PLANNED**
 - **18.9 Regression & production release — PLANNED**
 
-Drop Sets and Pyramid workflows are now explicitly scheduled for Phase 18.7A. Drop Sets use the existing DROP set classification. Full Pyramid and Ascending Pyramid are set-sequence workflows built on ordinary independent weight/rep sets rather than alternate scoring entities. All of them continue to contribute to normal lifting volume and do not receive bonus XP.
+Drop Sets and Pyramid workflows are implemented using the segmented logical-set model. Drop Sets use the existing DROP classification. Ascending and Full Pyramids remain one logical WORKING set with ordered child stages. All advanced stages contribute to normal lifting volume, while no advanced-set workflow receives bonus XP or a separate scoring model.
 
 ---
 
@@ -242,7 +242,7 @@ Implementation note: Phase 18.7 uses an overloaded Superset-aware preset-start R
 
 ---
 
-# Phase 18.7A — Drop Sets + Pyramid Workflows — IN VALIDATION
+# Phase 18.7A — Drop Sets + Pyramid Workflows — DONE
 
 Extend live set construction without creating alternate scoring systems.
 

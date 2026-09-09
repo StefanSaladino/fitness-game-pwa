@@ -131,6 +131,7 @@ export function ExercisePicker(props: ExercisePickerProps) {
   const [query, setQuery] = useState('');
   const [muscleGroup, setMuscleGroup] = useState<ExerciseMuscleGroup | null>(null);
   const [workoutType, setWorkoutType] = useState<ExerciseWorkoutType | ''>('');
+  const [recentExpanded, setRecentExpanded] = useState(false);
   viewRef.current = view;
 
   const selected = useMemo(() => new Set(props.selectedExerciseIds), [props.selectedExerciseIds]);
@@ -206,7 +207,10 @@ export function ExercisePicker(props: ExercisePickerProps) {
   }, [props.open]);
 
   useEffect(() => {
-    if (!props.open) goHome();
+    if (!props.open) {
+      goHome();
+      setRecentExpanded(false);
+    }
   }, [props.open]);
 
   if (!props.open) return null;
@@ -273,25 +277,35 @@ export function ExercisePicker(props: ExercisePickerProps) {
               <span aria-hidden="true" className={styles.searchArrow}>→</span>
             </button>
 
+            <div className={styles.browseSurface}>
+              <MuscleGroupSelector onSelect={openMuscle} />
+            </div>
+
             {recents.length > 0 && (
               <section className={styles.homeRecents} aria-labelledby="recent-exercises-heading">
                 <div className={styles.groupHeading}>
                   <h3 id="recent-exercises-heading">Recent</h3>
-                  <span>{recents.length}</span>
+                  <button
+                    aria-controls="recent-exercises-list"
+                    aria-expanded={recentExpanded}
+                    className={styles.recentToggle}
+                    onClick={() => setRecentExpanded((current) => !current)}
+                    type="button"
+                  >{recentExpanded ? 'Hide' : `Show ${recents.length}`}</button>
                 </div>
-                <ExerciseResults
-                  emptyMessage="No recent exercises yet."
-                  isAdding={props.isAdding}
-                  items={recents}
-                  onAdd={props.onAdd}
-                  selected={selected}
-                />
+                {recentExpanded && (
+                  <div id="recent-exercises-list">
+                    <ExerciseResults
+                      emptyMessage="No recent exercises yet."
+                      isAdding={props.isAdding}
+                      items={recents}
+                      onAdd={props.onAdd}
+                      selected={selected}
+                    />
+                  </div>
+                )}
               </section>
             )}
-
-            <div className={styles.browseSurface}>
-              <MuscleGroupSelector onSelect={openMuscle} />
-            </div>
           </div>
         )}
 

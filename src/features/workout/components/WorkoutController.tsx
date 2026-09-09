@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from 'react';
 import { AppShell, type AppSection } from '../../../components/layout';
 import { Button } from '../../../components/ui';
 import type { OnboardingProfile } from '../../onboarding';
+import type { ExerciseAnalyticsTrackingService } from '../../progress/analyticsTrackingService';
+import { useExerciseAnalyticsTracking } from '../../progress/hooks/useExerciseAnalyticsTracking';
 import type { WorkoutExerciseService } from '../workoutExerciseService';
 import type { ExercisePickerService } from '../exercisePickerService';
 import type { WorkoutService } from '../workoutService';
@@ -37,10 +39,16 @@ interface WorkoutControllerProps {
   setService?: WorkoutSetService;
   mutationService?: WorkoutMutationService;
   historyService?: WorkoutHistoryService;
+  analyticsTrackingService?: ExerciseAnalyticsTrackingService;
 }
 
 const EMPTY_WORKOUT_HISTORY_SERVICE: WorkoutHistoryService = {
   load: async () => [],
+};
+
+const EMPTY_ANALYTICS_TRACKING_SERVICE: ExerciseAnalyticsTrackingService = {
+  listTrackedExerciseIds: async () => [],
+  setTracked: async (_exerciseId, tracked) => tracked,
 };
 
 function WorkoutStartWithHistory({
@@ -60,9 +68,12 @@ function WorkoutStartWithHistory({
   );
 }
 
-export function WorkoutController({ profile, onNavigate, onSignOut, service, exerciseService, pickerService, setService, mutationService, historyService }: WorkoutControllerProps) {
+export function WorkoutController({ profile, onNavigate, onSignOut, service, exerciseService, pickerService, setService, mutationService, historyService, analyticsTrackingService }: WorkoutControllerProps) {
   const recovery = useWorkoutRecovery(profile.id);
   const workout = useActiveWorkout(profile.id, service);
+  const analyticsTracking = useExerciseAnalyticsTracking(
+    analyticsTrackingService ?? (service ? EMPTY_ANALYTICS_TRACKING_SERVICE : undefined),
+  );
   const [presetError, setPresetError] = useState('');
   const recoveredWorkout = recovery.snapshot ? restoreWorkoutSession(recovery.snapshot.session) : null;
   const useRecoveredWorkout = workout.status !== 'ready' && workout.activeWorkout === null && recoveredWorkout !== null;
@@ -211,6 +222,9 @@ export function WorkoutController({ profile, onNavigate, onSignOut, service, exe
 
   return (
     <ActiveWorkoutScreen
+      analyticsTrackingBusyExerciseId={analyticsTracking.busyExerciseId}
+      analyticsTrackingError={analyticsTracking.error}
+      analyticsTrackingStatus={analyticsTracking.status}
       busyAction={workout.busyAction}
       compositionBusyAction={composition.busyAction}
       compositionError={useRecoveredExercises ? '' : composition.error}
@@ -259,6 +273,7 @@ export function WorkoutController({ profile, onNavigate, onSignOut, service, exe
       onRetryExercises={composition.retry}
       onSetDraftChange={recovery.setDraft}
       onSetDraftPersisted={recovery.clearDraft}
+      onSetExerciseAnalyticsTracked={analyticsTracking.setTracked}
       onWeightUnitChange={recovery.setWeightUnit}
       recoveryDrafts={recoveryDrafts}
       recoveryState={recoveryState}
@@ -275,6 +290,7 @@ export function WorkoutController({ profile, onNavigate, onSignOut, service, exe
       onRemoveSet={sets.removeSet}
       onSignOut={onSignOut}
       profile={profile}
+      trackedExerciseIds={analyticsTracking.trackedExerciseIds}
       workout={activeWorkout}
     />
   );
