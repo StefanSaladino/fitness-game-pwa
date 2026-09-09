@@ -817,3 +817,59 @@
     font-size: 0.74rem;
   }
 }
+
+
+/* v1.0.1 desktop standard-set controls */
+@media (min-width: 700px) {
+  .weightedHeader,
+  .weightedRow {
+    grid-template-columns:
+      4rem
+      8rem
+      minmax(6.2rem, 1fr)
+      minmax(4.6rem, 0.6fr)
+      6.2rem
+      8.6rem;
+  }
+
+  .bodyweightHeader,
+  .bodyweightRow {
+    grid-template-columns:
+      4rem
+      8rem
+      minmax(7rem, 0.9fr)
+      minmax(6.5rem, 1fr)
+      minmax(4.6rem, 0.6fr)
+      6.2rem
+      8.6rem;
+  }
+
+  .weightedRow .completionControls,
+  .bodyweightRow .completionControls {
+    width: max-content;
+    justify-self: end;
+    justify-content: flex-end;
+    gap: 0.45rem;
+  }
+
+  .weightedRow .completeButton,
+  .bodyweightRow .completeButton {
+    width: auto;
+    min-width: 5rem;
+    height: 2.75rem;
+    padding: 0 0.85rem;
+    border-radius: var(--radius-md);
+  }
+
+  .weightedRow .completeLabel,
+  .bodyweightRow .completeLabel {
+    display: inline;
+  }
+
+  .weightedRow .typeField,
+  .bodyweightRow .typeField {
+    width: 100%;
+    max-width: 8rem;
+    justify-self: center;
+  }
+}

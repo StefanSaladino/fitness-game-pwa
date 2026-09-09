@@ -260,3 +260,45 @@ test('320px short picker viewport contains long names and keeps document fixed',
   );
   expect(overflow).toBeLessThanOrEqual(1);
 });
+
+
+test('desktop standard set keeps Done and set type compact', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await page.goto('/reliability.e2e.html');
+
+  const type = page.getByRole('combobox', { name: 'Set 1 type' });
+  const done = page.getByRole('button', { name: 'Mark set 1 complete' });
+  const collapse = page.getByRole('button', { name: 'Collapse set 1' });
+  const doneLabel = done.getByText('Done', { exact: true });
+
+  await expect(type).toBeVisible();
+  await expect(done).toBeVisible();
+  await expect(doneLabel).toBeVisible();
+  await expect(collapse).toBeVisible();
+
+  const [typeBox, doneBox, collapseBox] = await Promise.all([
+    type.boundingBox(),
+    done.boundingBox(),
+    collapse.boundingBox(),
+  ]);
+
+  expect(typeBox).not.toBeNull();
+  expect(doneBox).not.toBeNull();
+  expect(collapseBox).not.toBeNull();
+
+  // Working/Warmup should stay compact instead of consuming a flexible column.
+  expect(typeBox!.width).toBeLessThanOrEqual(140);
+
+  // Done is a real labeled desktop action, not an empty circle.
+  expect(doneBox!.width).toBeGreaterThanOrEqual(72);
+  expect(doneBox!.height).toBeGreaterThanOrEqual(40);
+
+  // Done and Collapse remain aligned as one completion-control group.
+  expect(Math.abs(doneBox!.y - collapseBox!.y)).toBeLessThanOrEqual(2);
+  expect(doneBox!.x + doneBox!.width).toBeLessThan(collapseBox!.x);
+
+  const overflow = await page.evaluate(
+    () => document.documentElement.scrollWidth - window.innerWidth,
+  );
+  expect(overflow).toBeLessThanOrEqual(1);
+});

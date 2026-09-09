@@ -1,3 +1,4 @@
+import appPackage from '../../package.json';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import type { PwaService, PwaSnapshot } from './pwaService';
@@ -60,7 +61,7 @@ describe('PwaStatus', () => {
 
     expect(fake.service.applyUpdate).not.toHaveBeenCalled();
 
-    expect(screen.getByText('Update ready · v1.0.0')).toBeInTheDocument();
+    expect(screen.getByText(`Update ready · v${appPackage.version}`)).toBeInTheDocument();
     expect(screen.getByText('What’s new')).toBeInTheDocument();
     expect(screen.getByText('Faster, denser workout logging on mobile')).toBeInTheDocument();
     expect(screen.getByText('Supersets, Drop Sets, and Pyramid workflows')).toBeInTheDocument();
@@ -103,7 +104,7 @@ describe('PwaStatus', () => {
     const fake = fakeService({ updateAvailable: true });
     render(<PwaStatus service={fake.service} />);
 
-    expect(screen.getByText('Update ready · v1.0.0')).toBeInTheDocument();
+    expect(screen.getByText(`Update ready · v${appPackage.version}`)).toBeInTheDocument();
     expect(screen.getByText('What’s new')).toBeInTheDocument();
     expect(
       screen.getByText('Faster, denser workout logging on mobile'),
