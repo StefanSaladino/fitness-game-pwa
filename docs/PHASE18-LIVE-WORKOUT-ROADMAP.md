@@ -18,7 +18,7 @@ Superset structure does not create bonus XP, alternate scoring rules, or a secon
 - **18.7 Supersets in preset workouts — DONE**
 - **18.7A Drop Sets + Pyramid workflows — DONE**
 - **18.7B Selective E1RM/deep analytics tracking + exercise-picker refinement — DONE**
-- **18.8 Active workout polish pass — PLANNED**
+- **18.8 Active workout polish pass — DONE**
 - **18.9 Regression & production release — PLANNED**
 
 Drop Sets and Pyramid workflows are implemented using the segmented logical-set model. Drop Sets use the existing DROP classification. Ascending and Full Pyramids remain one logical WORKING set with ordered child stages. All advanced stages contribute to normal lifting volume, while no advanced-set workflow receives bonus XP or a separate scoring model.
@@ -376,7 +376,7 @@ Add focused tests for:
 
 ---
 
-# Phase 18.8 — Active Workout Polish Pass
+# Phase 18.8 — Active Workout Polish Pass — DONE
 
 Once the timer, collapsible sets, Supersets, tracked-exercise control, and picker hierarchy coexist, stop adding features temporarily and perform a full UX pass.
 
@@ -420,6 +420,12 @@ The goal is:
 ## Expected result
 
 By the end of Phase 18, the PWA should feel substantially denser and more deliberate during a workout.
+
+## Validation
+
+Phase 18.8 validation completed successfully. The full release gate passed with 569 unit tests, 22 integration tests, a successful production build and bundle-budget check, the database contract gate, and 71 passing browser E2E tests with 1 intentional skip and 0 failures.
+
+The polish pass specifically verifies 320px containment, 390x844 first-set usable viewport density, advanced Superset and segmented-set geometry, long exercise names, short keyboard-like picker viewports, offline/recovery containment, and Chromium/WebKit mobile behavior.
 
 ---
 

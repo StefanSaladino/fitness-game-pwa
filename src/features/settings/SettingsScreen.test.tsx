@@ -193,4 +193,56 @@ describe('SettingsScreen foundation', () => {
     await screen.findByRole('button', { name: 'Training' });
     expect(screen.queryByRole('heading', { name: 'Administration' })).not.toBeInTheDocument();
   });
+
+  it('keeps a waiting PWA update available from App status settings', async () => {
+    const applyUpdate = vi.fn(() => true);
+
+    const updateSnapshot: PwaSnapshot = {
+      online: true,
+      standalone: true,
+      platform: 'other',
+      installAvailable: false,
+      manualInstallAvailable: false,
+      updateAvailable: true,
+      applyingUpdate: false,
+      serviceWorkerError: false,
+      storagePersistence: 'persistent',
+      storagePersistenceRequestAvailable: false,
+    };
+
+    const updateService: PwaService = {
+      getSnapshot: () => updateSnapshot,
+      subscribe: () => () => undefined,
+      start: () => () => undefined,
+      requestInstall: vi.fn(async () => 'unavailable' as const),
+      requestPersistentStorage: vi.fn(async () => 'persistent' as const),
+      applyUpdate,
+    };
+
+    render(
+      <SettingsScreen
+        {...shared}
+        accessService={access(false)}
+        profile={profile}
+        pwaService={updateService}
+      />,
+    );
+
+    fireEvent.click(
+      screen.getByRole('button', { name: 'App status' }),
+    );
+
+    expect(
+      screen.getByRole('heading', { name: 'App status', level: 1 }),
+    ).toBeInTheDocument();
+
+    expect(screen.getByText('Ready')).toBeInTheDocument();
+
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Update app' }),
+    );
+
+    expect(applyUpdate).toHaveBeenCalledTimes(1);
+  });
+
 });

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import type { OnboardingProfile } from '../../src/features/onboarding';
 import { ActiveWorkoutScreen } from '../../src/features/workout/components/WorkoutSessionScreen';
-import type { ActiveWorkoutSession, WorkoutExercise, WorkoutSet } from '../../src/features/workout/model';
+import type { ActiveWorkoutSession, ExercisePickerItem, WorkoutExercise, WorkoutSet } from '../../src/features/workout/model';
 import '../../src/styles/global.css';
 
 const profile: OnboardingProfile = {
@@ -53,11 +53,125 @@ const set: WorkoutSet = {
   revision: 0,
 };
 
+const supersetGroupId = '76666666-6666-4666-8666-666666666666';
+
+const pyramidExercise: WorkoutExercise = {
+  id: '77777777-7777-4777-8777-777777777777',
+  workoutId: workout.id,
+  exerciseId: '78888888-8888-4888-8888-888888888888',
+  orderIndex: 0,
+  supersetGroupId,
+  supersetOrder: 0,
+  revision: 0,
+  canonicalName: 'Incline Dumbbell Bench Press With Controlled Tempo',
+  measurementType: 'WEIGHT_REPS',
+};
+
+const flyExercise: WorkoutExercise = {
+  id: '79999999-9999-4999-8999-999999999999',
+  workoutId: workout.id,
+  exerciseId: '7aaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
+  orderIndex: 1,
+  supersetGroupId,
+  supersetOrder: 1,
+  revision: 0,
+  canonicalName: 'Standing Cable Fly',
+  measurementType: 'WEIGHT_REPS',
+};
+
+const pyramidSet: WorkoutSet = {
+  id: '7bbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb',
+  workoutExerciseId: pyramidExercise.id,
+  setNumber: 1,
+  setType: 'WORKING',
+  weightKg: 32,
+  reps: 8,
+  bodyweightMode: null,
+  completed: false,
+  completedAt: null,
+  revision: 0,
+  setVariant: 'FULL_PYRAMID',
+  segments: [
+    {
+      id: '7ccccccc-cccc-4ccc-8ccc-ccccccccccc1',
+      workoutSetId: '7bbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb',
+      segmentIndex: 0,
+      weightKg: 24,
+      reps: 12,
+    },
+    {
+      id: '7ccccccc-cccc-4ccc-8ccc-ccccccccccc2',
+      workoutSetId: '7bbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb',
+      segmentIndex: 1,
+      weightKg: 28,
+      reps: 10,
+    },
+    {
+      id: '7ccccccc-cccc-4ccc-8ccc-ccccccccccc3',
+      workoutSetId: '7bbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb',
+      segmentIndex: 2,
+      weightKg: 32,
+      reps: 8,
+    },
+  ],
+};
+
+const flySet: WorkoutSet = {
+  id: '7ddddddd-dddd-4ddd-8ddd-dddddddddddd',
+  workoutExerciseId: flyExercise.id,
+  setNumber: 1,
+  setType: 'WORKING',
+  weightKg: 18,
+  reps: 12,
+  bodyweightMode: null,
+  completed: false,
+  completedAt: null,
+  revision: 0,
+};
+
+
+const pickerCatalog: ExercisePickerItem[] = [
+  {
+    id: '7eeeeeee-eeee-4eee-8eee-eeeeeeeeeeee',
+    canonicalName: 'Single Arm Incline Cable Chest Press With Controlled Eccentric Tempo',
+    measurementType: 'WEIGHT_REPS',
+    primaryMuscleGroup: 'CHEST',
+    workoutType: 'CABLE',
+    aliases: ['Controlled cable press'],
+    lastUsedAt: '2026-09-08T18:00:00.000Z',
+  },
+  {
+    id: '7fffffff-ffff-4fff-8fff-ffffffffffff',
+    canonicalName: 'Romanian Deadlift',
+    measurementType: 'WEIGHT_REPS',
+    primaryMuscleGroup: 'HAMSTRINGS',
+    workoutType: 'BARBELL',
+    aliases: ['RDL'],
+    lastUsedAt: null,
+  },
+  {
+    id: '70000000-0000-4000-8000-000000000001',
+    canonicalName: 'Standing Cable Lateral Raise',
+    measurementType: 'WEIGHT_REPS',
+    primaryMuscleGroup: 'SHOULDERS',
+    workoutType: 'CABLE',
+    aliases: [],
+    lastUsedAt: null,
+  },
+];
+
 function Harness() {
   const requestedState = new URLSearchParams(window.location.search).get('state');
   const [conflictResolved, setConflictResolved] = useState(false);
   const conflict = requestedState === 'conflict' && !conflictResolved;
   const offline = requestedState === 'offline';
+  const advancedSuperset = requestedState === 'advanced-superset';
+  const activeExercises = advancedSuperset
+    ? [pyramidExercise, flyExercise]
+    : [exercise];
+  const activeSets = advancedSuperset
+    ? [pyramidSet, flySet]
+    : [set];
 
   return (
     <ActiveWorkoutScreen
@@ -65,11 +179,16 @@ function Harness() {
       compositionBusyAction={null}
       compositionError=""
       error=""
-      exerciseCatalog={[]}
+      exerciseCatalog={pickerCatalog}
       exercisePickerError=""
       exercisePickerStatus="ready"
       exerciseStatus="ready"
-      exercises={[exercise]}
+      analyticsTrackingStatus="ready"
+      analyticsTrackingBusyExerciseId={null}
+      analyticsTrackingError=""
+      trackedExerciseIds={[]}
+      onSetExerciseAnalyticsTracked={async () => true}
+      exercises={activeExercises}
       initialWeightUnit="KG"
       mutationQueueError={conflict ? 'This set changed on another device.' : ''}
       mutationQueuePendingCount={conflict || offline ? 1 : 0}
@@ -88,10 +207,12 @@ function Harness() {
       onClearSuperset={async () => true}
       onRemoveSet={async () => true}
       onResume={async () => undefined}
-      onRetryExercisePicker={async () => []}
-      onRetryExercises={async () => [exercise]}
+      onRetryExercisePicker={async () => pickerCatalog}
+      onRetryExercises={async () => activeExercises}
       onRetryMutationQueue={async () => undefined}
-      onRetrySets={async () => [set]}
+      onRetrySets={async () => activeSets}
+      onAddAdvancedSet={async () => true}
+      onSaveAdvancedSet={async () => true}
       onSaveSet={async () => true}
       onSetDraftChange={() => undefined}
       onSetDraftPersisted={() => undefined}
@@ -106,7 +227,7 @@ function Harness() {
       setError=""
       setStatus="ready"
       workout={workout}
-      workoutSets={[set]}
+      workoutSets={activeSets}
     />
   );
 }

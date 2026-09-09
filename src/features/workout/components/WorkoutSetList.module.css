@@ -577,3 +577,243 @@
   .addActions { grid-template-columns: 1fr; }
   .addActions .primarySetAction { grid-column: auto; }
 }
+
+/* Phase 18.8A mobile set density */
+@media (max-width: 699px) {
+  .setStage {
+    gap: 10px;
+  }
+
+  .setRow,
+  .weightedRow,
+  .bodyweightRow {
+    gap: 10px;
+    border-bottom-width: 4px;
+    padding: 10px;
+  }
+
+  .collapsedSetRow {
+    border-bottom-width: 4px;
+  }
+
+  .collapsedSetButton {
+    min-height: 44px;
+    padding: 7px 10px;
+  }
+
+  .typeField > button,
+  .modeField > button,
+  .numberField input,
+  .noLoad {
+    min-height: 44px;
+  }
+
+  .rowActions {
+    gap: 8px;
+    padding-top: 8px;
+  }
+
+  .rowActions button {
+    min-height: 44px;
+  }
+
+  .addActions {
+    gap: 8px;
+  }
+
+  .addActions button {
+    min-height: 44px;
+  }
+
+  .advancedSetRow {
+    gap: 10px;
+    border-bottom-width: 4px;
+    padding: 10px;
+  }
+
+  .segmentList {
+    gap: 6px;
+  }
+
+  .segmentRow {
+    position: relative;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 8px;
+    padding: 8px;
+  }
+
+  .segmentIndex {
+    grid-column: 1 / -1;
+    grid-row: 1;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    padding-right: 52px;
+  }
+
+  .segmentRow .loadField {
+    grid-column: 1;
+    grid-row: 2;
+  }
+
+  .segmentRow .repsField {
+    grid-column: 2;
+    grid-row: 2;
+  }
+
+  .segmentRemoveButton {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 44px;
+    min-width: 44px;
+    min-height: 44px;
+    overflow: hidden;
+    padding: 0;
+    font-size: 0;
+  }
+
+  .segmentRemoveButton::before {
+    content: '\00d7';
+    font-size: 1.2rem;
+    line-height: 1;
+  }
+
+  .advancedSetActions {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .advancedSetActions button {
+    min-width: 0;
+    min-height: 44px;
+    padding-inline: 6px;
+    font-size: 0.68rem;
+    line-height: 1.15;
+  }
+}
+
+@media (max-width: 340px) {
+  .advancedSetActions {
+    gap: 6px;
+  }
+
+  .advancedSetActions button {
+    padding-inline: 4px;
+    font-size: 0.64rem;
+  }
+}
+
+/* Phase 18.8A weighted-set viewport refinement */
+@media (max-width: 699px) {
+  .weightedRow {
+    grid-template-columns: 3rem minmax(0, 1fr) auto;
+    gap: 8px;
+  }
+
+  .weightedRow .setNumber {
+    grid-column: 1;
+    grid-row: 1;
+    align-self: center;
+  }
+
+  .weightedRow .typeField {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  .weightedRow .typeField::before {
+    display: none;
+  }
+
+  .weightedRow .completionControls {
+    grid-column: 3;
+    grid-row: 1;
+    gap: 4px;
+  }
+
+  .weightedRow .completeButton {
+    width: auto;
+    min-width: 52px;
+    min-height: 44px;
+    padding: 0 6px;
+  }
+
+  .weightedRow .loadField {
+    grid-column: 1 / 3;
+    grid-row: 2;
+  }
+
+  .weightedRow .repsField {
+    grid-column: 3;
+    grid-row: 2;
+  }
+
+  .weightedRow .rowActions {
+    grid-column: 1 / -1;
+    grid-row: 3;
+    padding-top: 8px;
+  }
+}
+
+@media (max-width: 340px) {
+  .weightedRow {
+    grid-template-columns: 2.8rem minmax(0, 1fr) auto;
+    gap: 6px;
+  }
+
+  .weightedRow .completeButton {
+    min-width: 48px;
+    padding-inline: 4px;
+  }
+
+  .weightedRow .completeLabel {
+    font-size: 0.68rem;
+  }
+}
+
+
+/* Phase 18.8B standard-set completion controls alignment */
+@media (max-width: 699px) {
+  .weightedRow .completionControls {
+    width: max-content;
+    justify-self: end;
+    gap: var(--space-2);
+  }
+
+  /*
+   * Match the advanced-set Done button exactly.
+   * This deliberately overrides the temporary 52px
+   * compact version added during the 18.8A viewport pass.
+   */
+  .weightedRow .completeButton {
+    width: auto;
+    min-width: 5rem;
+    min-height: 44px;
+    height: 44px;
+    padding: 0 var(--space-3);
+    border-radius: var(--radius-md);
+  }
+
+  /*
+   * Match the advanced-set collapse control.
+   */
+  .weightedRow .setCollapseButton {
+    width: 44px;
+    min-width: 44px;
+    height: 44px;
+    border-radius: var(--radius-sm);
+  }
+}
+
+@media (max-width: 340px) {
+  .weightedRow .completeButton {
+    min-width: 5rem;
+    padding-inline: var(--space-3);
+  }
+
+  .weightedRow .completeLabel {
+    font-size: 0.74rem;
+  }
+}

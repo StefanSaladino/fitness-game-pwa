@@ -1,3 +1,4 @@
+import appPackage from '../../package.json';
 import { useState } from 'react';
 import type { PwaService } from './pwaService';
 import { usePwaLifecycle } from './usePwaLifecycle';
@@ -10,6 +11,7 @@ interface PwaStatusProps {
 export function PwaStatus({ service }: PwaStatusProps) {
   const pwa = usePwaLifecycle(service);
   const [busy, setBusy] = useState<'install' | 'update' | 'storage' | null>(null);
+  const [dismissedUpdate, setDismissedUpdate] = useState(false);
 
   const install = async () => {
     setBusy('install');
@@ -35,17 +37,54 @@ export function PwaStatus({ service }: PwaStatusProps) {
     if (!applying) setBusy(null);
   };
 
-  if (pwa.updateAvailable || pwa.applyingUpdate) {
+  if ((pwa.updateAvailable && !dismissedUpdate) || pwa.applyingUpdate) {
     return (
       <section className={styles.notice} data-system-notice role="status" aria-live="polite" data-kind="update">
-        <div>
-          <strong>{pwa.applyingUpdate ? 'Applying update' : 'Update ready'}</strong>
-          <span>{pwa.applyingUpdate ? 'The app will reopen on the new version.' : 'Reload when you’re ready. Active lifts recover after reload.'}</span>
+        <div className={styles.updateContent}>
+          <strong>
+            {pwa.applyingUpdate
+              ? 'Applying update'
+              : `Update ready · v${appPackage.version}`}
+          </strong>
+
+          <span>
+            {pwa.applyingUpdate
+              ? 'The app will reopen on the new version.'
+              : 'Reload when you’re ready. Active lifts recover after reload.'}
+          </span>
+
+          {!pwa.applyingUpdate ? (
+            <div className={styles.releaseNotes}>
+              <span className={styles.releaseNotesTitle}>What’s new</span>
+              <ul>
+                <li>Faster, denser workout logging on mobile</li>
+                <li>Supersets, Drop Sets, and Pyramid workflows</li>
+                <li>Selective exercise analytics and an improved exercise picker</li>
+              </ul>
+            </div>
+          ) : null}
         </div>
+
         {!pwa.applyingUpdate ? (
-          <button className={styles.action} disabled={busy !== null} onClick={update} type="button">
-            Update app
-          </button>
+          <div className={styles.noticeActions}>
+            <button
+              className={styles.dismissAction}
+              disabled={busy !== null}
+              onClick={() => setDismissedUpdate(true)}
+              type="button"
+            >
+              Dismiss
+            </button>
+
+            <button
+              className={styles.action}
+              disabled={busy !== null}
+              onClick={update}
+              type="button"
+            >
+              Update app
+            </button>
+          </div>
         ) : null}
       </section>
     );

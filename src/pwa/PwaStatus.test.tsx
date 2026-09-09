@@ -59,6 +59,15 @@ describe('PwaStatus', () => {
     render(<PwaStatus service={fake.service} />);
 
     expect(fake.service.applyUpdate).not.toHaveBeenCalled();
+
+    expect(screen.getByText('Update ready · v1.0.0')).toBeInTheDocument();
+    expect(screen.getByText('What’s new')).toBeInTheDocument();
+    expect(screen.getByText('Faster, denser workout logging on mobile')).toBeInTheDocument();
+    expect(screen.getByText('Supersets, Drop Sets, and Pyramid workflows')).toBeInTheDocument();
+    expect(
+      screen.getByText('Selective exercise analytics and an improved exercise picker'),
+    ).toBeInTheDocument();
+
     fireEvent.click(screen.getByRole('button', { name: 'Update app' }));
     expect(fake.service.applyUpdate).toHaveBeenCalledTimes(1);
   });
@@ -89,4 +98,56 @@ describe('PwaStatus', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Protect data' }));
     await waitFor(() => expect(fake.service.requestPersistentStorage).toHaveBeenCalledTimes(1));
   });
+
+  it('shows release details without applying the waiting update automatically', () => {
+    const fake = fakeService({ updateAvailable: true });
+    render(<PwaStatus service={fake.service} />);
+
+    expect(screen.getByText('Update ready · v1.0.0')).toBeInTheDocument();
+    expect(screen.getByText('What’s new')).toBeInTheDocument();
+    expect(
+      screen.getByText('Faster, denser workout logging on mobile'),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText('Supersets, Drop Sets, and Pyramid workflows'),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        'Selective exercise analytics and an improved exercise picker',
+      ),
+    ).toBeInTheDocument();
+
+    expect(fake.service.applyUpdate).not.toHaveBeenCalled();
+  });
+
+  it('dismisses a waiting update only for the current mounted app session', () => {
+    const fake = fakeService({ updateAvailable: true });
+
+    const first = render(<PwaStatus service={fake.service} />);
+
+    expect(
+      screen.getByRole('button', { name: 'Update app' }),
+    ).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Dismiss' }));
+
+    expect(
+      screen.queryByRole('button', { name: 'Update app' }),
+    ).not.toBeInTheDocument();
+
+    expect(fake.service.applyUpdate).not.toHaveBeenCalled();
+
+    first.unmount();
+
+    render(<PwaStatus service={fake.service} />);
+
+    expect(
+      screen.getByRole('button', { name: 'Update app' }),
+    ).toBeInTheDocument();
+
+    expect(
+      screen.getByRole('button', { name: 'Dismiss' }),
+    ).toBeInTheDocument();
+  });
+
 });

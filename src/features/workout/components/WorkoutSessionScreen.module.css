@@ -953,3 +953,193 @@
   .lifecycleActions { grid-template-columns: minmax(0, 1fr) auto; }
   .cancelButton { min-width: 96px; padding-inline: 10px; }
 }
+
+/* Phase 18.8A mobile workout density */
+@media (max-width: 699px) {
+  .workoutContent {
+    gap: var(--space-3);
+  }
+
+  .sessionOverview {
+    position: relative;
+  }
+
+  .activeHeader {
+    min-height: 50px;
+    padding: 9px var(--space-3);
+  }
+
+  .sessionOverview:has(.syncQuiet) .activeHeader {
+    padding-right: 88px;
+  }
+
+  .activeTitle {
+    gap: 2px;
+  }
+
+  .activeTitle .kicker {
+    font-size: 0.56rem;
+    letter-spacing: 0.075em;
+  }
+
+  .activeHeader h1 {
+    font-size: 1.16rem;
+    line-height: 1.08;
+  }
+
+  .sessionMeta {
+    border-top-width: 1px;
+  }
+
+  .sessionMeta > div {
+    min-height: 44px;
+    gap: 2px;
+    padding: 5px 10px;
+  }
+
+  .sessionMeta span {
+    font-size: 0.5rem;
+    letter-spacing: 0.04em;
+  }
+
+  .sessionMeta strong {
+    font-size: 0.7rem;
+  }
+
+  .syncQuiet {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    min-height: 28px;
+    gap: 5px;
+    border: 1px solid var(--color-border);
+    border-radius: 999px;
+    padding: 0 9px;
+    background: var(--color-bg-elevated);
+    font-size: 0.62rem;
+  }
+
+  .stickyTimerBar {
+    min-height: 48px;
+    padding: 2px 3px 2px var(--space-3);
+  }
+
+  .exerciseStage {
+    gap: 12px;
+    padding: 12px;
+  }
+
+  .exerciseHeading {
+    gap: 10px;
+  }
+
+  .exerciseHeading > div:first-child {
+    gap: 2px;
+  }
+
+  .exerciseStage h2 {
+    font-size: 1.2rem;
+  }
+
+  .exerciseHeadingActions {
+    grid-template-columns: 92px minmax(0, 1fr);
+    gap: 8px;
+  }
+
+  .exerciseList {
+    gap: 10px;
+  }
+
+  .exerciseTopline {
+    min-height: 66px;
+    padding: 7px 9px;
+  }
+
+  .exerciseToggle {
+    min-height: 52px;
+    grid-template-columns: 42px minmax(0, 1fr) 30px;
+    gap: 8px;
+  }
+
+  .exerciseIconFrame {
+    width: 42px;
+    height: 42px;
+  }
+
+  .exerciseIcon {
+    width: 32px;
+    height: 32px;
+  }
+
+  .exerciseIdentity {
+    gap: 3px;
+  }
+
+  .exerciseIdentity strong {
+    font-size: 0.92rem;
+    line-height: 1.18;
+  }
+
+  .exerciseIdentity span {
+    font-size: 0.64rem;
+    line-height: 1.2;
+  }
+
+  .exerciseChevron {
+    width: 30px;
+    height: 44px;
+  }
+
+  .exerciseActions {
+    gap: 6px;
+    border-top-width: 1px;
+    padding: 6px 8px;
+  }
+
+  .analyticsTrackingControl {
+    min-height: 44px;
+    gap: 9px;
+    padding: 6px 10px;
+  }
+
+  .analyticsTrackingControl input {
+    width: 18px;
+    height: 18px;
+    flex-basis: 18px;
+  }
+
+  .analyticsTrackingControl > span {
+    display: block;
+  }
+
+  .analyticsTrackingControl strong {
+    font-size: 0.74rem;
+  }
+
+  .analyticsTrackingControl small {
+    display: none;
+  }
+
+  .analyticsTrackingError {
+    padding: 0 10px 8px;
+  }
+
+  .exerciseSets {
+    padding: 10px;
+  }
+}
+
+@media (max-width: 360px) {
+  .sessionOverview:has(.syncQuiet) .activeHeader {
+    padding-right: 82px;
+  }
+
+  .syncQuiet {
+    right: 8px;
+    padding-inline: 7px;
+  }
+
+  .exerciseStage {
+    padding: 10px;
+  }
+}

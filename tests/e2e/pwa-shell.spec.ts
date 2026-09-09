@@ -33,8 +33,28 @@ test('production app shell boots from cache during an offline navigation', async
       for (const request of await cache.keys()) paths.push(new URL(request.url).pathname);
     }
 
-    const activeCacheName = cacheNames.find((name) => name.endsWith('v14-6'));
-    if (!activeCacheName) throw new Error('Current push-capable shell cache was not installed.');
+    const serviceWorkerResponse = await fetch('/sw.js', { cache: 'no-store' });
+    if (!serviceWorkerResponse.ok) {
+      throw new Error(`Service worker request failed: ${serviceWorkerResponse.status}`);
+    }
+
+    const serviceWorkerSource = await serviceWorkerResponse.text();
+    const versionMatch = serviceWorkerSource.match(
+      /const CACHE_VERSION = ['"]([^'"]+)['"]/,
+    );
+
+    if (!versionMatch?.[1]) {
+      throw new Error('Unable to resolve the current service-worker cache version.');
+    }
+
+    const activeCacheName = `workout-game-shell-${versionMatch[1]}`;
+
+    if (!cacheNames.includes(activeCacheName)) {
+      throw new Error(
+        `Current shell cache was not installed: ${activeCacheName}`,
+      );
+    }
+
     const activeCache = await caches.open(activeCacheName);
     for (const asset of emittedAssets) {
       if (!(await activeCache.match(asset, { ignoreVary: true }))) missingEmittedAssets.push(asset);
