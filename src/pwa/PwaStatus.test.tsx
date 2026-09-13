@@ -63,10 +63,10 @@ describe('PwaStatus', () => {
 
     expect(screen.getByText(`Update ready · v${appPackage.version}`)).toBeInTheDocument();
     expect(screen.getByText('What’s new')).toBeInTheDocument();
-    expect(screen.getByText('Faster, denser workout logging on mobile')).toBeInTheDocument();
-    expect(screen.getByText('Supersets, Drop Sets, and Pyramid workflows')).toBeInTheDocument();
+    expect(screen.getByText('Drop Set stages can establish and beat exercise PRs')).toBeInTheDocument();
+    expect(screen.getByText('Desktop set-type labels stay fully readable')).toBeInTheDocument();
     expect(
-      screen.getByText('Selective exercise analytics and an improved exercise picker'),
+      screen.getByText('Drop-only sessions stay visible in exercise analytics'),
     ).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('button', { name: 'Update app' }));
@@ -107,14 +107,14 @@ describe('PwaStatus', () => {
     expect(screen.getByText(`Update ready · v${appPackage.version}`)).toBeInTheDocument();
     expect(screen.getByText('What’s new')).toBeInTheDocument();
     expect(
-      screen.getByText('Faster, denser workout logging on mobile'),
+      screen.getByText('Drop Set stages can establish and beat exercise PRs'),
     ).toBeInTheDocument();
     expect(
-      screen.getByText('Supersets, Drop Sets, and Pyramid workflows'),
+      screen.getByText('Desktop set-type labels stay fully readable'),
     ).toBeInTheDocument();
     expect(
       screen.getByText(
-        'Selective exercise analytics and an improved exercise picker',
+        'Drop-only sessions stay visible in exercise analytics',
       ),
     ).toBeInTheDocument();
 

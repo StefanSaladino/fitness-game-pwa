@@ -57,9 +57,9 @@ export function PwaStatus({ service }: PwaStatusProps) {
             <div className={styles.releaseNotes}>
               <span className={styles.releaseNotesTitle}>What’s new</span>
               <ul>
-                <li>Faster, denser workout logging on mobile</li>
-                <li>Supersets, Drop Sets, and Pyramid workflows</li>
-                <li>Selective exercise analytics and an improved exercise picker</li>
+                <li>Drop Set stages can establish and beat exercise PRs</li>
+                <li>Desktop set-type labels stay fully readable</li>
+                <li>Drop-only sessions stay visible in exercise analytics</li>
               </ul>
             </div>
           ) : null}

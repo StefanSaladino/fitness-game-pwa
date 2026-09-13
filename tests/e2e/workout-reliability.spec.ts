@@ -286,8 +286,16 @@ test('desktop standard set keeps Done and set type compact', async ({ page }) =>
   expect(doneBox).not.toBeNull();
   expect(collapseBox).not.toBeNull();
 
-  // Working/Warmup should stay compact instead of consuming a flexible column.
-  expect(typeBox!.width).toBeLessThanOrEqual(140);
+  // Working/Warmup should stay compact while the selected label remains fully readable.
+  expect(typeBox!.width).toBeLessThanOrEqual(160);
+
+  const selectedTypeLabel = type.locator('span').first();
+  await expect(selectedTypeLabel).toHaveText('Working');
+
+  const typeLabelFits = await selectedTypeLabel.evaluate(
+    (element) => element.scrollWidth <= element.clientWidth + 1,
+  );
+  expect(typeLabelFits).toBe(true);
 
   // Done is a real labeled desktop action, not an empty circle.
   expect(doneBox!.width).toBeGreaterThanOrEqual(72);
