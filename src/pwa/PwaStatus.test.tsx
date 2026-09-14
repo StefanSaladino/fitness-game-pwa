@@ -63,10 +63,10 @@ describe('PwaStatus', () => {
 
     expect(screen.getByText(`Update ready · v${appPackage.version}`)).toBeInTheDocument();
     expect(screen.getByText('What’s new')).toBeInTheDocument();
-    expect(screen.getByText('Drop Set stages can establish and beat exercise PRs')).toBeInTheDocument();
-    expect(screen.getByText('Desktop set-type labels stay fully readable')).toBeInTheDocument();
+    expect(screen.getByText('Working and Warmup set types are fully readable on mobile')).toBeInTheDocument();
+    expect(screen.getByText('Standard set controls now match the proven mobile advanced-set hierarchy')).toBeInTheDocument();
     expect(
-      screen.getByText('Drop-only sessions stay visible in exercise analytics'),
+      screen.getByText('No scoring or workout-data behavior changed in this UI hotfix'),
     ).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('button', { name: 'Update app' }));
@@ -107,14 +107,14 @@ describe('PwaStatus', () => {
     expect(screen.getByText(`Update ready · v${appPackage.version}`)).toBeInTheDocument();
     expect(screen.getByText('What’s new')).toBeInTheDocument();
     expect(
-      screen.getByText('Drop Set stages can establish and beat exercise PRs'),
+      screen.getByText('Working and Warmup set types are fully readable on mobile'),
     ).toBeInTheDocument();
     expect(
-      screen.getByText('Desktop set-type labels stay fully readable'),
+      screen.getByText('Standard set controls now match the proven mobile advanced-set hierarchy'),
     ).toBeInTheDocument();
     expect(
       screen.getByText(
-        'Drop-only sessions stay visible in exercise analytics',
+        'No scoring or workout-data behavior changed in this UI hotfix',
       ),
     ).toBeInTheDocument();
 

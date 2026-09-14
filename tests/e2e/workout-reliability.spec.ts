@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+﻿import { expect, test } from '@playwright/test';
 
 test.use({ viewport: { width: 390, height: 844 } });
 
@@ -45,41 +45,57 @@ test('320px workout rows and recovery actions remain contained', async ({ page }
 });
 
 
-test('390px synced workout keeps first set controls inside the usable viewport', async ({ page }) => {
+test('390px synced workout exposes the first standard-set entry without initial scrolling', async ({ page }) => {
   await page.goto('/reliability.e2e.html');
 
   await expect(page.getByRole('heading', { name: 'Workout in progress' })).toBeVisible();
 
   const analytics = page.getByRole('checkbox', { name: /Track in analytics/ });
+  const type = page.getByRole('combobox', { name: 'Set 1 type' });
   const weight = page.getByRole('spinbutton', { name: 'Set 1 weight in kg' });
   const finish = page.getByRole('button', { name: 'Finish workout' });
   const sessionMeta = page.getByLabel('Workout session state');
 
   await expect(analytics).toBeVisible();
+  await expect(type).toBeVisible();
   await expect(weight).toBeVisible();
   await expect(finish).toBeVisible();
 
-  const [analyticsBox, weightBox, finishBox, sessionMetaBox] = await Promise.all([
+  const [
+    analyticsBox,
+    typeBox,
+    weightBox,
+    finishBox,
+    sessionMetaBox,
+  ] = await Promise.all([
     analytics.boundingBox(),
+    type.boundingBox(),
     weight.boundingBox(),
     finish.boundingBox(),
     sessionMeta.boundingBox(),
   ]);
 
   expect(analyticsBox).not.toBeNull();
+  expect(typeBox).not.toBeNull();
   expect(weightBox).not.toBeNull();
   expect(finishBox).not.toBeNull();
   expect(sessionMetaBox).not.toBeNull();
 
   const usableBottom = finishBox!.y - 4;
 
-  // These controls must already be usable without an initial scroll.
+  // The workout context and full Set Type selector must be visible immediately.
   expect(analyticsBox!.y).toBeGreaterThanOrEqual(0);
   expect(analyticsBox!.y + analyticsBox!.height).toBeLessThan(usableBottom);
-  expect(weightBox!.y).toBeGreaterThanOrEqual(0);
-  expect(weightBox!.y + weightBox!.height).toBeLessThan(usableBottom);
 
-  // 18.8A deliberately compresses the two-column session metadata strip.
+  expect(typeBox!.y).toBeGreaterThanOrEqual(0);
+  expect(typeBox!.y + typeBox!.height).toBeLessThan(usableBottom);
+
+  // With the approved full-width Set Type row, the Weight/Reps row may extend
+  // below the initial fold, but it must begin before the sticky finish controls.
+  expect(weightBox!.y).toBeGreaterThanOrEqual(0);
+  expect(weightBox!.y).toBeLessThan(usableBottom);
+
+  // Keep the compact session metadata treatment from Phase 18.8A.
   expect(sessionMetaBox!.height).toBeLessThanOrEqual(46);
 
   expect(await page.evaluate(() => window.scrollY)).toBe(0);
@@ -309,4 +325,48 @@ test('desktop standard set keeps Done and set type compact', async ({ page }) =>
     () => document.documentElement.scrollWidth - window.innerWidth,
   );
   expect(overflow).toBeLessThanOrEqual(1);
+});
+
+test('mobile standard set keeps Working/Warmup selector on its own row', async ({ page }) => {
+  for (const viewport of [
+    { width: 390, height: 844 },
+    { width: 320, height: 720 },
+  ]) {
+    await page.setViewportSize(viewport);
+    await page.goto('/reliability.e2e.html');
+
+    const type = page.getByRole('combobox', { name: 'Set 1 type' });
+    const done = page.getByRole('button', { name: 'Mark set 1 complete' });
+    const collapse = page.getByRole('button', { name: 'Collapse set 1' });
+    const label = type.locator('span').first();
+
+    await expect(type).toBeVisible();
+    await expect(done).toBeVisible();
+    await expect(collapse).toBeVisible();
+    await expect(label).toHaveText('Working');
+
+    const [typeBox, doneBox, collapseBox] = await Promise.all([
+      type.boundingBox(),
+      done.boundingBox(),
+      collapse.boundingBox(),
+    ]);
+
+    expect(typeBox).not.toBeNull();
+    expect(doneBox).not.toBeNull();
+    expect(collapseBox).not.toBeNull();
+
+    expect(typeBox!.y).toBeGreaterThan(doneBox!.y + doneBox!.height - 2);
+    expect(typeBox!.width).toBeGreaterThan(viewport.width * 0.65);
+    expect(Math.abs(doneBox!.y - collapseBox!.y)).toBeLessThanOrEqual(2);
+
+    const labelFits = await label.evaluate(
+      (element) => element.scrollWidth <= element.clientWidth + 1,
+    );
+    expect(labelFits).toBe(true);
+
+    const overflow = await page.evaluate(
+      () => document.documentElement.scrollWidth - window.innerWidth,
+    );
+    expect(overflow).toBeLessThanOrEqual(1);
+  }
 });

@@ -873,3 +873,66 @@
     justify-self: center;
   }
 }
+/* v1.0.3 mobile standard-set layout */
+@media (max-width: 699px) {
+  /*
+   * Match the successful Drop Set mobile hierarchy and spacing:
+   *
+   * Row 1: Set number + Done/Collapse
+   * Row 2: full-width Working/Warmup selector
+   * Row 3: Weight + Reps
+   * Row 4: Copy/Delete
+   */
+  .weightedRow {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 10px;
+    padding: 10px;
+  }
+
+  .weightedRow .setNumber {
+    grid-column: 1;
+    grid-row: 1;
+    justify-self: start;
+    align-self: center;
+  }
+
+  .weightedRow .completionControls {
+    grid-column: 2;
+    grid-row: 1;
+    width: max-content;
+    justify-self: end;
+  }
+
+  .weightedRow .typeField {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    width: 100%;
+    min-width: 0;
+  }
+
+  .weightedRow .typeField::before {
+    display: none;
+  }
+
+  .weightedRow .typeField > button {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .weightedRow .loadField {
+    grid-column: 1;
+    grid-row: 3;
+  }
+
+  .weightedRow .repsField {
+    grid-column: 2;
+    grid-row: 3;
+  }
+
+  .weightedRow .rowActions {
+    grid-column: 1 / -1;
+    grid-row: 4;
+    padding-top: 8px;
+  }
+}
+/* end v1.0.3 mobile standard-set layout */

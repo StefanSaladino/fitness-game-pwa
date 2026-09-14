@@ -57,9 +57,9 @@ export function PwaStatus({ service }: PwaStatusProps) {
             <div className={styles.releaseNotes}>
               <span className={styles.releaseNotesTitle}>What’s new</span>
               <ul>
-                <li>Drop Set stages can establish and beat exercise PRs</li>
-                <li>Desktop set-type labels stay fully readable</li>
-                <li>Drop-only sessions stay visible in exercise analytics</li>
+                <li>Working and Warmup set types are fully readable on mobile</li>
+                <li>Standard set controls now match the proven mobile advanced-set hierarchy</li>
+                <li>No scoring or workout-data behavior changed in this UI hotfix</li>
               </ul>
             </div>
           ) : null}
