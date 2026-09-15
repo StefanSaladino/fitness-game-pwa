@@ -52,16 +52,16 @@ Historical details remain in the phase records and `CHANGELOG.md`. They are not 
 
 | Phase | Status | Goal |
 |---|---|---|
-| 19.0 | **IN PROGRESS** | Exercise Catalogue Expansion — add useful common commercial-gym exercises, especially machines, without adding new picker categories |
-| 19.1 | **PLANNED** | Exercise Catalogue Audit — normalize names, aliases, measurement types, primary muscles, and duplicates |
-| 19.2 | **PLANNED** | Volume Intelligence specification lock — benchmarks, eligibility, set-credit rules, methodology version |
+| 19.0 | **DONE** | Exercise Catalogue Expansion — add useful common commercial-gym exercises, especially machines, without adding new picker categories |
+| 19.1 | **IN PROGRESS** | Exercise Catalogue Audit — normalize names, aliases, measurement types, primary muscles, and duplicates |
+| 19.2 | **PLANNED** | Volume Intelligence specification lock — benchmarks, eligibility, logical-set credit rules, contribution semantics, report semantics, and methodology version |
 | 19.3 | **PLANNED** | Complete exercise-to-muscle contribution matrix with direct/indirect credit |
 | 19.4 | **PLANNED** | Versioned database foundation for methodology, mappings, benchmarks, RLS, and tests |
-| 19.5 | **PLANNED** | Effective-volume calculation/read model for authenticated rolling 7/28-day reports |
+| 19.5 | **PLANNED** | Effective-volume calculation/read model for authenticated rolling 7/28-day analytics |
 | 19.6 | **PLANNED** | TypeScript models and Progress service integration |
 | 19.7 | **PLANNED** | Mobile-first Training Volume UI under Progress |
 | 19.8 | **PLANNED** | Performance-aware volume recommendations using existing progression signals |
-| 19.9 | **PLANNED** | Weekly/28-day reports, regression, documentation, and production release |
+| 19.9 | **PLANNED** | Weekly/monthly reporting, downloadable monthly PDF, data lifecycle/retention, capacity validation, regression, documentation, and production release |
 
 ### Phase 19.0 locked catalogue rules
 
@@ -73,6 +73,34 @@ Historical details remain in the phase records and `CHANGELOG.md`. They are not 
 - Brand-specific duplicates are avoided; aliases capture common alternate names where useful.
 - Add exercises for useful real-world commercial-gym coverage, not to meet an arbitrary catalogue-size target.
 - Muscle contribution metadata is deferred until Phase 19.3 after the catalogue audit and methodology lock.
+
+### Locked volume-intelligence architecture
+
+- Primary muscle group remains the exercise browsing/sorting taxonomy; it is not the secondary-muscle scoring engine.
+- Exercise-to-muscle contributions are modeled independently so one exercise can contribute to multiple reportable muscle groups.
+- Direct muscle contribution uses a `1.0` effective-set credit and meaningful indirect contribution uses a `0.5` effective-set credit for the initial methodology unless Phase 19.2 validation explicitly revises the rule.
+- Warmups and incomplete/cancelled work contribute `0` effective sets.
+- Effective volume is based on the logical workout set, not on blindly counting advanced-set segment rows. Drop/Pyramid stages therefore do not each become a full effective set by default.
+- Contribution mappings, benchmarks, and calculations are methodology-versioned so future evidence-based changes can be introduced without silently changing the meaning of historical reports.
+- Rolling 7-day and 28-day analytics are live views of current training status; completed-period reports are a separate reporting concept.
+
+### Phase 19.9 locked reporting and retention plan
+
+- **In-app delivery is the primary report surface.** Training Volume remains available under Progress with live rolling 7-day and 28-day views.
+- Weekly reporting summarizes a completed weekly period and compares it with the previous comparable period where sufficient data exists.
+- Each completed month produces a **frozen monthly training snapshot** before report rendering so the report remains historically stable even if mappings, benchmarks, or recommendation logic change later.
+- Each user receives an in-app monthly report with a **view/download PDF** action.
+- The monthly PDF is stored privately and exposed only through an authenticated/short-lived access path.
+- **Only the latest monthly PDF is retained per user.** A prior PDF is deleted only after the replacement snapshot and PDF have both been generated and verified successfully.
+- Deleting/replacing a PDF must never delete the user's underlying workout history.
+- Compact structured monthly snapshots are retained long-term so Top Set can support historical trends without retaining an unlimited number of PDF artifacts.
+- Monthly snapshots should preserve the minimum useful historical intelligence, including workout count, active training time, completed working sets, relevant volume totals, PR/performance summary, muscle-volume totals, methodology version, and other fields approved during implementation.
+- Ephemeral and operational records that no longer provide product value should use short, table-appropriate retention schedules rather than accumulate indefinitely.
+- Detailed raw workout data may become eligible for future compaction/archival after a **conservative initial target of approximately 24 months**, but only after the archival contract is defined and a verified historical snapshot exists. Phase 19.9 must not introduce destructive workout-history cleanup until dependencies and restore/history requirements are proven safe.
+- Archival eligibility must require, at minimum: age beyond the approved retention period, a successfully generated/verified snapshot, no unresolved dependency on the raw rows, and validation that retained aggregates are sufficient for supported historical features.
+- Production validation includes Supabase capacity health: database/table size growth, database egress, Storage usage, Realtime usage, Edge Function usage where applicable, and query performance.
+- Capacity measurements should be used to establish real per-active-user growth/egress rates before any aggressive retention tuning.
+- Report generation/replacement and retention jobs must be retry-safe and must preserve the previous valid artifact when a new generation attempt fails.
 
 ## Phase 20 — Native architecture
 
@@ -95,6 +123,6 @@ The PWA remains independently deployable. Native work must not fork product rule
 
 ## Execution order
 
-**PWA release complete → exercise catalogue expansion → catalogue audit → lock volume methodology → contribution matrix → database foundation → effective-volume engine → Progress integration → Training Volume UI → performance-aware recommendations → volume reports/release → Capacitor proof → native shell → native workout bridge → native lifecycle hardening → iPhone Live Activity → Android live surface → optional interactive controls.**
+**PWA release complete → exercise catalogue expansion → catalogue audit → lock volume methodology/report semantics → contribution matrix → database foundation → effective-volume engine → Progress integration → Training Volume UI → performance-aware recommendations → weekly/monthly reports + retention/capacity validation → production release → Capacitor proof → native shell → native workout bridge → native lifecycle hardening → iPhone Live Activity → Android live surface → optional interactive controls.**
 
 Engineering/delivery rules live in [`../CONTRIBUTING.md`](../CONTRIBUTING.md); validation rules live in [`CI-VALIDATION.md`](CI-VALIDATION.md).
