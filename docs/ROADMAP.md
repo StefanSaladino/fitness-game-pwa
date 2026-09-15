@@ -39,7 +39,8 @@ Historical details remain in the phase records and `CHANGELOG.md`. They are not 
 
 - A Drop Set or Pyramid is one logical workout set with ordered load/repetition stages.
 - Drop Sets use DROP classification; pyramids use WORKING classification.
-- Advanced stages contribute to normal lifting volume, while the logical parent counts once for completed-working-set semantics.
+- Advanced stages contribute to normal lifting volume, while the logical parent counts once for existing completed-working-set/XP semantics.
+- The Phase 18 logical-parent contract does **not** require Phase 19 muscle-volume analytics to treat every advanced pattern as exactly one effective set; structural counting and stimulus-equivalent analytics are separate concerns.
 - Advanced stages must survive recovery/offline replay and completed-workout history without being flattened.
 
 ### Locked selective-analytics contract
@@ -54,10 +55,10 @@ Historical details remain in the phase records and `CHANGELOG.md`. They are not 
 |---|---|---|
 | 19.0 | **DONE** | Exercise Catalogue Expansion — add useful common commercial-gym exercises, especially machines, without adding new picker categories |
 | 19.1 | **IN PROGRESS** | Exercise Catalogue Audit — normalize names, aliases, measurement types, primary muscles, and duplicates |
-| 19.2 | **PLANNED** | Volume Intelligence specification lock — benchmarks, eligibility, logical-set credit rules, contribution semantics, report semantics, and methodology version |
+| 19.2 | **PLANNED** | Volume Intelligence specification lock — evidence-backed effective-set methodology, standard/failure/drop/pyramid credit, benchmarks, eligibility, contribution semantics, report semantics, and methodology version |
 | 19.3 | **PLANNED** | Complete exercise-to-muscle contribution matrix with direct/indirect credit |
 | 19.4 | **PLANNED** | Versioned database foundation for methodology, mappings, benchmarks, RLS, and tests |
-| 19.5 | **PLANNED** | Effective-volume calculation/read model for authenticated rolling 7/28-day analytics |
+| 19.5 | **PLANNED** | Versioned set-stimulus/effective-volume calculation and authenticated rolling 7/28-day read model |
 | 19.6 | **PLANNED** | TypeScript models and Progress service integration |
 | 19.7 | **PLANNED** | Mobile-first Training Volume UI under Progress |
 | 19.8 | **PLANNED** | Performance-aware volume recommendations using existing progression signals |
@@ -77,12 +78,20 @@ Historical details remain in the phase records and `CHANGELOG.md`. They are not 
 ### Locked volume-intelligence architecture
 
 - Primary muscle group remains the exercise browsing/sorting taxonomy; it is not the secondary-muscle scoring engine.
+- Phase 19 uses **set-stimulus equivalents** internally and presents muscle-group totals as **effective sets**. This is analytics, not XP.
 - Exercise-to-muscle contributions are modeled independently so one exercise can contribute to multiple reportable muscle groups.
-- Direct muscle contribution uses a `1.0` effective-set credit and meaningful indirect contribution uses a `0.5` effective-set credit for the initial methodology unless Phase 19.2 validation explicitly revises the rule.
-- Warmups and incomplete/cancelled work contribute `0` effective sets.
-- Effective volume is based on the logical workout set, not on blindly counting advanced-set segment rows. Drop/Pyramid stages therefore do not each become a full effective set by default.
-- Contribution mappings, benchmarks, and calculations are methodology-versioned so future evidence-based changes can be introduced without silently changing the meaning of historical reports.
-- Rolling 7-day and 28-day analytics are live views of current training status; completed-period reports are a separate reporting concept.
+- Direct muscle contribution uses `1.0`; meaningful indirect/secondary contribution uses `0.5` in the v1 methodology.
+- A completed standard `WORKING` set contributes `1.0` set-stimulus equivalent. A completed standard `FAILURE` set also contributes `1.0`; failure receives no automatic hypertrophy bonus.
+- Warmups, incomplete work, and work from cancelled/non-completed sessions contribute `0` effective sets.
+- **Pyramids:** each completed Pyramid stage contributes `1.0` set-stimulus equivalent for muscle-volume analytics. The Pyramid still remains one logical parent set for the existing Phase 18 workflow/history/XP contract.
+- **Drop Sets:** the first eligible stage contributes `1.0`; each subsequent positive-rep stage that reduces load from the immediately preceding stage contributes `0.5`; a logical Drop Set is capped at `2.0` set-stimulus equivalents in v1. This is a conservative, methodology-versioned Top Set calibration because current Drop Set research supports the method's effectiveness but does not establish a universal stage-to-straight-set conversion.
+- Supersets receive no volume bonus or penalty; the underlying sets are scored normally for their exercises.
+- Raw repetitions and tonnage/volume-load remain valuable descriptive workload metrics but are **not linearly converted into hypertrophy/effective-set credit**. A set with twice the reps or load is not automatically worth twice the muscle-volume score.
+- Phase 19 v1 does not fabricate RIR/RPE from reps and load. A future methodology may use explicit effort data if Top Set captures it reliably.
+- `WEIGHT_REPS` and `BODYWEIGHT_REPS` resistance exercises may be volume-eligible after contribution review; `DURATION` and `OTHER` require explicit inclusion/exclusion.
+- Contribution mappings, set-credit rules, benchmarks, and calculations are methodology-versioned so future evidence-based changes can be introduced without silently changing the meaning of historical reports.
+- Rolling 7-day and 28-day analytics are live views of current training status; completed-period weekly/monthly reports are a separate reporting concept.
+- The detailed research basis and formula contract live in [`DOMAIN-RULES.md`](DOMAIN-RULES.md); Phase 19 implementation must not substitute a raw-rep or raw-tonnage formula for that contract.
 
 ### Phase 19.9 locked reporting and retention plan
 
@@ -123,6 +132,6 @@ The PWA remains independently deployable. Native work must not fork product rule
 
 ## Execution order
 
-**PWA release complete → exercise catalogue expansion → catalogue audit → lock volume methodology/report semantics → contribution matrix → database foundation → effective-volume engine → Progress integration → Training Volume UI → performance-aware recommendations → weekly/monthly reports + retention/capacity validation → production release → Capacitor proof → native shell → native workout bridge → native lifecycle hardening → iPhone Live Activity → Android live surface → optional interactive controls.**
+**PWA release complete → exercise catalogue expansion → catalogue audit → lock evidence-backed set-stimulus/muscle-volume methodology + report semantics → contribution matrix → database foundation → effective-volume engine → Progress integration → Training Volume UI → performance-aware recommendations → weekly/monthly reports + retention/capacity validation → production release → Capacitor proof → native shell → native workout bridge → native lifecycle hardening → iPhone Live Activity → Android live surface → optional interactive controls.**
 
 Engineering/delivery rules live in [`../CONTRIBUTING.md`](../CONTRIBUTING.md); validation rules live in [`CI-VALIDATION.md`](CI-VALIDATION.md).
