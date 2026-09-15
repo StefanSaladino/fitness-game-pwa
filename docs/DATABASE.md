@@ -42,9 +42,31 @@ Core lifting persistence is built around:
 - `exercise_catalog`: canonical exercise identity and measurement type;
 - `workout_sessions`: lifecycle/category/timing/scoring-date context;
 - `workout_exercises`: ordered canonical exercises in a workout;
-- `workout_sets`: ordered per-exercise sets with independent weight/reps/type/completion data.
+- `workout_sets`: ordered per-exercise logical sets with independent weight/reps/type/completion data.
 
 Set and exercise mutations that require protection are performed through authenticated RPC/guarded mutation boundaries rather than unrestricted browser table writes.
+
+## Advanced sets
+
+Phase 18.7A preserves `workout_sets` as the authoritative logical-set parent for Drop Sets and Pyramids.
+
+The parent carries `set_variant` with the supported variants:
+
+- `STANDARD`
+- `DROP`
+- `ASCENDING_PYRAMID`
+- `FULL_PYRAMID`
+
+`workout_set_segments` stores ordered advanced-set stage data:
+
+- `workout_set_id`
+- `segment_index`
+- `weight_kg`
+- `reps`
+
+An advanced parent is still one logical set number for active-workout workflow, recovery, copy/delete, completed history, and existing `lifting-v1` completed-set semantics. Saving an advanced set replaces the ordered segment list atomically through the guarded advanced-set mutation boundary.
+
+This logical-parent model is **not** the Phase 19 muscle-volume unit. Phase 19 may derive multiple or fractional set-stimulus equivalents from the child stages without creating extra `workout_sets` rows or changing existing XP/set-count behavior.
 
 ## Supersets
 
@@ -78,6 +100,33 @@ Key authoritative persistence includes:
 Legacy v0.2 scoring/performance tables remain migration history only and must not receive new `lifting-v1` writes.
 
 See [`DOMAIN-RULES.md`](DOMAIN-RULES.md) for the behavioral scoring contract.
+
+## Phase 19 muscle-volume persistence — planned
+
+Phase 19 adds a versioned analytics layer rather than embedding secondary muscles or hypertrophy scores directly into `workout_sets`.
+
+The Phase 19.4 foundation should provide versioned persistence for at least:
+
+- a methodology/version identity that owns the interpretation of set credit, exercise-muscle mappings, and benchmarks;
+- exercise-to-muscle contribution rows keyed by methodology version, canonical exercise, and reportable muscle group;
+- direct/indirect contribution weight and supporting review metadata where approved;
+- muscle-group benchmark rows keyed by methodology version and reportable muscle group;
+- RLS/guarded read boundaries appropriate to reference data and authenticated user reports.
+
+The Phase 19.5 calculation/read model derives **set-stimulus equivalents** from persisted completed workout data before applying exercise-to-muscle contribution weights. The v1 contract is defined in [`DOMAIN-RULES.md`](DOMAIN-RULES.md):
+
+- standard completed Working/Failure set: `1.0`;
+- Pyramid: `1.0` per completed stage;
+- Drop Set: first eligible stage `1.0`, each valid lower-load continuation `0.5`, logical Drop Set cap `2.0`;
+- warmup/incomplete/cancelled-session work: `0`.
+
+The existing raw rows remain the source evidence. The browser must not write derived muscle-volume totals as if they were authoritative facts. Authenticated read models/RPCs should derive rolling 7-day and 28-day results server-side and return the methodology version used.
+
+Raw repetitions and stage-summed tonnage remain available for ordinary workload/history analytics, but Phase 19 does not persist a linear `reps` or `sets × reps × load` conversion as the muscle-volume score.
+
+Phase 19.9 introduces compact frozen monthly training snapshots. Those snapshots should retain the methodology version plus the minimum aggregate data required for stable historical reports after future methodology revisions or eventual raw-data archival. Private monthly PDF artifacts are separate from the structured snapshot; only the current PDF is retained per user after verified replacement.
+
+Any schema introduced for Phase 19 requires regenerated public database types and matching database/TypeScript tests before release.
 
 ## Weekly goals and badges
 
