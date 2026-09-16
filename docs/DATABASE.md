@@ -105,28 +105,86 @@ See [`DOMAIN-RULES.md`](DOMAIN-RULES.md) for the behavioral scoring contract.
 
 Phase 19 adds a versioned analytics layer rather than embedding secondary muscles or hypertrophy scores directly into `workout_sets`.
 
+The locked first methodology is `muscle-volume-v1`.
+
+### Phase 19.4 database foundation
+
 The Phase 19.4 foundation should provide versioned persistence for at least:
 
-- a methodology/version identity that owns the interpretation of set credit, exercise-muscle mappings, and benchmarks;
+- a methodology/version identity that owns the interpretation of set-quality thresholds, baseline/confidence rules, advanced-set credit, exercise-muscle mappings, and benchmark bands;
 - exercise-to-muscle contribution rows keyed by methodology version, canonical exercise, and reportable muscle group;
-- direct/indirect contribution weight and supporting review metadata where approved;
+- direct/indirect contribution weight plus review confidence/rationale where approved;
+- explicit exercise volume-eligibility metadata for cases that are not automatically eligible;
 - muscle-group benchmark rows keyed by methodology version and reportable muscle group;
 - RLS/guarded read boundaries appropriate to reference data and authenticated user reports.
 
-The Phase 19.5 calculation/read model derives **set-stimulus equivalents** from persisted completed workout data before applying exercise-to-muscle contribution weights. The v1 contract is defined in [`DOMAIN-RULES.md`](DOMAIN-RULES.md):
+Phase 19.4 should not persist a client-authored "effective set" number on `workout_sets`. The source workout rows remain the evidence and the versioned read model derives the interpretation.
 
-- standard completed Working/Failure set: `1.0`;
-- Pyramid: `1.0` per completed stage;
-- Drop Set: first eligible stage `1.0`, each valid lower-load continuation `0.5`, logical Drop Set cap `2.0`;
-- warmup/incomplete/cancelled-session work: `0`.
+### Phase 19.5 personalized set-quality calculation
 
-The existing raw rows remain the source evidence. The browser must not write derived muscle-volume totals as if they were authoritative facts. Authenticated read models/RPCs should derive rolling 7-day and 28-day results server-side and return the methodology version used.
+The Phase 19.5 calculation/read model derives set-stimulus equivalents from completed workout data **before** applying exercise-to-muscle contribution weights.
 
-Raw repetitions and stage-summed tonnage remain available for ordinary workload/history analytics, but Phase 19 does not persist a linear `reps` or `sets × reps × load` conversion as the muscle-volume score.
+For weighted exercises with an established history, the engine reconstructs the best valid same-exercise Epley-compatible baseline that existed **before the workout being scored**. It uses the methodology's 180-day primary history window and confidence rules from [`DOMAIN-RULES.md`](DOMAIN-RULES.md). Future performance must never be allowed to rewrite an earlier workout's baseline.
 
-Phase 19.9 introduces compact frozen monthly training snapshots. Those snapshots should retain the methodology version plus the minimum aggregate data required for stable historical reports after future methodology revisions or eventual raw-data archival. Private monthly PDF artifacts are separate from the structured snapshot; only the current PDF is retained per user after verified replacement.
+Current persistence already contains the evidence needed for this reconstruction:
+
+- `exercise_progress_observations` carries user, exercise, workout, metric value, weight, reps, scoring date, validity, and creation time;
+- `exercise_progress` carries the current personal-best snapshot but is not sufficient by itself for historical baseline reconstruction;
+- `workout_sessions`, `workout_exercises`, `workout_sets`, and `workout_set_segments` remain the raw workout source of truth.
+
+The calculation must therefore prefer chronological observations/raw workout evidence rather than reading only today's `exercise_progress.best_value` and retroactively applying it to old sets.
+
+The derived set-quality result should carry at least:
+
+- numeric set-stimulus credit (`0`, `0.5`, or `1.0` for a standard v1 work bout);
+- confidence (`HIGH`, `MEDIUM`, `LOW`/provisional);
+- source/method (`PERSONAL_BASELINE`, `EXPLICIT_FAILURE`, `PROVISIONAL`, or equivalent implementation-safe enum/text);
+- methodology version.
+
+These are calculation/report semantics; the exact persistence shape is decided in Phase 19.4. The browser must not be able to author or override authoritative derived volume.
+
+### Advanced-set derivation
+
+Advanced-set scoring uses the same logical parent/segment persistence introduced in Phase 18.7A.
+
+- **Pyramid:** every completed stage is evaluated through the ordinary set-quality layer, then stage credits are summed. A stage can contribute `0`, `0.5`, or `1.0`; the parent remains one logical workout set.
+- **Drop Set:** the first stage is scored through ordinary set quality. Valid lower-load continuation stages are fatigue-aware continuations rather than fresh-baseline sets. `muscle-volume-v1` uses `first_stage_credit × min(1 + 0.5 × valid_continuations, 2.0)` where each valid continuation has at least 2 reps, is contiguous in segment order, and lowers load from the immediately preceding stage.
+- **Superset:** no multiplier/penalty; underlying sets are evaluated normally.
+
+A first-stage Drop credit of `0` makes the chain's set-stimulus credit `0`; a first-stage credit of `0.5` with two valid continuations yields `1.0`; a first-stage credit of `1.0` with two valid continuations yields the v1 maximum `2.0`.
+
+### Muscle aggregation and read model
+
+After set-stimulus derivation:
+
+`muscle effective sets = set-stimulus equivalents × exercise-to-muscle contribution weight`
+
+Contribution rows are versioned. A direct mapping uses `1.0`; a meaningful indirect mapping uses `0.5`; absent/insignificant muscles have no contribution row. Multiple muscles may receive direct `1.0` mappings when the movement justifies it.
+
+Authenticated Phase 19 read models/RPCs should derive rolling 7-day and 28-day results server-side and return at least:
+
+- methodology version;
+- effective sets per reportable muscle;
+- direct and indirect components;
+- benchmark/status;
+- personalized/provisional set-quality confidence coverage;
+- useful raw set/stage counts for explanation.
+
+Raw repetitions and stage-summed tonnage remain available for ordinary workload/history analytics but are not linearly converted into hypertrophy volume.
+
+### Historical snapshots and versioning
+
+Phase 19.9 introduces compact frozen monthly training snapshots. Those snapshots should retain the methodology version plus already-calculated aggregate data required for stable historical reports after future methodology revisions or eventual raw-data archival.
+
+Private monthly PDF artifacts are separate from the structured snapshot; only the current PDF is retained per user after verified replacement.
+
+A later volume methodology version may change baseline windows, set-quality bands, Drop coefficients, exercise mappings, or benchmark bands. It must not silently reinterpret a frozen historical report.
+
+### Schema/type/test requirements
 
 Any schema introduced for Phase 19 requires regenerated public database types and matching database/TypeScript tests before release.
+
+Phase 19.2 itself is specification-only: it does not add schema, functions, or migrations. Phase 19.3 supplies the reviewed contribution/eligibility matrix; Phase 19.4 then introduces versioned persistence; Phase 19.5 implements the calculation/read model.
 
 ## Weekly goals and badges
 
