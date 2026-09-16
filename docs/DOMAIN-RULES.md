@@ -1,6 +1,6 @@
 # Domain Rules — Source of Truth
 
-This document defines the locked **v0.3 / `lifting-v1`** scoring model and the planned Phase 19 muscle-volume analytics contract. Tests and persistence code may be more detailed, but they must not contradict these rules.
+This document defines the locked **v0.3 / `lifting-v1`** scoring model and the Phase 19 muscle-volume analytics contract. Tests and persistence code may be more detailed, but they must not contradict these rules.
 
 ## Product identity
 
@@ -215,78 +215,253 @@ The client may read its derived scoring/progression state but may not directly w
 
 Badges remain non-XP initially. They can recognize PRs, weekly goal streaks, milestones, and training behavior without becoming another scoring loophole.
 
-## 11. Phase 19 muscle-volume intelligence — planned, non-XP
+## 11. Phase 19 muscle-volume intelligence — locked `muscle-volume-v1`, non-XP
 
-Phase 19 introduces a separate analytics methodology for estimating muscle-group training volume. **It does not change `lifting-v1` XP, workout qualification, progression XP, or completed-set counts.**
+Phase 19 introduces a separate analytics methodology for estimating muscle-group training volume. **It does not change `lifting-v1` XP, workout qualification, progression XP, or logical completed-set counts.**
 
-The v1 methodology is intentionally set-based. The evidence base supports weekly set volume as the most practical hypertrophy-oriented dose measure, while raw repetitions and `sets × reps × load` describe external work but do not map cleanly or linearly to muscle growth.
+The methodology is set-based because sufficiently hard sets are the most practical supported unit for hypertrophy-oriented volume. Raw repetitions and `sets × reps × load` remain useful workload measures, but neither should be converted linearly into hypertrophy credit.
 
-### Core calculation
+### 11.1 Core calculation
 
 The internal unit is a **set-stimulus equivalent**. The user-facing aggregate is **effective sets** for a muscle group.
 
 `muscle effective sets = set-stimulus equivalents × exercise-to-muscle contribution weight`
 
-Credits are additive across eligible work in the reporting window. Diminishing returns are interpreted by the benchmark/recommendation layer; individual sets are not progressively discounted merely because they occurred later in a workout or week.
+Credits are additive within a reporting window. Diminishing returns are interpreted by the benchmark/recommendation layer rather than progressively discounting every later set in the same workout or week.
 
-### Set-stimulus equivalents
+A logged `WORKING` label alone does **not** guarantee `1.0` set-stimulus equivalent. Phase 19.2 locks a personalized set-quality layer so an obviously submaximal single does not score the same as a demanding multi-repetition set for the same user.
 
-| Work structure | Phase 19 v1 credit |
+### 11.2 Personal set-quality proxy
+
+Top Set may use previous performance to estimate whether a set was close to the user's **demonstrated exercise capability**, but this is a **baseline-relative performance proxy, not factual RIR**.
+
+For `WEIGHT_REPS`, the preferred personalized baseline is the best valid pre-workout Epley observation for the same canonical exercise from prior completed strength workouts:
+
+`baseline_e1rm = max(weight × (1 + reps / 30))`
+
+Baseline rules:
+
+- use only observations that occurred **before** the workout being scored; future workouts must never reinterpret an earlier set;
+- primary baseline window = preceding **180 days**;
+- at least **2 prior completed sessions** are required before the baseline is considered established;
+- `HIGH` confidence requires at least 3 prior valid sessions with at least one within the preceding 90 days;
+- `MEDIUM` confidence requires at least 2 prior valid sessions within 180 days;
+- otherwise the set uses a `LOW`/provisional fallback;
+- only comparable canonical exercise identity and compatible bodyweight/loading mode may share a baseline.
+
+For a weighted set with 1–30 repetitions, calculate a relative performance index:
+
+`performance_index = current_epley_index / baseline_e1rm`
+
+where `current_epley_index = weight × (1 + reps / 30)`.
+
+The 1–12-repetition range has the strongest compatibility with Top Set's existing E1RM model. Values from 13–30 repetitions may still inform the relative proxy, but confidence is downgraded one level because high-repetition 1RM prediction is less precise.
+
+For plain `BODYWEIGHT_REPS`, use the best pre-workout repetitions from compatible prior completed sessions as the personal capability baseline:
+
+`performance_index = current_reps / recent_best_reps`
+
+Added-weight and assisted modes must not borrow an unweighted bodyweight baseline unless Phase 19.3 explicitly normalizes that exercise/mode.
+
+### 11.3 Set-quality credit
+
+For an established personalized baseline, `muscle-volume-v1` uses deliberately coarse tiers rather than pretending to know exact RIR:
+
+| Baseline-relative performance | Set-stimulus credit |
 |---|---:|
-| Completed standard `WORKING` set | `1.0` |
-| Completed standard `FAILURE` set | `1.0` |
-| `WARMUP` | `0` |
-| Incomplete set/stage | `0` |
-| Work in a cancelled/non-completed session | `0` |
-| Ascending/Full Pyramid | `1.0` per completed stage |
-| Drop Set | `1.0` first eligible stage + `0.5` per eligible continuation stage, capped at `2.0` for the logical Drop Set |
+| `performance_index >= 0.90` | `1.0` |
+| `0.80 <= performance_index < 0.90` | `0.5` |
+| `performance_index < 0.80` | `0` |
 
-A `FAILURE` set receives no bonus above a normal working set. Current evidence does not support treating failure as automatically more hypertrophic than sufficiently hard non-failure work.
+These thresholds are a **Top Set v1 calibration**, not a claim that research has validated an exact biological conversion from E1RM percentage to hypertrophy. The coarse tiers are intentionally conservative and methodology-versioned.
 
-Pyramid stages are interpreted as **set-like work bouts grouped into one logical Top Set parent for workflow/history compatibility**. A five-stage Pyramid can therefore contribute five set-stimulus equivalents to Phase 19 analytics even though it remains one logical parent set for existing completed-set/XP semantics.
+Additional rules:
 
-A Drop Set is different: continuation stages are performed after a load reduction with minimal recovery and are not treated as fully recovered independent sets. The first eligible stage contributes `1.0`; each additional eligible load-reduction stage contributes `0.5`; total credit is capped at `2.0`. For v1, a continuation stage earns credit only when it has positive repetitions and a lower load than the immediately preceding stage. Extra logged Drop stages may still contribute to ordinary reps/tonnage analytics after the effective-set cap is reached.
+- a one-repetition set is capped at `0.5` set-stimulus equivalent in v1, even when it is very heavy;
+- an explicitly logged completed `FAILURE` set with at least 2 repetitions receives `1.0` credit because the user supplied stronger effort evidence than the inferred proxy;
+- a one-repetition `FAILURE` set remains capped at `0.5`;
+- `WARMUP`, incomplete work, and work inside cancelled/non-completed sessions contribute `0`;
+- a standard set above 30 repetitions is capped at `0.5` unless it is explicitly logged as `FAILURE`, because the baseline model is not intended to fabricate high-repetition RIR;
+- the scoring engine must retain the numeric credit **and** confidence/source metadata so reports can distinguish personalized high-confidence volume from provisional volume.
 
-The Drop Set conversion is a **conservative Top Set v1 calibration, not an experimentally proven universal equivalence**. Current trials/meta-analyses support Drop Sets as a time-efficient hypertrophy method and show broadly comparable long-term outcomes to traditional training, but they do not establish a precise conversion from each no-rest drop stage to a conventional rested set. The rule therefore must remain methodology-versioned and revisable.
+### 11.4 Provisional fallback for new/sparse-history users
 
-Supersets do not receive a volume bonus or penalty. Each underlying exercise's eligible sets are evaluated using the same rules above.
+Top Set must still produce useful analytics before a personalized baseline exists.
 
-### Repetitions, load, and effort
+For `LOW`-confidence/provisional sets:
 
-- Raw repetitions are **not** linearly converted into effective sets. Twenty repetitions are not automatically twice the hypertrophy dose of ten repetitions.
-- Tonnage/volume-load (`sets × reps × load`) remains useful descriptive workload data but is **not** the primary muscle-volume score.
-- Load does not linearly scale hypertrophy credit; research shows hypertrophy can be achieved across a broad loading range when effort is sufficient.
-- Reps and load remain inputs for data validity, advanced-set structure, progression analytics, and descriptive report breakdowns.
-- Phase 19 v1 must not infer RIR/RPE from reps and load. Top Set does not currently capture reliable set-level proximity-to-failure data, and the exact continuous relationship remains uncertain.
-- A later methodology version may incorporate optional RIR/RPE or other validated effort data without rewriting historical reports.
+- completed standard `WORKING`, 2–30 reps: `1.0` provisional credit;
+- completed standard `WORKING`, exactly 1 rep: `0.5` provisional credit;
+- completed standard `WORKING`, >30 reps: `0.5` provisional credit;
+- completed `FAILURE`, 2+ reps: `1.0` provisional credit;
+- completed `FAILURE`, 1 rep: `0.5` provisional credit.
 
-### Exercise-to-muscle contribution
+Provisional volume may be displayed, but later recommendation logic must not present high-confidence prescriptive conclusions when too much of the reporting window depends on provisional scoring.
 
-For each volume-eligible canonical exercise, Phase 19 maps the exercise independently to one or more reportable muscle groups:
+### 11.5 Advanced-set scoring
+
+Logical workout structure and muscle-volume scoring remain separate concepts.
+
+**Pyramids**
+
+Each completed Pyramid stage is evaluated through the same set-quality rules above and contributes its own stage credit. Therefore:
+
+`pyramid set-stimulus equivalents = sum(stage_quality_credit)`
+
+A five-stage Pyramid may contribute anywhere from `0` to `5.0` set-stimulus equivalents depending on the actual stage performances. The Pyramid remains one logical `workout_set` for existing Phase 18 history/workflow/XP semantics.
+
+**Drop Sets**
+
+Drop continuations occur under accumulated fatigue, so they must not be compared to a fresh/rested personal baseline as if they were independent ordinary sets.
+
+Score the first Drop stage using the normal set-quality method, then apply conservative continuation credit:
+
+`drop set-stimulus equivalents = first_stage_credit × min(1 + 0.5 × valid_continuations, 2.0)`
+
+A valid continuation must:
+
+- follow the first stage contiguously in segment order;
+- have at least 2 repetitions;
+- use a lower load than the immediately preceding stage.
+
+Consequences:
+
+- first stage `1.0` + two valid drops -> `2.0` total;
+- first stage `0.5` + two valid drops -> `1.0` total;
+- first stage `0` -> the Drop chain contributes `0` effective-set credit;
+- additional stages beyond the `2.0` multiplier cap still contribute to raw repetitions/tonnage but not additional hypertrophy set credit.
+
+The continuation coefficient and cap are a conservative Top Set calibration. Current Drop Set research supports the method as time-efficient and broadly comparable with traditional training for hypertrophy, but it does not establish a universal one-drop-stage-to-one-rested-set conversion.
+
+**Supersets**
+
+Supersets receive no volume bonus or penalty. The underlying eligible sets are scored normally for their own exercises.
+
+### 11.6 Repetitions, load, tonnage, and effort
+
+- Raw repetitions are not linearly converted into effective sets.
+- Tonnage/volume-load (`sets × reps × load`) remains descriptive workload, not the primary hypertrophy score.
+- Heavier load does not automatically earn more hypertrophy credit; a hard low-repetition set can score highly while an easy heavy or light set can score partially or zero.
+- Top Set does **not** display the baseline-relative proxy as an RIR number.
+- If explicit RIR/RPE is added later, a future methodology version may use it as stronger evidence without rewriting frozen historical reports.
+- The current proxy should be described to users as something like **set quality** or **relative effort**, never as measured/inferred RIR.
+
+### 11.7 Exercise-to-muscle contribution
+
+For each volume-eligible canonical exercise, Phase 19.3 maps the exercise independently to one or more reportable muscle groups:
 
 - direct/primary contribution: `1.0`;
 - meaningful indirect/secondary contribution: `0.5`;
-- no meaningful contribution: `0`.
+- no meaningful contribution: absent mapping / `0`.
 
-Example: if a three-stage Bench Press Drop Set earns the v1 maximum `2.0` set-stimulus equivalents, a mapping of Chest `1.0`, Triceps `0.5`, and Shoulders `0.5` produces Chest `2.0`, Triceps `1.0`, and Shoulders `1.0` effective sets.
+Multiple muscles may legitimately receive direct `1.0` credit when the movement meaningfully trains more than one target muscle. Contribution weights are per-muscle exposure; they do **not** need to sum to `1.0` across the exercise.
 
-The direct/indirect fractional model is distinct from `exercise_catalog.primary_muscle_group`; primary muscle remains the picker/browsing taxonomy, while contribution mappings drive muscle-volume analytics.
+Example: if a Bench Press Drop Set earns `2.0` set-stimulus equivalents, a mapping of Chest `1.0`, Triceps `0.5`, and Shoulders `0.5` produces Chest `2.0`, Triceps `1.0`, and Shoulders `1.0` effective sets.
 
-### Eligibility and versioning
+The contribution model is independent from `exercise_catalog.primary_muscle_group`, which remains a picker/browsing taxonomy.
 
-- `WEIGHT_REPS` and `BODYWEIGHT_REPS` resistance work can be volume-eligible by default once its contribution mapping is approved.
-- `DURATION` and `OTHER` exercises require explicit inclusion/exclusion rather than automatic set-equivalent scoring.
-- Every report must identify the methodology version used for set credit, exercise-muscle mappings, and benchmarks.
-- Frozen monthly snapshots preserve the methodology version so later scientific/product revisions do not silently reinterpret an old report.
+### 11.8 Exercise eligibility
 
-### Evidence basis for the v1 method
+- `WEIGHT_REPS` and plain `BODYWEIGHT_REPS` resistance exercises are eligible once their Phase 19.3 contribution mapping is approved.
+- `DURATION` and `OTHER` exercises are excluded by default and require explicit Phase 19.3 inclusion with a justified scoring rule.
+- Assisted/added-weight bodyweight modes require explicit compatibility rules rather than silently borrowing plain-bodyweight baselines.
+- No exercise becomes volume-eligible merely because it exists in the catalogue.
 
-The Phase 19 methodology is anchored to the following evidence rather than raw-tonnage heuristics:
+### 11.9 Weekly and 28-day benchmark bands
 
-- Pelland et al., *Sports Medicine* (2026), PMID `41343037`, DOI `10.1007/s40279-025-02344-w`: weekly set volume showed a positive dose-response with diminishing returns, and fractional counting of indirect work (`0.5`) had the strongest relative model evidence.
-- Currier et al., ACSM Position Stand, *Medicine & Science in Sports & Exercise* (2026), DOI `10.1249/MSS.0000000000003897`: higher weekly set volume improves hypertrophy; load, failure, and set structure do not consistently justify simple proportional hypertrophy multipliers.
-- Baz-Valle et al., *Journal of Strength and Conditioning Research* (2021), PMID `30063555`, DOI `10.1519/JSC.0000000000002776`: number of sufficiently hard sets is an adequate practical hypertrophy-volume measure under common resistance-training conditions.
-- Nunes et al., *Sports Medicine* (2021), PMID `33826122`, DOI `10.1007/s40279-021-01449-2`, and Hammert et al., *Physiological Measurement* (2024), PMID `39178897`: reps and volume-load quantify external work but have important limitations as direct proxies for hypertrophic stimulus.
-- Havers et al., *Sports Medicine - Open* (2026), PMID `41920484`, DOI `10.1186/s40798-026-01012-1`, together with Sødal et al. (2023), PMID `37523092`: Drop Sets and traditional training produce broadly comparable chronic hypertrophy outcomes, but the literature does not establish one universal per-drop-stage set conversion.
-- Cardozo & Destro (2023), PMID `37330772`, DOI `10.1016/j.jbmt.2023.04.070`, and Angleri et al. (2017), PMID `28130627`: pyramid systems are not superior to volume-matched traditional training; their stages are set-like bouts with changing load/repetition targets rather than a reason to award an extra technique bonus.
-- Robinson et al., *Sports Medicine* (2024), PMID `38970765`, DOI `10.1007/s40279-024-02069-2`: proximity to failure appears relevant to hypertrophy, but the exact continuous relationship remains uncertain, supporting a future optional effort-aware revision rather than fabricated RIR inference in v1.
+Benchmarks describe general hypertrophy-oriented training-volume ranges, not medical limits or guarantees of optimal growth. They are applied to **combined direct + fractional indirect effective sets** and carry confidence labels because muscle-specific evidence is uneven.
+
+| Muscle group | 7-day target | Midpoint | High-review above | Evidence confidence |
+|---|---:|---:|---:|---|
+| CHEST | 10–18 | 14 | 20 | Moderate |
+| BACK | 12–20 | 16 | 22 | Moderate |
+| SHOULDERS | 10–16 | 12 | 18 | Moderate |
+| BICEPS | 10–16 | 12 | 18 | High |
+| TRICEPS | 12–20 | 16 | 22 | High |
+| QUADS | 12–18 | 14 | 20 | High |
+| HAMSTRINGS | 10–16 | 12 | 18 | Moderate-low |
+| GLUTES | 10–16 | 12 | 18 | Moderate |
+| CALVES | 10–16 | 12 | 18 | Moderate-high |
+| FOREARMS_GRIP | 6–12 | 8 | 14 | Low |
+| CORE | 6–12 | 8 | 14 | Low |
+| OBLIQUES | 4–10 | 6 | 12 | Low |
+| NECK | 6–9 | 7 | 10 | Low-moderate |
+
+`FULL_BODY` and `OTHER` do not receive benchmark bands.
+
+The 28-day benchmark is exactly `4 ×` the corresponding 7-day values in v1.
+
+Volume status:
+
+- `NO_DATA`: no eligible mapped training evidence exists for the requested window;
+- `LOW`: effective volume is below 50% of the target lower bound;
+- `BELOW_TARGET`: at least 50% of the lower bound but still below target;
+- `ON_TARGET`: within the target band;
+- `ABOVE_TARGET`: above the target band but not beyond high-review threshold;
+- `HIGH_REVIEW`: above the high-review threshold.
+
+`HIGH_REVIEW` means **review in context**, not automatically "too much." Phase 19.8 may distinguish high-but-productive training from high volume accompanied by stagnation/decline.
+
+If training history exists but effective volume for a muscle is zero, report `LOW` rather than `NO_DATA`.
+
+### 11.10 Reporting windows and confidence
+
+Rolling analytics:
+
+- 7-day window = anchor local date and previous 6 local dates;
+- 28-day window = anchor local date and previous 27 local dates;
+- default anchor = the user's current local date derived from the profile timezone;
+- rolling views use the active methodology version.
+
+Completed-period reports:
+
+- weekly report = completed Monday–Sunday local calendar week;
+- monthly report = completed local calendar month;
+- frozen monthly snapshots store the methodology version and the already-calculated aggregate so future methodology changes do not rewrite the historical report.
+
+Report payloads should expose, at minimum:
+
+- total effective sets per muscle;
+- direct and indirect effective-set components;
+- raw eligible logical-set/stage counts as descriptive context;
+- target/status for 7- or 28-day scope;
+- methodology version;
+- proportion of volume derived from `HIGH`, `MEDIUM`, and `LOW`/provisional set-quality evidence.
+
+Recommendations in Phase 19.8 must return `INSUFFICIENT_DATA` when baseline/contribution coverage is too weak for a confident prescriptive conclusion.
+
+### 11.11 Versioning
+
+The first implementation version is:
+
+`muscle-volume-v1`
+
+The methodology version owns, as one coherent contract:
+
+- personalized set-quality thresholds and fallback rules;
+- baseline window/confidence rules;
+- advanced-set formulas;
+- exercise-to-muscle contribution mappings;
+- muscle benchmark bands and status thresholds.
+
+A later methodology revision creates a new version. It must not silently reinterpret frozen monthly reports.
+
+### 11.12 Evidence basis for `muscle-volume-v1`
+
+The methodology is anchored to the following evidence while keeping product-specific coefficients explicit:
+
+- Pelland et al., *Sports Medicine* (2026), PMID `41343037`, DOI `10.1007/s40279-025-02344-w`: weekly fractional set volume showed a positive hypertrophy dose-response with diminishing returns; counting meaningful indirect work as `0.5` had the strongest relative model evidence.
+- Currier et al., ACSM Position Stand, *Medicine & Science in Sports & Exercise* (2026), PMID `41843416`, DOI `10.1249/MSS.0000000000003897`: hypertrophy is enhanced by higher weekly set volume; load, momentary failure, and set structure do not justify simple linear multipliers.
+- Baz-Valle et al., *Journal of Strength and Conditioning Research* (2021), PMID `30063555`, DOI `10.1519/JSC.0000000000002776`: sufficiently hard sets are a practical hypertrophy-volume unit under common resistance-training conditions.
+- Baz-Valle et al. (2022), PMID `35291645`: 12–20 weekly sets per muscle was a reasonable standard recommendation in young trained men, with muscle-specific uncertainty.
+- Robinson et al., *Sports Medicine* (2024), PMID `38970765`, DOI `10.1007/s40279-024-02069-2`: hypertrophy tended to increase as sets terminated closer to failure, but the exact continuous RIR relationship remains uncertain.
+- Refalo et al. (2023), PMID `36334240`, and Currier et al. (2026): failure itself does not warrant an automatic hypertrophy bonus above sufficiently hard non-failure work.
+- Hughes et al. (2020), PMID `33337690`, Mansfield et al. (2020), PMID `32881842`, and Halperin/related RIR-prediction literature: RIR estimation accuracy varies with load and proximity to failure, supporting Top Set's decision not to label a history-derived proxy as factual RIR.
+- Individualized RIR/velocity research (e.g. PMID `38418370`, `40125884`) generally performs better than generalized relationships when objective velocity data are available, supporting personalization in principle while also underscoring that Top Set should remain conservative without velocity sensors.
+- Schoenfeld et al. (2017), PMID `28834797`, Lopez et al. (2021), PMID `33433148`, and Carvalho et al. (2022), PMID `35015560`: hypertrophy can occur across a broad loading range when effort is sufficient; therefore load or raw rep count should not be converted linearly into growth credit.
+- Schoenfeld et al. (2017), PMID `27928218`, and Mangine/related low-rep work support meaningful hypertrophy from hard 2–4-repetition training, while the evidence base for isolated singles as an equal per-set hypertrophy dose is much thinner; the v1 single-rep `0.5` cap is therefore an explicit conservative product calibration.
+- Havers et al., *Sports Medicine - Open* (2026), PMID `41920484`, DOI `10.1186/s40798-026-01012-1`, together with Sødal et al. (2023), PMID `37523092`: Drop Sets and traditional training show broadly comparable chronic hypertrophy outcomes and strong time efficiency, but no universal per-drop-stage conversion is established.
+- Cardozo & Destro (2023), PMID `37330772`, DOI `10.1016/j.jbmt.2023.04.070`: pyramid systems are not superior to volume-matched traditional training; their stages should be evaluated as work bouts rather than receive a technique bonus.
+- Kassiano et al. (2024), PMID `38684187`, and Krause Neto et al. (2025), PMID `40276368`, help inform calf/glute evidence confidence but do not justify pretending all muscle-specific benchmark ranges are equally certain.
+
+The `0.90` / `0.80` performance-index tiers, 180-day baseline window, single-rep cap, Drop Set continuation coefficient/cap, and muscle-specific high-review cutoffs are **methodology-versioned Top Set decisions** informed by the evidence above; they are not presented as universally validated physiological constants.
