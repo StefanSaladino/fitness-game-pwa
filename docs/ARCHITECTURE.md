@@ -72,10 +72,18 @@ Canonical exercise identity is `exercise_catalog.id`; aliases/search labels must
 
 Phase 19 introduces a **separate, non-XP analytics methodology** for estimating muscle-group training volume. It must not be conflated with existing `lifting-v1` workout qualification, exercise-completion XP, progression XP, or logical completed-set counts.
 
+The locked v1 methodology identifier is:
+
+`muscle-volume-v1`
+
 The planned data flow is:
 
 ```text
 completed workout data
+        ↓
+pre-workout personal exercise baseline
+        ↓
+baseline-relative set-quality proxy + confidence
         ↓
 variant-aware set-stimulus equivalence
         ↓
@@ -88,19 +96,47 @@ rolling 7/28-day read model
 weekly/monthly reports + frozen monthly snapshots
 ```
 
-The initial methodology contract is defined in [`DOMAIN-RULES.md`](DOMAIN-RULES.md). In summary:
+The authoritative formula contract lives in [`DOMAIN-RULES.md`](DOMAIN-RULES.md). Architectural consequences are:
 
-- standard completed Working and Failure sets contribute `1.0` set-stimulus equivalent;
-- warmups, incomplete work, and cancelled/non-completed-session work contribute `0`;
-- each completed Pyramid stage contributes `1.0` set-stimulus equivalent for muscle-volume analytics even though the Pyramid remains one logical parent set for Phase 18 workflow/history/XP semantics;
-- a Drop Set contributes `1.0` for the first eligible stage plus `0.5` for each valid lower-load continuation stage, capped at `2.0` in methodology v1;
-- Supersets receive no extra volume multiplier or penalty; their underlying eligible work is evaluated normally;
-- raw repetitions and tonnage/volume-load remain descriptive workload measures and are not linearly converted into effective hypertrophy sets;
-- Phase 19 v1 does not infer RIR/RPE from reps and load.
+- a `WORKING` label alone is not enough to guarantee `1.0` hypertrophy-volume credit;
+- weighted set quality is personalized against the user's **prior** same-exercise performance history, never future data;
+- the personalized performance signal is a **set-quality proxy**, not a factual RIR estimate;
+- `muscle-volume-v1` uses coarse full/partial/minimal set-stimulus tiers rather than false continuous precision;
+- the baseline calculation must carry confidence/source metadata so downstream reports know how much volume is personalized vs provisional;
+- new/sparse-history users receive provisional volume rather than fabricated individualized certainty;
+- Pyramid stages are independently evaluated through the quality layer even though the Pyramid remains one logical workout set;
+- Drop Set continuations use a fatigue-aware fractional formula based on first-stage quality and valid lower-load continuation stages; they are not independently compared to a fresh baseline;
+- Supersets receive no multiplier or penalty;
+- raw repetitions and tonnage remain descriptive workload measures rather than linear hypertrophy multipliers.
 
-Exercise-to-muscle mappings remain independent from `exercise_catalog.primary_muscle_group`. The picker can continue sorting by one primary muscle while the volume engine attributes direct and meaningful indirect work to multiple reportable muscles.
+Exercise-to-muscle mappings remain independent from `exercise_catalog.primary_muscle_group`. The picker can continue sorting by one primary muscle while the volume engine attributes direct and meaningful indirect work to multiple reportable muscles. Multiple muscles may receive direct `1.0` credit when justified; contribution weights are muscle exposures, not pieces of a sum constrained to 1.0.
 
-The browser should not independently recompute authoritative muscle-volume methodology from raw rows. Versioned server-side/database read boundaries should produce the report model, including the methodology version, so clients render one consistent interpretation and future methodology changes do not silently rewrite historical meaning.
+### Personal-baseline boundary
+
+The volume engine must reconstruct the baseline that existed **before the workout being scored**. This prevents look-ahead bias and prevents a future PR from silently changing the meaning of an older set.
+
+For weighted work, Phase 19.2 locks a recent Epley-compatible exercise baseline using prior valid observations and a primary 180-day history window. For plain bodyweight work, prior same-exercise repetition performance forms the baseline. Exact qualification/confidence rules are in `DOMAIN-RULES.md`.
+
+The browser should not independently derive these baselines from whatever history happens to be loaded on screen. The versioned server/database read boundary owns the calculation.
+
+### Advanced-set boundary
+
+The advanced-set persistence model remains unchanged:
+
+- Pyramid: one logical parent, ordered stages; Phase 19 sums the quality credit of its completed stages;
+- Drop Set: one logical parent, ordered stages; Phase 19 scores first-stage quality then applies the methodology-versioned continuation multiplier/cap;
+- no Phase 19 calculation creates extra `workout_sets` rows or changes XP semantics.
+
+### Read-model boundary
+
+The browser must not independently recompute authoritative muscle-volume methodology from raw rows. Versioned server-side/database read boundaries should produce the report model and return at least:
+
+- methodology version;
+- effective sets by muscle;
+- direct vs indirect components;
+- benchmark status;
+- set-quality confidence coverage;
+- enough descriptive raw counts to explain the result without exposing implementation-only internals.
 
 Frozen monthly snapshots retain the methodology version used when the report was produced. Later evidence-based revisions can therefore coexist with historical reports rather than retroactively mutating them.
 
