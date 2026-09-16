@@ -54,8 +54,8 @@ Historical details remain in the phase records and `CHANGELOG.md`. They are not 
 | Phase | Status | Goal |
 |---|---|---|
 | 19.0 | **DONE** | Exercise Catalogue Expansion — add useful common commercial-gym exercises, especially machines, without adding new picker categories |
-| 19.1 | **IN PROGRESS** | Exercise Catalogue Audit — normalize names, aliases, measurement types, primary muscles, and duplicates |
-| 19.2 | **PLANNED** | Volume Intelligence specification lock — evidence-backed effective-set methodology, standard/failure/drop/pyramid credit, benchmarks, eligibility, contribution semantics, report semantics, and methodology version |
+| 19.1 | **DONE** | Exercise Catalogue Audit — normalize names, aliases, measurement types, primary muscles, and duplicates; deploy high-confidence corrections and preserve ambiguous cases for explicit later review |
+| 19.2 | **PLANNED** | Volume Intelligence specification lock — evidence-backed effective-set methodology, personalized set-quality rules, standard/failure/drop/pyramid credit, benchmarks, eligibility, contribution semantics, report semantics, and methodology version |
 | 19.3 | **PLANNED** | Complete exercise-to-muscle contribution matrix with direct/indirect credit |
 | 19.4 | **PLANNED** | Versioned database foundation for methodology, mappings, benchmarks, RLS, and tests |
 | 19.5 | **PLANNED** | Versioned set-stimulus/effective-volume calculation and authenticated rolling 7/28-day read model |
@@ -64,7 +64,7 @@ Historical details remain in the phase records and `CHANGELOG.md`. They are not 
 | 19.8 | **PLANNED** | Performance-aware volume recommendations using existing progression signals |
 | 19.9 | **PLANNED** | Weekly/monthly reporting, downloadable monthly PDF, data lifecycle/retention, capacity validation, regression, documentation, and production release |
 
-### Phase 19.0 locked catalogue rules
+### Phase 19.0–19.1 locked catalogue rules
 
 - **Muscle group is the only exercise-picker sorting/filtering taxonomy.**
 - Do not add new picker categories or equipment hierarchies.
@@ -73,6 +73,7 @@ Historical details remain in the phase records and `CHANGELOG.md`. They are not 
 - Plate-loaded, selectorized, lever, converging, manufacturer, or brand distinctions do not become categories.
 - Brand-specific duplicates are avoided; aliases capture common alternate names where useful.
 - Add exercises for useful real-world commercial-gym coverage, not to meet an arbitrary catalogue-size target.
+- Phase 19.1 deployed only high-confidence normalization. Ambiguous cases such as adductor taxonomy, back-extension family primary-muscle conventions, generic-vs-equipment-specific curl/extension naming, Machine Chest Fly vs Pec Deck, and assisted Pull-Up/Dip measurement semantics remain intentionally unresolved rather than guessed.
 - Muscle contribution metadata is deferred until Phase 19.3 after the catalogue audit and methodology lock.
 
 ### Locked volume-intelligence architecture
@@ -80,11 +81,12 @@ Historical details remain in the phase records and `CHANGELOG.md`. They are not 
 - Primary muscle group remains the exercise browsing/sorting taxonomy; it is not the secondary-muscle scoring engine.
 - Phase 19 uses **set-stimulus equivalents** internally and presents muscle-group totals as **effective sets**. This is analytics, not XP.
 - Exercise-to-muscle contributions are modeled independently so one exercise can contribute to multiple reportable muscle groups.
-- Direct muscle contribution uses `1.0`; meaningful indirect/secondary contribution uses `0.5` in the v1 methodology.
-- A completed standard `WORKING` set contributes `1.0` set-stimulus equivalent. A completed standard `FAILURE` set also contributes `1.0`; failure receives no automatic hypertrophy bonus.
+- Direct muscle contribution uses `1.0`; meaningful indirect/secondary contribution uses `0.5` in the v1 methodology unless Phase 19.2 evidence review revises the mapping contract.
+- A completed `WORKING`/`FAILURE` label alone is **not sufficient** to guarantee full `1.0` hypertrophy credit. Phase 19.2 must define set-quality/eligibility rules so obvious low-stimulus work does not score like a hard hypertrophy-relevant set.
+- User history may be used to derive a personalized **set-quality/effort proxy** relative to demonstrated performance, but Top Set must not present that proxy as factual RIR unless the user explicitly records RIR/RPE.
 - Warmups, incomplete work, and work from cancelled/non-completed sessions contribute `0` effective sets.
-- **Pyramids:** each completed Pyramid stage contributes `1.0` set-stimulus equivalent for muscle-volume analytics. The Pyramid still remains one logical parent set for the existing Phase 18 workflow/history/XP contract.
-- **Drop Sets:** the first eligible stage contributes `1.0`; each subsequent positive-rep stage that reduces load from the immediately preceding stage contributes `0.5`; a logical Drop Set is capped at `2.0` set-stimulus equivalents in v1. This is a conservative, methodology-versioned Top Set calibration because current Drop Set research supports the method's effectiveness but does not establish a universal stage-to-straight-set conversion.
+- **Pyramids:** stages are evaluated as distinct set-like work bouts for muscle-volume analytics while the Pyramid remains one logical parent set for the existing Phase 18 workflow/history/XP contract. Final stage credit is subject to the Phase 19.2 set-quality rules rather than blindly awarding `1.0` to every logged stage.
+- **Drop Sets:** continuation stages are not treated as ordinary fully rested sets. The current v1 direction is full credit for an eligible first stage and conservative fractional credit for valid lower-load continuations, with an advanced-set cap; Phase 19.2 must finalize the coefficients after incorporating the set-quality model.
 - Supersets receive no volume bonus or penalty; the underlying sets are scored normally for their exercises.
 - Raw repetitions and tonnage/volume-load remain valuable descriptive workload metrics but are **not linearly converted into hypertrophy/effective-set credit**. A set with twice the reps or load is not automatically worth twice the muscle-volume score.
 - Phase 19 v1 does not fabricate RIR/RPE from reps and load. A future methodology may use explicit effort data if Top Set captures it reliably.
@@ -132,6 +134,6 @@ The PWA remains independently deployable. Native work must not fork product rule
 
 ## Execution order
 
-**PWA release complete → exercise catalogue expansion → catalogue audit → lock evidence-backed set-stimulus/muscle-volume methodology + report semantics → contribution matrix → database foundation → effective-volume engine → Progress integration → Training Volume UI → performance-aware recommendations → weekly/monthly reports + retention/capacity validation → production release → Capacitor proof → native shell → native workout bridge → native lifecycle hardening → iPhone Live Activity → Android live surface → optional interactive controls.**
+**PWA release complete → exercise catalogue expansion → catalogue audit → lock evidence-backed personalized set-stimulus/muscle-volume methodology + report semantics → contribution matrix → database foundation → effective-volume engine → Progress integration → Training Volume UI → performance-aware recommendations → weekly/monthly reports + retention/capacity validation → production release → Capacitor proof → native shell → native workout bridge → native lifecycle hardening → iPhone Live Activity → Android live surface → optional interactive controls.**
 
 Engineering/delivery rules live in [`../CONTRIBUTING.md`](../CONTRIBUTING.md); validation rules live in [`CI-VALIDATION.md`](CI-VALIDATION.md).
