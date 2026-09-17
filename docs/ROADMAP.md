@@ -56,8 +56,8 @@ Historical details remain in the phase records and `CHANGELOG.md`. They are not 
 | 19.0 | **DONE** | Exercise Catalogue Expansion — add useful common commercial-gym exercises, especially machines, without adding new picker categories |
 | 19.1 | **DONE** | Exercise Catalogue Audit — normalize names, aliases, measurement types, primary muscles, and duplicates; deploy high-confidence corrections and preserve ambiguous cases for explicit later review |
 | 19.2 | **DONE** | Volume Intelligence specification lock — evidence-backed personalized set-quality methodology, advanced-set credit, benchmark bands, eligibility, contribution semantics, reporting semantics, and versioning |
-| 19.3 | **NEXT** | Complete exercise-to-muscle contribution matrix with direct/indirect credit, eligibility, confidence, and rationale |
-| 19.4 | **PLANNED** | Versioned database foundation for methodology, mappings, benchmarks, RLS, and tests |
+| 19.3 | **DONE** | Complete exercise-to-muscle contribution matrix with direct/indirect credit, eligibility, confidence, and rationale |
+| 19.4 | **NEXT** | Versioned database foundation for methodology, mappings, benchmarks, RLS, and tests |
 | 19.5 | **PLANNED** | Versioned personalized set-stimulus/effective-volume calculation and authenticated rolling 7/28-day read model |
 | 19.6 | **PLANNED** | TypeScript models and Progress service integration |
 | 19.7 | **PLANNED** | Mobile-first Training Volume UI under Progress |
@@ -119,6 +119,19 @@ The authoritative methodology is `muscle-volume-v1`; full formulas and evidence 
 | Neck | 6–9 | 10 |
 
 The 28-day v1 bands are exactly `4 ×` the weekly values. Muscle-specific confidence varies; the detailed confidence labels and status semantics are defined in `DOMAIN-RULES.md`.
+
+### Phase 19.3 locked contribution matrix
+
+- The reviewed source artifact is `supabase/release/phase19-3-exercise-muscle-matrix.json`.
+- The Phase 19.3 catalogue snapshot contains **406 active canonical exercises**: **276 volume-eligible** in `muscle-volume-v1` and **130 explicitly excluded/deferred**.
+- Every eligible exercise has at least one `DIRECT` (`1.0`) contribution. Meaningful secondary work uses `INDIRECT` (`0.5`). Contribution weights do not need to sum to `1.0` across an exercise.
+- `primary_muscle_group` remains picker/browsing taxonomy only. Phase 19.4 must persist the reviewed matrix rather than infer contributions from the primary category or exercise name.
+- `DURATION` and `OTHER` exercises remain excluded in v1 because no compatible set-stimulus calibration is locked for those measurement types.
+- `FULL_BODY` catalogue movements are excluded in v1 because the personalized Epley/bodyweight set-quality model is not calibrated for mixed ballistic/whole-body work.
+- Hip-adduction movements are excluded because adductors are not a reportable v1 muscle group; tibialis raises are excluded because tibialis anterior must not be mislabeled as calf volume.
+- Rotator-cuff/scapular-control, mobility-dominant, and push-press power patterns that would distort the benchmark model are explicitly excluded rather than forced into a misleading muscle total.
+- Each row carries mapping confidence, a review flag, set-quality mode, and rationale. Review flags preserve technique-sensitive or deferred cases without silently guessing.
+- The matrix validator must remain green before Phase 19.4 consumes the artifact. Phase 19.4 may normalize the matrix into versioned relational rows, but it must not silently alter the reviewed Phase 19.3 semantics.
 
 ### Phase 19.9 locked reporting and retention plan
 

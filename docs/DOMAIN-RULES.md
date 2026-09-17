@@ -367,6 +367,22 @@ The contribution model is independent from `exercise_catalog.primary_muscle_grou
 - Assisted/added-weight bodyweight modes require explicit compatibility rules rather than silently borrowing plain-bodyweight baselines.
 - No exercise becomes volume-eligible merely because it exists in the catalogue.
 
+#### Phase 19.3 reviewed matrix
+
+The reviewed `muscle-volume-v1` exercise decision set lives at `supabase/release/phase19-3-exercise-muscle-matrix.json`. It is the source input for Phase 19.4 persistence and covers all **406 active canonical exercises** in the Phase 19.3 catalogue snapshot.
+
+- **276 exercises are volume-eligible** and **130 are explicitly excluded/deferred**.
+- Eligible `WEIGHT_REPS` rows use the personalized weighted set-quality path; eligible plain `BODYWEIGHT_REPS` rows use the compatible repetition-baseline path.
+- `DURATION` and `OTHER` are excluded in v1 because Top Set does not yet have a methodology-compatible set-stimulus conversion for time, distance, assistance, bands, carries, or other nonstandard resistance inputs.
+- `FULL_BODY` movements are excluded in v1. Olympic/power, ballistic, strongman, and mixed whole-body patterns must not be passed through the ordinary Epley-derived hypertrophy set-quality model merely because some are stored as `WEIGHT_REPS`.
+- Hip-adduction exercises are excluded until a reportable adductor group exists; tibialis raises are excluded because anterior-tibialis work must not be credited to the CALVES benchmark.
+- Rotator-cuff/scapular-control and mobility-dominant drills are not treated as ordinary deltoid/back hypertrophy sets in v1.
+- Push-press variations using intentional leg drive are excluded from the v1 shoulder hypertrophy matrix rather than scored with a strict-press baseline.
+- Common presses map direct chest or shoulders plus meaningful `0.5` synergist credit; rows/pulls map direct back plus `0.5` biceps; direct arm/isolation work maps `1.0` to its target; squat/lunge/hinge families use reviewed quad/glute/hamstring/back combinations instead of a primary-muscle fallback.
+- Technique-sensitive compounds carry `MEDIUM`/`LOW` mapping confidence and `review_flag = true` where execution can materially alter the contribution split.
+
+The matrix is deliberately explicit. Runtime code and Phase 19.4 migrations must not synthesize missing mappings with string matching, `primary_muscle_group`, or generic equipment rules. An exercise absent from an active versioned mapping is **not volume-eligible by implication**.
+
 ### 11.9 Weekly and 28-day benchmark bands
 
 Benchmarks describe general hypertrophy-oriented training-volume ranges, not medical limits or guarantees of optimal growth. They are applied to **combined direct + fractional indirect effective sets** and carry confidence labels because muscle-specific evidence is uneven.
