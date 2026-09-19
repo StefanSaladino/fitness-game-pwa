@@ -120,9 +120,9 @@ The Phase 19.4 foundation should provide versioned persistence for at least:
 
 Phase 19.4 should not persist a client-authored "effective set" number on `workout_sets`. The source workout rows remain the evidence and the versioned read model derives the interpretation.
 
-#### Phase 19.3 matrix handoff
+#### Phase 19.3 / 19.3A matrix handoff
 
-Phase 19.3's reviewed source artifact is `supabase/release/phase19-3-exercise-muscle-matrix.json`. Phase 19.4 must consume that explicit decision set rather than derive mappings from `exercise_catalog.primary_muscle_group`, exercise-name pattern matching, or a runtime fallback.
+The reviewed source artifact remains `supabase/release/phase19-3-exercise-muscle-matrix.json`. Phase 19.3A refreshes that same artifact after the dumbbell-heavy catalogue expansion; Phase 19.4 must consume the refreshed explicit decision set rather than derive mappings from `exercise_catalog.primary_muscle_group`, exercise-name pattern matching, or a runtime fallback.
 
 The Phase 19.4 seed/migration boundary should:
 
@@ -130,7 +130,7 @@ The Phase 19.4 seed/migration boundary should:
 - persist eligibility and contribution rows under `muscle-volume-v1`;
 - preserve mapping confidence, review flag, set-quality mode, and rationale/review metadata where the final schema supports them;
 - preserve explicit exclusions/deferred cases rather than treating absence as an accidental default;
-- validate the expected Phase 19.3 snapshot counts before release (**406 total, 276 eligible, 130 excluded/deferred**);
+- validate the refreshed Phase 19.3A snapshot counts before release (**464 total, 326 eligible, 138 excluded/deferred**);
 - store relational foreign keys by canonical exercise ID after resolution, not by mutable display labels.
 
 ### Phase 19.5 personalized set-quality calculation

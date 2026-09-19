@@ -1,0 +1,1393 @@
+{
+  "phase": "19.3A",
+  "catalog_base_count": 406,
+  "additions_count": 58,
+  "dumbbell_base_count": 35,
+  "dumbbell_result_count": 93,
+  "methodology_version": "muscle-volume-v1",
+  "expected_result": {
+    "catalog_count": 464,
+    "eligible_count": 326,
+    "excluded_count": 138
+  },
+  "notes": [
+    "All additions reuse existing picker taxonomy; no new muscle-group or equipment category is introduced.",
+    "All additions use workout_type DUMBBELL as metadata only.",
+    "Fifty additions are WEIGHT_REPS volume-eligible under the existing methodology rules; eight FULL_BODY dumbbell patterns remain explicitly excluded from muscle-volume-v1.",
+    "The existing 406-row Phase 19.3 matrix must be updated rather than replaced by a separately maintained parallel matrix."
+  ],
+  "exercises": [
+    {
+      "canonical_name": "Dumbbell Gorilla Row",
+      "measurement_type": "WEIGHT_REPS",
+      "primary_muscle_group": "BACK",
+      "workout_type": "DUMBBELL",
+      "aliases": [
+        "DB Gorilla Row",
+        "Gorilla Row"
+      ],
+      "volume_eligible": true,
+      "set_quality_mode": "WEIGHT_EPLEY",
+      "mapping_confidence": "MEDIUM",
+      "review_flag": true,
+      "contributions": [
+        {
+          "muscle_group": "BACK",
+          "role": "DIRECT",
+          "weight": 1.0
+        },
+        {
+          "muscle_group": "BICEPS",
+          "role": "INDIRECT",
+          "weight": 0.5
+        }
+      ],
+      "rationale": "Unilateral/alternating row pattern directly trains the back with meaningful elbow-flexor contribution; stance and torso angle can change emphasis."
+    },
+    {
+      "canonical_name": "Dumbbell High Row",
+      "measurement_type": "WEIGHT_REPS",
+      "primary_muscle_group": "BACK",
+      "workout_type": "DUMBBELL",
+      "aliases": [
+        "DB High Row"
+      ],
+      "volume_eligible": true,
+      "set_quality_mode": "WEIGHT_EPLEY",
+      "mapping_confidence": "MEDIUM",
+      "review_flag": true,
+      "contributions": [
+        {
+          "muscle_group": "BACK",
+          "role": "DIRECT",
+          "weight": 1.0
+        },
+        {
+          "muscle_group": "SHOULDERS",
+          "role": "DIRECT",
+          "weight": 1.0
+        },
+        {
+          "muscle_group": "BICEPS",
+          "role": "INDIRECT",
+          "weight": 0.5
+        }
+      ],
+      "rationale": "High-row pattern directly loads upper back and rear-deltoid shoulder musculature with meaningful elbow-flexor contribution; execution angle changes emphasis."
+    },
+    {
+      "canonical_name": "Dumbbell Spider Curl",
+      "measurement_type": "WEIGHT_REPS",
+      "primary_muscle_group": "BICEPS",
+      "workout_type": "DUMBBELL",
+      "aliases": [
+        "DB Spider Curl"
+      ],
+      "volume_eligible": true,
+      "set_quality_mode": "WEIGHT_EPLEY",
+      "mapping_confidence": "HIGH",
+      "review_flag": false,
+      "contributions": [
+        {
+          "muscle_group": "BICEPS",
+          "role": "DIRECT",
+          "weight": 1.0
+        }
+      ],
+      "rationale": "Elbow-flexion isolation pattern directly trains the biceps/upper-arm flexors."
+    },
+    {
+      "canonical_name": "Dumbbell Zottman Curl",
+      "measurement_type": "WEIGHT_REPS",
+      "primary_muscle_group": "BICEPS",
+      "workout_type": "DUMBBELL",
+      "aliases": [
+        "DB Zottman Curl"
+      ],
+      "volume_eligible": true,
+      "set_quality_mode": "WEIGHT_EPLEY",
+      "mapping_confidence": "MEDIUM",
+      "review_flag": true,
+      "contributions": [
+        {
+          "muscle_group": "BICEPS",
+          "role": "DIRECT",
+          "weight": 1.0
+        },
+        {
+          "muscle_group": "FOREARMS_GRIP",
+          "role": "INDIRECT",
+          "weight": 0.5
+        }
+      ],
+      "rationale": "Curl phase directly trains upper-arm flexors while the pronated eccentric adds meaningful forearm contribution."
+    },
+    {
+      "canonical_name": "Dumbbell Reverse Curl",
+      "measurement_type": "WEIGHT_REPS",
+      "primary_muscle_group": "BICEPS",
+      "workout_type": "DUMBBELL",
+      "aliases": [
+        "DB Reverse Curl"
+      ],
+      "volume_eligible": true,
+      "set_quality_mode": "WEIGHT_EPLEY",
+      "mapping_confidence": "MEDIUM",
+      "review_flag": true,
+      "contributions": [
+        {
+          "muscle_group": "BICEPS",
+          "role": "DIRECT",
+          "weight": 1.0
+        },
+        {
+          "muscle_group": "FOREARMS_GRIP",
+          "role": "INDIRECT",
+          "weight": 0.5
+        }
+      ],
+      "rationale": "Pronated curl directly trains elbow flexors with meaningful brachioradialis/forearm contribution."
+    },
+    {
+      "canonical_name": "Dumbbell Cross-Body Hammer Curl",
+      "measurement_type": "WEIGHT_REPS",
+      "primary_muscle_group": "BICEPS",
+      "workout_type": "DUMBBELL",
+      "aliases": [
+        "DB Cross Body Hammer Curl",
+        "Cross-Body DB Hammer Curl"
+      ],
+      "volume_eligible": true,
+      "set_quality_mode": "WEIGHT_EPLEY",
+      "mapping_confidence": "HIGH",
+      "review_flag": false,
+      "contributions": [
+        {
+          "muscle_group": "BICEPS",
+          "role": "DIRECT",
+          "weight": 1.0
+        },
+        {
+          "muscle_group": "FOREARMS_GRIP",
+          "role": "INDIRECT",
+          "weight": 0.5
+        }
+      ],
+      "rationale": "Neutral-grip curl directly trains elbow flexors with meaningful forearm/brachioradialis contribution."
+    },
+    {
+      "canonical_name": "Dumbbell Drag Curl",
+      "measurement_type": "WEIGHT_REPS",
+      "primary_muscle_group": "BICEPS",
+      "workout_type": "DUMBBELL",
+      "aliases": [
+        "DB Drag Curl"
+      ],
+      "volume_eligible": true,
+      "set_quality_mode": "WEIGHT_EPLEY",
+      "mapping_confidence": "HIGH",
+      "review_flag": false,
+      "contributions": [
+        {
+          "muscle_group": "BICEPS",
+          "role": "DIRECT",
+          "weight": 1.0
+        }
+      ],
+      "rationale": "Elbow-flexion curl variant directly trains the biceps/upper-arm flexors."
+    },
+    {
+      "canonical_name": "Seated Dumbbell Curl",
+      "measurement_type": "WEIGHT_REPS",
+      "primary_muscle_group": "BICEPS",
+      "workout_type": "DUMBBELL",
+      "aliases": [
+        "Seated DB Curl"
+      ],
+      "volume_eligible": true,
+      "set_quality_mode": "WEIGHT_EPLEY",
+      "mapping_confidence": "HIGH",
+      "review_flag": false,
+      "contributions": [
+        {
+          "muscle_group": "BICEPS",
+          "role": "DIRECT",
+          "weight": 1.0
+        }
+      ],
+      "rationale": "Seated elbow-flexion isolation directly trains the biceps/upper-arm flexors."
+    },
+    {
+      "canonical_name": "Neutral-Grip Dumbbell Bench Press",
+      "measurement_type": "WEIGHT_REPS",
+      "primary_muscle_group": "CHEST",
+      "workout_type": "DUMBBELL",
+      "aliases": [
+        "Neutral Grip DB Bench Press",
+        "Neutral-Grip DB Bench"
+      ],
+      "volume_eligible": true,
+      "set_quality_mode": "WEIGHT_EPLEY",
+      "mapping_confidence": "HIGH",
+      "review_flag": false,
+      "contributions": [
+        {
+          "muscle_group": "CHEST",
+          "role": "DIRECT",
+          "weight": 1.0
+        },
+        {
+          "muscle_group": "SHOULDERS",
+          "role": "INDIRECT",
+          "weight": 0.5
+        },
+        {
+          "muscle_group": "TRICEPS",
+          "role": "INDIRECT",
+          "weight": 0.5
+        }
+      ],
+      "rationale": "Horizontal dumbbell press directly trains chest with meaningful anterior-shoulder and triceps contribution."
+    },
+    {
+      "canonical_name": "Single-Arm Dumbbell Bench Press",
+      "measurement_type": "WEIGHT_REPS",
+      "primary_muscle_group": "CHEST",
+      "workout_type": "DUMBBELL",
+      "aliases": [
+        "One-Arm Dumbbell Bench Press",
+        "Single-Arm DB Bench Press"
+      ],
+      "volume_eligible": true,
+      "set_quality_mode": "WEIGHT_EPLEY",
+      "mapping_confidence": "MEDIUM",
+      "review_flag": true,
+      "contributions": [
+        {
+          "muscle_group": "CHEST",
+          "role": "DIRECT",
+          "weight": 1.0
+        },
+        {
+          "muscle_group": "SHOULDERS",
+          "role": "INDIRECT",
+          "weight": 0.5
+        },
+        {
+          "muscle_group": "TRICEPS",
+          "role": "INDIRECT",
+          "weight": 0.5
+        }
+      ],
+      "rationale": "Unilateral horizontal press directly trains chest with meaningful shoulder and triceps contribution; anti-rotation stabilization is not separately credited as hypertrophy volume."
+    },
+    {
+      "canonical_name": "Single-Arm Incline Dumbbell Press",
+      "measurement_type": "WEIGHT_REPS",
+      "primary_muscle_group": "CHEST",
+      "workout_type": "DUMBBELL",
+      "aliases": [
+        "One-Arm Incline Dumbbell Press",
+        "Single-Arm Incline DB Press"
+      ],
+      "volume_eligible": true,
+      "set_quality_mode": "WEIGHT_EPLEY",
+      "mapping_confidence": "MEDIUM",
+      "review_flag": true,
+      "contributions": [
+        {
+          "muscle_group": "CHEST",
+          "role": "DIRECT",
+          "weight": 1.0
+        },
+        {
+          "muscle_group": "SHOULDERS",
+          "role": "INDIRECT",
+          "weight": 0.5
+        },
+        {
+          "muscle_group": "TRICEPS",
+          "role": "INDIRECT",
+          "weight": 0.5
+        }
+      ],
+      "rationale": "Unilateral incline press directly trains chest with meaningful shoulder and triceps contribution; anti-rotation stabilization is not separately credited."
+    },
+    {
+      "canonical_name": "Incline Dumbbell Squeeze Press",
+      "measurement_type": "WEIGHT_REPS",
+      "primary_muscle_group": "CHEST",
+      "workout_type": "DUMBBELL",
+      "aliases": [
+        "Incline DB Squeeze Press"
+      ],
+      "volume_eligible": true,
+      "set_quality_mode": "WEIGHT_EPLEY",
+      "mapping_confidence": "MEDIUM",
+      "review_flag": true,
+      "contributions": [
+        {
+          "muscle_group": "CHEST",
+          "role": "DIRECT",
+          "weight": 1.0
+        },
+        {
+          "muscle_group": "SHOULDERS",
+          "role": "INDIRECT",
+          "weight": 0.5
+        },
+        {
+          "muscle_group": "TRICEPS",
+          "role": "INDIRECT",
+          "weight": 0.5
+        }
+      ],
+      "rationale": "Incline squeeze-press pattern directly trains chest with meaningful shoulder and triceps contribution; setup changes the relative emphasis."
+    },
+    {
+      "canonical_name": "Dumbbell Crunch",
+      "measurement_type": "WEIGHT_REPS",
+      "primary_muscle_group": "CORE",
+      "workout_type": "DUMBBELL",
+      "aliases": [
+        "DB Crunch",
+        "Weighted Dumbbell Crunch"
+      ],
+      "volume_eligible": true,
+      "set_quality_mode": "WEIGHT_EPLEY",
+      "mapping_confidence": "HIGH",
+      "review_flag": false,
+      "contributions": [
+        {
+          "muscle_group": "CORE",
+          "role": "DIRECT",
+          "weight": 1.0
+        }
+      ],
+      "rationale": "Loaded trunk-flexion pattern directly trains the core."
+    },
+    {
+      "canonical_name": "Dumbbell Sit-Up",
+      "measurement_type": "WEIGHT_REPS",
+      "primary_muscle_group": "CORE",
+      "workout_type": "DUMBBELL",
+      "aliases": [
+        "DB Sit-Up",
+        "Dumbbell Sit Up"
+      ],
+      "volume_eligible": true,
+      "set_quality_mode": "WEIGHT_EPLEY",
+      "mapping_confidence": "MEDIUM",
+      "review_flag": true,
+      "contributions": [
+        {
+          "muscle_group": "CORE",
+          "role": "DIRECT",
+          "weight": 1.0
+        }
+      ],
+      "rationale": "Loaded sit-up directly trains trunk flexors/core; hip-flexor contribution varies with execution and is not a reportable v1 group."
+    },
+    {
+      "canonical_name": "Dumbbell Dead Bug",
+      "measurement_type": "WEIGHT_REPS",
+      "primary_muscle_group": "CORE",
+      "workout_type": "DUMBBELL",
+      "aliases": [
+        "DB Dead Bug",
+        "Weighted Dead Bug"
+      ],
+      "volume_eligible": true,
+      "set_quality_mode": "WEIGHT_EPLEY",
+      "mapping_confidence": "MEDIUM",
+      "review_flag": true,
+      "contributions": [
+        {
+          "muscle_group": "CORE",
+          "role": "DIRECT",
+          "weight": 1.0
+        }
+      ],
+      "rationale": "Loaded anti-extension/dead-bug pattern directly trains the core; limb position and loading method affect difficulty."
+    },
+    {
+      "canonical_name": "Dumbbell Side Bend",
+      "measurement_type": "WEIGHT_REPS",
+      "primary_muscle_group": "OBLIQUES",
+      "workout_type": "DUMBBELL",
+      "aliases": [
+        "DB Side Bend"
+      ],
+      "volume_eligible": true,
+      "set_quality_mode": "WEIGHT_EPLEY",
+      "mapping_confidence": "HIGH",
+      "review_flag": false,
+      "contributions": [
+        {
+          "muscle_group": "OBLIQUES",
+          "role": "DIRECT",
+          "weight": 1.0
+        }
+      ],
+      "rationale": "Loaded lateral trunk-flexion pattern directly trains the obliques/lateral trunk."
+    },
+    {
+      "canonical_name": "Dumbbell Russian Twist",
+      "measurement_type": "WEIGHT_REPS",
+      "primary_muscle_group": "OBLIQUES",
+      "workout_type": "DUMBBELL",
+      "aliases": [
+        "DB Russian Twist"
+      ],
+      "volume_eligible": true,
+      "set_quality_mode": "WEIGHT_EPLEY",
+      "mapping_confidence": "MEDIUM",
+      "review_flag": true,
+      "contributions": [
+        {
+          "muscle_group": "OBLIQUES",
+          "role": "DIRECT",
+          "weight": 1.0
+        },
+        {
+          "muscle_group": "CORE",
+          "role": "INDIRECT",
+          "weight": 0.5
+        }
+      ],
+      "rationale": "Loaded trunk-rotation pattern directly trains obliques with meaningful general core contribution."
+    },
+    {
+      "canonical_name": "Dumbbell Wood Chop",
+      "measurement_type": "WEIGHT_REPS",
+      "primary_muscle_group": "OBLIQUES",
+      "workout_type": "DUMBBELL",
+      "aliases": [
+        "DB Wood Chop"
+      ],
+      "volume_eligible": true,
+      "set_quality_mode": "WEIGHT_EPLEY",
+      "mapping_confidence": "MEDIUM",
+      "review_flag": true,
+      "contributions": [
+        {
+          "muscle_group": "OBLIQUES",
+          "role": "DIRECT",
+          "weight": 1.0
+        },
+        {
+          "muscle_group": "CORE",
+          "role": "INDIRECT",
+          "weight": 0.5
+        }
+      ],
+      "rationale": "Diagonal loaded trunk-rotation pattern directly trains obliques with meaningful core contribution; range and stance change emphasis."
+    },
+    {
+      "canonical_name": "Dumbbell Wrist Curl",
+      "measurement_type": "WEIGHT_REPS",
+      "primary_muscle_group": "FOREARMS_GRIP",
+      "workout_type": "DUMBBELL",
+      "aliases": [
+        "DB Wrist Curl"
+      ],
+      "volume_eligible": true,
+      "set_quality_mode": "WEIGHT_EPLEY",
+      "mapping_confidence": "HIGH",
+      "review_flag": false,
+      "contributions": [
+        {
+          "muscle_group": "FOREARMS_GRIP",
+          "role": "DIRECT",
+          "weight": 1.0
+        }
+      ],
+      "rationale": "Loaded forearm/wrist or grip isolation directly trains the reportable forearms/grip group."
+    },
+    {
+      "canonical_name": "Dumbbell Reverse Wrist Curl",
+      "measurement_type": "WEIGHT_REPS",
+      "primary_muscle_group": "FOREARMS_GRIP",
+      "workout_type": "DUMBBELL",
+      "aliases": [
+        "DB Reverse Wrist Curl"
+      ],
+      "volume_eligible": true,
+      "set_quality_mode": "WEIGHT_EPLEY",
+      "mapping_confidence": "HIGH",
+      "review_flag": false,
+      "contributions": [
+        {
+          "muscle_group": "FOREARMS_GRIP",
+          "role": "DIRECT",
+          "weight": 1.0
+        }
+      ],
+      "rationale": "Loaded forearm/wrist or grip isolation directly trains the reportable forearms/grip group."
+    },
+    {
+      "canonical_name": "Dumbbell Pronation/Supination",
+      "measurement_type": "WEIGHT_REPS",
+      "primary_muscle_group": "FOREARMS_GRIP",
+      "workout_type": "DUMBBELL",
+      "aliases": [
+        "DB Pronation Supination",
+        "Dumbbell Forearm Rotation"
+      ],
+      "volume_eligible": true,
+      "set_quality_mode": "WEIGHT_EPLEY",
+      "mapping_confidence": "MEDIUM",
+      "review_flag": true,
+      "contributions": [
+        {
+          "muscle_group": "FOREARMS_GRIP",
+          "role": "DIRECT",
+          "weight": 1.0
+        }
+      ],
+      "rationale": "Loaded forearm/wrist or grip isolation directly trains the reportable forearms/grip group."
+    },
+    {
+      "canonical_name": "Dumbbell Finger Curl",
+      "measurement_type": "WEIGHT_REPS",
+      "primary_muscle_group": "FOREARMS_GRIP",
+      "workout_type": "DUMBBELL",
+      "aliases": [
+        "DB Finger Curl"
+      ],
+      "volume_eligible": true,
+      "set_quality_mode": "WEIGHT_EPLEY",
+      "mapping_confidence": "HIGH",
+      "review_flag": false,
+      "contributions": [
+        {
+          "muscle_group": "FOREARMS_GRIP",
+          "role": "DIRECT",
+          "weight": 1.0
+        }
+      ],
+      "rationale": "Loaded forearm/wrist or grip isolation directly trains the reportable forearms/grip group."
+    },
+    {
+      "canonical_name": "Dumbbell Hip Thrust",
+      "measurement_type": "WEIGHT_REPS",
+      "primary_muscle_group": "GLUTES",
+      "workout_type": "DUMBBELL",
+      "aliases": [
+        "DB Hip Thrust"
+      ],
+      "volume_eligible": true,
+      "set_quality_mode": "WEIGHT_EPLEY",
+      "mapping_confidence": "HIGH",
+      "review_flag": false,
+      "contributions": [
+        {
+          "muscle_group": "GLUTES",
+          "role": "DIRECT",
+          "weight": 1.0
+        }
+      ],
+      "rationale": "Loaded hip-extension thrust pattern directly trains the glutes."
+    },
+    {
+      "canonical_name": "Dumbbell Glute Bridge",
+      "measurement_type": "WEIGHT_REPS",
+      "primary_muscle_group": "GLUTES",
+      "workout_type": "DUMBBELL",
+      "aliases": [
+        "DB Glute Bridge"
+      ],
+      "volume_eligible": true,
+      "set_quality_mode": "WEIGHT_EPLEY",
+      "mapping_confidence": "HIGH",
+      "review_flag": false,
+      "contributions": [
+        {
+          "muscle_group": "GLUTES",
+          "role": "DIRECT",
+          "weight": 1.0
+        }
+      ],
+      "rationale": "Loaded bridge/hip-extension pattern directly trains the glutes."
+    },
+    {
+      "canonical_name": "Dumbbell Frog Pump",
+      "measurement_type": "WEIGHT_REPS",
+      "primary_muscle_group": "GLUTES",
+      "workout_type": "DUMBBELL",
+      "aliases": [
+        "DB Frog Pump"
+      ],
+      "volume_eligible": true,
+      "set_quality_mode": "WEIGHT_EPLEY",
+      "mapping_confidence": "MEDIUM",
+      "review_flag": true,
+      "contributions": [
+        {
+          "muscle_group": "GLUTES",
+          "role": "DIRECT",
+          "weight": 1.0
+        }
+      ],
+      "rationale": "Short-range externally rotated hip-extension pattern directly targets glutes; execution and loading position vary."
+    },
+    {
+      "canonical_name": "Dumbbell Curtsy Lunge",
+      "measurement_type": "WEIGHT_REPS",
+      "primary_muscle_group": "GLUTES",
+      "workout_type": "DUMBBELL",
+      "aliases": [
+        "DB Curtsy Lunge"
+      ],
+      "volume_eligible": true,
+      "set_quality_mode": "WEIGHT_EPLEY",
+      "mapping_confidence": "MEDIUM",
+      "review_flag": true,
+      "contributions": [
+        {
+          "muscle_group": "GLUTES",
+          "role": "DIRECT",
+          "weight": 1.0
+        },
+        {
+          "muscle_group": "QUADS",
+          "role": "INDIRECT",
+          "weight": 0.5
+        }
+      ],
+      "rationale": "Curtsy-lunge pattern directly loads glutes with meaningful quadriceps contribution; frontal/transverse-plane emphasis varies by step path."
+    },
+    {
+      "canonical_name": "Dumbbell Stiff-Leg Deadlift",
+      "measurement_type": "WEIGHT_REPS",
+      "primary_muscle_group": "HAMSTRINGS",
+      "workout_type": "DUMBBELL",
+      "aliases": [
+        "DB Stiff-Leg Deadlift",
+        "DB SLDL"
+      ],
+      "volume_eligible": true,
+      "set_quality_mode": "WEIGHT_EPLEY",
+      "mapping_confidence": "MEDIUM",
+      "review_flag": true,
+      "contributions": [
+        {
+          "muscle_group": "HAMSTRINGS",
+          "role": "DIRECT",
+          "weight": 1.0
+        },
+        {
+          "muscle_group": "GLUTES",
+          "role": "DIRECT",
+          "weight": 1.0
+        },
+        {
+          "muscle_group": "BACK",
+          "role": "INDIRECT",
+          "weight": 0.5
+        }
+      ],
+      "rationale": "Hip-hinge pattern directly trains hamstrings and glutes with meaningful spinal-erector/back contribution; knee angle changes emphasis."
+    },
+    {
+      "canonical_name": "Dumbbell Kickstand Romanian Deadlift",
+      "measurement_type": "WEIGHT_REPS",
+      "primary_muscle_group": "HAMSTRINGS",
+      "workout_type": "DUMBBELL",
+      "aliases": [
+        "DB Kickstand RDL",
+        "Dumbbell B-Stance Romanian Deadlift",
+        "B-Stance Dumbbell RDL"
+      ],
+      "volume_eligible": true,
+      "set_quality_mode": "WEIGHT_EPLEY",
+      "mapping_confidence": "MEDIUM",
+      "review_flag": true,
+      "contributions": [
+        {
+          "muscle_group": "HAMSTRINGS",
+          "role": "DIRECT",
+          "weight": 1.0
+        },
+        {
+          "muscle_group": "GLUTES",
+          "role": "DIRECT",
+          "weight": 1.0
+        },
+        {
+          "muscle_group": "BACK",
+          "role": "INDIRECT",
+          "weight": 0.5
+        }
+      ],
+      "rationale": "Staggered-stance hip hinge directly trains hamstrings and glutes with meaningful spinal-erector/back contribution; stance and support-leg loading change emphasis."
+    },
+    {
+      "canonical_name": "Dumbbell Leg Curl",
+      "measurement_type": "WEIGHT_REPS",
+      "primary_muscle_group": "HAMSTRINGS",
+      "workout_type": "DUMBBELL",
+      "aliases": [
+        "DB Leg Curl",
+        "Dumbbell Hamstring Curl"
+      ],
+      "volume_eligible": true,
+      "set_quality_mode": "WEIGHT_EPLEY",
+      "mapping_confidence": "MEDIUM",
+      "review_flag": true,
+      "contributions": [
+        {
+          "muscle_group": "HAMSTRINGS",
+          "role": "DIRECT",
+          "weight": 1.0
+        }
+      ],
+      "rationale": "Loaded knee-flexion pattern directly trains hamstrings; dumbbell positioning makes execution technique-sensitive."
+    },
+    {
+      "canonical_name": "Dumbbell Split Squat",
+      "measurement_type": "WEIGHT_REPS",
+      "primary_muscle_group": "QUADS",
+      "workout_type": "DUMBBELL",
+      "aliases": [
+        "DB Split Squat"
+      ],
+      "volume_eligible": true,
+      "set_quality_mode": "WEIGHT_EPLEY",
+      "mapping_confidence": "HIGH",
+      "review_flag": false,
+      "contributions": [
+        {
+          "muscle_group": "QUADS",
+          "role": "DIRECT",
+          "weight": 1.0
+        },
+        {
+          "muscle_group": "GLUTES",
+          "role": "INDIRECT",
+          "weight": 0.5
+        }
+      ],
+      "rationale": "Split-squat pattern directly trains quadriceps with meaningful glute contribution."
+    },
+    {
+      "canonical_name": "Dumbbell Forward Lunge",
+      "measurement_type": "WEIGHT_REPS",
+      "primary_muscle_group": "QUADS",
+      "workout_type": "DUMBBELL",
+      "aliases": [
+        "DB Forward Lunge"
+      ],
+      "volume_eligible": true,
+      "set_quality_mode": "WEIGHT_EPLEY",
+      "mapping_confidence": "MEDIUM",
+      "review_flag": true,
+      "contributions": [
+        {
+          "muscle_group": "QUADS",
+          "role": "DIRECT",
+          "weight": 1.0
+        },
+        {
+          "muscle_group": "GLUTES",
+          "role": "INDIRECT",
+          "weight": 0.5
+        }
+      ],
+      "rationale": "Forward-lunge pattern directly trains quadriceps with meaningful glute contribution; stride length changes emphasis."
+    },
+    {
+      "canonical_name": "Dumbbell Lateral Lunge",
+      "measurement_type": "WEIGHT_REPS",
+      "primary_muscle_group": "QUADS",
+      "workout_type": "DUMBBELL",
+      "aliases": [
+        "DB Lateral Lunge",
+        "Dumbbell Side Lunge"
+      ],
+      "volume_eligible": true,
+      "set_quality_mode": "WEIGHT_EPLEY",
+      "mapping_confidence": "MEDIUM",
+      "review_flag": true,
+      "contributions": [
+        {
+          "muscle_group": "QUADS",
+          "role": "DIRECT",
+          "weight": 1.0
+        },
+        {
+          "muscle_group": "GLUTES",
+          "role": "DIRECT",
+          "weight": 1.0
+        }
+      ],
+      "rationale": "Lateral-lunge pattern directly loads quadriceps and glutes; substantial adductor contribution is not separately reportable in v1."
+    },
+    {
+      "canonical_name": "Dumbbell Cyclist Squat",
+      "measurement_type": "WEIGHT_REPS",
+      "primary_muscle_group": "QUADS",
+      "workout_type": "DUMBBELL",
+      "aliases": [
+        "DB Cyclist Squat"
+      ],
+      "volume_eligible": true,
+      "set_quality_mode": "WEIGHT_EPLEY",
+      "mapping_confidence": "HIGH",
+      "review_flag": false,
+      "contributions": [
+        {
+          "muscle_group": "QUADS",
+          "role": "DIRECT",
+          "weight": 1.0
+        },
+        {
+          "muscle_group": "GLUTES",
+          "role": "INDIRECT",
+          "weight": 0.5
+        }
+      ],
+      "rationale": "Heel-elevated narrow squat pattern directly trains quadriceps with meaningful glute contribution."
+    },
+    {
+      "canonical_name": "Dumbbell Heels-Elevated Squat",
+      "measurement_type": "WEIGHT_REPS",
+      "primary_muscle_group": "QUADS",
+      "workout_type": "DUMBBELL",
+      "aliases": [
+        "DB Heels-Elevated Squat",
+        "Heels-Elevated DB Squat"
+      ],
+      "volume_eligible": true,
+      "set_quality_mode": "WEIGHT_EPLEY",
+      "mapping_confidence": "HIGH",
+      "review_flag": false,
+      "contributions": [
+        {
+          "muscle_group": "QUADS",
+          "role": "DIRECT",
+          "weight": 1.0
+        },
+        {
+          "muscle_group": "GLUTES",
+          "role": "INDIRECT",
+          "weight": 0.5
+        }
+      ],
+      "rationale": "Heel-elevated squat directly trains quadriceps with meaningful glute contribution."
+    },
+    {
+      "canonical_name": "Dumbbell Box Squat",
+      "measurement_type": "WEIGHT_REPS",
+      "primary_muscle_group": "QUADS",
+      "workout_type": "DUMBBELL",
+      "aliases": [
+        "DB Box Squat"
+      ],
+      "volume_eligible": true,
+      "set_quality_mode": "WEIGHT_EPLEY",
+      "mapping_confidence": "MEDIUM",
+      "review_flag": true,
+      "contributions": [
+        {
+          "muscle_group": "QUADS",
+          "role": "DIRECT",
+          "weight": 1.0
+        },
+        {
+          "muscle_group": "GLUTES",
+          "role": "INDIRECT",
+          "weight": 0.5
+        }
+      ],
+      "rationale": "Box-squat pattern directly trains quadriceps with meaningful glute contribution; box height and sit-back strategy change emphasis."
+    },
+    {
+      "canonical_name": "Dumbbell Sumo Squat",
+      "measurement_type": "WEIGHT_REPS",
+      "primary_muscle_group": "QUADS",
+      "workout_type": "DUMBBELL",
+      "aliases": [
+        "DB Sumo Squat"
+      ],
+      "volume_eligible": true,
+      "set_quality_mode": "WEIGHT_EPLEY",
+      "mapping_confidence": "MEDIUM",
+      "review_flag": true,
+      "contributions": [
+        {
+          "muscle_group": "QUADS",
+          "role": "DIRECT",
+          "weight": 1.0
+        },
+        {
+          "muscle_group": "GLUTES",
+          "role": "DIRECT",
+          "weight": 1.0
+        }
+      ],
+      "rationale": "Wide-stance squat directly trains quadriceps and glutes; substantial adductor contribution is not separately reportable in v1."
+    },
+    {
+      "canonical_name": "Lean-Away Dumbbell Lateral Raise",
+      "measurement_type": "WEIGHT_REPS",
+      "primary_muscle_group": "SHOULDERS",
+      "workout_type": "DUMBBELL",
+      "aliases": [
+        "Lean Away Dumbbell Lateral Raise",
+        "Lean-Away DB Lateral Raise"
+      ],
+      "volume_eligible": true,
+      "set_quality_mode": "WEIGHT_EPLEY",
+      "mapping_confidence": "HIGH",
+      "review_flag": false,
+      "contributions": [
+        {
+          "muscle_group": "SHOULDERS",
+          "role": "DIRECT",
+          "weight": 1.0
+        }
+      ],
+      "rationale": "Lateral-raise isolation directly trains the shoulder/deltoid group."
+    },
+    {
+      "canonical_name": "Incline Dumbbell Lateral Raise",
+      "measurement_type": "WEIGHT_REPS",
+      "primary_muscle_group": "SHOULDERS",
+      "workout_type": "DUMBBELL",
+      "aliases": [
+        "Incline DB Lateral Raise"
+      ],
+      "volume_eligible": true,
+      "set_quality_mode": "WEIGHT_EPLEY",
+      "mapping_confidence": "HIGH",
+      "review_flag": false,
+      "contributions": [
+        {
+          "muscle_group": "SHOULDERS",
+          "role": "DIRECT",
+          "weight": 1.0
+        }
+      ],
+      "rationale": "Lateral-raise isolation directly trains the shoulder/deltoid group."
+    },
+    {
+      "canonical_name": "Seated Dumbbell Lateral Raise",
+      "measurement_type": "WEIGHT_REPS",
+      "primary_muscle_group": "SHOULDERS",
+      "workout_type": "DUMBBELL",
+      "aliases": [
+        "Seated DB Lateral Raise"
+      ],
+      "volume_eligible": true,
+      "set_quality_mode": "WEIGHT_EPLEY",
+      "mapping_confidence": "HIGH",
+      "review_flag": false,
+      "contributions": [
+        {
+          "muscle_group": "SHOULDERS",
+          "role": "DIRECT",
+          "weight": 1.0
+        }
+      ],
+      "rationale": "Seated lateral-raise isolation directly trains the shoulder/deltoid group."
+    },
+    {
+      "canonical_name": "Dumbbell Y-Raise",
+      "measurement_type": "WEIGHT_REPS",
+      "primary_muscle_group": "SHOULDERS",
+      "workout_type": "DUMBBELL",
+      "aliases": [
+        "DB Y-Raise",
+        "Dumbbell Y Raise"
+      ],
+      "volume_eligible": true,
+      "set_quality_mode": "WEIGHT_EPLEY",
+      "mapping_confidence": "MEDIUM",
+      "review_flag": true,
+      "contributions": [
+        {
+          "muscle_group": "SHOULDERS",
+          "role": "DIRECT",
+          "weight": 1.0
+        },
+        {
+          "muscle_group": "BACK",
+          "role": "INDIRECT",
+          "weight": 0.5
+        }
+      ],
+      "rationale": "Y-raise directly trains shoulder/scapular elevation musculature with meaningful upper-back/trapezius contribution."
+    },
+    {
+      "canonical_name": "Dumbbell Scaption Raise",
+      "measurement_type": "WEIGHT_REPS",
+      "primary_muscle_group": "SHOULDERS",
+      "workout_type": "DUMBBELL",
+      "aliases": [
+        "DB Scaption Raise"
+      ],
+      "volume_eligible": true,
+      "set_quality_mode": "WEIGHT_EPLEY",
+      "mapping_confidence": "MEDIUM",
+      "review_flag": true,
+      "contributions": [
+        {
+          "muscle_group": "SHOULDERS",
+          "role": "DIRECT",
+          "weight": 1.0
+        }
+      ],
+      "rationale": "Scaption raise directly trains the shoulder/deltoid group in the scapular plane."
+    },
+    {
+      "canonical_name": "Dumbbell Upright Row",
+      "measurement_type": "WEIGHT_REPS",
+      "primary_muscle_group": "SHOULDERS",
+      "workout_type": "DUMBBELL",
+      "aliases": [
+        "DB Upright Row"
+      ],
+      "volume_eligible": true,
+      "set_quality_mode": "WEIGHT_EPLEY",
+      "mapping_confidence": "MEDIUM",
+      "review_flag": true,
+      "contributions": [
+        {
+          "muscle_group": "SHOULDERS",
+          "role": "DIRECT",
+          "weight": 1.0
+        },
+        {
+          "muscle_group": "BACK",
+          "role": "INDIRECT",
+          "weight": 0.5
+        },
+        {
+          "muscle_group": "BICEPS",
+          "role": "INDIRECT",
+          "weight": 0.5
+        }
+      ],
+      "rationale": "Upright-row pattern directly trains shoulders with meaningful trapezius/upper-back and elbow-flexor contribution; grip width changes emphasis."
+    },
+    {
+      "canonical_name": "Dumbbell Rear Delt Row",
+      "measurement_type": "WEIGHT_REPS",
+      "primary_muscle_group": "SHOULDERS",
+      "workout_type": "DUMBBELL",
+      "aliases": [
+        "DB Rear Delt Row"
+      ],
+      "volume_eligible": true,
+      "set_quality_mode": "WEIGHT_EPLEY",
+      "mapping_confidence": "MEDIUM",
+      "review_flag": true,
+      "contributions": [
+        {
+          "muscle_group": "SHOULDERS",
+          "role": "DIRECT",
+          "weight": 1.0
+        },
+        {
+          "muscle_group": "BACK",
+          "role": "DIRECT",
+          "weight": 1.0
+        },
+        {
+          "muscle_group": "BICEPS",
+          "role": "INDIRECT",
+          "weight": 0.5
+        }
+      ],
+      "rationale": "Elbows-out row directly trains rear deltoids and upper back with meaningful elbow-flexor contribution; technique materially changes emphasis."
+    },
+    {
+      "canonical_name": "Single-Arm Dumbbell Shoulder Press",
+      "measurement_type": "WEIGHT_REPS",
+      "primary_muscle_group": "SHOULDERS",
+      "workout_type": "DUMBBELL",
+      "aliases": [
+        "One-Arm Dumbbell Shoulder Press",
+        "Single-Arm DB Shoulder Press"
+      ],
+      "volume_eligible": true,
+      "set_quality_mode": "WEIGHT_EPLEY",
+      "mapping_confidence": "MEDIUM",
+      "review_flag": true,
+      "contributions": [
+        {
+          "muscle_group": "SHOULDERS",
+          "role": "DIRECT",
+          "weight": 1.0
+        },
+        {
+          "muscle_group": "TRICEPS",
+          "role": "INDIRECT",
+          "weight": 0.5
+        }
+      ],
+      "rationale": "Unilateral overhead press directly trains shoulders with meaningful triceps contribution; trunk stabilization is not separately credited."
+    },
+    {
+      "canonical_name": "Dumbbell Tate Press",
+      "measurement_type": "WEIGHT_REPS",
+      "primary_muscle_group": "TRICEPS",
+      "workout_type": "DUMBBELL",
+      "aliases": [
+        "DB Tate Press"
+      ],
+      "volume_eligible": true,
+      "set_quality_mode": "WEIGHT_EPLEY",
+      "mapping_confidence": "MEDIUM",
+      "review_flag": true,
+      "contributions": [
+        {
+          "muscle_group": "TRICEPS",
+          "role": "DIRECT",
+          "weight": 1.0
+        }
+      ],
+      "rationale": "Elbow-extension press/isolation variant directly trains triceps; execution angle varies."
+    },
+    {
+      "canonical_name": "Dumbbell Rolling Triceps Extension",
+      "measurement_type": "WEIGHT_REPS",
+      "primary_muscle_group": "TRICEPS",
+      "workout_type": "DUMBBELL",
+      "aliases": [
+        "DB Rolling Triceps Extension"
+      ],
+      "volume_eligible": true,
+      "set_quality_mode": "WEIGHT_EPLEY",
+      "mapping_confidence": "MEDIUM",
+      "review_flag": true,
+      "contributions": [
+        {
+          "muscle_group": "TRICEPS",
+          "role": "DIRECT",
+          "weight": 1.0
+        }
+      ],
+      "rationale": "Rolling elbow-extension pattern directly trains triceps; shoulder extension assists the transition but is not separately credited."
+    },
+    {
+      "canonical_name": "Dumbbell Close-Grip Bench Press",
+      "measurement_type": "WEIGHT_REPS",
+      "primary_muscle_group": "TRICEPS",
+      "workout_type": "DUMBBELL",
+      "aliases": [
+        "Close-Grip DB Bench Press"
+      ],
+      "volume_eligible": true,
+      "set_quality_mode": "WEIGHT_EPLEY",
+      "mapping_confidence": "HIGH",
+      "review_flag": false,
+      "contributions": [
+        {
+          "muscle_group": "TRICEPS",
+          "role": "DIRECT",
+          "weight": 1.0
+        },
+        {
+          "muscle_group": "CHEST",
+          "role": "INDIRECT",
+          "weight": 0.5
+        },
+        {
+          "muscle_group": "SHOULDERS",
+          "role": "INDIRECT",
+          "weight": 0.5
+        }
+      ],
+      "rationale": "Close-grip dumbbell press directly emphasizes triceps with meaningful chest and anterior-shoulder contribution."
+    },
+    {
+      "canonical_name": "Single-Arm Overhead Dumbbell Triceps Extension",
+      "measurement_type": "WEIGHT_REPS",
+      "primary_muscle_group": "TRICEPS",
+      "workout_type": "DUMBBELL",
+      "aliases": [
+        "Single-Arm DB Overhead Triceps Extension",
+        "One-Arm Overhead Dumbbell Triceps Extension"
+      ],
+      "volume_eligible": true,
+      "set_quality_mode": "WEIGHT_EPLEY",
+      "mapping_confidence": "HIGH",
+      "review_flag": false,
+      "contributions": [
+        {
+          "muscle_group": "TRICEPS",
+          "role": "DIRECT",
+          "weight": 1.0
+        }
+      ],
+      "rationale": "Overhead elbow-extension isolation directly trains triceps."
+    },
+    {
+      "canonical_name": "Seated Dumbbell Calf Raise",
+      "measurement_type": "WEIGHT_REPS",
+      "primary_muscle_group": "CALVES",
+      "workout_type": "DUMBBELL",
+      "aliases": [
+        "Seated DB Calf Raise"
+      ],
+      "volume_eligible": true,
+      "set_quality_mode": "WEIGHT_EPLEY",
+      "mapping_confidence": "HIGH",
+      "review_flag": false,
+      "contributions": [
+        {
+          "muscle_group": "CALVES",
+          "role": "DIRECT",
+          "weight": 1.0
+        }
+      ],
+      "rationale": "Loaded seated plantar-flexion pattern directly trains calves."
+    },
+    {
+      "canonical_name": "Single-Leg Dumbbell Calf Raise",
+      "measurement_type": "WEIGHT_REPS",
+      "primary_muscle_group": "CALVES",
+      "workout_type": "DUMBBELL",
+      "aliases": [
+        "Single-Leg DB Calf Raise",
+        "One-Leg Dumbbell Calf Raise"
+      ],
+      "volume_eligible": true,
+      "set_quality_mode": "WEIGHT_EPLEY",
+      "mapping_confidence": "HIGH",
+      "review_flag": false,
+      "contributions": [
+        {
+          "muscle_group": "CALVES",
+          "role": "DIRECT",
+          "weight": 1.0
+        }
+      ],
+      "rationale": "Loaded single-leg plantar-flexion pattern directly trains calves."
+    },
+    {
+      "canonical_name": "Dumbbell Clean",
+      "measurement_type": "WEIGHT_REPS",
+      "primary_muscle_group": "FULL_BODY",
+      "workout_type": "DUMBBELL",
+      "aliases": [
+        "DB Clean"
+      ],
+      "volume_eligible": false,
+      "set_quality_mode": "NONE",
+      "mapping_confidence": "HIGH",
+      "review_flag": true,
+      "contributions": [],
+      "rationale": "Useful dumbbell full-body/ballistic exercise, but FULL_BODY movements remain excluded from muscle-volume-v1 because the weighted Epley set-quality model is not calibrated for mixed ballistic whole-body work."
+    },
+    {
+      "canonical_name": "Dumbbell Clean and Press",
+      "measurement_type": "WEIGHT_REPS",
+      "primary_muscle_group": "FULL_BODY",
+      "workout_type": "DUMBBELL",
+      "aliases": [
+        "DB Clean and Press"
+      ],
+      "volume_eligible": false,
+      "set_quality_mode": "NONE",
+      "mapping_confidence": "HIGH",
+      "review_flag": true,
+      "contributions": [],
+      "rationale": "Useful dumbbell full-body/ballistic exercise, but FULL_BODY movements remain excluded from muscle-volume-v1 because the weighted Epley set-quality model is not calibrated for mixed ballistic whole-body work."
+    },
+    {
+      "canonical_name": "Dumbbell Hang Clean",
+      "measurement_type": "WEIGHT_REPS",
+      "primary_muscle_group": "FULL_BODY",
+      "workout_type": "DUMBBELL",
+      "aliases": [
+        "DB Hang Clean"
+      ],
+      "volume_eligible": false,
+      "set_quality_mode": "NONE",
+      "mapping_confidence": "HIGH",
+      "review_flag": true,
+      "contributions": [],
+      "rationale": "Useful dumbbell full-body/ballistic exercise, but FULL_BODY movements remain excluded from muscle-volume-v1 because the weighted Epley set-quality model is not calibrated for mixed ballistic whole-body work."
+    },
+    {
+      "canonical_name": "Dumbbell Power Clean",
+      "measurement_type": "WEIGHT_REPS",
+      "primary_muscle_group": "FULL_BODY",
+      "workout_type": "DUMBBELL",
+      "aliases": [
+        "DB Power Clean"
+      ],
+      "volume_eligible": false,
+      "set_quality_mode": "NONE",
+      "mapping_confidence": "HIGH",
+      "review_flag": true,
+      "contributions": [],
+      "rationale": "Useful dumbbell full-body/ballistic exercise, but FULL_BODY movements remain excluded from muscle-volume-v1 because the weighted Epley set-quality model is not calibrated for mixed ballistic whole-body work."
+    },
+    {
+      "canonical_name": "Dumbbell Snatch",
+      "measurement_type": "WEIGHT_REPS",
+      "primary_muscle_group": "FULL_BODY",
+      "workout_type": "DUMBBELL",
+      "aliases": [
+        "DB Snatch",
+        "Single-Arm Dumbbell Snatch"
+      ],
+      "volume_eligible": false,
+      "set_quality_mode": "NONE",
+      "mapping_confidence": "HIGH",
+      "review_flag": true,
+      "contributions": [],
+      "rationale": "Useful dumbbell full-body/ballistic exercise, but FULL_BODY movements remain excluded from muscle-volume-v1 because the weighted Epley set-quality model is not calibrated for mixed ballistic whole-body work."
+    },
+    {
+      "canonical_name": "Dumbbell Hang Snatch",
+      "measurement_type": "WEIGHT_REPS",
+      "primary_muscle_group": "FULL_BODY",
+      "workout_type": "DUMBBELL",
+      "aliases": [
+        "DB Hang Snatch"
+      ],
+      "volume_eligible": false,
+      "set_quality_mode": "NONE",
+      "mapping_confidence": "HIGH",
+      "review_flag": true,
+      "contributions": [],
+      "rationale": "Useful dumbbell full-body/ballistic exercise, but FULL_BODY movements remain excluded from muscle-volume-v1 because the weighted Epley set-quality model is not calibrated for mixed ballistic whole-body work."
+    },
+    {
+      "canonical_name": "Dumbbell Thruster",
+      "measurement_type": "WEIGHT_REPS",
+      "primary_muscle_group": "FULL_BODY",
+      "workout_type": "DUMBBELL",
+      "aliases": [
+        "DB Thruster"
+      ],
+      "volume_eligible": false,
+      "set_quality_mode": "NONE",
+      "mapping_confidence": "HIGH",
+      "review_flag": true,
+      "contributions": [],
+      "rationale": "Useful dumbbell full-body/ballistic exercise, but FULL_BODY movements remain excluded from muscle-volume-v1 because the weighted Epley set-quality model is not calibrated for mixed ballistic whole-body work."
+    },
+    {
+      "canonical_name": "Dumbbell Devil Press",
+      "measurement_type": "WEIGHT_REPS",
+      "primary_muscle_group": "FULL_BODY",
+      "workout_type": "DUMBBELL",
+      "aliases": [
+        "DB Devil Press",
+        "Dumbbell Devil's Press"
+      ],
+      "volume_eligible": false,
+      "set_quality_mode": "NONE",
+      "mapping_confidence": "HIGH",
+      "review_flag": true,
+      "contributions": [],
+      "rationale": "Useful dumbbell full-body/ballistic exercise, but FULL_BODY movements remain excluded from muscle-volume-v1 because the weighted Epley set-quality model is not calibrated for mixed ballistic whole-body work."
+    }
+  ]
+}

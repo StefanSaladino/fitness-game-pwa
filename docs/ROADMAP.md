@@ -57,12 +57,13 @@ Historical details remain in the phase records and `CHANGELOG.md`. They are not 
 | 19.1 | **DONE** | Exercise Catalogue Audit — normalize names, aliases, measurement types, primary muscles, and duplicates; deploy high-confidence corrections and preserve ambiguous cases for explicit later review |
 | 19.2 | **DONE** | Volume Intelligence specification lock — evidence-backed personalized set-quality methodology, advanced-set credit, benchmark bands, eligibility, contribution semantics, reporting semantics, and versioning |
 | 19.3 | **DONE** | Complete exercise-to-muscle contribution matrix with direct/indirect credit, eligibility, confidence, and rationale |
-| 19.4 | **NEXT** | Versioned database foundation for methodology, mappings, benchmarks, RLS, and tests |
+| 19.3A | **NEXT** | Exercise Catalogue Expansion II — aggressively expand useful missing exercises, especially dumbbell movements, then refresh and revalidate the complete muscle-volume matrix |
+| 19.4 | **PLANNED** | Versioned database foundation for methodology, mappings, benchmarks, RLS, and tests |
 | 19.5 | **PLANNED** | Versioned personalized set-stimulus/effective-volume calculation and authenticated rolling 7/28-day read model |
 | 19.6 | **PLANNED** | TypeScript models and Progress service integration |
 | 19.7 | **PLANNED** | Mobile-first Training Volume UI under Progress |
-| 19.8 | **PLANNED** | Performance-aware volume recommendations using existing progression signals |
-| 19.9 | **PLANNED** | Weekly/monthly reporting, downloadable monthly PDF, data lifecycle/retention, capacity validation, regression, documentation, and production release |
+| 19.8 | **PLANNED** | Performance-aware volume recommendations plus actionable corrective volume plans when a muscle is below/above the appropriate target range |
+| 19.9 | **PLANNED** | Weekly/monthly reporting and downloadable monthly PDF with corrective action plans, plus lifecycle/retention, capacity validation, regression, documentation, and production release |
 
 ### Phase 19.0–19.1 locked catalogue rules
 
@@ -133,10 +134,20 @@ The 28-day v1 bands are exactly `4 ×` the weekly values. Muscle-specific confid
 - Each row carries mapping confidence, a review flag, set-quality mode, and rationale. Review flags preserve technique-sensitive or deferred cases without silently guessing.
 - The matrix validator must remain green before Phase 19.4 consumes the artifact. Phase 19.4 may normalize the matrix into versioned relational rows, but it must not silently alter the reviewed Phase 19.3 semantics.
 
+### Phase 19.3A locked expansion
+
+- Expand the catalogue before Phase 19.4 so the database foundation is generated from the final reviewed exercise set rather than immediately becoming stale.
+- Primary emphasis is missing **dumbbell** coverage while preserving the existing muscle-group-only picker taxonomy and existing equipment/workout-type metadata model.
+- Phase 19.3A adds **58 dumbbell exercises**, taking the active catalogue from **406 to 464** and active dumbbell coverage from **35 to 93**.
+- **50** new dumbbell resistance exercises are explicitly mapped into `muscle-volume-v1`; **8 FULL_BODY dumbbell ballistic/whole-body patterns** are added to the catalogue but remain explicitly excluded from v1 effective-volume calculations.
+- The existing `supabase/release/phase19-3-exercise-muscle-matrix.json` remains the single reviewed source matrix and is refreshed to **464 total / 326 eligible / 138 excluded-deferred** rather than creating a parallel mapping source.
+- No new picker categories, equipment hierarchies, or reportable muscle groups are introduced.
+- Phase 19.4 must not begin until the expanded catalogue, refreshed matrix, catalogue tests, and matrix validator are all green.
 ### Phase 19.9 locked reporting and retention plan
 
 - **In-app delivery is the primary report surface.** Training Volume remains available under Progress with live rolling 7-day and 28-day views.
 - Weekly reporting summarizes a completed weekly period and compares it with the previous comparable period where sufficient data exists.
+- Monthly and weekly reporting must include an **actionable corrective plan** when volume is meaningfully below or above the applicable target range. The plan should quantify the approximate effective-set adjustment, prefer exercises compatible with the user's established history/equipment, and must account for confidence and performance trend rather than reacting mechanically to a threshold.
 - Each completed month produces a **frozen monthly training snapshot** before report rendering so the report remains historically stable even if mappings, benchmarks, or recommendation logic change later.
 - Each user receives an in-app monthly report with a **view/download PDF** action.
 - The monthly PDF is stored privately and exposed only through an authenticated/short-lived access path.
@@ -151,27 +162,42 @@ The 28-day v1 bands are exactly `4 ×` the weekly values. Muscle-specific confid
 - Capacity measurements should be used to establish real per-active-user growth/egress rates before any aggressive retention tuning.
 - Report generation/replacement and retention jobs must be retry-safe and must preserve the previous valid artifact when a new generation attempt fails.
 
-## Phase 20 — Native architecture
+## Phase 20 — Personalized Training Programs
 
 | Phase | Status | Goal |
 |---|---|---|
-| 20.0 | **PLANNED** | Capacitor-first native architecture proof of concept |
-| 20.1 | **PLANNED** | Supported iOS/Android native shell around the existing React product |
-| 20.2 | **PLANNED** | Narrow native workout-state bridge, Superset-aware from day one |
-| 20.3 | **PLANNED** | Native lifecycle hardening across lock/background/reopen/network/update cases |
+| 20.0 | **PLANNED** | Personalized-program specification, safety boundaries, and persistence model |
+| 20.1 | **PLANNED** | Equipment/access profile — commercial gym can assume normal full equipment access; home setups explicitly select dumbbells, barbell/rack/bench, pull-up bar, cables, machines, bands, and other supported equipment |
+| 20.2 | **PLANNED** | Goal/frequency/performance-driven monthly program generator using available E1RM/history, requested workouts per week, and Phase 19 volume intelligence |
+| 20.3 | **PLANNED** | Exercise exclusion and intelligent substitution flow for unavailable equipment, physical limitations/injury restrictions, and user preference without making medical-safety claims |
+| 20.4 | **PLANNED** | Persist generated monthly programs in-app as structured workout templates/presets that can launch into the normal workout flow |
+| 20.5 | **PLANNED** | Adaptive progression across the month using completed-workout and performance feedback |
+| 20.6 | **PLANNED** | Program UI plus optional downloadable PDF export; the in-app structured program remains authoritative |
+| 20.7 | **PLANNED** | Regression, safety/quality validation, documentation, and production release |
+
+Phase 20 consumes Phase 19 intelligence rather than duplicating it. Program generation should use the user's goals, schedule, equipment, established exercise history/E1RM confidence, recent performance, and muscle-volume status. A generated exercise can be marked unavailable and replaced with a compatible alternative that preserves program intent as closely as possible. Injury/physical-limitation input is treated as an exclusion constraint, not a diagnosis or claim that a substitute is medically safe.
+
+## Phase 21 — Native architecture
+
+| Phase | Status | Goal |
+|---|---|---|
+| 21.0 | **PLANNED** | Capacitor-first native architecture proof of concept |
+| 21.1 | **PLANNED** | Supported iOS/Android native shell around the existing React product |
+| 21.2 | **PLANNED** | Narrow native workout-state bridge, Superset-aware from day one |
+| 21.3 | **PLANNED** | Native lifecycle hardening across lock/background/reopen/network/update cases |
 
 The PWA remains independently deployable. Native work must not fork product rules or make native code authoritative for workout/scoring state.
 
-## Phase 21 — Live workout surfaces
+## Phase 22 — Live workout surfaces
 
 | Phase | Status | Goal |
 |---|---|---|
-| 21.1 | **PLANNED** | Display-focused iPhone Live Activity / Dynamic Island surface |
-| 21.2 | **PLANNED** | Android ongoing/live workout surface using the same native bridge |
-| 21.3 | **OPTIONAL** | Idempotent interactive lock-screen workout controls after passive surfaces are stable |
+| 22.1 | **PLANNED** | Display-focused iPhone Live Activity / Dynamic Island surface |
+| 22.2 | **PLANNED** | Android ongoing/live workout surface using the same native bridge |
+| 22.3 | **OPTIONAL** | Idempotent interactive lock-screen workout controls after passive surfaces are stable |
 
 ## Execution order
 
-**PWA release complete → exercise catalogue expansion → catalogue audit → volume methodology lock → exercise-to-muscle contribution matrix → database foundation → personalized effective-volume engine → Progress integration → Training Volume UI → performance-aware recommendations → weekly/monthly reports + retention/capacity validation → production release → Capacitor proof → native shell → native workout bridge → native lifecycle hardening → iPhone Live Activity → Android live surface → optional interactive controls.**
+**PWA release complete → exercise catalogue expansion → catalogue audit → volume methodology lock → exercise-to-muscle contribution matrix → dumbbell-heavy catalogue expansion + matrix refresh → database foundation → personalized effective-volume engine → Progress integration → Training Volume UI → performance-aware recommendations/corrective actions → weekly/monthly reports + corrective PDF + retention/capacity validation → Phase 19 production release → personalized monthly-program foundation → equipment/access profile → program generator → exclusions/substitutions → in-app program persistence/adaptation + optional PDF → personalized-program release → Capacitor proof → native shell → native workout bridge → native lifecycle hardening → iPhone Live Activity → Android live surface → optional interactive controls.**
 
 Engineering/delivery rules live in [`../CONTRIBUTING.md`](../CONTRIBUTING.md); validation rules live in [`CI-VALIDATION.md`](CI-VALIDATION.md).

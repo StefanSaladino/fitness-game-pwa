@@ -369,9 +369,9 @@ The contribution model is independent from `exercise_catalog.primary_muscle_grou
 
 #### Phase 19.3 reviewed matrix
 
-The reviewed `muscle-volume-v1` exercise decision set lives at `supabase/release/phase19-3-exercise-muscle-matrix.json`. It is the source input for Phase 19.4 persistence and covers all **406 active canonical exercises** in the Phase 19.3 catalogue snapshot.
+The reviewed `muscle-volume-v1` exercise decision set lives at `supabase/release/phase19-3-exercise-muscle-matrix.json`. It remains the source input for Phase 19.4 persistence and, after the Phase 19.3A refresh, covers all **464 active canonical exercises** in the reviewed catalogue snapshot.
 
-- **276 exercises are volume-eligible** and **130 are explicitly excluded/deferred**.
+- After Phase 19.3A, **326 exercises are volume-eligible** and **138 are explicitly excluded/deferred**.
 - Eligible `WEIGHT_REPS` rows use the personalized weighted set-quality path; eligible plain `BODYWEIGHT_REPS` rows use the compatible repetition-baseline path.
 - `DURATION` and `OTHER` are excluded in v1 because Top Set does not yet have a methodology-compatible set-stimulus conversion for time, distance, assistance, bands, carries, or other nonstandard resistance inputs.
 - `FULL_BODY` movements are excluded in v1. Olympic/power, ballistic, strongman, and mixed whole-body patterns must not be passed through the ordinary Epley-derived hypertrophy set-quality model merely because some are stored as `WEIGHT_REPS`.
@@ -382,6 +382,8 @@ The reviewed `muscle-volume-v1` exercise decision set lives at `supabase/release
 - Technique-sensitive compounds carry `MEDIUM`/`LOW` mapping confidence and `review_flag = true` where execution can materially alter the contribution split.
 
 The matrix is deliberately explicit. Runtime code and Phase 19.4 migrations must not synthesize missing mappings with string matching, `primary_muscle_group`, or generic equipment rules. An exercise absent from an active versioned mapping is **not volume-eligible by implication**.
+
+- Phase 19.3A adds 58 dumbbell exercises without new picker categories. Fifty are explicitly mapped as eligible WEIGHT_REPS movements; eight FULL_BODY dumbbell ballistic/whole-body movements are catalogue-valid but remain excluded from v1 effective-volume calculations.
 
 ### 11.9 Weekly and 28-day benchmark bands
 
