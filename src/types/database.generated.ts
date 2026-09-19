@@ -1385,7 +1385,37 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      muscle_volume_set_stimulus: {
+        Row: {
+          baseline_confidence: string | null
+          baseline_session_count: number | null
+          baseline_value: number | null
+          bodyweight_mode: string | null
+          exercise_id: string | null
+          is_provisional: boolean | null
+          mapping_confidence: string | null
+          measurement_type: string | null
+          methodology_version: string | null
+          performance_index: number | null
+          recent_baseline_session_count: number | null
+          reps: number | null
+          review_flag: boolean | null
+          scoring_date: string | null
+          set_quality_confidence: string | null
+          set_quality_mode: string | null
+          set_quality_source: string | null
+          set_type: string | null
+          set_variant: string | null
+          stage_count: number | null
+          stage_index: number | null
+          stimulus_equivalents: number | null
+          user_id: string | null
+          weight_kg: number | null
+          workout_id: string | null
+          workout_set_id: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       accept_group_invite: { Args: { p_invite_id: string }; Returns: string }
@@ -1760,6 +1790,35 @@ export type Database = {
           current_week_target: number
           goals_hit: number
           recent_weeks: Json
+        }[]
+      }
+      get_my_muscle_volume: {
+        Args: { p_anchor_date?: string }
+        Returns: {
+          benchmark_evidence_confidence: string
+          direct_effective_sets: number
+          effective_sets: number
+          eligible_logical_sets: number
+          eligible_stages: number
+          high_confidence_effective_sets: number
+          high_confidence_proportion: number
+          high_review_above: number
+          indirect_effective_sets: number
+          low_or_provisional_effective_sets: number
+          low_or_provisional_proportion: number
+          medium_confidence_effective_sets: number
+          medium_confidence_proportion: number
+          methodology_version: string
+          muscle_group: string
+          provisional_effective_sets: number
+          review_flagged_logical_sets: number
+          target_max: number
+          target_midpoint: number
+          target_min: number
+          volume_status: string
+          window_days: number
+          window_end: string
+          window_start: string
         }[]
       }
       get_my_pending_group_invites: {

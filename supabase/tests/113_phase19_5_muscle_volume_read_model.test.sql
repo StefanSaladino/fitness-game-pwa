@@ -80,31 +80,21 @@ select is(
 
 insert into auth.users (id, email) values
   ('19500000-0000-4000-8000-000000000001', 'phase195-primary@test.local'),
-  ('19500000-0000-4000-8000-000000000002', 'phase195-other@test.local');
+  ('29500000-0000-4000-8000-000000000002', 'phase195-other@test.local');
 
-insert into public.profiles (
-  id,
-  username,
-  display_name,
-  timezone,
-  onboarding_completed_at
-)
-values
-  (
-    '19500000-0000-4000-8000-000000000001',
-    'phase195_primary',
-    'Phase 19.5 Primary',
-    'UTC',
-    now()
-  ),
-  (
-    '19500000-0000-4000-8000-000000000002',
-    'phase195_other',
-    'Phase 19.5 Other',
-    'UTC',
-    now()
-  );
+update public.profiles
+set username = 'phase195_primary',
+    display_name = 'Phase 19.5 Primary',
+    timezone = 'UTC',
+    onboarding_completed_at = now()
+where id = '19500000-0000-4000-8000-000000000001';
 
+update public.profiles
+set username = 'phase195_other',
+    display_name = 'Phase 19.5 Other',
+    timezone = 'UTC',
+    onboarding_completed_at = now()
+where id = '29500000-0000-4000-8000-000000000002';
 create temporary table phase195_exercises (
   kind text primary key,
   exercise_id uuid not null
@@ -211,7 +201,7 @@ values
   ),
   (
     '19500000-0000-4000-8000-000000001005',
-    '19500000-0000-4000-8000-000000000002',
+    '29500000-0000-4000-8000-000000000002',
     'STRENGTH',
     'COMPLETED',
     'IN_APP',
@@ -226,74 +216,7 @@ values
     false
   );
 
--- Prior workout exercise rows for Bench + Side Bend.
-insert into public.workout_exercises (
-  id,
-  workout_id,
-  exercise_id,
-  order_index
-)
-select
-  case w.id
-    when '19500000-0000-4000-8000-000000001001'::uuid then '19500000-0000-4000-8000-000000002001'::uuid
-    when '19500000-0000-4000-8000-000000001002'::uuid then '19500000-0000-4000-8000-000000002002'::uuid
-    else '19500000-0000-4000-8000-000000002003'::uuid
-  end,
-  w.id,
-  e.exercise_id,
-  0
-from public.workout_sessions w
-cross join phase195_exercises e
-where w.id in (
-  '19500000-0000-4000-8000-000000001001'::uuid,
-  '19500000-0000-4000-8000-000000001002'::uuid,
-  '19500000-0000-4000-8000-000000001003'::uuid
-)
-and e.kind = 'BENCH';
-
-insert into public.workout_exercises (
-  id,
-  workout_id,
-  exercise_id,
-  order_index
-)
-select
-  case w.id
-    when '19500000-0000-4000-8000-000000001001'::uuid then '19500000-0000-4000-8000-000000003001'::uuid
-    when '19500000-0000-4000-8000-000000001002'::uuid then '19500000-0000-4000-8000-000000003002'::uuid
-    else '19500000-0000-4000-8000-000000003003'::uuid
-  end,
-  w.id,
-  e.exercise_id,
-  1
-from public.workout_sessions w
-cross join phase195_exercises e
-where w.id in (
-  '19500000-0000-4000-8000-000000001001'::uuid,
-  '19500000-0000-4000-8000-000000001002'::uuid,
-  '19500000-0000-4000-8000-000000001003'::uuid
-)
-and e.kind = 'SIDE_BEND';
-
-insert into public.workout_sets (
-  workout_exercise_id,
-  set_number,
-  set_type,
-  set_variant,
-  weight_kg,
-  reps,
-  completed,
-  completed_at
-)
-select id, 1, 'WORKING', 'STANDARD', 100, 8, true, w.ended_at
-from public.workout_exercises we
-join public.workout_sessions w on w.id = we.workout_id
-where w.id in (
-  '19500000-0000-4000-8000-000000001001'::uuid,
-  '19500000-0000-4000-8000-000000001002'::uuid,
-  '19500000-0000-4000-8000-000000001003'::uuid
-);
-
+-- Seed the three historical E1RM observations used by the pre-workout baseline.
 insert into public.exercise_progress_observations (
   user_id,
   workout_id,
@@ -308,7 +231,7 @@ insert into public.exercise_progress_observations (
 select
   w.user_id,
   w.id,
-  we.exercise_id,
+  e.exercise_id,
   'E1RM',
   100::numeric * (1 + 8::numeric / 30),
   100,
@@ -316,13 +239,13 @@ select
   w.scoring_date,
   true
 from public.workout_sessions w
-join public.workout_exercises we on we.workout_id = w.id
+cross join phase195_exercises e
 where w.id in (
   '19500000-0000-4000-8000-000000001001'::uuid,
   '19500000-0000-4000-8000-000000001002'::uuid,
   '19500000-0000-4000-8000-000000001003'::uuid
-);
-
+)
+and e.kind in ('BENCH', 'SIDE_BEND');
 -- Current primary-user workout exercises.
 insert into public.workout_exercises (
   id,
@@ -548,6 +471,8 @@ values (
   true,
   '2026-09-19T12:30:00Z'
 );
+
+grant select on phase195_exercises to authenticated;
 
 set local role authenticated;
 set local request.jwt.claim.sub = '19500000-0000-4000-8000-000000000001';
