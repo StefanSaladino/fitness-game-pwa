@@ -57,8 +57,8 @@ Historical details remain in the phase records and `CHANGELOG.md`. They are not 
 | 19.1 | **DONE** | Exercise Catalogue Audit — normalize names, aliases, measurement types, primary muscles, and duplicates; deploy high-confidence corrections and preserve ambiguous cases for explicit later review |
 | 19.2 | **DONE** | Volume Intelligence specification lock — evidence-backed personalized set-quality methodology, advanced-set credit, benchmark bands, eligibility, contribution semantics, reporting semantics, and versioning |
 | 19.3 | **DONE** | Complete exercise-to-muscle contribution matrix with direct/indirect credit, eligibility, confidence, and rationale |
-| 19.3A | **NEXT** | Exercise Catalogue Expansion II — aggressively expand useful missing exercises, especially dumbbell movements, then refresh and revalidate the complete muscle-volume matrix |
-| 19.4 | **PLANNED** | Versioned database foundation for methodology, mappings, benchmarks, RLS, and tests |
+| 19.3A | **DONE** | Exercise Catalogue Expansion II — aggressively expand useful missing exercises, especially dumbbell movements, then refresh and revalidate the complete muscle-volume matrix |
+| 19.4 | **NEXT** | Versioned database foundation for methodology, mappings, benchmarks, RLS, and tests |
 | 19.5 | **PLANNED** | Versioned personalized set-stimulus/effective-volume calculation and authenticated rolling 7/28-day read model |
 | 19.6 | **PLANNED** | TypeScript models and Progress service integration |
 | 19.7 | **PLANNED** | Mobile-first Training Volume UI under Progress |
