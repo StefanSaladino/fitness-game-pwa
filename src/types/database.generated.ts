@@ -10,7 +10,32 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "14.17"
+    PostgrestVersion: "14.5"
+  }
+  graphql_public: {
+    Tables: {
+      [_ in never]: never
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      graphql: {
+        Args: {
+          extensions?: Json
+          operationName?: string
+          query?: string
+          variables?: Json
+        }
+        Returns: Json
+      }
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
   }
   public: {
     Tables: {
@@ -456,6 +481,226 @@ export type Database = {
           },
         ]
       }
+      muscle_volume_benchmarks: {
+        Row: {
+          created_at: string
+          evidence_confidence: string
+          high_review_above: number
+          methodology_version: string
+          muscle_group: string
+          target_max: number
+          target_midpoint: number
+          target_min: number
+          window_days: number
+        }
+        Insert: {
+          created_at?: string
+          evidence_confidence: string
+          high_review_above: number
+          methodology_version: string
+          muscle_group: string
+          target_max: number
+          target_midpoint: number
+          target_min: number
+          window_days: number
+        }
+        Update: {
+          created_at?: string
+          evidence_confidence?: string
+          high_review_above?: number
+          methodology_version?: string
+          muscle_group?: string
+          target_max?: number
+          target_midpoint?: number
+          target_min?: number
+          window_days?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "muscle_volume_benchmarks_methodology_version_fkey"
+            columns: ["methodology_version"]
+            isOneToOne: false
+            referencedRelation: "muscle_volume_methodologies"
+            referencedColumns: ["version"]
+          },
+        ]
+      }
+      muscle_volume_exercise_contributions: {
+        Row: {
+          contribution_role: string
+          contribution_weight: number
+          created_at: string
+          exercise_id: string
+          methodology_version: string
+          muscle_group: string
+        }
+        Insert: {
+          contribution_role: string
+          contribution_weight: number
+          created_at?: string
+          exercise_id: string
+          methodology_version: string
+          muscle_group: string
+        }
+        Update: {
+          contribution_role?: string
+          contribution_weight?: number
+          created_at?: string
+          exercise_id?: string
+          methodology_version?: string
+          muscle_group?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "muscle_volume_exercise_contri_methodology_version_exercise_fkey"
+            columns: ["methodology_version", "exercise_id"]
+            isOneToOne: false
+            referencedRelation: "muscle_volume_exercise_rules"
+            referencedColumns: ["methodology_version", "exercise_id"]
+          },
+        ]
+      }
+      muscle_volume_exercise_rules: {
+        Row: {
+          created_at: string
+          exercise_id: string
+          mapping_confidence: string
+          methodology_version: string
+          rationale: string
+          review_flag: boolean
+          set_quality_mode: string
+          volume_eligible: boolean
+        }
+        Insert: {
+          created_at?: string
+          exercise_id: string
+          mapping_confidence: string
+          methodology_version: string
+          rationale: string
+          review_flag?: boolean
+          set_quality_mode: string
+          volume_eligible: boolean
+        }
+        Update: {
+          created_at?: string
+          exercise_id?: string
+          mapping_confidence?: string
+          methodology_version?: string
+          rationale?: string
+          review_flag?: boolean
+          set_quality_mode?: string
+          volume_eligible?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "muscle_volume_exercise_rules_exercise_id_fkey"
+            columns: ["exercise_id"]
+            isOneToOne: false
+            referencedRelation: "exercise_catalog"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "muscle_volume_exercise_rules_methodology_version_fkey"
+            columns: ["methodology_version"]
+            isOneToOne: false
+            referencedRelation: "muscle_volume_methodologies"
+            referencedColumns: ["version"]
+          },
+        ]
+      }
+      muscle_volume_methodologies: {
+        Row: {
+          activated_at: string | null
+          baseline_established_min_sessions: number
+          baseline_window_days: number
+          bodyweight_baseline_formula: string
+          created_at: string
+          drop_continuation_credit: number
+          drop_max_multiplier: number
+          drop_min_continuation_reps: number
+          drop_requires_contiguous_segments: boolean
+          drop_requires_lower_load: boolean
+          epley_confidence_downgrade_from_reps: number
+          epley_max_reps: number
+          failure_full_credit_min_reps: number
+          full_credit_min_ratio: number
+          high_confidence_min_sessions: number
+          high_confidence_recent_days: number
+          is_active: boolean
+          low_status_fraction_of_target_min: number
+          notes: string
+          over_max_reps_credit_cap: number
+          partial_credit_min_ratio: number
+          provisional_full_credit_max_reps: number
+          provisional_full_credit_min_reps: number
+          pyramid_stages_independent: boolean
+          single_rep_credit_cap: number
+          superset_multiplier: number
+          version: string
+          weighted_baseline_formula: string
+        }
+        Insert: {
+          activated_at?: string | null
+          baseline_established_min_sessions: number
+          baseline_window_days: number
+          bodyweight_baseline_formula: string
+          created_at?: string
+          drop_continuation_credit: number
+          drop_max_multiplier: number
+          drop_min_continuation_reps: number
+          drop_requires_contiguous_segments: boolean
+          drop_requires_lower_load: boolean
+          epley_confidence_downgrade_from_reps: number
+          epley_max_reps: number
+          failure_full_credit_min_reps: number
+          full_credit_min_ratio: number
+          high_confidence_min_sessions: number
+          high_confidence_recent_days: number
+          is_active?: boolean
+          low_status_fraction_of_target_min: number
+          notes: string
+          over_max_reps_credit_cap: number
+          partial_credit_min_ratio: number
+          provisional_full_credit_max_reps: number
+          provisional_full_credit_min_reps: number
+          pyramid_stages_independent: boolean
+          single_rep_credit_cap: number
+          superset_multiplier: number
+          version: string
+          weighted_baseline_formula: string
+        }
+        Update: {
+          activated_at?: string | null
+          baseline_established_min_sessions?: number
+          baseline_window_days?: number
+          bodyweight_baseline_formula?: string
+          created_at?: string
+          drop_continuation_credit?: number
+          drop_max_multiplier?: number
+          drop_min_continuation_reps?: number
+          drop_requires_contiguous_segments?: boolean
+          drop_requires_lower_load?: boolean
+          epley_confidence_downgrade_from_reps?: number
+          epley_max_reps?: number
+          failure_full_credit_min_reps?: number
+          full_credit_min_ratio?: number
+          high_confidence_min_sessions?: number
+          high_confidence_recent_days?: number
+          is_active?: boolean
+          low_status_fraction_of_target_min?: number
+          notes?: string
+          over_max_reps_credit_cap?: number
+          partial_credit_min_ratio?: number
+          provisional_full_credit_max_reps?: number
+          provisional_full_credit_min_reps?: number
+          pyramid_stages_independent?: boolean
+          single_rep_credit_cap?: number
+          superset_multiplier?: number
+          version?: string
+          weighted_baseline_formula?: string
+        }
+        Relationships: []
+      }
       notification_preferences: {
         Row: {
           badge_achievements: boolean
@@ -736,6 +981,32 @@ export type Database = {
           },
         ]
       }
+      user_tracked_exercises: {
+        Row: {
+          created_at: string
+          exercise_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          exercise_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          exercise_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_tracked_exercises_exercise_id_fkey"
+            columns: ["exercise_id"]
+            isOneToOne: false
+            referencedRelation: "exercise_catalog"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       weekly_goals: {
         Row: {
           created_at: string
@@ -976,6 +1247,41 @@ export type Database = {
           },
         ]
       }
+      workout_set_segments: {
+        Row: {
+          created_at: string
+          id: string
+          reps: number | null
+          segment_index: number
+          weight_kg: number | null
+          workout_set_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          reps?: number | null
+          segment_index: number
+          weight_kg?: number | null
+          workout_set_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          reps?: number | null
+          segment_index?: number
+          weight_kg?: number | null
+          workout_set_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workout_set_segments_workout_set_id_fkey"
+            columns: ["workout_set_id"]
+            isOneToOne: false
+            referencedRelation: "workout_sets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       workout_sets: {
         Row: {
           bodyweight_mode: string | null
@@ -987,6 +1293,7 @@ export type Database = {
           revision: number
           set_number: number
           set_type: Database["public"]["Enums"]["set_type"]
+          set_variant: string
           weight_kg: number | null
           workout_exercise_id: string
         }
@@ -1000,6 +1307,7 @@ export type Database = {
           revision?: number
           set_number: number
           set_type?: Database["public"]["Enums"]["set_type"]
+          set_variant?: string
           weight_kg?: number | null
           workout_exercise_id: string
         }
@@ -1013,6 +1321,7 @@ export type Database = {
           revision?: number
           set_number?: number
           set_type?: Database["public"]["Enums"]["set_type"]
+          set_variant?: string
           weight_kg?: number | null
           workout_exercise_id?: string
         }
@@ -1083,6 +1392,10 @@ export type Database = {
       acknowledge_platform_message: {
         Args: { p_message_id: string }
         Returns: undefined
+      }
+      add_lifting_workout_advanced_set: {
+        Args: { p_variant: string; p_workout_exercise_id: string }
+        Returns: string
       }
       add_lifting_workout_exercise: {
         Args: { p_exercise_id: string; p_workout_id: string }
@@ -1254,7 +1567,7 @@ export type Database = {
         }[]
       }
       get_group_competition_leaderboard: {
-        Args: { p_group_id: string }
+        Args: { p_group_id: string; p_period?: string; p_week_start?: string }
         Returns: {
           badge_count: number
           display_name: string
@@ -1409,6 +1722,17 @@ export type Database = {
           observation_count: number
           previous_pr_value: number
           session_count: number
+        }[]
+      }
+      get_my_lifting_badge_progress: {
+        Args: never
+        Returns: {
+          badges: Json
+          best_completed_week_streak: number
+          cardio_bonus_day_count: number
+          goals_hit: number
+          lifting_day_count: number
+          pr_count: number
         }[]
       }
       get_my_lifting_calendar_summaries: {
@@ -1870,6 +2194,15 @@ export type Database = {
         Args: { p_reason: string; p_target_user_id: string }
         Returns: undefined
       }
+      save_lifting_workout_advanced_set: {
+        Args: {
+          p_completed: boolean
+          p_segments: Json
+          p_variant: string
+          p_workout_set_id: string
+        }
+        Returns: string
+      }
       save_lifting_workout_set: {
         Args: {
           p_bodyweight_mode: string
@@ -1939,10 +2272,23 @@ export type Database = {
         }
         Returns: undefined
       }
-      start_lifting_workout_from_preset: {
-        Args: { p_action_at?: string; p_exercise_ids: string[] }
-        Returns: Json
+      set_my_exercise_analytics_tracking: {
+        Args: { p_exercise_id: string; p_tracked: boolean }
+        Returns: boolean
       }
+      start_lifting_workout_from_preset:
+        | {
+            Args: { p_action_at?: string; p_exercise_ids: string[] }
+            Returns: Json
+          }
+        | {
+            Args: {
+              p_action_at?: string
+              p_exercise_ids: string[]
+              p_superset_groups: Json
+            }
+            Returns: Json
+          }
       start_or_resume_lifting_workout: { Args: never; Returns: string }
       start_or_resume_lifting_workout_intent: {
         Args: { p_action_at: string }
@@ -2124,12 +2470,12 @@ export type Tables<
   DefaultSchemaTableNameOrOptions extends
     | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
         DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -2153,11 +2499,11 @@ export type TablesInsert<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -2178,11 +2524,11 @@ export type TablesUpdate<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -2203,11 +2549,11 @@ export type Enums<
   DefaultSchemaEnumNameOrOptions extends
     | keyof DefaultSchema["Enums"]
     | { schema: keyof DatabaseWithoutInternals },
-  EnumName extends DefaultSchemaEnumNameOrOptions extends {
+  EnumName extends (DefaultSchemaEnumNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaEnumNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -2220,11 +2566,11 @@ export type CompositeTypes<
   PublicCompositeTypeNameOrOptions extends
     | keyof DefaultSchema["CompositeTypes"]
     | { schema: keyof DatabaseWithoutInternals },
-  CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
+  CompositeTypeName extends (PublicCompositeTypeNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
-    : never = never,
+    : never) = never,
 > = PublicCompositeTypeNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -2234,6 +2580,9 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
+  graphql_public: {
+    Enums: {},
+  },
   public: {
     Enums: {
       benchmark_state: ["UNSEEN", "CALIBRATING", "ESTABLISHED"],
@@ -2296,4 +2645,3 @@ export const Constants = {
     },
   },
 } as const
-
