@@ -62,8 +62,8 @@ Historical details remain in the phase records and `CHANGELOG.md`. They are not 
 | 19.5 | **DONE** | Versioned personalized set-stimulus/effective-volume calculation and authenticated rolling 7/28-day read model |
 | 19.6 | **DONE** | TypeScript models and Progress service integration |
 | 19.7 | **DONE** | Mobile-first Training Volume UI under Progress |
-| 19.8 | **NEXT** | Performance-aware volume recommendations plus actionable corrective volume plans when a muscle is below/above the appropriate target range |
-| 19.9 | **PLANNED** | Weekly/monthly reporting and downloadable monthly PDF with corrective action plans, plus lifecycle/retention, capacity validation, regression, documentation, and production release |
+| 19.8 | **DONE** | Performance-aware volume recommendations plus actionable corrective volume plans when a muscle is below/above the appropriate target range |
+| 19.9 | **NEXT** | Weekly/monthly reporting and downloadable monthly PDF with corrective action plans, plus lifecycle/retention, capacity validation, regression, documentation, and production release |
 
 ### Phase 19.0–19.1 locked catalogue rules
 

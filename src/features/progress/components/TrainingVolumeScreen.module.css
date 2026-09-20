@@ -36,7 +36,8 @@
 }
 
 .backButton:focus-visible,
-.windowControl button:focus-visible {
+.windowControl button:focus-visible,
+.cardSummary:focus-visible {
   outline: 2px solid var(--color-accent-hover);
   outline-offset: 2px;
 }
@@ -237,29 +238,63 @@
 .cardGrid {
   display: grid;
   min-width: 0;
+  align-items: start;
   gap: var(--app-section-gap);
 }
 
 .muscleCard {
-  display: grid;
   min-width: 0;
-  gap: var(--space-4);
+  align-self: start;
+  overflow: hidden;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
-  padding: var(--app-surface-padding);
   background: var(--color-surface);
-  box-shadow: var(--shadow-card);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.12);
+  transition:
+    border-color 160ms ease,
+    background 160ms ease,
+    box-shadow 160ms ease;
 }
 
-.cardHeader {
-  display: flex;
+.muscleCard:hover {
+  border-color: var(--color-border-strong);
+}
+
+.muscleCard[open] {
+  border-color: rgba(241, 90, 8, 0.22);
+  background: var(--color-surface-strong);
+  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.2);
+}
+
+.cardSummary {
+  display: grid;
   min-width: 0;
+  grid-template-columns: minmax(0, 1fr) auto auto auto;
+  grid-template-areas:
+    'identity stats status toggle'
+    'meter meter meter meter';
   align-items: center;
-  justify-content: space-between;
-  gap: var(--space-3);
+  gap: 11px var(--space-4);
+  padding: 15px 17px 13px;
+  cursor: pointer;
+  list-style: none;
+  user-select: none;
+}
+
+.cardSummary::-webkit-details-marker {
+  display: none;
+}
+
+.cardSummary::marker {
+  content: '';
+}
+
+.cardSummary:hover {
+  background: rgba(255, 255, 255, 0.012);
 }
 
 .muscleIdentity {
+  grid-area: identity;
   display: flex;
   min-width: 0;
   align-items: center;
@@ -268,9 +303,9 @@
 
 .iconFrame {
   display: grid;
-  width: 56px;
-  height: 56px;
-  flex: 0 0 56px;
+  width: 50px;
+  height: 50px;
+  flex: 0 0 50px;
   place-items: center;
   overflow: hidden;
   border: 1px solid var(--color-border);
@@ -279,8 +314,8 @@
 }
 
 .iconFrame img {
-  width: 48px;
-  height: 48px;
+  width: 43px;
+  height: 43px;
   object-fit: contain;
 }
 
@@ -291,28 +326,66 @@
 
 .muscleIdentity p {
   color: var(--color-text-muted);
-  font-size: 0.62rem;
+  font-size: 0.59rem;
   font-weight: 740;
-  letter-spacing: 0.07em;
+  letter-spacing: 0.075em;
   text-transform: uppercase;
 }
 
 .muscleIdentity h2 {
+  max-width: 100%;
   margin-top: 2px;
+  overflow: hidden;
   color: var(--color-text);
-  font-size: 1.25rem;
-  letter-spacing: -0.03em;
+  font-size: 1.08rem;
+  letter-spacing: -0.025em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.summaryStats {
+  grid-area: stats;
+  display: flex;
+  min-width: 0;
+  align-items: stretch;
+  gap: 13px;
+}
+
+.summaryStats > div {
+  display: grid;
+  min-width: 64px;
+  align-content: center;
+  gap: 2px;
+}
+
+.summaryStats > div + div {
+  border-left: 1px solid rgba(255, 255, 255, 0.07);
+  padding-left: 13px;
+}
+
+.summaryStats strong {
+  color: var(--color-text);
+  font-size: 1rem;
+  letter-spacing: -0.035em;
+  line-height: 1;
+}
+
+.summaryStats span {
+  color: var(--color-text-muted);
+  font-size: 0.56rem;
+  white-space: nowrap;
 }
 
 .statusPill {
+  grid-area: status;
   flex: 0 0 auto;
   border-radius: 999px;
   padding: 5px 8px;
   color: var(--color-text-muted);
   background: var(--color-surface-strong);
-  font-size: 0.6rem;
+  font-size: 0.56rem;
   font-weight: 780;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.035em;
   text-transform: uppercase;
   white-space: nowrap;
 }
@@ -334,44 +407,63 @@
   background: rgba(255, 156, 156, 0.1);
 }
 
-.primaryMetric {
-  display: grid;
+.summaryToggle {
+  grid-area: toggle;
+  display: inline-flex;
   min-width: 0;
-  grid-template-columns: auto minmax(0, 1fr);
-  align-items: end;
-  gap: var(--space-4);
-}
-
-.primaryMetric > div {
-  display: grid;
-  gap: 0;
-}
-
-.primaryMetric strong {
-  color: var(--color-text);
-  font-size: clamp(2.1rem, 8vw, 3.1rem);
-  letter-spacing: -0.055em;
-  line-height: 0.95;
-}
-
-.primaryMetric span {
+  align-items: center;
+  gap: 8px;
   color: var(--color-text-muted);
-  font-size: 0.68rem;
+  font-size: 0.61rem;
+  font-weight: 720;
+  white-space: nowrap;
 }
 
-.primaryMetric p {
-  margin: 0;
-  color: var(--color-text-muted);
-  font-size: 0.72rem;
-  line-height: 1.45;
+.summaryToggleOpen {
+  display: none;
 }
 
-.meter {
+.summaryChevron {
+  width: 8px;
+  height: 8px;
+  border-right: 1.5px solid currentColor;
+  border-bottom: 1.5px solid currentColor;
+  color: var(--color-text-soft);
+  transform: rotate(45deg) translateY(-2px);
+  transition: transform 160ms ease;
+}
+
+.muscleCard[open] .summaryToggleClosed {
+  display: none;
+}
+
+.muscleCard[open] .summaryToggleOpen {
+  display: inline;
+}
+
+.muscleCard[open] .summaryChevron {
+  transform: rotate(225deg) translate(-1px, -1px);
+}
+
+.summaryMeter {
   position: relative;
-  height: 10px;
+  grid-area: meter;
+  height: 0;
+  margin-top: -2px;
   overflow: hidden;
   border-radius: 999px;
+  opacity: 0;
   background: var(--color-bg-elevated);
+  transition:
+    height 180ms ease,
+    margin-top 180ms ease,
+    opacity 140ms ease;
+}
+
+.muscleCard[open] .summaryMeter {
+  height: 9px;
+  margin-top: 2px;
+  opacity: 1;
 }
 
 .targetBand,
@@ -385,7 +477,7 @@
 .targetBand {
   left: var(--target-start);
   width: var(--target-width);
-  background: rgba(82, 216, 120, 0.2);
+  background: rgba(82, 216, 120, 0.19);
 }
 
 .meterFill {
@@ -406,7 +498,69 @@
 .reviewMarker {
   left: var(--review-point);
   width: 1px;
-  background: rgba(255, 255, 255, 0.55);
+  background: rgba(255, 255, 255, 0.48);
+}
+
+.cardBody {
+  display: grid;
+  min-width: 0;
+  gap: var(--space-4);
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+  padding: 18px;
+  animation: cardReveal 150ms ease-out;
+}
+
+@keyframes cardReveal {
+  from {
+    opacity: 0.45;
+    transform: translateY(-4px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.expandedGrid {
+  display: grid;
+  min-width: 0;
+  gap: var(--space-4);
+}
+
+.volumeDetail {
+  display: grid;
+  min-width: 0;
+  align-content: start;
+  gap: var(--space-3);
+}
+
+.detailHeading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.detailHeading span {
+  color: var(--color-text-muted);
+  font-size: 0.59rem;
+  font-weight: 760;
+  letter-spacing: 0.075em;
+  text-transform: uppercase;
+}
+
+.detailHeading strong {
+  color: var(--color-text-soft);
+  font-size: 0.75rem;
+}
+
+.volumeContext {
+  margin: 0;
+  max-width: 640px;
+  color: var(--color-text-soft);
+  font-size: 0.72rem;
+  line-height: 1.5;
 }
 
 .targetLabels {
@@ -415,9 +569,8 @@
   flex-wrap: wrap;
   justify-content: space-between;
   gap: var(--space-1) var(--space-3);
-  margin-top: calc(-1 * var(--space-2));
   color: var(--color-text-muted);
-  font-size: 0.64rem;
+  font-size: 0.61rem;
 }
 
 .breakdown {
@@ -433,24 +586,183 @@
   display: grid;
   min-width: 0;
   gap: 4px;
-  padding: var(--space-3);
+  padding: 11px 12px;
 }
 
 .breakdown > div + div {
-  border-left: 1px solid rgba(255, 255, 255, 0.07);
+  border-left: 1px solid rgba(255, 255, 255, 0.06);
 }
 
 .breakdown dt {
   color: var(--color-text-muted);
-  font-size: 0.6rem;
+  font-size: 0.56rem;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
 }
 
 .breakdown dd {
   margin: 0;
   color: var(--color-text);
-  font-size: 0.9rem;
+  font-size: 0.88rem;
   font-weight: 740;
+}
+
+.recommendationState {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: clamp(16px, 3vw, 22px);
+  color: var(--color-text-muted);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-card);
+  font-size: 0.72rem;
+  line-height: 1.45;
+}
+
+.recommendationState > div {
+  display: grid;
+  gap: 3px;
+}
+
+.recommendationState strong {
+  color: var(--color-text-soft);
+}
+
+.recommendationPanel {
+  display: grid;
+  min-width: 0;
+  align-content: start;
+  gap: var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 14px;
+  background: var(--color-bg-elevated);
+  box-shadow: inset 3px 0 0 var(--color-border-strong);
+}
+
+.recommendationPanel[data-recommendation-action='ADD_VOLUME_CAUTIOUSLY'] {
+  box-shadow: inset 3px 0 0 var(--color-accent);
+}
+
+.recommendationPanel[data-recommendation-action='MAINTAIN'] {
+  box-shadow: inset 3px 0 0 var(--color-green);
+}
+
+.recommendationPanel[data-recommendation-action='HOLD_AND_REVIEW'],
+.recommendationPanel[data-recommendation-action='REDUCE_VOLUME_CAUTIOUSLY'] {
+  box-shadow: inset 3px 0 0 var(--color-danger);
+}
+
+.recommendationHeader {
+  display: flex;
+  min-width: 0;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.recommendationHeader > div {
+  display: grid;
+  gap: 2px;
+}
+
+.recommendationHeader span:first-child {
+  color: var(--color-text-muted);
+  font-size: 0.56rem;
+  font-weight: 740;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.recommendationHeader strong {
+  color: var(--color-text);
+  font-size: 1rem;
+}
+
+.recommendationAction {
+  flex: 0 0 auto;
+  border-radius: 999px;
+  padding: 5px 8px;
+  color: var(--color-text-soft);
+  background: var(--color-surface-strong);
+  font-size: 0.56rem;
+  font-weight: 780;
+  white-space: nowrap;
+}
+
+.recommendationPanel[data-recommendation-action='ADD_VOLUME_CAUTIOUSLY'] .recommendationAction {
+  color: var(--color-accent-hover);
+  background: var(--color-accent-soft);
+}
+
+.recommendationPanel[data-recommendation-action='MAINTAIN'] .recommendationAction {
+  color: var(--color-green);
+  background: var(--color-green-soft);
+}
+
+.recommendationPanel[data-recommendation-action='HOLD_AND_REVIEW'] .recommendationAction,
+.recommendationPanel[data-recommendation-action='REDUCE_VOLUME_CAUTIOUSLY'] .recommendationAction {
+  color: var(--color-danger);
+  background: rgba(255, 156, 156, 0.1);
+}
+
+.recommendationMeta {
+  display: flex;
+  min-width: 0;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.recommendationMeta span {
+  border-radius: 999px;
+  padding: 4px 7px;
+  color: var(--color-text-muted);
+  background: var(--color-surface-strong);
+  font-size: 0.56rem;
+}
+
+.recommendationCopy {
+  display: grid;
+  gap: 4px;
+}
+
+.recommendationCopy strong,
+.recommendationCopy p {
+  margin: 0;
+}
+
+.recommendationCopy strong {
+  color: var(--color-text-soft);
+  font-size: 0.75rem;
+}
+
+.recommendationCopy p {
+  color: var(--color-text-muted);
+  font-size: 0.66rem;
+  line-height: 1.5;
+}
+
+.recommendationFooter {
+  display: flex;
+  min-width: 0;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-3);
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  padding-top: var(--space-2);
+  color: var(--color-text-muted);
+  font-size: 0.59rem;
+  line-height: 1.4;
+}
+
+.recommendationFooter span:first-child {
+  color: var(--color-text-soft);
+  font-weight: 740;
+  white-space: nowrap;
 }
 
 .confidence {
@@ -466,7 +778,7 @@
   justify-content: space-between;
   gap: var(--space-2);
   color: var(--color-text-muted);
-  font-size: 0.62rem;
+  font-size: 0.59rem;
 }
 
 .confidenceHeading span:first-child {
@@ -497,15 +809,17 @@
 .confidence p {
   margin: 0;
   color: var(--color-text-muted);
-  font-size: 0.66rem;
+  font-size: 0.64rem;
 }
 
 .reviewNote {
   margin: 0;
   border-left: 3px solid var(--color-danger);
-  padding-left: var(--space-3);
+  border-radius: var(--radius-sm);
+  padding: 8px 10px;
   color: var(--color-danger);
-  font-size: 0.66rem;
+  background: rgba(255, 156, 156, 0.06);
+  font-size: 0.63rem;
   line-height: 1.4;
 }
 
@@ -518,8 +832,44 @@
 }
 
 @media (min-width: 760px) {
+  .expandedGrid {
+    grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
+    align-items: start;
+  }
+}
+
+@media (min-width: 1100px) {
   .cardGrid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .muscleCard[open] {
+    grid-column: 1 / -1;
+  }
+
+  .muscleCard[open] .cardBody {
+    padding: 22px;
+  }
+}
+
+@media (max-width: 759px) {
+  .expandedGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .recommendationState {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .recommendationHeader,
+  .recommendationFooter {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .recommendationFooter span:first-child {
+    white-space: normal;
   }
 }
 
@@ -548,6 +898,49 @@
     width: 100%;
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+
+  .cardSummary {
+    grid-template-columns: minmax(0, 1fr) auto auto;
+    grid-template-areas:
+      'identity status toggle'
+      'stats stats stats'
+      'meter meter meter';
+    gap: 10px 12px;
+    padding: 14px;
+  }
+
+  .summaryStats {
+    width: 100%;
+    justify-content: flex-start;
+    gap: 16px;
+    padding-left: 62px;
+  }
+
+  .summaryStats > div {
+    min-width: 76px;
+  }
+
+  .summaryToggleClosed,
+  .summaryToggleOpen {
+    display: none !important;
+  }
+
+  .cardBody {
+    padding: 14px;
+  }
+
+  .breakdown {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .breakdown > div:nth-child(3) {
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+    border-left: 0;
+  }
+
+  .breakdown > div:nth-child(4) {
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+  }
 }
 
 @media (min-width: 1024px) {
@@ -562,9 +955,23 @@
   }
 }
 
-@media (max-width: 420px) {
-  .cardHeader {
-    align-items: flex-start;
+@media (max-width: 440px) {
+  .cardSummary {
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      'identity toggle'
+      'status status'
+      'stats stats'
+      'meter meter';
+  }
+
+  .statusPill {
+    justify-self: start;
+    margin-left: 62px;
+  }
+
+  .summaryStats {
+    padding-left: 62px;
   }
 
   .iconFrame {
@@ -574,26 +981,26 @@
   }
 
   .iconFrame img {
-    width: 42px;
-    height: 42px;
+    width: 41px;
+    height: 41px;
   }
 
-  .primaryMetric {
-    grid-template-columns: 1fr;
-    align-items: start;
-  }
-
-  .breakdown {
+  .targetLabels {
+    display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .breakdown > div:nth-child(3) {
-    border-top: 1px solid rgba(255, 255, 255, 0.07);
-    border-left: 0;
+  .targetLabels span:last-child {
+    grid-column: 1 / -1;
   }
 
-  .breakdown > div:nth-child(4) {
-    border-top: 1px solid rgba(255, 255, 255, 0.07);
+  .recommendationHeader {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .recommendationAction {
+    align-self: flex-start;
   }
 
   .confidenceHeading,
@@ -601,5 +1008,53 @@
     align-items: flex-start;
     flex-direction: column;
     gap: 3px;
+  }
+}
+
+@media (max-width: 350px) {
+  .cardSummary,
+  .cardBody {
+    padding: 12px;
+  }
+
+  .statusPill {
+    margin-left: 0;
+  }
+
+  .summaryStats {
+    padding-left: 0;
+  }
+
+  .summaryStats > div {
+    min-width: 0;
+  }
+
+  .muscleIdentity {
+    gap: 10px;
+  }
+
+  .iconFrame {
+    width: 44px;
+    height: 44px;
+    flex-basis: 44px;
+  }
+
+  .iconFrame img {
+    width: 38px;
+    height: 38px;
+  }
+
+  .muscleIdentity h2 {
+    font-size: 1rem;
+  }
+
+  .breakdown {
+    grid-template-columns: 1fr;
+  }
+
+  .breakdown > div + div,
+  .breakdown > div:nth-child(3) {
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+    border-left: 0;
   }
 }

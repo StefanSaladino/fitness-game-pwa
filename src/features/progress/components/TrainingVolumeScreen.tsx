@@ -25,6 +25,13 @@ import {
   type MuscleVolumeSummary,
   type MuscleVolumeWindowDays,
 } from '../model';
+import type { MusclePerformanceTrend } from '../performanceTrendEngine';
+import {
+  indexMuscleVolumeRecommendationPayloads,
+  muscleVolumeRecommendationPayloadKey,
+  type MuscleVolumeRecommendationPayload,
+} from '../muscleVolumeRecommendationModel';
+import type { VolumeRecommendationAction } from '../volumeRecommendationEngine';
 import styles from './TrainingVolumeScreen.module.css';
 
 interface TrainingVolumeScreenProps {
@@ -36,6 +43,10 @@ interface TrainingVolumeScreenProps {
   onSignOut: () => void;
   onBack: () => void;
   onRetry: () => void;
+  recommendations?: MuscleVolumeRecommendationPayload[];
+  recommendationStatus?: ExerciseProgressStatus;
+  recommendationError?: string;
+  onRetryRecommendations?: () => void;
 }
 
 const MUSCLE_META: Record<MuscleVolumeMuscleGroup, { label: string; icon: string }> = {
@@ -76,6 +87,26 @@ const STATUS_CONTEXT: Record<MuscleVolumeStatus, string> = {
   HIGH_REVIEW: 'Effective volume is above the review threshold. This is a context flag, not an automatic instruction to reduce training.',
 };
 
+const TREND_LABELS: Record<MusclePerformanceTrend, string> = {
+  IMPROVING: 'Improving',
+  DECLINING: 'Declining',
+  STABLE: 'Stable',
+  PLATEAU: 'Plateau',
+  VARIABLE: 'Variable',
+  RECOVERING: 'Recovering',
+  REGRESSING: 'Regressing',
+  INSUFFICIENT_DATA: 'Gathering data',
+};
+
+const ACTION_LABELS: Record<VolumeRecommendationAction, string> = {
+  NO_ACTION: 'No action yet',
+  MONITOR: 'Monitor',
+  MAINTAIN: 'Maintain',
+  ADD_VOLUME_CAUTIOUSLY: 'Add cautiously',
+  HOLD_AND_REVIEW: 'Hold & review',
+  REDUCE_VOLUME_CAUTIOUSLY: 'Reduce cautiously',
+};
+
 function formatSets(value: number): string {
   return value.toLocaleString('en-CA', {
     maximumFractionDigits: 1,
@@ -113,15 +144,85 @@ function meterStyle(row: MuscleVolumeSummary): CSSProperties {
   } as CSSProperties;
 }
 
-function MuscleVolumeCard({ row }: { row: MuscleVolumeSummary }) {
+function recommendationDelta(
+  recommendation: MuscleVolumeRecommendationPayload['recommendation'],
+): string {
+  const value = recommendation.suggestedEffectiveSetChange;
+
+  if (value === null) return 'No set change yet';
+  if (value === 0) return 'No set change';
+  return `${value > 0 ? '+' : '−'}${formatSets(Math.abs(value))} effective sets · next 7 days`;
+}
+
+function RecommendationPanel({
+  payload,
+}: {
+  payload: MuscleVolumeRecommendationPayload;
+}) {
+  const { performance, recommendation, sources } = payload;
+
+  return (
+    <section
+      className={styles.recommendationPanel}
+      data-recommendation-action={recommendation.action}
+      aria-label={`${TREND_LABELS[performance.trend]} performance recommendation`}
+    >
+      <div className={styles.recommendationHeader}>
+        <div>
+          <span>Performance trend</span>
+          <strong>{TREND_LABELS[performance.trend]}</strong>
+        </div>
+        <span className={styles.recommendationAction}>
+          {ACTION_LABELS[recommendation.action]}
+        </span>
+      </div>
+
+      <div className={styles.recommendationMeta}>
+        <span>{confidenceLabel(performance.persistence)} trend</span>
+        <span>{confidenceLabel(performance.confidence)} confidence</span>
+        <span>{performance.evidenceCount} training day{performance.evidenceCount === 1 ? '' : 's'}</span>
+        <span>{performance.exerciseCount} exercise{performance.exerciseCount === 1 ? '' : 's'}</span>
+      </div>
+
+      <div className={styles.recommendationCopy}>
+        <strong>{recommendation.headline}</strong>
+        <p>{recommendation.rationale}</p>
+      </div>
+
+      <div className={styles.recommendationFooter}>
+        <span>{recommendationDelta(recommendation)}</span>
+        {sources.length > 0 && (
+          <span>
+            Evidence: {sources.slice(0, 3).map((source) => source.canonicalName).join(', ')}
+          </span>
+        )}
+      </div>
+    </section>
+  );
+}
+
+function MuscleVolumeCard({
+  row,
+  recommendation,
+}: {
+  row: MuscleVolumeSummary;
+  recommendation?: MuscleVolumeRecommendationPayload;
+}) {
   const meta = MUSCLE_META[row.muscleGroup];
   const highPercent = Math.round(row.highConfidenceProportion * 100);
   const mediumPercent = Math.round(row.mediumConfidenceProportion * 100);
   const lowerPercent = Math.round(row.lowOrProvisionalProportion * 100);
 
   return (
-    <article className={styles.muscleCard} data-muscle-volume-card data-volume-status={row.volumeStatus}>
-      <header className={styles.cardHeader}>
+    <details
+      className={styles.muscleCard}
+      data-muscle-volume-card
+      data-volume-status={row.volumeStatus}
+    >
+      <summary
+        aria-label={`${meta.label} volume details`}
+        className={styles.cardSummary}
+      >
         <div className={styles.muscleIdentity}>
           <div className={styles.iconFrame}>
             <img alt="" aria-hidden="true" src={meta.icon} />
@@ -132,83 +233,101 @@ function MuscleVolumeCard({ row }: { row: MuscleVolumeSummary }) {
           </div>
         </div>
 
+        <div className={styles.summaryStats} aria-label={`${meta.label} volume summary`}>
+          <div>
+            <strong>{formatSets(row.effectiveSets)}</strong>
+            <span>effective sets</span>
+          </div>
+          <div>
+            <strong>{formatSets(row.targetMin)}–{formatSets(row.targetMax)}</strong>
+            <span>target</span>
+          </div>
+        </div>
+
         <span className={styles.statusPill}>{STATUS_LABELS[row.volumeStatus]}</span>
-      </header>
 
-      <div className={styles.primaryMetric}>
-        <div>
-          <strong>{formatSets(row.effectiveSets)}</strong>
-          <span>effective sets</span>
-        </div>
-        <p>{STATUS_CONTEXT[row.volumeStatus]}</p>
-      </div>
+        <span aria-hidden="true" className={styles.summaryToggle}>
+          <span className={styles.summaryToggleClosed}>Details</span>
+          <span className={styles.summaryToggleOpen}>Close</span>
+          <span className={styles.summaryChevron} />
+        </span>
 
-      <div
-        aria-label={`${meta.label}: ${formatSets(row.effectiveSets)} effective sets; target ${formatSets(row.targetMin)} to ${formatSets(row.targetMax)}`}
-        className={styles.meter}
-        role="img"
-        style={meterStyle(row)}
-      >
-        <span className={styles.targetBand} aria-hidden="true" />
-        <span className={styles.meterFill} aria-hidden="true" />
-        <span className={styles.reviewMarker} aria-hidden="true" />
-      </div>
+        <div className={styles.summaryMeter} aria-hidden="true" style={meterStyle(row)}>
+          <span className={styles.targetBand} />
+          <span className={styles.meterFill} />
+          <span className={styles.reviewMarker} />
+        </div>
+      </summary>
 
-      <div className={styles.targetLabels}>
-        <span>Target {formatSets(row.targetMin)}–{formatSets(row.targetMax)}</span>
-        <span>Midpoint {formatSets(row.targetMidpoint)}</span>
-        <span>Review above {formatSets(row.highReviewAbove)}</span>
-      </div>
-
-      <dl className={styles.breakdown}>
-        <div>
-          <dt>Direct</dt>
-          <dd>{formatSets(row.directEffectiveSets)}</dd>
-        </div>
-        <div>
-          <dt>Indirect</dt>
-          <dd>{formatSets(row.indirectEffectiveSets)}</dd>
-        </div>
-        <div>
-          <dt>Logical sets</dt>
-          <dd>{formatSets(row.eligibleLogicalSets)}</dd>
-        </div>
-        <div>
-          <dt>Scored stages</dt>
-          <dd>{formatSets(row.eligibleStages)}</dd>
-        </div>
-      </dl>
-
-      <div className={styles.confidence}>
-        <div className={styles.confidenceHeading}>
-          <span>Set confidence</span>
-          <span>{confidenceLabel(row.benchmarkEvidenceConfidence)} benchmark evidence</span>
-        </div>
-
-        {row.effectiveSets > 0 ? (
-          <>
-            <div className={styles.confidenceBar} aria-hidden="true">
-              <span style={{ width: `${highPercent}%` }} />
-              <span style={{ width: `${mediumPercent}%` }} />
-              <span style={{ width: `${lowerPercent}%` }} />
+      <div className={styles.cardBody}>
+        <div className={styles.expandedGrid}>
+          <section className={styles.volumeDetail}>
+            <div className={styles.detailHeading}>
+              <span>Volume position</span>
+              <strong>{STATUS_LABELS[row.volumeStatus]}</strong>
             </div>
-            <div className={styles.confidenceLegend}>
-              <span>{highPercent}% high</span>
-              <span>{mediumPercent}% medium</span>
-              <span>{lowerPercent}% lower / provisional</span>
+
+            <p className={styles.volumeContext}>{STATUS_CONTEXT[row.volumeStatus]}</p>
+            <div className={styles.targetLabels}>
+              <span>Target {formatSets(row.targetMin)}–{formatSets(row.targetMax)}</span>
+              <span>Midpoint {formatSets(row.targetMidpoint)}</span>
+              <span>Review above {formatSets(row.highReviewAbove)}</span>
             </div>
-          </>
-        ) : (
-          <p>No eligible effective-set confidence distribution in this window.</p>
+
+            <dl className={styles.breakdown}>
+              <div>
+                <dt>Direct</dt>
+                <dd>{formatSets(row.directEffectiveSets)}</dd>
+              </div>
+              <div>
+                <dt>Indirect</dt>
+                <dd>{formatSets(row.indirectEffectiveSets)}</dd>
+              </div>
+              <div>
+                <dt>Logical sets</dt>
+                <dd>{formatSets(row.eligibleLogicalSets)}</dd>
+              </div>
+              <div>
+                <dt>Scored stages</dt>
+                <dd>{formatSets(row.eligibleStages)}</dd>
+              </div>
+            </dl>
+          </section>
+
+          {recommendation && <RecommendationPanel payload={recommendation} />}
+        </div>
+
+        <div className={styles.confidence}>
+          <div className={styles.confidenceHeading}>
+            <span>Set confidence</span>
+            <span>{confidenceLabel(row.benchmarkEvidenceConfidence)} benchmark evidence</span>
+          </div>
+
+          {row.effectiveSets > 0 ? (
+            <>
+              <div className={styles.confidenceBar} aria-hidden="true">
+                <span style={{ width: `${highPercent}%` }} />
+                <span style={{ width: `${mediumPercent}%` }} />
+                <span style={{ width: `${lowerPercent}%` }} />
+              </div>
+              <div className={styles.confidenceLegend}>
+                <span>{highPercent}% high</span>
+                <span>{mediumPercent}% medium</span>
+                <span>{lowerPercent}% lower / provisional</span>
+              </div>
+            </>
+          ) : (
+            <p>No eligible effective-set confidence distribution in this window.</p>
+          )}
+        </div>
+
+        {row.reviewFlaggedLogicalSets > 0 && (
+          <p className={styles.reviewNote}>
+            {row.reviewFlaggedLogicalSets} logical set{row.reviewFlaggedLogicalSets === 1 ? '' : 's'} flagged for review.
+          </p>
         )}
       </div>
-
-      {row.reviewFlaggedLogicalSets > 0 && (
-        <p className={styles.reviewNote}>
-          {row.reviewFlaggedLogicalSets} logical set{row.reviewFlaggedLogicalSets === 1 ? '' : 's'} flagged for review.
-        </p>
-      )}
-    </article>
+    </details>
   );
 }
 
@@ -221,6 +340,10 @@ export function TrainingVolumeScreen({
   onSignOut,
   onBack,
   onRetry,
+  recommendations = [],
+  recommendationStatus = 'ready',
+  recommendationError = '',
+  onRetryRecommendations = () => {},
 }: TrainingVolumeScreenProps) {
   const [windowDays, setWindowDays] = useState<MuscleVolumeWindowDays>(7);
 
@@ -235,6 +358,11 @@ export function TrainingVolumeScreen({
       .map((muscleGroup) => byMuscle.get(muscleGroup))
       .filter((row): row is MuscleVolumeSummary => Boolean(row));
   }, [rows, windowDays]);
+
+  const recommendationIndex = useMemo(
+    () => indexMuscleVolumeRecommendationPayloads(recommendations),
+    [recommendations],
+  );
 
   const summary = useMemo(() => {
     const counts = {
@@ -342,14 +470,45 @@ export function TrainingVolumeScreen({
               </div>
             </section>
 
+            {recommendationStatus === 'loading' && (
+              <section className={styles.recommendationState} role="status">
+                Analyzing your continuing performance trends…
+              </section>
+            )}
+
+            {recommendationStatus === 'error' && (
+              <section className={styles.recommendationState} role="alert">
+                <div>
+                  <strong>Performance recommendations are temporarily unavailable.</strong>
+                  <span>{recommendationError || 'Volume targets are still available.'}</span>
+                </div>
+                <Button onClick={onRetryRecommendations} variant="secondary">
+                  Retry performance analysis
+                </Button>
+              </section>
+            )}
+
             <section className={styles.cardGrid} aria-label={`${windowDays}-day muscle volume targets`}>
               {visibleRows.map((row) => (
-                <MuscleVolumeCard key={`${row.muscleGroup}-${row.windowDays}`} row={row} />
+                <MuscleVolumeCard
+                  key={`${row.muscleGroup}-${row.windowDays}`}
+                  row={row}
+                  recommendation={
+                    recommendationStatus === 'ready'
+                      ? recommendationIndex.get(
+                          muscleVolumeRecommendationPayloadKey(
+                            row.muscleGroup,
+                            row.windowDays,
+                          ),
+                        )
+                      : undefined
+                  }
+                />
               ))}
             </section>
 
             <p className={styles.footerNote}>
-              Volume status is descriptive in Phase 19.7. Corrective recommendations arrive in the later recommendation phase and can account for progression and recovery context.
+              Recommendations combine effective-set volume with a normalized 56-day performance trend. A volume threshold alone never triggers an automatic increase or reduction. Any suggested set change is a small next-7-day adjustment, including while viewing the 28-day window; neither raw kg·reps nor XP is used as the recommendation signal.
             </p>
           </>
         )}

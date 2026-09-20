@@ -4,8 +4,14 @@ export * from './liftingCalendarAnalytics';
 export * from './progressMessages';
 export * from './progressService';
 export * from './hooks/useExerciseProgress';
+export * from './hooks/useMuscleVolumeRecommendations';
 export * from './components/ExerciseProgressController';
 export * from './components/ExerciseProgressScreen';
 export * from './components/ExerciseTrendChart';
 
 export * from './components/LiftingCalendarSummary';
+export * from './performanceTrendEngine';
+export * from './volumeRecommendationEngine';
+export * from './musclePerformanceMonitor';
+export * from './musclePerformanceService';
+export * from './muscleVolumeRecommendationModel';

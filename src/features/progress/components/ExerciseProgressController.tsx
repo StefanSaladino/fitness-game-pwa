@@ -2,9 +2,14 @@ import type { AppSection } from '../../../components/layout';
 import { navigateToPath, TRAINING_VOLUME_PATH, usePathname } from '../../../lib/appNavigation';
 import type { OnboardingProfile } from '../../onboarding';
 import type { ExerciseAnalyticsTrackingService } from '../analyticsTrackingService';
+import type { MusclePerformanceService } from '../musclePerformanceService';
 import type { ExerciseProgressService } from '../progressService';
 import { useExerciseAnalyticsTracking } from '../hooks/useExerciseAnalyticsTracking';
 import { useExerciseProgress } from '../hooks/useExerciseProgress';
+import {
+  createEmptyMusclePerformanceService,
+  useMuscleVolumeRecommendations,
+} from '../hooks/useMuscleVolumeRecommendations';
 import { ExerciseProgressError, ExerciseProgressLoading, ExerciseProgressScreen } from './ExerciseProgressScreen';
 import { TrainingVolumeScreen } from './TrainingVolumeScreen';
 
@@ -14,6 +19,7 @@ interface ExerciseProgressControllerProps {
   onSignOut: () => void;
   service?: ExerciseProgressService;
   analyticsTrackingService?: ExerciseAnalyticsTrackingService;
+  musclePerformanceService?: MusclePerformanceService;
 }
 
 const EMPTY_ANALYTICS_TRACKING_SERVICE: ExerciseAnalyticsTrackingService = {
@@ -21,11 +27,24 @@ const EMPTY_ANALYTICS_TRACKING_SERVICE: ExerciseAnalyticsTrackingService = {
   setTracked: async (_exerciseId, tracked) => tracked,
 };
 
-export function ExerciseProgressController({ profile, onNavigate, onSignOut, service, analyticsTrackingService }: ExerciseProgressControllerProps) {
+export function ExerciseProgressController({
+  profile,
+  onNavigate,
+  onSignOut,
+  service,
+  analyticsTrackingService,
+  musclePerformanceService,
+}: ExerciseProgressControllerProps) {
   const pathname = usePathname();
   const progress = useExerciseProgress(service);
   const tracking = useExerciseAnalyticsTracking(
     analyticsTrackingService ?? (service ? EMPTY_ANALYTICS_TRACKING_SERVICE : undefined),
+  );
+  const volumeRecommendations = useMuscleVolumeRecommendations(
+    progress.muscleVolume,
+    pathname === TRAINING_VOLUME_PATH,
+    musclePerformanceService
+      ?? (service ? createEmptyMusclePerformanceService() : undefined),
   );
 
   if (pathname === TRAINING_VOLUME_PATH) {
@@ -35,8 +54,12 @@ export function ExerciseProgressController({ profile, onNavigate, onSignOut, ser
         onBack={() => navigateToPath('/progress')}
         onNavigate={onNavigate}
         onRetry={() => void progress.retryMuscleVolume()}
+        onRetryRecommendations={() => void volumeRecommendations.retry()}
         onSignOut={onSignOut}
         profile={profile}
+        recommendationError={volumeRecommendations.error}
+        recommendationStatus={volumeRecommendations.status}
+        recommendations={volumeRecommendations.recommendations}
         rows={progress.muscleVolume}
         status={progress.muscleVolumeStatus}
       />
