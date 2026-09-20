@@ -27,6 +27,7 @@ describe('app navigation', () => {
     expect(productPathForSection('progress')).toBe('/progress');
     expect(productPathForSection('compete')).toBe('/compete');
     expect(productSectionFromPathname('/lift')).toBe('workouts');
+    expect(productSectionFromPathname('/progress/volume')).toBe('progress');
     expect(productSectionFromPathname('/unknown')).toBeNull();
   });
 

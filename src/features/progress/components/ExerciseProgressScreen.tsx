@@ -13,6 +13,7 @@ import type { ExerciseProgressHistoryEntry, ExerciseProgressMetricType, Exercise
 import type { ExerciseProgressStatus } from '../hooks/useExerciseProgress';
 import { ExerciseTrendChart } from './ExerciseTrendChart';
 import { LiftingCalendarSummaryPanel } from './LiftingCalendarSummary';
+import { TrainingVolumeEntryCard } from './TrainingVolumeEntryCard';
 import styles from './ExerciseProgressScreen.module.css';
 
 interface ShellProps {
@@ -34,6 +35,7 @@ interface ExerciseProgressScreenProps extends ShellProps {
   onSelectExercise: (exerciseId: string) => void;
   onRetryHistory: () => void;
   onRetryCalendar: () => void;
+  onOpenTrainingVolume?: () => void;
   analyticsTrackingStatus?: ExerciseAnalyticsTrackingStatus;
   analyticsTrackingBusyExerciseId?: string | null;
   analyticsTrackingError?: string;
@@ -415,6 +417,7 @@ export function ExerciseProgressScreen({
   onSelectExercise,
   onRetryHistory,
   onRetryCalendar,
+  onOpenTrainingVolume = () => {},
   profile,
   onNavigate,
   onSignOut,
@@ -448,6 +451,8 @@ export function ExerciseProgressScreen({
           onRetry={onRetryCalendar}
           status={calendarStatus}
         />
+
+        <TrainingVolumeEntryCard onOpen={onOpenTrainingVolume} />
 
         {exercises.length === 0 ? (
           <section className={styles.emptyState} data-app-surface="category" data-progress-surface="empty">

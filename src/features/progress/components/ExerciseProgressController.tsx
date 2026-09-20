@@ -1,10 +1,12 @@
 import type { AppSection } from '../../../components/layout';
+import { navigateToPath, TRAINING_VOLUME_PATH, usePathname } from '../../../lib/appNavigation';
 import type { OnboardingProfile } from '../../onboarding';
 import type { ExerciseAnalyticsTrackingService } from '../analyticsTrackingService';
 import type { ExerciseProgressService } from '../progressService';
 import { useExerciseAnalyticsTracking } from '../hooks/useExerciseAnalyticsTracking';
 import { useExerciseProgress } from '../hooks/useExerciseProgress';
 import { ExerciseProgressError, ExerciseProgressLoading, ExerciseProgressScreen } from './ExerciseProgressScreen';
+import { TrainingVolumeScreen } from './TrainingVolumeScreen';
 
 interface ExerciseProgressControllerProps {
   profile: OnboardingProfile;
@@ -20,10 +22,26 @@ const EMPTY_ANALYTICS_TRACKING_SERVICE: ExerciseAnalyticsTrackingService = {
 };
 
 export function ExerciseProgressController({ profile, onNavigate, onSignOut, service, analyticsTrackingService }: ExerciseProgressControllerProps) {
+  const pathname = usePathname();
   const progress = useExerciseProgress(service);
   const tracking = useExerciseAnalyticsTracking(
     analyticsTrackingService ?? (service ? EMPTY_ANALYTICS_TRACKING_SERVICE : undefined),
   );
+
+  if (pathname === TRAINING_VOLUME_PATH) {
+    return (
+      <TrainingVolumeScreen
+        error={progress.muscleVolumeError}
+        onBack={() => navigateToPath('/progress')}
+        onNavigate={onNavigate}
+        onRetry={() => void progress.retryMuscleVolume()}
+        onSignOut={onSignOut}
+        profile={profile}
+        rows={progress.muscleVolume}
+        status={progress.muscleVolumeStatus}
+      />
+    );
+  }
 
   if (progress.status === 'loading') {
     return <ExerciseProgressLoading onNavigate={onNavigate} onSignOut={onSignOut} profile={profile} />;
@@ -57,6 +75,7 @@ export function ExerciseProgressController({ profile, onNavigate, onSignOut, ser
       onNavigate={onNavigate}
       onRetryCalendar={() => void progress.retryCalendar()}
       onRetryHistory={() => void progress.retryHistory()}
+      onOpenTrainingVolume={() => navigateToPath(TRAINING_VOLUME_PATH)}
       onSelectExercise={progress.selectExercise}
       onSignOut={onSignOut}
       onUntrackExercise={async (exerciseId) => {

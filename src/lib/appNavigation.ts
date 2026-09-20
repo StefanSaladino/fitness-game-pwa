@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 
 export type ProductPathSection = 'home' | 'workouts' | 'cardio' | 'groups' | 'progress' | 'compete';
 
+export const TRAINING_VOLUME_PATH = '/progress/volume';
+
 const PRODUCT_SECTION_PATHS: Record<ProductPathSection, string> = {
   home: '/',
   workouts: '/lift',
@@ -33,6 +35,7 @@ export function productPathForSection(section: ProductPathSection): string {
 }
 
 export function productSectionFromPathname(pathname: string): ProductPathSection | null {
+  if (pathname === TRAINING_VOLUME_PATH) return 'progress';
   return PRODUCT_PATH_SECTIONS.get(pathname) ?? null;
 }
 
