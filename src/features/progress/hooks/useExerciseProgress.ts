@@ -1,7 +1,12 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { buildExerciseAnalytics } from '../exerciseAnalytics';
 import { buildLiftingCalendarAnalytics } from '../liftingCalendarAnalytics';
-import type { ExerciseProgressHistoryEntry, ExerciseProgressSummary, LiftingCalendarSummary } from '../model';
+import type {
+  ExerciseProgressHistoryEntry,
+  ExerciseProgressSummary,
+  LiftingCalendarSummary,
+  MuscleVolumeSummary,
+} from '../model';
 import { toUserFacingProgressError } from '../progressMessages';
 import { createExerciseProgressService, type ExerciseProgressService } from '../progressService';
 
@@ -14,13 +19,16 @@ export function useExerciseProgress(injectedService?: ExerciseProgressService) {
   const [status, setStatus] = useState<ExerciseProgressStatus>('loading');
   const [historyStatus, setHistoryStatus] = useState<ExerciseProgressStatus>('loading');
   const [calendarStatus, setCalendarStatus] = useState<ExerciseProgressStatus>('loading');
+  const [muscleVolumeStatus, setMuscleVolumeStatus] = useState<ExerciseProgressStatus>('loading');
   const [exercises, setExercises] = useState<ExerciseProgressSummary[]>([]);
   const [selectedExerciseId, setSelectedExerciseId] = useState<string | null>(null);
   const [history, setHistory] = useState<ExerciseProgressHistoryEntry[]>([]);
   const [calendarSummaries, setCalendarSummaries] = useState<LiftingCalendarSummary[]>([]);
+  const [muscleVolume, setMuscleVolume] = useState<MuscleVolumeSummary[]>([]);
   const [error, setError] = useState('');
   const [historyError, setHistoryError] = useState('');
   const [calendarError, setCalendarError] = useState('');
+  const [muscleVolumeError, setMuscleVolumeError] = useState('');
 
   const loadOverview = useCallback(async () => {
     setStatus('loading');
@@ -57,6 +65,22 @@ export function useExerciseProgress(injectedService?: ExerciseProgressService) {
     }
   }, []);
 
+  const loadMuscleVolume = useCallback(async () => {
+    setMuscleVolumeStatus('loading');
+    setMuscleVolumeError('');
+    try {
+      const next = await serviceRef.current!.loadMuscleVolume();
+      setMuscleVolume(next);
+      setMuscleVolumeStatus('ready');
+      return next;
+    } catch (caught) {
+      setMuscleVolume([]);
+      setMuscleVolumeError(toUserFacingProgressError(caught));
+      setMuscleVolumeStatus('error');
+      return null;
+    }
+  }, []);
+
   const loadHistory = useCallback(async (exerciseId: string) => {
     setHistoryStatus('loading');
     setHistoryError('');
@@ -76,7 +100,8 @@ export function useExerciseProgress(injectedService?: ExerciseProgressService) {
   useEffect(() => {
     void loadOverview();
     void loadCalendarSummaries();
-  }, [loadCalendarSummaries, loadOverview]);
+    void loadMuscleVolume();
+  }, [loadCalendarSummaries, loadMuscleVolume, loadOverview]);
 
   useEffect(() => {
     if (!selectedExerciseId) {
@@ -119,6 +144,7 @@ export function useExerciseProgress(injectedService?: ExerciseProgressService) {
     status,
     historyStatus,
     calendarStatus,
+    muscleVolumeStatus,
     exercises,
     selectedExerciseId,
     selectedExercise,
@@ -126,12 +152,15 @@ export function useExerciseProgress(injectedService?: ExerciseProgressService) {
     calendarAnalytics,
     history,
     calendarSummaries,
+    muscleVolume,
     error,
     historyError,
     calendarError,
+    muscleVolumeError,
     selectExercise: setSelectedExerciseId,
     retry: loadOverview,
     retryCalendar: loadCalendarSummaries,
+    retryMuscleVolume: loadMuscleVolume,
     retryHistory,
   };
 }

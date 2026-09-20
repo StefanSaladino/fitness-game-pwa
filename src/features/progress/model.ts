@@ -55,3 +55,65 @@ export interface LiftingCalendarSummary {
   volumeKgReps: number;
   prCount: number;
 }
+
+export const MUSCLE_VOLUME_MUSCLE_GROUPS = [
+  'CHEST',
+  'BACK',
+  'SHOULDERS',
+  'BICEPS',
+  'TRICEPS',
+  'QUADS',
+  'HAMSTRINGS',
+  'GLUTES',
+  'CALVES',
+  'FOREARMS_GRIP',
+  'CORE',
+  'OBLIQUES',
+  'NECK',
+] as const;
+
+export type MuscleVolumeMuscleGroup = typeof MUSCLE_VOLUME_MUSCLE_GROUPS[number];
+export type MuscleVolumeWindowDays = 7 | 28;
+
+export type MuscleVolumeStatus =
+  | 'NO_DATA'
+  | 'LOW'
+  | 'BELOW_TARGET'
+  | 'ON_TARGET'
+  | 'ABOVE_TARGET'
+  | 'HIGH_REVIEW';
+
+export type MuscleVolumeBenchmarkEvidenceConfidence =
+  | 'HIGH'
+  | 'MODERATE_HIGH'
+  | 'MODERATE'
+  | 'MODERATE_LOW'
+  | 'LOW_MODERATE'
+  | 'LOW';
+
+export interface MuscleVolumeSummary {
+  muscleGroup: MuscleVolumeMuscleGroup;
+  windowDays: MuscleVolumeWindowDays;
+  windowStart: string;
+  windowEnd: string;
+  methodologyVersion: string;
+  effectiveSets: number;
+  directEffectiveSets: number;
+  indirectEffectiveSets: number;
+  eligibleLogicalSets: number;
+  eligibleStages: number;
+  reviewFlaggedLogicalSets: number;
+  targetMin: number;
+  targetMidpoint: number;
+  targetMax: number;
+  highReviewAbove: number;
+  volumeStatus: MuscleVolumeStatus;
+  benchmarkEvidenceConfidence: MuscleVolumeBenchmarkEvidenceConfidence;
+  highConfidenceEffectiveSets: number;
+  mediumConfidenceEffectiveSets: number;
+  lowOrProvisionalEffectiveSets: number;
+  provisionalEffectiveSets: number;
+  highConfidenceProportion: number;
+  mediumConfidenceProportion: number;
+  lowOrProvisionalProportion: number;
+}

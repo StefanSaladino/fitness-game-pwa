@@ -1,11 +1,17 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { getSupabaseClient } from '../../lib/supabase';
-import type {
-  ExerciseProgressHistoryEntry,
-  ExerciseProgressMeasurementType,
-  ExerciseProgressMetricType,
-  ExerciseProgressSummary,
-  LiftingCalendarSummary,
+import {
+  MUSCLE_VOLUME_MUSCLE_GROUPS,
+  type ExerciseProgressHistoryEntry,
+  type ExerciseProgressMeasurementType,
+  type ExerciseProgressMetricType,
+  type ExerciseProgressSummary,
+  type LiftingCalendarSummary,
+  type MuscleVolumeBenchmarkEvidenceConfidence,
+  type MuscleVolumeMuscleGroup,
+  type MuscleVolumeStatus,
+  type MuscleVolumeSummary,
+  type MuscleVolumeWindowDays,
 } from './model';
 
 type OverviewRow = {
@@ -28,7 +34,6 @@ type OverviewRow = {
   latest_reps: number | null;
   latest_observed_at: string | null;
 };
-
 
 type CalendarSummaryRow = {
   period_kind: 'WEEK' | 'MONTH';
@@ -62,10 +67,38 @@ type HistoryRow = {
   assisted_sets: number | string;
 };
 
+type MuscleVolumeRow = {
+  muscle_group: string;
+  window_days: number | string;
+  window_start: string;
+  window_end: string;
+  methodology_version: string;
+  effective_sets: number | string;
+  direct_effective_sets: number | string;
+  indirect_effective_sets: number | string;
+  eligible_logical_sets: number | string;
+  eligible_stages: number | string;
+  review_flagged_logical_sets: number | string;
+  target_min: number | string;
+  target_midpoint: number | string;
+  target_max: number | string;
+  high_review_above: number | string;
+  volume_status: string;
+  benchmark_evidence_confidence: string;
+  high_confidence_effective_sets: number | string;
+  medium_confidence_effective_sets: number | string;
+  low_or_provisional_effective_sets: number | string;
+  provisional_effective_sets: number | string;
+  high_confidence_proportion: number | string;
+  medium_confidence_proportion: number | string;
+  low_or_provisional_proportion: number | string;
+};
+
 export interface ExerciseProgressService {
   listOverview(): Promise<ExerciseProgressSummary[]>;
   loadCalendarSummaries(): Promise<LiftingCalendarSummary[]>;
   loadHistory(exerciseId: string): Promise<ExerciseProgressHistoryEntry[]>;
+  loadMuscleVolume(anchorDate?: string): Promise<MuscleVolumeSummary[]>;
 }
 
 function nullableNumber(value: number | string | null): number | null {
@@ -76,6 +109,47 @@ function nullableNumber(value: number | string | null): number | null {
 
 function requiredNumber(value: number | string): number {
   return nullableNumber(value) ?? 0;
+}
+
+function muscleGroup(value: string): MuscleVolumeMuscleGroup {
+  if ((MUSCLE_VOLUME_MUSCLE_GROUPS as readonly string[]).includes(value)) {
+    return value as MuscleVolumeMuscleGroup;
+  }
+  throw new Error(`Unexpected muscle-volume muscle group: ${value}`);
+}
+
+function muscleVolumeWindowDays(value: number | string): MuscleVolumeWindowDays {
+  const parsed = requiredNumber(value);
+  if (parsed === 7 || parsed === 28) return parsed;
+  throw new Error(`Unexpected muscle-volume window: ${value}`);
+}
+
+function muscleVolumeStatus(value: string): MuscleVolumeStatus {
+  if (
+    value === 'NO_DATA'
+    || value === 'LOW'
+    || value === 'BELOW_TARGET'
+    || value === 'ON_TARGET'
+    || value === 'ABOVE_TARGET'
+    || value === 'HIGH_REVIEW'
+  ) {
+    return value;
+  }
+  throw new Error(`Unexpected muscle-volume status: ${value}`);
+}
+
+function benchmarkEvidenceConfidence(value: string): MuscleVolumeBenchmarkEvidenceConfidence {
+  if (
+    value === 'HIGH'
+    || value === 'MODERATE_HIGH'
+    || value === 'MODERATE'
+    || value === 'MODERATE_LOW'
+    || value === 'LOW_MODERATE'
+    || value === 'LOW'
+  ) {
+    return value;
+  }
+  throw new Error(`Unexpected muscle-volume benchmark confidence: ${value}`);
 }
 
 function mapOverview(row: OverviewRow): ExerciseProgressSummary {
@@ -100,7 +174,6 @@ function mapOverview(row: OverviewRow): ExerciseProgressSummary {
     latestObservedAt: row.latest_observed_at,
   };
 }
-
 
 function mapCalendarSummary(row: CalendarSummaryRow): LiftingCalendarSummary {
   return {
@@ -138,6 +211,35 @@ function mapHistory(row: HistoryRow): ExerciseProgressHistoryEntry {
   };
 }
 
+function mapMuscleVolume(row: MuscleVolumeRow): MuscleVolumeSummary {
+  return {
+    muscleGroup: muscleGroup(row.muscle_group),
+    windowDays: muscleVolumeWindowDays(row.window_days),
+    windowStart: row.window_start,
+    windowEnd: row.window_end,
+    methodologyVersion: row.methodology_version,
+    effectiveSets: requiredNumber(row.effective_sets),
+    directEffectiveSets: requiredNumber(row.direct_effective_sets),
+    indirectEffectiveSets: requiredNumber(row.indirect_effective_sets),
+    eligibleLogicalSets: requiredNumber(row.eligible_logical_sets),
+    eligibleStages: requiredNumber(row.eligible_stages),
+    reviewFlaggedLogicalSets: requiredNumber(row.review_flagged_logical_sets),
+    targetMin: requiredNumber(row.target_min),
+    targetMidpoint: requiredNumber(row.target_midpoint),
+    targetMax: requiredNumber(row.target_max),
+    highReviewAbove: requiredNumber(row.high_review_above),
+    volumeStatus: muscleVolumeStatus(row.volume_status),
+    benchmarkEvidenceConfidence: benchmarkEvidenceConfidence(row.benchmark_evidence_confidence),
+    highConfidenceEffectiveSets: requiredNumber(row.high_confidence_effective_sets),
+    mediumConfidenceEffectiveSets: requiredNumber(row.medium_confidence_effective_sets),
+    lowOrProvisionalEffectiveSets: requiredNumber(row.low_or_provisional_effective_sets),
+    provisionalEffectiveSets: requiredNumber(row.provisional_effective_sets),
+    highConfidenceProportion: requiredNumber(row.high_confidence_proportion),
+    mediumConfidenceProportion: requiredNumber(row.medium_confidence_proportion),
+    lowOrProvisionalProportion: requiredNumber(row.low_or_provisional_proportion),
+  };
+}
+
 export function createExerciseProgressService(client: SupabaseClient = getSupabaseClient()): ExerciseProgressService {
   return {
     async listOverview() {
@@ -161,6 +263,15 @@ export function createExerciseProgressService(client: SupabaseClient = getSupaba
       });
       if (error) throw error;
       return ((data ?? []) as HistoryRow[]).map(mapHistory);
+    },
+
+    async loadMuscleVolume(anchorDate) {
+      const { data, error } = await client.rpc(
+        'get_my_muscle_volume',
+        anchorDate ? { p_anchor_date: anchorDate } : {},
+      );
+      if (error) throw error;
+      return ((data ?? []) as MuscleVolumeRow[]).map(mapMuscleVolume);
     },
   };
 }

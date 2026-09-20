@@ -38,6 +38,38 @@ function fakeClient(): SupabaseClient {
         error: null,
       };
     }
+    if (name === 'get_my_muscle_volume') {
+      expect(args).toEqual({ p_anchor_date: '2026-09-19' });
+      return {
+        data: [{
+          muscle_group: 'CHEST',
+          window_days: '7',
+          window_start: '2026-09-13',
+          window_end: '2026-09-19',
+          methodology_version: 'muscle-volume-v1',
+          effective_sets: '9',
+          direct_effective_sets: '9',
+          indirect_effective_sets: '0',
+          eligible_logical_sets: '6',
+          eligible_stages: '13',
+          review_flagged_logical_sets: '0',
+          target_min: '10',
+          target_midpoint: '14',
+          target_max: '18',
+          high_review_above: '20',
+          volume_status: 'BELOW_TARGET',
+          benchmark_evidence_confidence: 'MODERATE',
+          high_confidence_effective_sets: '7.5',
+          medium_confidence_effective_sets: '1',
+          low_or_provisional_effective_sets: '0.5',
+          provisional_effective_sets: '0',
+          high_confidence_proportion: '0.833333',
+          medium_confidence_proportion: '0.111111',
+          low_or_provisional_proportion: '0.055556',
+        }],
+        error: null,
+      };
+    }
     return { data: [], error: null };
   });
   return { rpc } as unknown as SupabaseClient;
@@ -49,6 +81,7 @@ describe('exercise progress service', () => {
     const overview = await service.listOverview();
     const calendar = await service.loadCalendarSummaries();
     const history = await service.loadHistory('bench');
+    const muscleVolume = await service.loadMuscleVolume('2026-09-19');
 
     expect(overview[0]).toMatchObject({
       exerciseId: 'bench', canonicalName: 'Bench Press', metricType: 'E1RM', bestValue: 122.5,
@@ -62,6 +95,32 @@ describe('exercise progress service', () => {
     expect(history[0]).toMatchObject({
       workoutId: 'lift-1', metricValue: 122.5, previousPrValue: 116.6667,
       isPr: true, isCurrentPr: true, sessionVolumeKgReps: 2100,
+    });
+    expect(muscleVolume[0]).toEqual({
+      muscleGroup: 'CHEST',
+      windowDays: 7,
+      windowStart: '2026-09-13',
+      windowEnd: '2026-09-19',
+      methodologyVersion: 'muscle-volume-v1',
+      effectiveSets: 9,
+      directEffectiveSets: 9,
+      indirectEffectiveSets: 0,
+      eligibleLogicalSets: 6,
+      eligibleStages: 13,
+      reviewFlaggedLogicalSets: 0,
+      targetMin: 10,
+      targetMidpoint: 14,
+      targetMax: 18,
+      highReviewAbove: 20,
+      volumeStatus: 'BELOW_TARGET',
+      benchmarkEvidenceConfidence: 'MODERATE',
+      highConfidenceEffectiveSets: 7.5,
+      mediumConfidenceEffectiveSets: 1,
+      lowOrProvisionalEffectiveSets: 0.5,
+      provisionalEffectiveSets: 0,
+      highConfidenceProportion: 0.833333,
+      mediumConfidenceProportion: 0.111111,
+      lowOrProvisionalProportion: 0.055556,
     });
   });
 });

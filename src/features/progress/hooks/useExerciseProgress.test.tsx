@@ -1,6 +1,6 @@
 import { act, renderHook, waitFor } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import type { ExerciseProgressSummary, LiftingCalendarSummary } from '../model';
+import type { ExerciseProgressSummary, LiftingCalendarSummary, MuscleVolumeSummary } from '../model';
 import type { ExerciseProgressService } from '../progressService';
 import { useExerciseProgress } from './useExerciseProgress';
 
@@ -19,7 +19,6 @@ const exercises: ExerciseProgressSummary[] = [
   },
 ];
 
-
 const calendarSummaries: LiftingCalendarSummary[] = [
   { periodKind: 'WEEK', periodStart: '2026-08-10', periodEnd: '2026-08-16', completedLiftingSessions: 2, exerciseCount: 5, completedWorkingSets: 20, volumeKgReps: 10000, prCount: 1 },
   { periodKind: 'WEEK', periodStart: '2026-08-17', periodEnd: '2026-08-23', completedLiftingSessions: 3, exerciseCount: 6, completedWorkingSets: 28, volumeKgReps: 13200, prCount: 2 },
@@ -27,28 +26,112 @@ const calendarSummaries: LiftingCalendarSummary[] = [
   { periodKind: 'MONTH', periodStart: '2026-08-01', periodEnd: '2026-08-31', completedLiftingSessions: 9, exerciseCount: 10, completedWorkingSets: 91, volumeKgReps: 45500, prCount: 4 },
 ];
 
+const muscleVolume: MuscleVolumeSummary[] = [
+  {
+    muscleGroup: 'CHEST',
+    windowDays: 7,
+    windowStart: '2026-09-13',
+    windowEnd: '2026-09-19',
+    methodologyVersion: 'muscle-volume-v1',
+    effectiveSets: 9,
+    directEffectiveSets: 9,
+    indirectEffectiveSets: 0,
+    eligibleLogicalSets: 6,
+    eligibleStages: 13,
+    reviewFlaggedLogicalSets: 0,
+    targetMin: 10,
+    targetMidpoint: 14,
+    targetMax: 18,
+    highReviewAbove: 20,
+    volumeStatus: 'BELOW_TARGET',
+    benchmarkEvidenceConfidence: 'MODERATE',
+    highConfidenceEffectiveSets: 7.5,
+    mediumConfidenceEffectiveSets: 1,
+    lowOrProvisionalEffectiveSets: 0.5,
+    provisionalEffectiveSets: 0,
+    highConfidenceProportion: 0.833333,
+    mediumConfidenceProportion: 0.111111,
+    lowOrProvisionalProportion: 0.055556,
+  },
+  {
+    muscleGroup: 'CHEST',
+    windowDays: 28,
+    windowStart: '2026-08-23',
+    windowEnd: '2026-09-19',
+    methodologyVersion: 'muscle-volume-v1',
+    effectiveSets: 9,
+    directEffectiveSets: 9,
+    indirectEffectiveSets: 0,
+    eligibleLogicalSets: 6,
+    eligibleStages: 13,
+    reviewFlaggedLogicalSets: 0,
+    targetMin: 40,
+    targetMidpoint: 56,
+    targetMax: 72,
+    highReviewAbove: 80,
+    volumeStatus: 'LOW',
+    benchmarkEvidenceConfidence: 'MODERATE',
+    highConfidenceEffectiveSets: 7.5,
+    mediumConfidenceEffectiveSets: 1,
+    lowOrProvisionalEffectiveSets: 0.5,
+    provisionalEffectiveSets: 0,
+    highConfidenceProportion: 0.833333,
+    mediumConfidenceProportion: 0.111111,
+    lowOrProvisionalProportion: 0.055556,
+  },
+];
+
+function historyFor(exerciseId: string) {
+  return [{
+    workoutId: `${exerciseId}-workout`,
+    scoringDate: '2026-08-18',
+    observedAt: '2026-08-18T14:30:00Z',
+    metricType: exerciseId === 'bench' ? 'E1RM' as const : 'BODYWEIGHT_REPS' as const,
+    metricValue: exerciseId === 'bench' ? 122.5 : 12,
+    weightKg: exerciseId === 'bench' ? 105 : null,
+    reps: exerciseId === 'bench' ? 5 : 12,
+    previousPrValue: null,
+    isBaseline: true,
+    isPr: false,
+    isCurrentPr: true,
+    completedWorkingSets: 4,
+    sessionVolumeKgReps: exerciseId === 'bench' ? 2100 : 0,
+    heaviestWeightKg: exerciseId === 'bench' ? 105 : null,
+    maxCompletedReps: exerciseId === 'bench' ? 5 : 12,
+    plainBodyweightSets: exerciseId === 'bench' ? 0 : 4,
+    addedWeightSets: 0,
+    assistedSets: 0,
+  }];
+}
+
 describe('useExerciseProgress', () => {
-  it('loads the overview, selects the first lift, and reloads history on selection', async () => {
+  it('loads overview, calendar, muscle volume, and exercise history independently', async () => {
     const listOverview = vi.fn(async () => exercises);
     const loadCalendarSummaries = vi.fn(async () => calendarSummaries);
-    const loadHistory = vi.fn(async (exerciseId: string) => [{
-      workoutId: `${exerciseId}-workout`, scoringDate: '2026-08-18', observedAt: '2026-08-18T14:30:00Z', metricType: exerciseId === 'bench' ? 'E1RM' as const : 'BODYWEIGHT_REPS' as const,
-      metricValue: exerciseId === 'bench' ? 122.5 : 12, weightKg: exerciseId === 'bench' ? 105 : null, reps: exerciseId === 'bench' ? 5 : 12,
-      previousPrValue: null, isBaseline: true, isPr: false, isCurrentPr: true, completedWorkingSets: 4, sessionVolumeKgReps: exerciseId === 'bench' ? 2100 : 0,
-      heaviestWeightKg: exerciseId === 'bench' ? 105 : null, maxCompletedReps: exerciseId === 'bench' ? 5 : 12, plainBodyweightSets: exerciseId === 'bench' ? 0 : 4,
-      addedWeightSets: 0, assistedSets: 0,
-    }]);
-    const service: ExerciseProgressService = { listOverview, loadCalendarSummaries, loadHistory };
+    const loadMuscleVolume = vi.fn(async () => muscleVolume);
+    const loadHistory = vi.fn(async (exerciseId: string) => historyFor(exerciseId));
+    const service: ExerciseProgressService = { listOverview, loadCalendarSummaries, loadHistory, loadMuscleVolume };
 
     const { result } = renderHook(() => useExerciseProgress(service));
 
     await waitFor(() => expect(result.current.status).toBe('ready'));
     await waitFor(() => expect(result.current.historyStatus).toBe('ready'));
     await waitFor(() => expect(result.current.calendarStatus).toBe('ready'));
+    await waitFor(() => expect(result.current.muscleVolumeStatus).toBe('ready'));
+
     expect(loadCalendarSummaries).toHaveBeenCalledTimes(1);
+    expect(loadMuscleVolume).toHaveBeenCalledTimes(1);
+    expect(loadMuscleVolume).toHaveBeenCalledWith();
     expect(result.current.calendarAnalytics.currentWeek?.completedLiftingSessions).toBe(3);
     expect(result.current.calendarAnalytics.weekDelta.volumeKgReps).toBe(3200);
     expect(result.current.calendarAnalytics.monthDelta.prCount).toBe(2);
+    expect(result.current.muscleVolume).toEqual(muscleVolume);
+    expect(result.current.muscleVolume[0]).toMatchObject({
+      muscleGroup: 'CHEST',
+      windowDays: 7,
+      effectiveSets: 9,
+      volumeStatus: 'BELOW_TARGET',
+    });
     expect(result.current.selectedExercise?.exerciseId).toBe('bench');
     expect(loadHistory).toHaveBeenCalledWith('bench');
     expect(result.current.analytics?.metricTrend[0]?.value).toBe(122.5);
@@ -59,5 +142,33 @@ describe('useExerciseProgress', () => {
     await waitFor(() => expect(result.current.history[0]?.workoutId).toBe('pullup-workout'));
     expect(loadHistory).toHaveBeenCalledWith('pullup');
     expect(result.current.analytics?.metricType).toBe('BODYWEIGHT_REPS');
+  });
+
+  it('keeps the existing Progress experience ready when muscle-volume loading fails', async () => {
+    const service: ExerciseProgressService = {
+      listOverview: vi.fn(async () => exercises),
+      loadCalendarSummaries: vi.fn(async () => calendarSummaries),
+      loadHistory: vi.fn(async (exerciseId: string) => historyFor(exerciseId)),
+      loadMuscleVolume: vi.fn(async () => {
+        throw new Error('Muscle volume unavailable');
+      }),
+    };
+
+    const { result } = renderHook(() => useExerciseProgress(service));
+
+    await waitFor(() => expect(result.current.status).toBe('ready'));
+    await waitFor(() => expect(result.current.calendarStatus).toBe('ready'));
+    await waitFor(() => expect(result.current.historyStatus).toBe('ready'));
+    await waitFor(() => expect(result.current.muscleVolumeStatus).toBe('error'));
+
+    expect(result.current.exercises).toHaveLength(2);
+    expect(result.current.muscleVolume).toEqual([]);
+    expect(result.current.muscleVolumeError).toBe('Muscle volume unavailable');
+
+    await act(async () => {
+      await result.current.retryMuscleVolume();
+    });
+
+    expect(result.current.muscleVolumeStatus).toBe('error');
   });
 });
