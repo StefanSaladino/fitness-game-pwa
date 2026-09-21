@@ -16,13 +16,14 @@ This directory contains two kinds of documentation: **current reference document
 | UI/responsive architecture | [`UI-ARCHITECTURE.md`](UI-ARCHITECTURE.md) |
 | CSS ownership | [`CSS-ARCHITECTURE.md`](CSS-ARCHITECTURE.md) |
 | UI design/implementation gate | [`UI-DEVELOPMENT-GATE.md`](UI-DEVELOPMENT-GATE.md) |
+| Phase 19 capacity/retention validation | [`PHASE19-CAPACITY-VALIDATION.md`](PHASE19-CAPACITY-VALIDATION.md) |
 | Historical Phase 18 live-workout/native sequencing detail | [`PHASE18-LIVE-WORKOUT-ROADMAP.md`](PHASE18-LIVE-WORKOUT-ROADMAP.md) |
 
 Repository-wide contribution rules live in [`../CONTRIBUTING.md`](../CONTRIBUTING.md).
 
 ## Active documentation checkpoint
 
-Phase 19.9 is **in progress**, not complete. The canonical docs should currently describe completed-period Reports UI, frozen monthly source snapshots, performance-aware report construction, on-demand monthly PDF generation, and development-only synthetic QA as implemented. They must continue to describe hosted end-to-end proof, generated database-type reconciliation, private latest-PDF storage/retention, capacity validation, and the Phase 19 release gate as outstanding until those checks are actually complete.
+Phase 19.9 is **in progress**, not complete. The canonical docs should now describe completed-period Reports UI, frozen monthly source snapshots, hosted end-to-end proof, reconciled database types, verified private latest-PDF retention, and the completed project-local capacity/security measurement checkpoint as implemented. Remaining release work is the provider billing-cycle usage confirmation plus the final Phase 19 release gate and closeout documentation.
 
 ## Historical phase records
 

@@ -193,23 +193,40 @@ The user-facing report currently excludes Neck from the visible 12-muscle report
 
 ### Monthly report interpretation and PDF lifecycle
 
-The structured database snapshot is the historical source boundary. The application maps it into the `CompletedTrainingReport` model, combines it with the performance trend/recommendation engine, and generates the current monthly PDF on demand in the browser with `pdf-lib`.
+The structured database snapshot is the historical source boundary. The application maps it into `CompletedTrainingReport`, combines it with the performance trend/recommendation engine, and generates the current monthly PDF in the browser with `pdf-lib`.
 
-**Private persisted PDF artifact storage is not implemented yet.** The locked Phase 19.9 retention plan still requires private authenticated storage, only-latest-PDF retention, verified replacement before deleting the previous artifact, and failure-safe retry semantics. That storage lifecycle remains a release item rather than a current database capability.
+Private PDF retention is implemented through:
+
+- private Storage bucket `monthly-training-reports`;
+- `monthly_training_report_pdf_artifacts`, which stores one current artifact pointer per user;
+- browser-side SHA-256 verification of the uploaded candidate before promotion;
+- server-side verification that the candidate exists, is PDF MIME type, matches the expected byte size, and belongs to the authenticated user's verified frozen snapshot;
+- a latest-only monotonic retention rule that refuses to displace a newer retained month with an older report;
+- `pending_delete_path`, which preserves the previous valid artifact until replacement promotion succeeds and cleanup is confirmed;
+- short-lived signed download URLs for retained private PDFs;
+- ephemeral regeneration for older historical months without displacing the current retained PDF.
+
+Privileged PDF promotion/cleanup logic lives under `report_private` as SECURITY DEFINER helpers. Public RPCs are SECURITY INVOKER wrappers. Ownership is always derived from `auth.uid()`.
+
+Phase 19.9D removes the redundant non-unique source `(user_id, period_start DESC)` index; the existing unique `(user_id, period_start)` B-tree remains the authoritative lookup and supports the same equality/month-navigation access pattern.
 
 ### Phase 19.9 validation state
 
-Repository database coverage includes `supabase/tests/115_phase19_9b_report_source_snapshots.test.sql`, which covers the completed-period RPC, authenticated/anonymous execution boundaries, completed-month behavior, rejection of an incomplete month, idempotent monthly freeze, expected frozen muscle rows, fingerprint stability, and cross-user RLS visibility.
+Hosted E2E validation has been completed with an authorized disposable QA account. Real hosted workout rows flowed through volume/performance derivation, the completed-period RPC, frozen monthly snapshot, TypeScript report construction, Reports UI, PDF generation, private upload/verification/promotion, and retained signed download.
 
-The current synthetic UI/PDF QA path does not write fake workouts to hosted Supabase. A disposable hosted QA-account test is still required to prove the complete workout rows → derived volume/performance source → monthly freeze → service/model → Reports UI → PDF chain.
+The same completed month was downloaded twice and remained one PDF artifact row plus one private Storage object, validating the retained-artifact reuse path.
 
-### Schema/type/test requirements
+Repository database coverage now includes:
 
-Any schema introduced for Phase 19 requires regenerated public database types and matching database/TypeScript tests before release.
+- `115_phase19_9b_report_source_snapshots.test.sql`;
+- `116_phase19_9c_monthly_report_pdf_storage.test.sql`;
+- `117_phase19_9d_report_pdf_security_capacity_hardening.test.sql`.
 
-The Phase 19.9 snapshot/RPC migrations are committed, but the checked-in `src/types/database.generated.ts` must still be regenerated/reconciled so the generated public schema includes the new monthly snapshot tables and report RPCs before Phase 19.9 is marked DONE.
+Generated public database types have been reconciled with the Phase 19.9 public tables/RPCs.
 
-Hosted migration-history verification, relevant hosted pgTAP execution, Security/Performance advisor review after the final DDL/security state, and the applicable release gate remain required release evidence.
+Project-local capacity measurements and retention conclusions are recorded in [`PHASE19-CAPACITY-VALIDATION.md`](PHASE19-CAPACITY-VALIDATION.md). Current provider billing-cycle egress/MAU/Realtime/Edge usage remains an operator check in Supabase Usage rather than an application-maintained duplicate metric.
+
+Hosted migration history and report-specific Security Advisor state have been verified after the final Phase 19.9D DDL. Remaining release work is the final provider Usage-page confirmation and the applicable release gate/documentation closeout.
 
 ## Weekly goals and badges
 

@@ -146,31 +146,32 @@ The 28-day v1 bands are exactly `4 ×` the weekly values. Muscle-specific confid
 
 ### Phase 19.9 current implementation checkpoint
 
-Phase 19.9 has moved beyond design and is now an active implementation/validation phase.
+Phase 19.9 is in final release validation.
 
-Implemented in the current repository:
+Implemented and validated in the current repository/hosted project:
 
 - exact completed-period weekly/monthly report source through `get_my_completed_training_report_period`;
 - idempotent frozen monthly source snapshots with structured parent, muscle, and performance rows plus a verified source fingerprint;
 - hardened authenticated snapshot/RLS boundaries and pgTAP coverage;
-- TypeScript completed-report model with exact completed-period validation, prior-period deltas, monthly 28-day benchmark normalization, performance-aware recommendations, and small next-7-day corrective plans;
-- `/progress/reports` with Week/Month navigation and decision-focused report presentation;
-- monthly on-demand PDF generation using `pdf-lib`, including dynamic text wrapping, card sizing, page breaks, repeated headers, report/methodology footers, and deterministic file naming;
-- development-only `?qa=` service substitution with `mixed`, `healthy`, `monitor`, `empty`, and `stress` deterministic report scenarios;
-- automated PDF QA for every synthetic scenario, with the stress fixture reloading the generated PDF and requiring at least three pages;
-- manual synthetic QA PDFs demonstrating all recommendation states and a five-page stress document without relying on fake hosted workouts.
+- TypeScript completed-report model with monthly normalization, performance-aware recommendations, and bounded next-7-day corrective plans;
+- `/progress/reports` Week/Month navigation and decision-focused report presentation;
+- real monthly `pdf-lib` generation with pagination/stress coverage and methodology/report-version footers;
+- deterministic development-only synthetic report QA;
+- a true hosted disposable-account E2E proof from workout rows through frozen source, report model, UI, and PDF;
+- reconciled checked-in Supabase generated TypeScript types for the report tables/RPCs;
+- private `monthly-training-reports` Storage with one retained verified PDF artifact per user, short-lived signed download URLs, candidate integrity verification, previous-artifact preservation until successful promotion, and retry-safe cleanup;
+- hosted reuse proof showing two downloads of the same completed month leave one retained artifact row and one Storage object;
+- Phase 19.9 capacity/retention measurement and security hardening documented in [`PHASE19-CAPACITY-VALIDATION.md`](PHASE19-CAPACITY-VALIDATION.md);
+- report PDF privileged mutation logic moved behind non-exposed `report_private` SECURITY DEFINER helpers with public SECURITY INVOKER wrappers;
+- redundant monthly-source user/period index removed after verifying the unique user/month index serves the same lookup.
 
 Still required before Phase 19.9 can be marked **DONE**:
 
-- one true hosted end-to-end test using an authorized disposable QA account so real workout rows flow through database derivation, frozen snapshot, service/model, Reports UI, and PDF generation;
-- regeneration/reconciliation of `src/types/database.generated.ts` so the new Phase 19.9 public tables/RPCs exist in the checked-in generated schema types;
-- implementation and verification of the locked private latest-monthly-PDF storage/replacement lifecycle, or an explicit product decision to revise that locked requirement before release;
-- capacity/retention measurements and final review of database/table growth, egress, Storage, query behavior, and any relevant provider usage;
-- final hosted migration-history/pgTAP/security-performance verification for the completed Phase 19.9 database state;
-- applicable full local/browser release gate and final production-release documentation.
+- record current Supabase Usage-page billing-cycle values for egress, Storage, MAU, Edge Functions, and Realtime because those organization-level metrics are not authoritatively reconstructed by project SQL;
+- run the final applicable local/browser release gate against the completed Phase 19.9 state;
+- complete final production-release documentation/changelog and release tagging.
 
-The development-only synthetic QA path is intentionally **not** database end-to-end proof. It uses the real Reports screen and real PDF generator while substituting a deterministic `TrainingReportService` report payload; it never writes fake workouts to Supabase.
-
+Capacity validation does **not** justify destructive workout-history cleanup. Long-term structured snapshots and latest-only PDF retention remain the Phase 19 contract.
 ### Phase 19.9 locked reporting and retention plan
 
 This remains the release contract. Items explicitly identified as outstanding in the checkpoint above are not yet shipped merely because they are specified here.
