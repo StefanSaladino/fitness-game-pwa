@@ -1,4 +1,4 @@
-export type Json =
+﻿export type Json =
   | string
   | number
   | boolean
@@ -476,6 +476,218 @@ export type Database = {
             foreignKeyName: "lifting_consistency_state_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      monthly_training_report_muscle_snapshots: {
+        Row: {
+          benchmark_evidence_confidence: string
+          benchmark_window_days: number
+          eligible_logical_sets: number
+          eligible_stages: number
+          high_confidence_effective_sets: number
+          high_confidence_proportion: number
+          high_review_above: number
+          low_or_provisional_effective_sets: number
+          low_or_provisional_proportion: number
+          medium_confidence_effective_sets: number
+          medium_confidence_proportion: number
+          muscle_group: string
+          period_direct_effective_sets: number
+          period_effective_sets: number
+          period_indirect_effective_sets: number
+          provisional_effective_sets: number
+          review_flagged_logical_sets: number
+          snapshot_id: string
+          target_max: number
+          target_midpoint: number
+          target_min: number
+          user_id: string
+        }
+        Insert: {
+          benchmark_evidence_confidence: string
+          benchmark_window_days: number
+          eligible_logical_sets: number
+          eligible_stages: number
+          high_confidence_effective_sets: number
+          high_confidence_proportion: number
+          high_review_above: number
+          low_or_provisional_effective_sets: number
+          low_or_provisional_proportion: number
+          medium_confidence_effective_sets: number
+          medium_confidence_proportion: number
+          muscle_group: string
+          period_direct_effective_sets: number
+          period_effective_sets: number
+          period_indirect_effective_sets: number
+          provisional_effective_sets: number
+          review_flagged_logical_sets: number
+          snapshot_id: string
+          target_max: number
+          target_midpoint: number
+          target_min: number
+          user_id: string
+        }
+        Update: {
+          benchmark_evidence_confidence?: string
+          benchmark_window_days?: number
+          eligible_logical_sets?: number
+          eligible_stages?: number
+          high_confidence_effective_sets?: number
+          high_confidence_proportion?: number
+          high_review_above?: number
+          low_or_provisional_effective_sets?: number
+          low_or_provisional_proportion?: number
+          medium_confidence_effective_sets?: number
+          medium_confidence_proportion?: number
+          muscle_group?: string
+          period_direct_effective_sets?: number
+          period_effective_sets?: number
+          period_indirect_effective_sets?: number
+          provisional_effective_sets?: number
+          review_flagged_logical_sets?: number
+          snapshot_id?: string
+          target_max?: number
+          target_midpoint?: number
+          target_min?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "monthly_training_report_muscle_snapshots_snapshot_user_fkey"
+            columns: ["snapshot_id", "user_id"]
+            isOneToOne: false
+            referencedRelation: "monthly_training_report_source_snapshots"
+            referencedColumns: ["id", "user_id"]
+          },
+        ]
+      }
+      monthly_training_report_performance_snapshots: {
+        Row: {
+          canonical_name: string
+          contribution_role: string
+          contribution_weight: number
+          exercise_id: string
+          id: string
+          muscle_group: string
+          observed_at: string
+          relative_performance_index: number
+          scoring_date: string
+          snapshot_id: string
+          user_id: string
+        }
+        Insert: {
+          canonical_name: string
+          contribution_role: string
+          contribution_weight: number
+          exercise_id: string
+          id?: string
+          muscle_group: string
+          observed_at: string
+          relative_performance_index: number
+          scoring_date: string
+          snapshot_id: string
+          user_id: string
+        }
+        Update: {
+          canonical_name?: string
+          contribution_role?: string
+          contribution_weight?: number
+          exercise_id?: string
+          id?: string
+          muscle_group?: string
+          observed_at?: string
+          relative_performance_index?: number
+          scoring_date?: string
+          snapshot_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "monthly_training_report_performance_snapshots_exercise_id_fkey"
+            columns: ["exercise_id"]
+            isOneToOne: false
+            referencedRelation: "exercise_catalog"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "monthly_training_report_performance_snapshots_snapshot_user_fke"
+            columns: ["snapshot_id", "user_id"]
+            isOneToOne: false
+            referencedRelation: "monthly_training_report_source_snapshots"
+            referencedColumns: ["id", "user_id"]
+          },
+        ]
+      }
+      monthly_training_report_source_snapshots: {
+        Row: {
+          active_training_seconds: number
+          completed_lifting_sessions: number
+          completed_working_sets: number
+          exercise_count: number
+          generated_at: string
+          id: string
+          low_status_fraction_of_target_min: number
+          methodology_version: string
+          period_end: string
+          period_start: string
+          pr_count: number
+          report_version: string
+          source_fingerprint: string | null
+          user_id: string
+          verified_at: string | null
+          volume_kg_reps: number
+        }
+        Insert: {
+          active_training_seconds: number
+          completed_lifting_sessions: number
+          completed_working_sets: number
+          exercise_count: number
+          generated_at?: string
+          id?: string
+          low_status_fraction_of_target_min: number
+          methodology_version: string
+          period_end: string
+          period_start: string
+          pr_count: number
+          report_version: string
+          source_fingerprint?: string | null
+          user_id: string
+          verified_at?: string | null
+          volume_kg_reps: number
+        }
+        Update: {
+          active_training_seconds?: number
+          completed_lifting_sessions?: number
+          completed_working_sets?: number
+          exercise_count?: number
+          generated_at?: string
+          id?: string
+          low_status_fraction_of_target_min?: number
+          methodology_version?: string
+          period_end?: string
+          period_start?: string
+          pr_count?: number
+          report_version?: string
+          source_fingerprint?: string | null
+          user_id?: string
+          verified_at?: string | null
+          volume_kg_reps?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "monthly_training_report_source_snapsho_methodology_version_fkey"
+            columns: ["methodology_version"]
+            isOneToOne: false
+            referencedRelation: "muscle_volume_methodologies"
+            referencedColumns: ["version"]
+          },
+          {
+            foreignKeyName: "monthly_training_report_source_snapshots_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
@@ -1790,6 +2002,68 @@ export type Database = {
           current_week_target: number
           goals_hit: number
           recent_weeks: Json
+        }[]
+      }
+      freeze_my_monthly_training_report_source: {
+        Args: { p_month_start: string }
+        Returns: {
+          created: boolean
+          snapshot_id: string
+          source_fingerprint: string
+          verified_at: string
+        }[]
+      }
+      get_my_completed_training_report_period: {
+        Args: { p_period_kind: string; p_period_start: string }
+        Returns: {
+          active_training_seconds: number
+          benchmark_evidence_confidence: string
+          benchmark_window_days: number
+          completed_lifting_sessions: number
+          completed_working_sets: number
+          eligible_logical_sets: number
+          eligible_stages: number
+          exercise_count: number
+          high_confidence_effective_sets: number
+          high_confidence_proportion: number
+          high_review_above: number
+          low_or_provisional_effective_sets: number
+          low_or_provisional_proportion: number
+          low_status_fraction_of_target_min: number
+          medium_confidence_effective_sets: number
+          medium_confidence_proportion: number
+          methodology_version: string
+          muscle_group: string
+          period_direct_effective_sets: number
+          period_effective_sets: number
+          period_end: string
+          period_indirect_effective_sets: number
+          period_kind: string
+          period_start: string
+          pr_count: number
+          provisional_effective_sets: number
+          report_version: string
+          review_flagged_logical_sets: number
+          target_max: number
+          target_midpoint: number
+          target_min: number
+          volume_kg_reps: number
+        }[]
+      }
+      get_my_muscle_performance_observations: {
+        Args: { p_anchor_date?: string; p_lookback_days?: number }
+        Returns: {
+          canonical_name: string
+          contribution_role: string
+          contribution_weight: number
+          exercise_id: string
+          metric_type: string
+          metric_value: number
+          muscle_group: string
+          observed_at: string
+          reference_metric_value: number
+          relative_performance_index: number
+          scoring_date: string
         }[]
       }
       get_my_muscle_volume: {
