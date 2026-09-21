@@ -25,6 +25,7 @@
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.112.3",
+    "pdf-lib": "^1.17.1",
     "react": "^19.2.8",
     "react-dom": "^19.2.8"
   },
@@ -39,9 +40,9 @@
     "@vitejs/plugin-react": "^6.0.5",
     "@vitest/coverage-v8": "^4.1.10",
     "jsdom": "^26.1.0",
+    "supabase": "^2.0.0",
     "typescript": "^5.9.2",
     "vite": "^8.2.1",
-    "vitest": "^4.1.10",
-    "supabase": "^2.0.0"
+    "vitest": "^4.1.10"
   }
 }

@@ -1,3 +1,7 @@
+import {
+  navigateToPath,
+  TRAINING_REPORTS_PATH,
+} from '../../../lib/appNavigation';
 import styles from './TrainingVolumeEntryCard.module.css';
 
 interface TrainingVolumeEntryCardProps {
@@ -12,17 +16,26 @@ export function TrainingVolumeEntryCard({ onOpen }: TrainingVolumeEntryCardProps
       data-progress-surface="volume-targets-entry"
     >
       <div>
-        <p>Training volume</p>
-        <h2>Check volume targets</h2>
+        <p>Training tools</p>
+        <h2>Volume targets & completed reports</h2>
         <span>
-          Open the dedicated muscle-volume view for 7-day and 28-day effective-set targets.
+          Check current effective-set targets or review completed weekly and monthly training reports with performance-aware corrective plans.
         </span>
       </div>
 
-      <button onClick={onOpen} type="button">
-        View targets
-        <span aria-hidden="true">→</span>
-      </button>
+      <div className={styles.actions}>
+        <button onClick={onOpen} type="button">
+          Volume targets
+          <span aria-hidden="true">→</span>
+        </button>
+        <button
+          onClick={() => navigateToPath(TRAINING_REPORTS_PATH)}
+          type="button"
+        >
+          Training reports
+          <span aria-hidden="true">→</span>
+        </button>
+      </div>
     </section>
   );
 }

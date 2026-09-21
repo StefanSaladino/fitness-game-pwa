@@ -7,7 +7,7 @@
   padding: var(--app-surface-padding);
 }
 
-.card > div {
+.card > div:first-child {
   min-width: 0;
 }
 
@@ -32,19 +32,24 @@
   letter-spacing: -0.03em;
 }
 
-.card > div > span {
+.card > div:first-child > span {
   display: block;
-  max-width: 650px;
+  max-width: 680px;
   margin-top: 5px;
   color: var(--color-text-muted);
   font-size: 0.75rem;
   line-height: 1.45;
 }
 
-.card button {
+.actions {
+  display: flex;
+  flex: 0 0 auto;
+  gap: 8px;
+}
+
+.actions button {
   display: inline-flex;
   min-height: 44px;
-  flex: 0 0 auto;
   align-items: center;
   justify-content: center;
   gap: var(--space-2);
@@ -55,32 +60,46 @@
   background: var(--color-surface-strong);
   cursor: pointer;
   font: inherit;
-  font-size: 0.76rem;
+  font-size: 0.74rem;
   font-weight: 760;
 }
 
-.card button:hover {
+.actions button:hover {
   border-color: var(--color-accent);
   background: var(--color-accent-soft);
 }
 
-.card button span {
+.actions button span {
   color: var(--color-accent);
   font-size: 1rem;
 }
 
-.card button:focus-visible {
+.actions button:focus-visible {
   outline: 2px solid var(--color-accent-hover);
   outline-offset: 2px;
 }
 
-@media (max-width: 620px) {
+@media (max-width: 760px) {
   .card {
     align-items: stretch;
     flex-direction: column;
   }
 
-  .card button {
+  .actions {
+    width: 100%;
+  }
+
+  .actions button {
+    flex: 1 1 50%;
+  }
+}
+
+@media (max-width: 460px) {
+  .actions {
+    flex-direction: column;
+  }
+
+  .actions button {
     width: 100%;
   }
 }

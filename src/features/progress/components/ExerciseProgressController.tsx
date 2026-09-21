@@ -1,16 +1,32 @@
 import type { AppSection } from '../../../components/layout';
-import { navigateToPath, TRAINING_VOLUME_PATH, usePathname } from '../../../lib/appNavigation';
+import {
+  navigateToPath,
+  TRAINING_REPORTS_PATH,
+  TRAINING_VOLUME_PATH,
+  usePathname,
+} from '../../../lib/appNavigation';
 import type { OnboardingProfile } from '../../onboarding';
 import type { ExerciseAnalyticsTrackingService } from '../analyticsTrackingService';
 import type { MusclePerformanceService } from '../musclePerformanceService';
 import type { ExerciseProgressService } from '../progressService';
+import type { TrainingReportService } from '../trainingReportService';
+import {
+  createTrainingReportQaService,
+  trainingReportQaScenarioFromLocation,
+} from '../trainingReportQaFixtures';
 import { useExerciseAnalyticsTracking } from '../hooks/useExerciseAnalyticsTracking';
 import { useExerciseProgress } from '../hooks/useExerciseProgress';
 import {
   createEmptyMusclePerformanceService,
   useMuscleVolumeRecommendations,
 } from '../hooks/useMuscleVolumeRecommendations';
-import { ExerciseProgressError, ExerciseProgressLoading, ExerciseProgressScreen } from './ExerciseProgressScreen';
+import { useTrainingReport } from '../hooks/useTrainingReport';
+import {
+  ExerciseProgressError,
+  ExerciseProgressLoading,
+  ExerciseProgressScreen,
+} from './ExerciseProgressScreen';
+import { TrainingReportScreen } from './TrainingReportScreen';
 import { TrainingVolumeScreen } from './TrainingVolumeScreen';
 
 interface ExerciseProgressControllerProps {
@@ -20,6 +36,7 @@ interface ExerciseProgressControllerProps {
   service?: ExerciseProgressService;
   analyticsTrackingService?: ExerciseAnalyticsTrackingService;
   musclePerformanceService?: MusclePerformanceService;
+  trainingReportService?: TrainingReportService;
 }
 
 const EMPTY_ANALYTICS_TRACKING_SERVICE: ExerciseAnalyticsTrackingService = {
@@ -27,18 +44,57 @@ const EMPTY_ANALYTICS_TRACKING_SERVICE: ExerciseAnalyticsTrackingService = {
   setTracked: async (_exerciseId, tracked) => tracked,
 };
 
-export function ExerciseProgressController({
+function TrainingReportRoute({
+  profile,
+  onNavigate,
+  onSignOut,
+  service,
+}: Pick<
+  ExerciseProgressControllerProps,
+  'profile' | 'onNavigate' | 'onSignOut'
+> & {
+  service?: TrainingReportService;
+}) {
+  const qaScenario = trainingReportQaScenarioFromLocation();
+  const qaService = !service && qaScenario
+    ? createTrainingReportQaService(qaScenario)
+    : undefined;
+  const reports = useTrainingReport(profile.timezone, service ?? qaService);
+
+  return (
+    <TrainingReportScreen
+      canGoNext={reports.canGoNext}
+      error={reports.error}
+      onBack={() => navigateToPath('/progress')}
+      onNavigate={onNavigate}
+      onNext={reports.goNext}
+      onPrevious={reports.goPrevious}
+      onRetry={() => void reports.retry()}
+      onSetPeriodKind={reports.setPeriodKind}
+      onSignOut={onSignOut}
+      periodKind={reports.periodKind}
+      profile={profile}
+      report={reports.report}
+      status={reports.status}
+    />
+  );
+}
+
+function ProgressAnalyticsRoute({
+  pathname,
   profile,
   onNavigate,
   onSignOut,
   service,
   analyticsTrackingService,
   musclePerformanceService,
-}: ExerciseProgressControllerProps) {
-  const pathname = usePathname();
+}: Omit<ExerciseProgressControllerProps, 'trainingReportService'> & {
+  pathname: string;
+}) {
   const progress = useExerciseProgress(service);
   const tracking = useExerciseAnalyticsTracking(
-    analyticsTrackingService ?? (service ? EMPTY_ANALYTICS_TRACKING_SERVICE : undefined),
+    analyticsTrackingService
+      ?? (service ? EMPTY_ANALYTICS_TRACKING_SERVICE : undefined),
   );
   const volumeRecommendations = useMuscleVolumeRecommendations(
     progress.muscleVolume,
@@ -67,7 +123,13 @@ export function ExerciseProgressController({
   }
 
   if (progress.status === 'loading') {
-    return <ExerciseProgressLoading onNavigate={onNavigate} onSignOut={onSignOut} profile={profile} />;
+    return (
+      <ExerciseProgressLoading
+        onNavigate={onNavigate}
+        onSignOut={onSignOut}
+        profile={profile}
+      />
+    );
   }
 
   if (progress.status === 'error') {
@@ -108,6 +170,41 @@ export function ExerciseProgressController({
       }}
       profile={profile}
       selectedExercise={progress.selectedExercise}
+    />
+  );
+}
+
+export function ExerciseProgressController({
+  profile,
+  onNavigate,
+  onSignOut,
+  service,
+  analyticsTrackingService,
+  musclePerformanceService,
+  trainingReportService,
+}: ExerciseProgressControllerProps) {
+  const pathname = usePathname();
+
+  if (pathname === TRAINING_REPORTS_PATH) {
+    return (
+      <TrainingReportRoute
+        onNavigate={onNavigate}
+        onSignOut={onSignOut}
+        profile={profile}
+        service={trainingReportService}
+      />
+    );
+  }
+
+  return (
+    <ProgressAnalyticsRoute
+      analyticsTrackingService={analyticsTrackingService}
+      musclePerformanceService={musclePerformanceService}
+      onNavigate={onNavigate}
+      onSignOut={onSignOut}
+      pathname={pathname}
+      profile={profile}
+      service={service}
     />
   );
 }
