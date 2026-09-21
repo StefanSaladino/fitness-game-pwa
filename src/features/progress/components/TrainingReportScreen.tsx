@@ -13,7 +13,7 @@ import type {
   TrainingReportPeriodSummary,
 } from '../trainingReportModel';
 import type { VolumeRecommendationAction } from '../volumeRecommendationEngine';
-import { downloadMonthlyTrainingReportPdf } from '../trainingReportPdf';
+import { downloadMonthlyTrainingReportPdfWithRetention } from '../trainingReportPdfStorageService';
 import styles from './TrainingReportScreen.module.css';
 
 interface TrainingReportScreenProps {
@@ -190,7 +190,11 @@ export function TrainingReportScreen({
     setPdfError('');
 
     try {
-      await downloadMonthlyTrainingReportPdf(report, profile.displayName);
+      await downloadMonthlyTrainingReportPdfWithRetention(
+        report,
+        profile.displayName,
+        profile.id,
+      );
       setPdfStatus('idle');
     } catch (caught) {
       setPdfStatus('error');

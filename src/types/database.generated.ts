@@ -481,6 +481,63 @@ export type Database = {
           },
         ]
       }
+      monthly_training_report_pdf_artifacts: {
+        Row: {
+          byte_size: number
+          generated_at: string
+          pdf_version: string
+          pending_delete_path: string | null
+          period_start: string
+          sha256_hex: string
+          snapshot_id: string
+          source_fingerprint: string
+          storage_path: string
+          user_id: string
+          verified_at: string
+        }
+        Insert: {
+          byte_size: number
+          generated_at?: string
+          pdf_version?: string
+          pending_delete_path?: string | null
+          period_start: string
+          sha256_hex: string
+          snapshot_id: string
+          source_fingerprint: string
+          storage_path: string
+          user_id: string
+          verified_at?: string
+        }
+        Update: {
+          byte_size?: number
+          generated_at?: string
+          pdf_version?: string
+          pending_delete_path?: string | null
+          period_start?: string
+          sha256_hex?: string
+          snapshot_id?: string
+          source_fingerprint?: string
+          storage_path?: string
+          user_id?: string
+          verified_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "monthly_training_report_pdf_artifacts_snapshot_user_fkey"
+            columns: ["snapshot_id", "user_id"]
+            isOneToOne: false
+            referencedRelation: "monthly_training_report_source_snapshots"
+            referencedColumns: ["id", "user_id"]
+          },
+          {
+            foreignKeyName: "monthly_training_report_pdf_artifacts_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       monthly_training_report_muscle_snapshots: {
         Row: {
           benchmark_evidence_confidence: string
@@ -2451,6 +2508,26 @@ export type Database = {
           expires_at: string
           preview_id: string
           recipient_count: number
+        }[]
+      }
+      confirm_my_monthly_training_report_pdf_cleanup: {
+        Args: { p_current_storage_path: string }
+        Returns: boolean
+      }
+      promote_my_monthly_training_report_pdf: {
+        Args: {
+          p_byte_size: number
+          p_pdf_version?: string
+          p_sha256_hex: string
+          p_snapshot_id: string
+          p_storage_path: string
+        }
+        Returns: {
+          created: boolean
+          current_storage_path: string
+          pending_delete_path: string
+          period_start: string
+          verified_at: string
         }[]
       }
       reconcile_lifting_v1_scoring_for_user: {

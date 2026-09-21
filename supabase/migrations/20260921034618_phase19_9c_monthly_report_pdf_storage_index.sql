@@ -1,0 +1,4 @@
+drop index if exists public.monthly_training_report_pdf_artifacts_snapshot_idx;
+
+create index monthly_training_report_pdf_artifacts_snapshot_user_idx
+  on public.monthly_training_report_pdf_artifacts(snapshot_id, user_id);
