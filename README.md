@@ -1,14 +1,16 @@
 # Top Set
 
-Top Set is a lifting-first fitness game and installable PWA built with React, TypeScript, Vite, and Supabase. It combines durable workout logging, lifting progression, groups/competition, badges, social features, offline recovery, and platform administration.
+Top Set is a lifting-first fitness game and installable PWA built with React, TypeScript, Vite, and Supabase. It combines durable workout logging, lifting progression, groups/competition, badges, social features, offline recovery, platform administration, and performance-aware muscle-volume intelligence.
 
-The active product scoring model is `lifting-v1`. Lifting is primary; cardio is an accessory bonus. See [`docs/DOMAIN-RULES.md`](docs/DOMAIN-RULES.md) for the authoritative scoring rules.
+The active product scoring model is `lifting-v1`. Lifting is primary; cardio is an accessory bonus. The separate Phase 19 muscle-volume analytics methodology is `muscle-volume-v1` and does not change XP/scoring. See [`docs/DOMAIN-RULES.md`](docs/DOMAIN-RULES.md) for the authoritative domain rules.
 
 ## Current development status
 
-Phase 18 is in progress. **Phase 18.4 Active Superset Flow is complete and passed its full validation gate. Phase 18.5 Superset Recovery & Reliability is next.**
+Phase 19 is in progress. **Phase 19.8 performance-aware volume recommendations is complete. Phase 19.9 weekly/monthly reporting, frozen monthly source snapshots, and monthly PDF generation are implemented through the synthetic QA checkpoint and remain in validation before the Phase 19 production-release gate.**
 
-See [`docs/ROADMAP.md`](docs/ROADMAP.md) for the milestone view and [`docs/PHASE18-LIVE-WORKOUT-ROADMAP.md`](docs/PHASE18-LIVE-WORKOUT-ROADMAP.md) for the detailed Phase 18 → native execution plan.
+Current Phase 19.9 work includes completed-period Reports UI, an idempotent frozen monthly source snapshot, deterministic development-only QA fixtures, and real `pdf-lib` monthly PDF generation with multi-page pagination coverage. Remaining release work includes a true hosted end-to-end QA-account test, generated public database-type reconciliation, the still-planned private latest-PDF retention/storage lifecycle, capacity/retention validation, and the applicable full release gate.
+
+See [`docs/ROADMAP.md`](docs/ROADMAP.md) for the milestone view and current Phase 19.9 checkpoint.
 
 ## Stack
 
@@ -18,6 +20,7 @@ See [`docs/ROADMAP.md`](docs/ROADMAP.md) for the milestone view and [`docs/PHASE
 - IndexedDB-backed workout recovery
 - Vitest + React Testing Library
 - Playwright across desktop Chromium, Android-class Chromium, and iPhone-class WebKit
+- `pdf-lib` for generated monthly training-review PDFs
 - Netlify hosting configuration
 
 ## Local development
@@ -44,20 +47,9 @@ Top Set uses a **hosted-first Supabase workflow**. Docker and a local Supabase s
 
 ## Validation
 
-The canonical validation contract is [`docs/CI-VALIDATION.md`](docs/CI-VALIDATION.md). The normal full local acceptance gate is:
+The canonical validation contract is [`docs/CI-VALIDATION.md`](docs/CI-VALIDATION.md). Use focused tests while developing a slice, then run the applicable full acceptance/release gate before closing a phase or release checkpoint.
 
-```bash
-npm run typecheck
-npm test
-npm run test:integration
-npm run test:internal
-npm run db:test:ci
-npm run test:structure
-npm run build
-npm run test:e2e
-```
-
-Run focused tests first while developing a slice, then the full gate before closing a phase or release checkpoint.
+For the current Phase 19.9 report slice, focused validation includes the training-report model, service, hook, screen, QA-fixture, and PDF tests. The synthetic stress fixture also re-opens its generated PDF with `pdf-lib` and requires at least three pages, so pagination is tested rather than only the PDF file signature.
 
 ## Repository layout
 

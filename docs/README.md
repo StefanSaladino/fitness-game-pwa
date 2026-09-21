@@ -6,8 +6,7 @@ This directory contains two kinds of documentation: **current reference document
 
 | Topic | Document |
 |---|---|
-| Current/future milestones | [`ROADMAP.md`](ROADMAP.md) |
-| Phase 18 → native detail | [`PHASE18-LIVE-WORKOUT-ROADMAP.md`](PHASE18-LIVE-WORKOUT-ROADMAP.md) |
+| Current/future milestones and active Phase 19.9 checkpoint | [`ROADMAP.md`](ROADMAP.md) |
 | Application architecture | [`ARCHITECTURE.md`](ARCHITECTURE.md) |
 | Scoring/domain rules | [`DOMAIN-RULES.md`](DOMAIN-RULES.md) |
 | Database model and boundaries | [`DATABASE.md`](DATABASE.md) |
@@ -17,9 +16,13 @@ This directory contains two kinds of documentation: **current reference document
 | UI/responsive architecture | [`UI-ARCHITECTURE.md`](UI-ARCHITECTURE.md) |
 | CSS ownership | [`CSS-ARCHITECTURE.md`](CSS-ARCHITECTURE.md) |
 | UI design/implementation gate | [`UI-DEVELOPMENT-GATE.md`](UI-DEVELOPMENT-GATE.md) |
-| Product visual guardrails | [`UI-ANTI-AI-LAYOUT-RULES.md`](UI-ANTI-AI-LAYOUT-RULES.md) |
+| Historical Phase 18 live-workout/native sequencing detail | [`PHASE18-LIVE-WORKOUT-ROADMAP.md`](PHASE18-LIVE-WORKOUT-ROADMAP.md) |
 
 Repository-wide contribution rules live in [`../CONTRIBUTING.md`](../CONTRIBUTING.md).
+
+## Active documentation checkpoint
+
+Phase 19.9 is **in progress**, not complete. The canonical docs should currently describe completed-period Reports UI, frozen monthly source snapshots, performance-aware report construction, on-demand monthly PDF generation, and development-only synthetic QA as implemented. They must continue to describe hosted end-to-end proof, generated database-type reconciliation, private latest-PDF storage/retention, capacity validation, and the Phase 19 release gate as outstanding until those checks are actually complete.
 
 ## Historical phase records
 

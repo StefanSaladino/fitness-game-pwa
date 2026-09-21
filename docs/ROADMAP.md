@@ -1,6 +1,6 @@
 # Top Set Development Roadmap
 
-Status: **Phase 19 in progress**
+Status: **Phase 19 in progress — Phase 19.9 reporting/release validation active**
 
 This document is the canonical milestone index. Detailed historical implementation records live in the corresponding `PHASE*.md` files.
 
@@ -63,7 +63,7 @@ Historical details remain in the phase records and `CHANGELOG.md`. They are not 
 | 19.6 | **DONE** | TypeScript models and Progress service integration |
 | 19.7 | **DONE** | Mobile-first Training Volume UI under Progress |
 | 19.8 | **DONE** | Performance-aware volume recommendations plus actionable corrective volume plans when a muscle is below/above the appropriate target range |
-| 19.9 | **NEXT** | Weekly/monthly reporting and downloadable monthly PDF with corrective action plans, plus lifecycle/retention, capacity validation, regression, documentation, and production release |
+| 19.9 | **IN PROGRESS** | Completed weekly/monthly reports, frozen monthly source snapshots, downloadable monthly PDF, retention/capacity validation, hosted end-to-end proof, documentation, and Phase 19 production release |
 
 ### Phase 19.0–19.1 locked catalogue rules
 
@@ -143,7 +143,37 @@ The 28-day v1 bands are exactly `4 ×` the weekly values. Muscle-specific confid
 - The existing `supabase/release/phase19-3-exercise-muscle-matrix.json` remains the single reviewed source matrix and is refreshed to **464 total / 326 eligible / 138 excluded-deferred** rather than creating a parallel mapping source.
 - No new picker categories, equipment hierarchies, or reportable muscle groups are introduced.
 - Phase 19.4 must not begin until the expanded catalogue, refreshed matrix, catalogue tests, and matrix validator are all green.
+
+### Phase 19.9 current implementation checkpoint
+
+Phase 19.9 has moved beyond design and is now an active implementation/validation phase.
+
+Implemented in the current repository:
+
+- exact completed-period weekly/monthly report source through `get_my_completed_training_report_period`;
+- idempotent frozen monthly source snapshots with structured parent, muscle, and performance rows plus a verified source fingerprint;
+- hardened authenticated snapshot/RLS boundaries and pgTAP coverage;
+- TypeScript completed-report model with exact completed-period validation, prior-period deltas, monthly 28-day benchmark normalization, performance-aware recommendations, and small next-7-day corrective plans;
+- `/progress/reports` with Week/Month navigation and decision-focused report presentation;
+- monthly on-demand PDF generation using `pdf-lib`, including dynamic text wrapping, card sizing, page breaks, repeated headers, report/methodology footers, and deterministic file naming;
+- development-only `?qa=` service substitution with `mixed`, `healthy`, `monitor`, `empty`, and `stress` deterministic report scenarios;
+- automated PDF QA for every synthetic scenario, with the stress fixture reloading the generated PDF and requiring at least three pages;
+- manual synthetic QA PDFs demonstrating all recommendation states and a five-page stress document without relying on fake hosted workouts.
+
+Still required before Phase 19.9 can be marked **DONE**:
+
+- one true hosted end-to-end test using an authorized disposable QA account so real workout rows flow through database derivation, frozen snapshot, service/model, Reports UI, and PDF generation;
+- regeneration/reconciliation of `src/types/database.generated.ts` so the new Phase 19.9 public tables/RPCs exist in the checked-in generated schema types;
+- implementation and verification of the locked private latest-monthly-PDF storage/replacement lifecycle, or an explicit product decision to revise that locked requirement before release;
+- capacity/retention measurements and final review of database/table growth, egress, Storage, query behavior, and any relevant provider usage;
+- final hosted migration-history/pgTAP/security-performance verification for the completed Phase 19.9 database state;
+- applicable full local/browser release gate and final production-release documentation.
+
+The development-only synthetic QA path is intentionally **not** database end-to-end proof. It uses the real Reports screen and real PDF generator while substituting a deterministic `TrainingReportService` report payload; it never writes fake workouts to Supabase.
+
 ### Phase 19.9 locked reporting and retention plan
+
+This remains the release contract. Items explicitly identified as outstanding in the checkpoint above are not yet shipped merely because they are specified here.
 
 - **In-app delivery is the primary report surface.** Training Volume remains available under Progress with live rolling 7-day and 28-day views.
 - Weekly reporting summarizes a completed weekly period and compares it with the previous comparable period where sufficient data exists.
@@ -154,7 +184,7 @@ The 28-day v1 bands are exactly `4 ×` the weekly values. Muscle-specific confid
 - **Only the latest monthly PDF is retained per user.** A prior PDF is deleted only after the replacement snapshot and PDF have both been generated and verified successfully.
 - Deleting/replacing a PDF must never delete the user's underlying workout history.
 - Compact structured monthly snapshots are retained long-term so Top Set can support historical trends without retaining an unlimited number of PDF artifacts.
-- Monthly snapshots should preserve the minimum useful historical intelligence, including workout count, active training time, completed working sets, relevant volume totals, PR/performance summary, muscle-volume totals, methodology version, and other fields approved during implementation.
+- Monthly snapshots preserve the minimum useful historical intelligence, including workout count, active training time, completed working sets, relevant volume totals, PR/performance summary, muscle-volume totals, methodology version, and the confidence/benchmark inputs needed by the frozen report source.
 - Ephemeral and operational records that no longer provide product value should use short, table-appropriate retention schedules rather than accumulate indefinitely.
 - Detailed raw workout data may become eligible for future compaction/archival after a **conservative initial target of approximately 24 months**, but only after the archival contract is defined and a verified historical snapshot exists. Phase 19.9 must not introduce destructive workout-history cleanup until dependencies and restore/history requirements are proven safe.
 - Archival eligibility must require, at minimum: age beyond the approved retention period, a successfully generated/verified snapshot, no unresolved dependency on the raw rows, and validation that retained aggregates are sufficient for supported historical features.
@@ -198,6 +228,6 @@ The PWA remains independently deployable. Native work must not fork product rule
 
 ## Execution order
 
-**PWA release complete → exercise catalogue expansion → catalogue audit → volume methodology lock → exercise-to-muscle contribution matrix → dumbbell-heavy catalogue expansion + matrix refresh → database foundation → personalized effective-volume engine → Progress integration → Training Volume UI → performance-aware recommendations/corrective actions → weekly/monthly reports + corrective PDF + retention/capacity validation → Phase 19 production release → personalized monthly-program foundation → equipment/access profile → program generator → exclusions/substitutions → in-app program persistence/adaptation + optional PDF → personalized-program release → Capacitor proof → native shell → native workout bridge → native lifecycle hardening → iPhone Live Activity → Android live surface → optional interactive controls.**
+**PWA release complete → exercise catalogue expansion → catalogue audit → volume methodology lock → exercise-to-muscle contribution matrix → dumbbell-heavy catalogue expansion + matrix refresh → database foundation → personalized effective-volume engine → Progress integration → Training Volume UI → performance-aware recommendations/corrective actions → weekly/monthly reports + frozen monthly source + corrective PDF → hosted end-to-end proof + generated-type reconciliation + PDF retention/capacity validation → Phase 19 production release → personalized monthly-program foundation → equipment/access profile → program generator → exclusions/substitutions → in-app program persistence/adaptation + optional PDF → personalized-program release → Capacitor proof → native shell → native workout bridge → native lifecycle hardening → iPhone Live Activity → Android live surface → optional interactive controls.**
 
 Engineering/delivery rules live in [`../CONTRIBUTING.md`](../CONTRIBUTING.md); validation rules live in [`CI-VALIDATION.md`](CI-VALIDATION.md).
