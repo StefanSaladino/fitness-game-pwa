@@ -1,5 +1,15 @@
 # Changelog
 
+## Unreleased - Phase 20.2 personalized program generator
+
+- Added nullable explicit `STRENGTH` / `HYPERTROPHY` / `BALANCED` program goal and 1-6 requested sessions/week to the shared revisioned training-program profile.
+- Added a guarded generator-candidate RPC returning the locked 512 normally loggable active exercises plus `muscle-volume-v1` eligibility/contribution metadata.
+- Added a conservative explicit exercise-to-equipment resolver; unrepresented equipment requirements fail closed.
+- Added a deterministic four-week generator with 1-6 day split structures, equipment filtering, conventional/familiar exercise preference, Phase 19 volume-signal set adjustments, and no random swaps.
+- Same-exercise target weight is reused only from sufficiently established observed history when the reference set already matches the generated repetition range; sparse history leaves load open.
+- Generator muscle-slot selection uses only Phase-19-eligible candidates and does not duplicate `muscle-volume-v1`.
+- Generated program persistence remains Phase 20.4; exclusions/substitutions remain Phase 20.3.
+
 ## Unreleased â€” Phase 20.1 equipment/access profile
 
 - Added an explicit personalized-program access profile with `COMMERCIAL_GYM` and `CUSTOM` modes; an absent profile remains unconfigured rather than silently assuming full-gym access.

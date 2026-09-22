@@ -24,7 +24,7 @@ Repository-wide contribution rules live in [`../CONTRIBUTING.md`](../CONTRIBUTIN
 
 ## Active documentation checkpoint
 
-Phase 19 is complete in Top Set v1.1.1. Phase 20 Personalized Training Programs is active: **20.0 and 20.1 are complete** with `training-program-v1`, safety/source-snapshot rules, an explicit persisted equipment/access profile, and the 568/512 generator-loggability audit locked. **20.2 Personalized Program Generator is next.**
+Phase 19 is complete in Top Set v1.1.1. Phase 20 Personalized Training Programs is active: **20.0 and 20.1 are complete; 20.2 is implemented and in validation** with persisted goal/frequency, a guarded Phase-19-backed candidate catalogue, explicit equipment resolution, and a deterministic four-week generator. **20.3 exclusions/substitutions follows after 20.2 hosted closeout.**
 
 ## Historical phase records
 

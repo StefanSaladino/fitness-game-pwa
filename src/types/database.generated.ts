@@ -1232,7 +1232,9 @@ export type Database = {
           access_mode: string
           created_at: string
           equipment_keys: string[]
+          goal: string | null
           revision: number
+          sessions_per_week: number | null
           updated_at: string
           user_id: string
         }
@@ -1240,7 +1242,9 @@ export type Database = {
           access_mode: string
           created_at?: string
           equipment_keys?: string[]
+          goal?: string | null
           revision?: number
+          sessions_per_week?: number | null
           updated_at?: string
           user_id: string
         }
@@ -1248,7 +1252,9 @@ export type Database = {
           access_mode?: string
           created_at?: string
           equipment_keys?: string[]
+          goal?: string | null
           revision?: number
+          sessions_per_week?: number | null
           updated_at?: string
           user_id?: string
         }
@@ -2222,6 +2228,20 @@ export type Database = {
           active_device_count: number
         }[]
       }
+      get_my_training_program_candidate_catalog: {
+        Args: never
+        Returns: {
+          canonical_name: string
+          contributions: Json
+          exercise_id: string
+          measurement_type: string
+          primary_muscle_group: string
+          supports_added_weight: boolean
+          supports_assisted: boolean
+          volume_eligible: boolean
+          workout_type: string
+        }[]
+      }
       get_platform_account_detail: {
         Args: { p_target_user_id: string }
         Returns: {
@@ -2855,7 +2875,32 @@ export type Database = {
           access_mode: string
           created_at: string
           equipment_keys: string[]
+          goal: string | null
           revision: number
+          sessions_per_week: number | null
+          updated_at: string
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "training_program_profiles"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      update_my_training_program_generation_preferences: {
+        Args: {
+          p_expected_revision: number
+          p_goal: string
+          p_sessions_per_week: number
+        }
+        Returns: {
+          access_mode: string
+          created_at: string
+          equipment_keys: string[]
+          goal: string | null
+          revision: number
+          sessions_per_week: number | null
           updated_at: string
           user_id: string
         }

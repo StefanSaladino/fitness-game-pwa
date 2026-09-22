@@ -203,7 +203,7 @@ This is the shipped Phase 19 release contract.
 |---|---|---|
 | 20.0 | **DONE** | Personalized-program specification, safety boundaries, four-week `training-program-v1` structure, source-snapshot rules, and persistence responsibilities |
 | 20.1 | **DONE** | Equipment/access profile â€” explicit commercial-gym vs custom/home access, persisted equipment taxonomy, RLS/RPC mutation boundary, Settings editor, and 568/512 generator-loggability audit |
-| 20.2 | **NEXT** | Goal/frequency/performance-driven four-week program generator using available E1RM/history, requested workouts per week, equipment constraints, and Phase 19 volume intelligence |
+| 20.2 | **IN VALIDATION** | Deterministic four-week generator using persisted goal/frequency, explicit equipment resolution, established same-exercise history, and Phase 19 volume/performance inputs; hosted DB validation pending |
 | 20.3 | **PLANNED** | Exercise exclusion and intelligent substitution flow for unavailable equipment, physical limitations/injury restrictions, and user preference without making medical-safety claims |
 | 20.4 | **PLANNED** | Persist generated monthly programs in-app as structured workout templates/presets that can launch into the normal workout flow |
 | 20.5 | **PLANNED** | Adaptive progression across the month using completed-workout and performance feedback |

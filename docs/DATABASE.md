@@ -61,6 +61,14 @@ Set and exercise mutations that require protection are performed through authent
 - equipment access and generator eligibility are separate: Phase 20.1 records equipment even when the current exercise logging model makes some catalogue rows ineligible for `training-program-v1`.
 
 The source-controlled equipment/loggability audit is `supabase/release/phase20-1-equipment-loggability-audit.json`.
+### Phase 20 generator inputs
+
+Phase 20.2 extends `training_program_profiles` with nullable `goal` and `sessions_per_week`. They are stored as an all-or-nothing pair and remain null until explicitly configured. `update_my_training_program_generation_preferences` is the active-account, revision-guarded self-service mutation boundary.
+
+`get_my_training_program_candidate_catalog()` is an authenticated read-model RPC. It returns the 512 active exercises the current workout engine can normally complete (`WEIGHT_REPS` / `BODYWEIGHT_REPS`) and joins canonical `muscle-volume-v1` rule/contribution metadata. The client generator further narrows this to Phase-19-eligible exercises whose explicit equipment requirements are satisfied.
+
+The generated four-week definition is not stored in 20.2. Durable program/workout/exercise persistence remains Phase 20.4.
+
 ## Advanced sets
 
 Phase 18.7A preserves `workout_sets` as the authoritative logical-set parent for Drop Sets and Pyramids.

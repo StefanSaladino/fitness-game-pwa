@@ -1,6 +1,6 @@
 # Phase 20 — Personalized Training Programs
 
-Status: **20.0â€“20.1 DONE â€” 20.2 personalized program generator next**
+Status: **20.2 IMPLEMENTED - hosted validation pending; 20.3 follows after closeout**
 Phase 20 adds structured, personalized four-week lifting programs while preserving Top Set's existing workout, scoring, Phase 19 analytics, recovery, and security boundaries. The program layer is a planning/template system, not a second workout engine.
 
 ## 20.0 contract
@@ -154,6 +154,24 @@ The Settings â†’ Training surface is the editor for this profile.
 ### 20.1 exit
 
 Phase 20.1 is complete when the persisted profile, RLS/RPC boundary, settings editor, source-controlled equipment taxonomy, and 568/512 loggability audit pass focused validation and the hosted migration/pgTAP/type-regeneration gate.
+## 20.2 implementation - deterministic program generator
+
+20.2 implements the first deterministic four-week generator without introducing durable program instances yet.
+
+- `training_program_profiles` now has nullable `goal` and `sessions_per_week`; existing profiles remain unconfigured until both values are explicitly saved.
+- `get_my_training_program_candidate_catalog()` returns the locked 512 active `WEIGHT_REPS` / `BODYWEIGHT_REPS` exercises with bodyweight capabilities plus `muscle-volume-v1` eligibility and contribution metadata.
+- The generator uses only the 418 Phase-19-eligible exercises when filling muscle-target slots.
+- Exercise-to-equipment resolution is explicit and fail-closed. Common workout types map to required equipment, and bodyweight/barbell/dumbbell/plyometric edge cases add rack, bench, pull-up bar, dip station, rings, box, or other represented requirements.
+- Exercises whose required implement is not represented by the 20.1 equipment taxonomy are not generated.
+- Commercial-gym mode does not silently assume rings, specialty bars, or strongman implements.
+- Frequency templates are deterministic: full-body for 1-3 days, upper/lower for 4 days, upper/lower/push/pull/legs for 5 days, and push/pull/legs variants for 6 days.
+- Candidate ranking uses reviewed muscle contribution, goal, compound/accessory intent, established same-exercise history, conventional foundation-movement preference, and prior use inside the block. Canonical name/id are final tie-breakers.
+- A weight target is reused only from established same-exercise history when at least 3 observations / 2 sessions exist and the observed best-set reps already fall inside the generated rep range. Otherwise target load remains null.
+- Phase 19 seven-day `ADD_VOLUME_CAUTIOUSLY` and `REDUCE_VOLUME_CAUTIOUSLY` actions may move a selected exercise by one working set only, bounded to 2-4 working sets.
+- Generated bodyweight work begins in plain `BODYWEIGHT` mode. Added/assisted loading is not inferred.
+- 20.2 output is a validated `training-program-v1` definition. Durable program persistence remains Phase 20.4.
+- Physical-limitation/exercise exclusions and substitutions remain Phase 20.3 and must be applied before persistence.
+
 ## Evidence background
 
 - ACSM 2026 resistance training guideline summary: https://acsm.org/resistance-training-guidelines-update-2026/
