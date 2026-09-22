@@ -1,10 +1,10 @@
 # Top Set Development Roadmap
 
-Status: **Phase 19 in progress — Phase 19.9 reporting/release validation active**
+Status: **Phase 19 complete - Phase 20 Personalized Training Programs next**
 
 This document is the canonical milestone index. Detailed historical implementation records live in the corresponding `PHASE*.md` files.
 
-## Completed foundations — Phases 0–18
+## Completed foundations - Phases 0-19
 
 Top Set has completed the major foundations needed for the current intelligence work:
 
@@ -63,7 +63,7 @@ Historical details remain in the phase records and `CHANGELOG.md`. They are not 
 | 19.6 | **DONE** | TypeScript models and Progress service integration |
 | 19.7 | **DONE** | Mobile-first Training Volume UI under Progress |
 | 19.8 | **DONE** | Performance-aware volume recommendations plus actionable corrective volume plans when a muscle is below/above the appropriate target range |
-| 19.9 | **IN PROGRESS** | Completed weekly/monthly reports, frozen monthly source snapshots, downloadable monthly PDF, retention/capacity validation, hosted end-to-end proof, documentation, and Phase 19 production release |
+| 19.9 | **DONE** | Completed weekly/monthly reports, frozen monthly source snapshots, downloadable monthly PDF, retention/capacity validation, hosted end-to-end proof, documentation, and Phase 19 production release |
 
 ### Phase 19.0–19.1 locked catalogue rules
 
@@ -144,9 +144,9 @@ The 28-day v1 bands are exactly `4 ×` the weekly values. Muscle-specific confid
 - No new picker categories, equipment hierarchies, or reportable muscle groups are introduced.
 - Phase 19.4 must not begin until the expanded catalogue, refreshed matrix, catalogue tests, and matrix validator are all green.
 
-### Phase 19.9 current implementation checkpoint
+### Phase 19.9 completion checkpoint
 
-Phase 19.9 is in final release validation.
+Phase 19.9 is complete and released as part of Top Set v1.1.0.
 
 Implemented and validated in the current repository/hosted project:
 
@@ -165,19 +165,20 @@ Implemented and validated in the current repository/hosted project:
 - report PDF privileged mutation logic moved behind non-exposed `report_private` SECURITY DEFINER helpers with public SECURITY INVOKER wrappers;
 - redundant monthly-source user/period index removed after verifying the unique user/month index serves the same lookup.
 
-Still required before Phase 19.9 can be marked **DONE**:
+Final release validation completed:
 
-- run the final applicable local/browser release gate against the completed Phase 19.9 state;
-- complete final production-release documentation/changelog and release tagging.
-
-The provider Usage-page checkpoint is complete for the 2026-09-18 through
-2026-10-18 billing cycle and is recorded in
-[`PHASE19-CAPACITY-VALIDATION.md`](PHASE19-CAPACITY-VALIDATION.md).
+- canonical local validation was green before release closeout;
+- the normal Playwright browser suite was green;
+- the Reports-specific browser regression passed across desktop Chromium, Android-class Chromium, and iPhone-class WebKit;
+- the Reports responsive visual audit passed all 36 targeted viewports/breakpoints;
+- hosted Phase 19.9B, 19.9C, and 19.9D pgTAP suites passed;
+- final hosted migration history and report-specific Security Advisor state were verified;
+- provider Usage-page capacity confirmation is recorded in [`PHASE19-CAPACITY-VALIDATION.md`](PHASE19-CAPACITY-VALIDATION.md).
 
 Capacity validation does **not** justify destructive workout-history cleanup. Long-term structured snapshots and latest-only PDF retention remain the Phase 19 contract.
 ### Phase 19.9 locked reporting and retention plan
 
-This remains the release contract. Items explicitly identified as outstanding in the checkpoint above are not yet shipped merely because they are specified here.
+This is the shipped Phase 19 release contract.
 
 - **In-app delivery is the primary report surface.** Training Volume remains available under Progress with live rolling 7-day and 28-day views.
 - Weekly reporting summarizes a completed weekly period and compares it with the previous comparable period where sufficient data exists.

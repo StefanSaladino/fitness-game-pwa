@@ -6,7 +6,7 @@ This directory contains two kinds of documentation: **current reference document
 
 | Topic | Document |
 |---|---|
-| Current/future milestones and active Phase 19.9 checkpoint | [`ROADMAP.md`](ROADMAP.md) |
+| Current/future milestones and Phase 20 next milestone | [`ROADMAP.md`](ROADMAP.md) |
 | Application architecture | [`ARCHITECTURE.md`](ARCHITECTURE.md) |
 | Scoring/domain rules | [`DOMAIN-RULES.md`](DOMAIN-RULES.md) |
 | Database model and boundaries | [`DATABASE.md`](DATABASE.md) |
@@ -23,7 +23,7 @@ Repository-wide contribution rules live in [`../CONTRIBUTING.md`](../CONTRIBUTIN
 
 ## Active documentation checkpoint
 
-Phase 19.9 is **in progress**, not complete. The canonical docs should now describe completed-period Reports UI, frozen monthly source snapshots, hosted end-to-end proof, reconciled database types, verified private latest-PDF retention, and the completed project-local capacity/security measurement checkpoint as implemented. Provider billing-cycle usage has been confirmed. Remaining release work is the final Phase 19 release gate and closeout documentation.
+Phase 19.9 and Phase 19 are **complete** in Top Set v1.1.0. The canonical docs describe completed-period Reports UI, frozen monthly source snapshots, hosted end-to-end proof, reconciled database types, verified private latest-PDF retention, provider-capacity confirmation, security hardening, and the completed release-validation gate. Phase 20 Personalized Training Programs is the next planned milestone.
 
 ## Historical phase records
 

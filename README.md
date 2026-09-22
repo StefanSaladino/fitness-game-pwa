@@ -6,11 +6,11 @@ The active product scoring model is `lifting-v1`. Lifting is primary; cardio is 
 
 ## Current development status
 
-Phase 19 is in progress. **Phase 19.9 reporting is feature-complete through hosted end-to-end proof, generated database-type reconciliation, private latest-PDF retention, and capacity/security validation. The provider-usage confirmation is complete; the remaining work is the final Phase 19 release gate and documentation closeout.**
+Phase 19 is complete in **Top Set v1.1.0**. Muscle Volume Intelligence, performance-aware recommendations, completed-period reports, frozen monthly source snapshots, private latest-PDF retention, hosted end-to-end proof, capacity/security validation, and the final browser release gate are complete. **Phase 20 - Personalized Training Programs - is next.**
 
-Current Phase 19.9 work includes completed-period Reports UI, idempotent frozen monthly source snapshots, deterministic development QA, real `pdf-lib` PDF generation, hosted workout-to-report E2E validation, and verified private latest-PDF retention with short-lived signed downloads. Capacity validation measured the hosted database/Storage footprint and keeps long-term structured snapshots plus latest-only PDF retention without introducing destructive workout-history cleanup.
+The completed Phase 19 release includes completed-period Reports UI, idempotent frozen monthly source snapshots, deterministic development QA, real `pdf-lib` PDF generation, hosted workout-to-report E2E validation, verified private latest-PDF retention with short-lived signed downloads, and measured capacity/security validation. Long-term structured snapshots plus latest-only PDF retention remain the shipped retention contract; destructive workout-history cleanup is deferred.
 
-See [`docs/ROADMAP.md`](docs/ROADMAP.md) for the milestone view and current Phase 19.9 checkpoint.
+See [`docs/ROADMAP.md`](docs/ROADMAP.md) for the milestone view and completed Phase 19 release and Phase 20 next milestone.
 
 ## Stack
 
@@ -49,7 +49,7 @@ Top Set uses a **hosted-first Supabase workflow**. Docker and a local Supabase s
 
 The canonical validation contract is [`docs/CI-VALIDATION.md`](docs/CI-VALIDATION.md). Use focused tests while developing a slice, then run the applicable full acceptance/release gate before closing a phase or release checkpoint.
 
-For the current Phase 19.9 report slice, focused validation includes the training-report model, service, hook, screen, QA-fixture, and PDF tests. The synthetic stress fixture also re-opens its generated PDF with `pdf-lib` and requires at least three pages, so pagination is tested rather than only the PDF file signature.
+Phase 19 report validation included the training-report model, service, hook, screen, QA-fixture, and PDF tests. The synthetic stress fixture also re-opens its generated PDF with `pdf-lib` and requires at least three pages, so pagination is tested rather than only the PDF file signature.
 
 ## Repository layout
 

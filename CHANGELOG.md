@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased - Phase 19.9 Muscle Volume Intelligence release candidate
+## v1.1.0 - Phase 19 Muscle Volume Intelligence
 
 - Added the versioned `muscle-volume-v1` effective-volume methodology, reviewed exercise-to-muscle contribution matrix, personalized set-quality confidence, and rolling 7/28-day read model.
 - Added Progress Training Volume plus performance-aware volume recommendations and bounded next-7-day corrective plans.
@@ -12,6 +12,7 @@
 - Completed hosted capacity/retention measurement and retained long-term compact monthly snapshots plus latest-only PDFs without introducing destructive workout-history cleanup.
 - Recorded current Supabase Free-plan provider usage with all visible Phase 19 capacity signals comfortably below quota.
 - Added browser-level Reports regression coverage for exact UTF-8 navigation/date presentation and responsive visual-audit coverage.
+- Final release validation passed the normal browser suite, the Reports regression across all three configured browser projects, the 36-case Reports responsive visual audit, and the hosted Phase 19.9 pgTAP/security checks.
 - No Phase 19 change alters the authoritative `lifting-v1` XP/scoring model.
 
 ## Unreleased — Phase 17 test infrastructure cleanup
