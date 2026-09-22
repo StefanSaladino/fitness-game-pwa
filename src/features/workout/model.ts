@@ -27,6 +27,9 @@ export interface WorkoutExercise {
   revision: number;
   canonicalName: string;
   measurementType: ExerciseMeasurementType;
+  // Optional keeps old recovery/test fixtures readable while the hosted schema migrates.
+  supportsAddedWeight?: boolean;
+  supportsAssisted?: boolean;
 }
 
 export type WorkoutCompositionAction = 'add' | 'remove' | 'move' | 'superset' | null;

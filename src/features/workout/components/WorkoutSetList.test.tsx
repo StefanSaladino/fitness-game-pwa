@@ -17,6 +17,15 @@ const bodyweightExercise: WorkoutExercise = {
   supersetGroupId: null, supersetOrder: null,
   revision: 0,
   canonicalName: 'Pull Up', measurementType: 'BODYWEIGHT_REPS',
+  supportsAddedWeight: true, supportsAssisted: true,
+};
+
+const plyometricExercise: WorkoutExercise = {
+  id: 'we-plyo', workoutId: 'workout-1', exerciseId: 'exercise-plyo', orderIndex: 2,
+  supersetGroupId: null, supersetOrder: null,
+  revision: 0,
+  canonicalName: 'Squat Jump', measurementType: 'BODYWEIGHT_REPS',
+  supportsAddedWeight: true, supportsAssisted: false,
 };
 
 const sets: WorkoutSet[] = [
@@ -203,6 +212,34 @@ describe('WorkoutSetList', () => {
     fireEvent.blur(screen.getByLabelText('Set 1 load in kg'));
 
     await waitFor(() => expect(onSaveSet).toHaveBeenCalledWith('set-bw', expect.objectContaining({ bodyweightMode: 'ADDED_WEIGHT', weightKg: 20 })));
+  });
+
+  it('shows Assisted only when the exercise explicitly supports measurable assistance', async () => {
+    const user = userEvent.setup();
+    const bodyweightSet: WorkoutSet = {
+      id: 'set-bw-modes', workoutExerciseId: 'we-2', setNumber: 1, setType: 'WORKING',
+      weightKg: null, reps: 8, bodyweightMode: 'BODYWEIGHT', completed: false, completedAt: null, revision: 0,
+    };
+    render(<WorkoutSetList {...props({ exercise: bodyweightExercise, sets: [bodyweightSet] })} />);
+
+    await user.click(screen.getByRole('combobox', { name: 'Set 1 bodyweight mode' }));
+    expect(await screen.findByRole('option', { name: 'Bodyweight' })).toBeInTheDocument();
+    expect(screen.getByRole('option', { name: 'Added weight' })).toBeInTheDocument();
+    expect(screen.getByRole('option', { name: 'Assisted' })).toBeInTheDocument();
+  });
+
+  it('keeps Added weight but hides Assisted for plyometric exercises', async () => {
+    const user = userEvent.setup();
+    const plyoSet: WorkoutSet = {
+      id: 'set-plyo', workoutExerciseId: 'we-plyo', setNumber: 1, setType: 'WORKING',
+      weightKg: null, reps: 6, bodyweightMode: 'BODYWEIGHT', completed: false, completedAt: null, revision: 0,
+    };
+    render(<WorkoutSetList {...props({ exercise: plyometricExercise, sets: [plyoSet] })} />);
+
+    await user.click(screen.getByRole('combobox', { name: 'Set 1 bodyweight mode' }));
+    expect(await screen.findByRole('option', { name: 'Bodyweight' })).toBeInTheDocument();
+    expect(screen.getByRole('option', { name: 'Added weight' })).toBeInTheDocument();
+    expect(screen.queryByRole('option', { name: 'Assisted' })).not.toBeInTheDocument();
   });
 
   it('converts display pounds back to canonical kilograms before saving', async () => {

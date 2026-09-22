@@ -4,10 +4,9 @@ select plan(13);
 
 select has_table('public', 'exercise_catalog', 'exercise catalogue exists');
 
-select results_eq(
-  $$select count(*)::bigint from public.exercise_catalog where active = true$$,
-  array[464::bigint],
-  'Phase 19.3A expands the active catalogue to 464 exercises'
+select ok(
+  (select count(*) from public.exercise_catalog where active = true) >= 464,
+  'Phase 19.3A established a floor of 464 active exercises before later catalogue expansions'
 );
 
 select results_eq(

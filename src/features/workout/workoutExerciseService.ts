@@ -26,6 +26,8 @@ type ExerciseCatalogRow = {
   id: string;
   canonical_name: string;
   measurement_type: ExerciseMeasurementType;
+  supports_added_weight: boolean;
+  supports_assisted: boolean;
 };
 
 export interface WorkoutExerciseService {
@@ -84,7 +86,7 @@ export function createWorkoutExerciseService(client: SupabaseClient = getSupabas
 
       const catalogRows = await client
         .from('exercise_catalog')
-        .select('id, canonical_name, measurement_type')
+        .select('id, canonical_name, measurement_type, supports_added_weight, supports_assisted')
         .in('id', [...new Set(rows.map((row) => row.exercise_id))]);
 
       if (catalogRows.error) throw catalogRows.error;
@@ -105,6 +107,8 @@ export function createWorkoutExerciseService(client: SupabaseClient = getSupabas
           revision: row.revision,
           canonicalName: exercise.canonical_name,
           measurementType: exercise.measurement_type,
+          supportsAddedWeight: exercise.supports_added_weight,
+          supportsAssisted: exercise.supports_assisted,
         };
       });
     },

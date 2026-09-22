@@ -112,6 +112,8 @@ function SetRow({
   const previousUnit = useRef(unit);
   const rowBusy = busy?.targetId === set.id;
   const isBodyweight = exercise.measurementType === 'BODYWEIGHT_REPS';
+  const supportsAddedWeight = isBodyweight && (exercise.supportsAddedWeight ?? true);
+  const supportsAssisted = isBodyweight && (exercise.supportsAssisted ?? false);
   const usesExternalLoad = isBodyweight && draft.bodyweightMode !== 'BODYWEIGHT';
 
   useEffect(() => {
@@ -164,6 +166,14 @@ function SetRow({
     }
 
     const bodyweightMode = isBodyweight ? next.bodyweightMode : null;
+    if (bodyweightMode === 'ADDED_WEIGHT' && !supportsAddedWeight) {
+      setValidationError('Added weight is not supported for this exercise.');
+      return null;
+    }
+    if (bodyweightMode === 'ASSISTED' && !supportsAssisted) {
+      setValidationError('Assisted load is not supported for this exercise.');
+      return null;
+    }
     const canonicalWeight = isBodyweight && bodyweightMode === 'BODYWEIGHT' ? null : weight;
 
     if (completed) {
@@ -266,8 +276,8 @@ function SetRow({
             value={draft.bodyweightMode}
           >
             <option value="BODYWEIGHT">Bodyweight</option>
-            <option value="ADDED_WEIGHT">Added weight</option>
-            <option value="ASSISTED">Assisted</option>
+            {supportsAddedWeight && <option value="ADDED_WEIGHT">Added weight</option>}
+            {supportsAssisted && <option value="ASSISTED">Assisted</option>}
         </SelectField>
       )}
 

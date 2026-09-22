@@ -16,7 +16,7 @@ describe('workoutExerciseService', () => {
       { id: 'we-1', workout_id: 'workout-1', exercise_id: 'exercise-1', order_index: 0, superset_group_id: '11111111-1111-4111-8111-111111111111', superset_order: 0, revision: 7 },
     ]);
     const catalogRows = query([
-      { id: 'exercise-1', canonical_name: 'Barbell Bench Press', measurement_type: 'WEIGHT_REPS' },
+      { id: 'exercise-1', canonical_name: 'Barbell Bench Press', measurement_type: 'WEIGHT_REPS', supports_added_weight: false, supports_assisted: false },
     ]);
     const from = vi.fn((table: string) => table === 'workout_exercises' ? workoutRows : catalogRows);
     const client = { from, rpc: vi.fn() } as never;
@@ -31,10 +31,13 @@ describe('workoutExerciseService', () => {
         supersetGroupId: '11111111-1111-4111-8111-111111111111',
         supersetOrder: 0,
         revision: 7,
+        supportsAddedWeight: false,
+        supportsAssisted: false,
       }),
     ]);
     expect(workoutRows.select).toHaveBeenCalledWith('id, workout_id, exercise_id, order_index, superset_group_id, superset_order, revision');
     expect(workoutRows.order).toHaveBeenCalledWith('order_index', { ascending: true });
+    expect(catalogRows.select).toHaveBeenCalledWith('id, canonical_name, measurement_type, supports_added_weight, supports_assisted');
     expect(catalogRows.in).toHaveBeenCalledWith('id', ['exercise-1']);
   });
 
@@ -47,7 +50,7 @@ describe('workoutExerciseService', () => {
       { id: 'we-1', workout_id: 'workout-1', exercise_id: 'exercise-1', order_index: 0, revision: 2 },
     ]);
     const catalogRows = query([
-      { id: 'exercise-1', canonical_name: 'Barbell Bench Press', measurement_type: 'WEIGHT_REPS' },
+      { id: 'exercise-1', canonical_name: 'Barbell Bench Press', measurement_type: 'WEIGHT_REPS', supports_added_weight: false, supports_assisted: false },
     ]);
     const workoutQueries = [missingColumns, legacyRows];
     const from = vi.fn((table: string) => table === 'workout_exercises' ? workoutQueries.shift() : catalogRows);
