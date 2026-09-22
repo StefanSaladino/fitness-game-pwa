@@ -1,5 +1,19 @@
 # Changelog
 
+## Unreleased - Phase 19.9 Muscle Volume Intelligence release candidate
+
+- Added the versioned `muscle-volume-v1` effective-volume methodology, reviewed exercise-to-muscle contribution matrix, personalized set-quality confidence, and rolling 7/28-day read model.
+- Added Progress Training Volume plus performance-aware volume recommendations and bounded next-7-day corrective plans.
+- Added completed weekly/monthly Reports with exact completed-period semantics and frozen, fingerprinted monthly structured source snapshots.
+- Added real multi-page monthly PDFs with deterministic QA/stress coverage and private latest-PDF retention in Supabase Storage.
+- Verified the hosted workout -> volume/performance -> frozen snapshot -> report UI -> PDF chain using an authorized disposable QA account.
+- Verified retained-PDF reuse: repeated download of the same completed month leaves one artifact row and one private Storage object.
+- Hardened PDF promotion/cleanup behind `report_private` SECURITY DEFINER helpers with public SECURITY INVOKER wrappers and reviewed hosted advisors.
+- Completed hosted capacity/retention measurement and retained long-term compact monthly snapshots plus latest-only PDFs without introducing destructive workout-history cleanup.
+- Recorded current Supabase Free-plan provider usage with all visible Phase 19 capacity signals comfortably below quota.
+- Added browser-level Reports regression coverage for exact UTF-8 navigation/date presentation and responsive visual-audit coverage.
+- No Phase 19 change alters the authoritative `lifting-v1` XP/scoring model.
+
 ## Unreleased — Phase 17 test infrastructure cleanup
 
 - Removed the unsupported Docker/local-Supabase test runner and its package alias.

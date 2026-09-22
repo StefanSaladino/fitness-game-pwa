@@ -193,22 +193,30 @@ production measurements for active-user counts, average frozen performance rows
 per user-month, database growth, and product requirements for historical
 re-rendering.
 
-## Manual provider-usage release check
+## Provider billing-cycle usage check
 
-The project-local database can measure database bytes, Storage object bytes,
-connections, and local Auth counts. It cannot authoritatively reproduce
-organization billing-cycle usage.
+Recorded from the Supabase organization Usage page on 2026-09-21 for the
+current 2026-09-18 through 2026-10-18 billing cycle, with **All projects**
+selected:
 
-Before the Phase 19 release tag, record the Supabase Usage page values for the
-current billing period:
+| Provider metric | Current usage | Included quota |
+|---|---:|---:|
+| Database size | 0.05 GB | 0.5 GB |
+| Storage size | 0.005 GB | 1 GB |
+| Uncached egress | 0.012 GB | 5 GB |
+| Cached egress | 0.069 GB | 5 GB |
+| Monthly active users | 3 | 50,000 |
+| Monthly active third-party users | 0 | 50,000 |
+| Realtime messages | 0 | 2,000,000 |
+| Realtime concurrent peak connections | 0 | 200 |
+| Edge Function invocation quota row | 0 | 500,000 |
 
-- uncached egress;
-- cached egress;
-- Storage size;
-- monthly active users;
-- Edge Function invocations;
-- Realtime message count;
-- Realtime peak connections.
+The captured Usage page states that the organization has not exceeded its Free
+Plan quota in the current billing cycle. The Edge Function value/quota is
+visible in the capture; its row label is obscured by the open Realtime
+connections tooltip, so the record preserves that limitation rather than
+claiming the hidden label was directly read.
 
-No application migration should be created merely to duplicate those provider
-billing metrics.
+This completes the Phase 19 provider-capacity checkpoint. Future release/capacity
+reviews should read current billing-cycle provider usage from Supabase Usage
+rather than carrying these values forward as current telemetry.

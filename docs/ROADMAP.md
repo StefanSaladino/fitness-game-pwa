@@ -167,9 +167,12 @@ Implemented and validated in the current repository/hosted project:
 
 Still required before Phase 19.9 can be marked **DONE**:
 
-- record current Supabase Usage-page billing-cycle values for egress, Storage, MAU, Edge Functions, and Realtime because those organization-level metrics are not authoritatively reconstructed by project SQL;
 - run the final applicable local/browser release gate against the completed Phase 19.9 state;
 - complete final production-release documentation/changelog and release tagging.
+
+The provider Usage-page checkpoint is complete for the 2026-09-18 through
+2026-10-18 billing cycle and is recorded in
+[`PHASE19-CAPACITY-VALIDATION.md`](PHASE19-CAPACITY-VALIDATION.md).
 
 Capacity validation does **not** justify destructive workout-history cleanup. Long-term structured snapshots and latest-only PDF retention remain the Phase 19 contract.
 ### Phase 19.9 locked reporting and retention plan

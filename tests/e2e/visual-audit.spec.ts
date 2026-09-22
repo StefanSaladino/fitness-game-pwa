@@ -86,6 +86,7 @@ const scenarios: Scenario[] = [
   { name: 'lift-cancel-confirmation', url: '/reliability.e2e.html', group: 'workout', prepare: async (page) => { await page.getByRole('button', { name: 'Cancel workout' }).click(); } },
   { name: 'cardio', url: '/cardio.e2e.html', group: 'cardio' },
   { name: 'progress', url: '/progress.e2e.html', group: 'progress' },
+  { name: 'progress-training-report', url: '/release-visual-audit.e2e.html?surface=training-report', group: 'progress' },
   { name: 'groups-empty', url: '/release-visual-audit.e2e.html?surface=groups-empty', group: 'groups' },
   { name: 'groups-members', url: '/groups.e2e.html', group: 'groups' },
   { name: 'groups-chat', url: '/groups.e2e.html', group: 'groups', prepare: async (page) => { await page.getByRole('tab', { name: 'Chat' }).click(); } },

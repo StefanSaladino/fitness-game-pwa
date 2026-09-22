@@ -27,6 +27,8 @@ import type { ModerationActivityType, ModerationCaseDirectoryPage, ModerationCas
 import { PlatformMessagingController } from '../../src/features/admin/messaging/components/PlatformMessagingController';
 import type { PlatformMessagingService } from '../../src/features/admin/messaging/platformMessagingService';
 import type { OnboardingProfile } from '../../src/features/onboarding';
+import { TrainingReportScreen } from '../../src/features/progress/components/TrainingReportScreen';
+import { buildTrainingReportQaFixture } from '../../src/features/progress/trainingReportQaFixtures';
 import '../../src/styles/global.css';
 
 const measuredAt = '2026-08-27T16:00:00.000Z';
@@ -54,6 +56,12 @@ const dashboard: DashboardSnapshot = {
     badges: [{ badgeKey: 'GOAL_STREAK_2', earnedAt: measuredAt }],
   },
 };
+
+const trainingReport = buildTrainingReportQaFixture(
+  'mixed',
+  'MONTH',
+  '2026-08-01',
+);
 
 const exerciseCatalog: ExercisePickerItem[] = presetWorkoutById('FULL_BODY').exerciseNames.map((canonicalName, index) => ({
   id: `exercise-${index + 1}`, canonicalName, measurementType: 'WEIGHT_REPS', primaryMuscleGroup: 'OTHER', workoutType: 'OTHER', aliases: [], lastUsedAt: null,
@@ -133,6 +141,7 @@ function Fixture() {
   if (surface === 'auth-forgot') return <AuthLayout description="Enter your email and we’ll send recovery instructions." eyebrow="ACCOUNT RECOVERY" title="Reset password"><ForgotPasswordForm busy={false} message="" onBack={() => undefined} onSubmit={async () => undefined} /></AuthLayout>;
   if (surface === 'auth-verify') return <AuthLayout description="We sent a confirmation link so we can verify the address belongs to you." eyebrow="VERIFY EMAIL" title="Check your email"><VerifyEmailPanel email="stefan@example.com" onBackToSignIn={() => undefined} /></AuthLayout>;
   if (surface === 'privacy') return <PrivacyPolicyPage />;
+  if (surface === 'training-report') return <TrainingReportScreen canGoNext={false} error="" onBack={() => undefined} onNavigate={() => undefined} onNext={() => undefined} onPrevious={() => undefined} onRetry={() => undefined} onSetPeriodKind={() => undefined} onSignOut={() => undefined} periodKind="MONTH" profile={profile} report={trainingReport} status="ready" />;
   if (surface === 'dashboard') return <DashboardScreen group={group} onNavigate={() => undefined} onSignOut={() => undefined} profile={profile} snapshot={dashboard} />;
   if (surface === 'dashboard-solo') return <DashboardScreen group={null} groupNotice={<section aria-label="Group status">Groups are optional.</section>} onNavigate={() => undefined} onSignOut={() => undefined} profile={profile} snapshot={{ ...dashboard, leaderboard: [] }} />;
   if (surface === 'lift-start') return <WorkoutPresetStartScreen busyAction={null} error="" exerciseCatalog={exerciseCatalog} exercisePickerError="" exercisePickerStatus="ready" onNavigate={() => undefined} onRetryExercisePicker={async () => exerciseCatalog} onSignOut={() => undefined} onStart={async () => null} onStartPreset={async () => null} profile={profile} />;

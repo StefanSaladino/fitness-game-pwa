@@ -6,7 +6,7 @@ The active product scoring model is `lifting-v1`. Lifting is primary; cardio is 
 
 ## Current development status
 
-Phase 19 is in progress. **Phase 19.9 reporting is feature-complete through hosted end-to-end proof, generated database-type reconciliation, private latest-PDF retention, and capacity/security validation. The remaining work is the final provider-usage confirmation plus the Phase 19 release gate and documentation closeout.**
+Phase 19 is in progress. **Phase 19.9 reporting is feature-complete through hosted end-to-end proof, generated database-type reconciliation, private latest-PDF retention, and capacity/security validation. The provider-usage confirmation is complete; the remaining work is the final Phase 19 release gate and documentation closeout.**
 
 Current Phase 19.9 work includes completed-period Reports UI, idempotent frozen monthly source snapshots, deterministic development QA, real `pdf-lib` PDF generation, hosted workout-to-report E2E validation, and verified private latest-PDF retention with short-lived signed downloads. Capacity validation measured the hosted database/Storage footprint and keeps long-term structured snapshots plus latest-only PDF retention without introducing destructive workout-history cleanup.
 

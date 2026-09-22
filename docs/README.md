@@ -23,7 +23,7 @@ Repository-wide contribution rules live in [`../CONTRIBUTING.md`](../CONTRIBUTIN
 
 ## Active documentation checkpoint
 
-Phase 19.9 is **in progress**, not complete. The canonical docs should now describe completed-period Reports UI, frozen monthly source snapshots, hosted end-to-end proof, reconciled database types, verified private latest-PDF retention, and the completed project-local capacity/security measurement checkpoint as implemented. Remaining release work is the provider billing-cycle usage confirmation plus the final Phase 19 release gate and closeout documentation.
+Phase 19.9 is **in progress**, not complete. The canonical docs should now describe completed-period Reports UI, frozen monthly source snapshots, hosted end-to-end proof, reconciled database types, verified private latest-PDF retention, and the completed project-local capacity/security measurement checkpoint as implemented. Provider billing-cycle usage has been confirmed. Remaining release work is the final Phase 19 release gate and closeout documentation.
 
 ## Historical phase records
 

@@ -2,7 +2,8 @@
 
 This is the **single source of truth** for Top Set testing and release validation.
 
-The repository deliberately separates fast local feedback, the full local acceptance gate, GitHub build sanity, and hosted Supabase database proof.
+The repository separates focused development feedback, the canonical local
+acceptance gate, browser release validation, and hosted Supabase proof.
 
 ## 1. Install reproducibly
 
@@ -14,7 +15,7 @@ npm ci
 
 ## 2. Focused development feedback
 
-During a slice, run the smallest relevant tests first. Examples:
+During a slice, run the smallest relevant checks first. Examples:
 
 ```bash
 npm run typecheck
@@ -22,71 +23,78 @@ npx vitest run path/to/focused.test.ts
 npx playwright test path/to/focused.spec.ts
 ```
 
-Focused green tests are not a release gate.
+Focused checks are not a release gate.
 
-## 3. Full local acceptance gate
+## 3. Canonical local acceptance gate
 
-Before closing a phase or production release checkpoint, run:
+Run:
+
+```bash
+npm run validate
+```
+
+The current `validate` script executes, in order:
+
+```text
+typecheck
+unit/component tests
+integration tests
+production build + bundle budget
+database repository-contract validation
+```
+
+Equivalent commands are:
 
 ```bash
 npm run typecheck
 npm test
 npm run test:integration
-npm run test:internal
-npm run db:test:ci
-npm run test:structure
 npm run build
-npm run test:e2e
+npm run db:test:ci
 ```
 
-Run in this order so cheap/static failures are found before the browser suite.
+Do not document or invoke removed scripts such as `test:internal` or
+`test:structure` unless they are deliberately reintroduced in `package.json`.
 
-### What these prove
+## 4. Production browser release gate
 
-- `typecheck` — TypeScript project compilation without emitting;
-- `test` — Vitest unit/component behavior;
-- `test:integration` — integration-configured Vitest suites;
-- `test:internal` — project-specific internal lifting/reliability verification;
-- `db:test:ci` — repository migration/pgTAP/phase database-contract structure;
-- `test:structure` — test hygiene, current source structure, composition, release/admin/hosting guardrails;
-- `build` — production TypeScript/Vite build plus bundle-size guard;
-- `test:e2e` — deterministic fresh production-preview browser flows.
+Before closing a production release checkpoint, run:
 
-`npm run validate` is only a convenience subset (`typecheck + test + build`). It is **not** the complete release gate.
+```bash
+npm run test:release
+```
 
-## 4. Browser matrix
+`test:release` runs the canonical `validate` gate and then the normal Playwright
+browser matrix.
 
-The primary Playwright configuration currently covers:
+The primary Playwright configuration covers:
 
 - desktop Chromium;
 - Android-class Chromium (Pixel 7 profile);
 - iPhone-class WebKit (iPhone 15 profile).
 
-`test:e2e` starts a fresh preview server and does not reuse an existing process on port `4173`. Keep that port free before running the suite. The deterministic E2E build clears real Supabase browser variables so test fixtures do not accidentally contact production.
+The browser gate builds and starts a fresh production preview and does not reuse
+an existing process on port `4173`.
 
-Additional targeted browser gates:
+## 5. Targeted visual/admin browser gates
+
+The visual and administrator-layout suites are intentionally separate from the
+normal Playwright matrix:
 
 ```bash
 npm run test:e2e:visual
 npm run test:e2e:admin-layout
 ```
 
-Run them when the touched surface falls within their scope and as part of the final visual/release checkpoints defined by the active phase.
-
-## 5. Other targeted gates
-
-Available as appropriate:
-
-```bash
-npm run test:coverage
-npm run test:hosting
-```
-
-Do not turn optional diagnostic coverage into a competing source of release truth; required phase-specific gates belong in this document/active phase contract.
+Run a targeted suite when the touched surface falls within its scope. Run the
+visual audit before a phase/release that changes major responsive presentation.
+Phase 19's Reports surface is included in the visual audit fixture.
 
 ## 6. Database validation
 
-`npm run db:test:ci` is a **repository contract validator**. It does not start PostgreSQL, Docker, or a local Supabase stack and it does not prove a migration was applied to the hosted project.
+`npm run db:test:ci` validates the repository database contract. It does not
+start PostgreSQL, Docker, or a local Supabase stack and does not prove a
+migration was applied to the hosted project.
 
 For every database-bearing slice:
 
@@ -94,7 +102,7 @@ For every database-bearing slice:
 2. apply it to the linked hosted Supabase project;
 3. verify hosted migration history contains the exact committed version;
 4. execute the relevant `supabase/tests/*.test.sql` pgTAP suite against hosted Supabase;
-5. require the suite to finish successfully and roll back test fixtures;
+5. require the hosted test suite to finish successfully and roll back fixtures;
 6. regenerate `src/types/database.generated.ts` after public-schema changes;
 7. review hosted Security and Performance advisors after relevant DDL/security changes;
 8. run `npm run db:test:ci` locally to prove repository contract structure.
@@ -103,14 +111,16 @@ Static validation never substitutes for hosted database execution.
 
 ## 7. GitHub Actions
 
-The current GitHub Actions workflow is intentionally a **build-sanity gate**, not the entire acceptance matrix. On qualifying pull requests it runs Node 24, `npm ci`, then `npm run build` (which includes TypeScript compilation and bundle-size validation).
-
-Documentation-only changes are ignored by that workflow.
-
-Do not assume a green GitHub build-sanity check means unit, integration, database, structural, or browser release gates were run. Those remain explicit phase/release responsibilities until CI is deliberately expanded.
+The GitHub Actions workflow is a build-sanity gate, not the whole release
+matrix. A green hosted build does not replace the explicit unit, integration,
+database, and browser gates above.
 
 ## 8. Release rule
 
-A phase may be marked DONE only when its required focused checks and applicable full gate pass. A production release additionally requires any hosted Supabase changes to be applied/tested and the deployment-specific checks in the active roadmap/release phase to pass.
+A phase may be marked DONE only when its required focused checks and applicable
+full gate pass. A production release additionally requires any hosted Supabase
+changes to be applied/tested and any provider/deployment checks required by the
+active roadmap to pass.
 
-When a command or required gate changes, update this document and the relevant package/workflow configuration in the same change.
+When a required command changes, update this document and `package.json` in the
+same change.
