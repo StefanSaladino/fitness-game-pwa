@@ -9,6 +9,7 @@ import type { ProfilePictureService } from '../profile-picture/profilePictureSer
 import type { AccountDeletionService } from './accountDeletionService';
 import type { NotificationPreferenceService, NotificationPreferences } from './notificationPreferenceService';
 import type { ProfileSettingsInput, SettingsService } from './settingsService';
+import type { TrainingProgramProfileService } from './trainingProgramProfileService';
 import { SettingsScreen } from './SettingsScreen';
 
 const profile = {
@@ -86,6 +87,17 @@ const pushNotificationService = {
 } satisfies PushNotificationService;
 
 const settingsService = { load: vi.fn(async () => profile), update: vi.fn(async () => profile) } satisfies SettingsService;
+const trainingProgramProfileService = {
+  load: vi.fn(async () => null),
+  update: vi.fn(async (input) => ({
+    userId: 'user-1',
+    accessMode: input.accessMode,
+    equipmentKeys: [...input.equipmentKeys],
+    revision: 1,
+    createdAt: '2026-09-22T19:00:00.000Z',
+    updatedAt: '2026-09-22T19:00:00.000Z',
+  })),
+} satisfies TrainingProgramProfileService;
 const deletionService = {
   request: vi.fn(async () => 'DELETE stefan'),
   cancel: vi.fn(async () => undefined),
@@ -99,6 +111,7 @@ const shared = {
   pushNotificationService,
   pwaService,
   settingsService,
+  trainingProgramProfileService,
 };
 
 describe('SettingsScreen foundation', () => {

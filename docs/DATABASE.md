@@ -48,6 +48,19 @@ For `BODYWEIGHT_REPS`, `exercise_catalog.supports_added_weight` and `exercise_ca
 
 Set and exercise mutations that require protection are performed through authenticated RPC/guarded mutation boundaries rather than unrestricted browser table writes.
 
+### Phase 20 equipment/access profile
+
+`training_program_profiles` stores the explicit equipment boundary used by future personalized-program generation.
+
+- no row means the user has not configured program access yet;
+- `COMMERCIAL_GYM` stores no custom equipment array and represents ordinary standard full-gym access;
+- `CUSTOM` stores only explicit supported equipment keys and may be empty for bodyweight-only training;
+- authenticated callers can select only their own row through RLS;
+- direct browser insert/update/delete is revoked;
+- `update_my_training_program_access_profile` is the guarded active-account mutation boundary and uses optimistic `revision` matching;
+- equipment access and generator eligibility are separate: Phase 20.1 records equipment even when the current exercise logging model makes some catalogue rows ineligible for `training-program-v1`.
+
+The source-controlled equipment/loggability audit is `supabase/release/phase20-1-equipment-loggability-audit.json`.
 ## Advanced sets
 
 Phase 18.7A preserves `workout_sets` as the authoritative logical-set parent for Drop Sets and Pyramids.

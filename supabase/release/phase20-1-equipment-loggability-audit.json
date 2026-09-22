@@ -1,0 +1,88 @@
+{
+  "phase": "20.1",
+  "snapshot_date": "2026-09-22",
+  "catalog_count": 568,
+  "program_loggable_count": 512,
+  "program_loggable_measurement_types": [
+    "WEIGHT_REPS",
+    "BODYWEIGHT_REPS"
+  ],
+  "notes": [
+    "This is a generator-eligibility audit, not a claim that workout_type alone determines exact equipment requirements.",
+    "DURATION and OTHER exercises are excluded from training-program-v1 generation until normal program prescription/logging semantics are explicitly supported.",
+    "BAND remains profile-selectable but generator-ineligible in v1 because all 15 active BAND exercises currently use OTHER.",
+    "Bodyweight exercises may still require equipment such as a pull-up bar, dip station, rings, bench, or GHD; exact exercise-to-equipment requirements are a Phase 20.2 generator concern."
+  ],
+  "workout_types": [
+    {
+      "workout_type": "BAND",
+      "active_count": 15,
+      "program_loggable_count": 0
+    },
+    {
+      "workout_type": "BARBELL",
+      "active_count": 60,
+      "program_loggable_count": 60
+    },
+    {
+      "workout_type": "BODYWEIGHT",
+      "active_count": 69,
+      "program_loggable_count": 69
+    },
+    {
+      "workout_type": "CABLE",
+      "active_count": 52,
+      "program_loggable_count": 52
+    },
+    {
+      "workout_type": "DUMBBELL",
+      "active_count": 93,
+      "program_loggable_count": 93
+    },
+    {
+      "workout_type": "ISOMETRIC",
+      "active_count": 9,
+      "program_loggable_count": 0
+    },
+    {
+      "workout_type": "KETTLEBELL",
+      "active_count": 53,
+      "program_loggable_count": 49
+    },
+    {
+      "workout_type": "LANDMINE",
+      "active_count": 18,
+      "program_loggable_count": 18
+    },
+    {
+      "workout_type": "MACHINE",
+      "active_count": 89,
+      "program_loggable_count": 87
+    },
+    {
+      "workout_type": "MEDICINE_BALL",
+      "active_count": 8,
+      "program_loggable_count": 0
+    },
+    {
+      "workout_type": "OLYMPIC_POWER",
+      "active_count": 13,
+      "program_loggable_count": 13
+    },
+    {
+      "workout_type": "PLYOMETRIC",
+      "active_count": 35,
+      "program_loggable_count": 34
+    },
+    {
+      "workout_type": "SPECIALTY",
+      "active_count": 32,
+      "program_loggable_count": 28
+    },
+    {
+      "workout_type": "STRONGMAN_CARRY_SLED",
+      "active_count": 22,
+      "program_loggable_count": 9
+    }
+  ]
+}

@@ -1,6 +1,6 @@
 # Top Set Development Roadmap
 
-Status: **Phase 19 complete - Phase 20 Personalized Training Programs next**
+Status: **Phase 20 active - 20.0â€“20.1 complete, 20.2 Personalized Program Generator next**
 
 This document is the canonical milestone index. Detailed historical implementation records live in the corresponding `PHASE*.md` files.
 
@@ -201,9 +201,9 @@ This is the shipped Phase 19 release contract.
 
 | Phase | Status | Goal |
 |---|---|---|
-| 20.0 | **PLANNED** | Personalized-program specification, safety boundaries, and persistence model |
-| 20.1 | **PLANNED** | Equipment/access profile — commercial gym can assume normal full equipment access; home setups explicitly select dumbbells, barbell/rack/bench, pull-up bar, cables, machines, bands, and other supported equipment |
-| 20.2 | **PLANNED** | Goal/frequency/performance-driven monthly program generator using available E1RM/history, requested workouts per week, and Phase 19 volume intelligence |
+| 20.0 | **DONE** | Personalized-program specification, safety boundaries, four-week `training-program-v1` structure, source-snapshot rules, and persistence responsibilities |
+| 20.1 | **DONE** | Equipment/access profile â€” explicit commercial-gym vs custom/home access, persisted equipment taxonomy, RLS/RPC mutation boundary, Settings editor, and 568/512 generator-loggability audit |
+| 20.2 | **NEXT** | Goal/frequency/performance-driven four-week program generator using available E1RM/history, requested workouts per week, equipment constraints, and Phase 19 volume intelligence |
 | 20.3 | **PLANNED** | Exercise exclusion and intelligent substitution flow for unavailable equipment, physical limitations/injury restrictions, and user preference without making medical-safety claims |
 | 20.4 | **PLANNED** | Persist generated monthly programs in-app as structured workout templates/presets that can launch into the normal workout flow |
 | 20.5 | **PLANNED** | Adaptive progression across the month using completed-workout and performance feedback |

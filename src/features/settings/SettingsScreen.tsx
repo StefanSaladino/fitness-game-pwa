@@ -20,6 +20,8 @@ import { AppStatusSection } from './AppStatusSection';
 import { NotificationSettingsSection } from './NotificationSettingsSection';
 import type { NotificationPreferenceService } from './notificationPreferenceService';
 import { ProfileSettingsForm } from './ProfileSettingsForm';
+import { TrainingProgramAccessSection } from './TrainingProgramAccessSection';
+import type { TrainingProgramProfileService } from './trainingProgramProfileService';
 import { useProfileSettings } from './hooks/useProfileSettings';
 import type { SettingsService } from './settingsService';
 import styles from './SettingsScreen.module.css';
@@ -50,6 +52,7 @@ interface SettingsScreenProps {
   pwaService?: PwaService;
   notificationPreferenceService?: NotificationPreferenceService;
   pushNotificationService?: PushNotificationService;
+  trainingProgramProfileService?: TrainingProgramProfileService;
   onProfileChanged?: () => Promise<unknown> | unknown;
 }
 
@@ -87,6 +90,7 @@ export function SettingsScreen({
   pwaService,
   notificationPreferenceService,
   pushNotificationService,
+  trainingProgramProfileService,
   onProfileChanged,
 }: SettingsScreenProps) {
   const [panel, setPanel] = useState<SettingsPanel | null>(null);
@@ -186,14 +190,20 @@ export function SettingsScreen({
         ) : null}
 
         {panel === 'training' ? (
-          <ProfileSettingsForm
-            busy={profileSettings.busy}
-            error={profileSettings.error}
-            mode="training"
-            notice={profileSettings.notice}
-            onSave={profileSettings.save}
-            profile={profileSettings.profile}
-          />
+          <div className={styles.panelStack}>
+            <ProfileSettingsForm
+              busy={profileSettings.busy}
+              error={profileSettings.error}
+              mode="training"
+              notice={profileSettings.notice}
+              onSave={profileSettings.save}
+              profile={profileSettings.profile}
+            />
+            <TrainingProgramAccessSection
+              service={trainingProgramProfileService}
+              userId={profile.id}
+            />
+          </div>
         ) : null}
 
         {panel === 'notifications' ? (

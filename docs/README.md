@@ -17,13 +17,14 @@ This directory contains two kinds of documentation: **current reference document
 | CSS ownership | [`CSS-ARCHITECTURE.md`](CSS-ARCHITECTURE.md) |
 | UI design/implementation gate | [`UI-DEVELOPMENT-GATE.md`](UI-DEVELOPMENT-GATE.md) |
 | Phase 19 capacity/retention validation | [`PHASE19-CAPACITY-VALIDATION.md`](PHASE19-CAPACITY-VALIDATION.md) |
+| Active Phase 20 personalized-program contract | [`PHASE20-PERSONALIZED-PROGRAMS.md`](PHASE20-PERSONALIZED-PROGRAMS.md) |
 | Historical Phase 18 live-workout/native sequencing detail | [`PHASE18-LIVE-WORKOUT-ROADMAP.md`](PHASE18-LIVE-WORKOUT-ROADMAP.md) |
 
 Repository-wide contribution rules live in [`../CONTRIBUTING.md`](../CONTRIBUTING.md).
 
 ## Active documentation checkpoint
 
-Phase 19.9 and Phase 19 are **complete** in Top Set v1.1.0. The canonical docs describe completed-period Reports UI, frozen monthly source snapshots, hosted end-to-end proof, reconciled database types, verified private latest-PDF retention, provider-capacity confirmation, security hardening, and the completed release-validation gate. Phase 20 Personalized Training Programs is the next planned milestone.
+Phase 19 is complete in Top Set v1.1.1. Phase 20 Personalized Training Programs is active: **20.0 and 20.1 are complete** with `training-program-v1`, safety/source-snapshot rules, an explicit persisted equipment/access profile, and the 568/512 generator-loggability audit locked. **20.2 Personalized Program Generator is next.**
 
 ## Historical phase records
 

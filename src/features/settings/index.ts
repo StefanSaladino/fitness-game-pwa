@@ -3,3 +3,4 @@ export * from './accountDeletionService';
 export * from './accountSecurityService';
 export * from './notificationPreferenceService';
 export * from './settingsService';
+export * from './trainingProgramProfileService';

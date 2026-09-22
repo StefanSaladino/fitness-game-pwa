@@ -1,4 +1,4 @@
-export type Json =
+﻿export type Json =
   | string
   | number
   | boolean
@@ -1223,6 +1223,41 @@ export type Database = {
             columns: ["workout_id"]
             isOneToOne: false
             referencedRelation: "workout_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      training_program_profiles: {
+        Row: {
+          access_mode: string
+          created_at: string
+          equipment_keys: string[]
+          revision: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          access_mode: string
+          created_at?: string
+          equipment_keys?: string[]
+          revision?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          access_mode?: string
+          created_at?: string
+          equipment_keys?: string[]
+          revision?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "training_program_profiles_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -2806,6 +2841,27 @@ export type Database = {
         SetofOptions: {
           from: "*"
           to: "profiles"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      update_my_training_program_access_profile: {
+        Args: {
+          p_access_mode: string
+          p_equipment_keys: string[]
+          p_expected_revision: number
+        }
+        Returns: {
+          access_mode: string
+          created_at: string
+          equipment_keys: string[]
+          revision: number
+          updated_at: string
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "training_program_profiles"
           isOneToOne: true
           isSetofReturn: false
         }

@@ -1,5 +1,23 @@
 # Changelog
 
+## Unreleased â€” Phase 20.1 equipment/access profile
+
+- Added an explicit personalized-program access profile with `COMMERCIAL_GYM` and `CUSTOM` modes; an absent profile remains unconfigured rather than silently assuming full-gym access.
+- Added the source-controlled equipment taxonomy covering dumbbells, barbell/rack/bench, pull-up/dip stations, cables, machines, bands, kettlebells, landmine, rings, plyometric box, GHD/back-extension equipment, medicine ball, specialty bars, and strongman equipment.
+- Added a user-owned `training_program_profiles` persistence boundary with RLS, read-only browser table access, active-account RPC writes, normalized equipment keys, and optimistic revision conflict protection.
+- Added Settings â†’ Training equipment/access editing with bodyweight-only custom setups supported and commercial-gym assumptions kept separate from specialty/strongman equipment.
+- Locked the 2026-09-22 generator-loggability audit at 568 active exercises / 512 `WEIGHT_REPS` or `BODYWEIGHT_REPS` exercises / 56 deferred by the current logging model.
+- Kept Bands (0/15 generator-loggable) and Medicine Ball (0/8) profile-selectable but generator-ineligible instead of misrepresenting their resistance as weight or bodyweight load.
+- No Phase 20.1 change alters `lifting-v1`, `muscle-volume-v1`, XP, workout history, or exercise progression.
+## Unreleased â€” Phase 20.0 personalized-program foundation
+
+- Locked `training-program-v1` as a deterministic four-week planning/template layer that launches into the ordinary lifting workflow rather than creating a second workout system.
+- Added a pure TypeScript program-definition contract and validator for 1â€“6 sessions/week, four program weeks, the existing 8-exercise/session launch limit, canonical exercise uniqueness/order, rep/set ranges, bodyweight load modes, and optional Superset structure.
+- Limited v1 generated prescriptions to currently loggable `WEIGHT_REPS` / `BODYWEIGHT_REPS` exercises; `DURATION` / `OTHER` remain excluded until normal set-completion semantics exist.
+- Locked physical-limitation/injury input as exclusion intent only: no diagnosis, rehabilitation protocol, pain interpretation, or claim that a substitute is medically safe.
+- Locked Phase 19 volume/performance read models as program inputs rather than duplicating hypertrophy-volume or progression methodology.
+- Defined planned persistence responsibilities for program profile, explicit constraints, generated program/workout/exercise templates, source snapshots, and append-only adaptation history.
+- Identified the current BAND catalogue gap as a Phase 20.1 prerequisite: all 15 active BAND exercises are `OTHER`, so band-only program generation must remain disabled until the logging model is reconciled.
 ## v1.1.1 - Exercise Catalogue and Load Capability Maintenance
 
 - Reconciled the source-controlled exercise catalogue with the hosted 568-exercise state and retained explicit `muscle-volume-v1` coverage for every active canonical exercise.
