@@ -1,4 +1,4 @@
-﻿export type Json =
+export type Json =
   | string
   | number
   | boolean
@@ -48,6 +48,8 @@ export type Database = {
           id: string
           measurement_type: string
           primary_muscle_group: string
+          supports_added_weight: boolean
+          supports_assisted: boolean
           workout_type: string
         }
         Insert: {
@@ -58,6 +60,8 @@ export type Database = {
           id?: string
           measurement_type: string
           primary_muscle_group?: string
+          supports_added_weight?: boolean
+          supports_assisted?: boolean
           workout_type?: string
         }
         Update: {
@@ -68,6 +72,8 @@ export type Database = {
           id?: string
           measurement_type?: string
           primary_muscle_group?: string
+          supports_added_weight?: boolean
+          supports_assisted?: boolean
           workout_type?: string
         }
         Relationships: []
@@ -481,63 +487,6 @@ export type Database = {
           },
         ]
       }
-      monthly_training_report_pdf_artifacts: {
-        Row: {
-          byte_size: number
-          generated_at: string
-          pdf_version: string
-          pending_delete_path: string | null
-          period_start: string
-          sha256_hex: string
-          snapshot_id: string
-          source_fingerprint: string
-          storage_path: string
-          user_id: string
-          verified_at: string
-        }
-        Insert: {
-          byte_size: number
-          generated_at?: string
-          pdf_version?: string
-          pending_delete_path?: string | null
-          period_start: string
-          sha256_hex: string
-          snapshot_id: string
-          source_fingerprint: string
-          storage_path: string
-          user_id: string
-          verified_at?: string
-        }
-        Update: {
-          byte_size?: number
-          generated_at?: string
-          pdf_version?: string
-          pending_delete_path?: string | null
-          period_start?: string
-          sha256_hex?: string
-          snapshot_id?: string
-          source_fingerprint?: string
-          storage_path?: string
-          user_id?: string
-          verified_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "monthly_training_report_pdf_artifacts_snapshot_user_fkey"
-            columns: ["snapshot_id", "user_id"]
-            isOneToOne: false
-            referencedRelation: "monthly_training_report_source_snapshots"
-            referencedColumns: ["id", "user_id"]
-          },
-          {
-            foreignKeyName: "monthly_training_report_pdf_artifacts_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: true
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       monthly_training_report_muscle_snapshots: {
         Row: {
           benchmark_evidence_confidence: string
@@ -618,6 +567,63 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "monthly_training_report_source_snapshots"
             referencedColumns: ["id", "user_id"]
+          },
+        ]
+      }
+      monthly_training_report_pdf_artifacts: {
+        Row: {
+          byte_size: number
+          generated_at: string
+          pdf_version: string
+          pending_delete_path: string | null
+          period_start: string
+          sha256_hex: string
+          snapshot_id: string
+          source_fingerprint: string
+          storage_path: string
+          user_id: string
+          verified_at: string
+        }
+        Insert: {
+          byte_size: number
+          generated_at?: string
+          pdf_version?: string
+          pending_delete_path?: string | null
+          period_start: string
+          sha256_hex: string
+          snapshot_id: string
+          source_fingerprint: string
+          storage_path: string
+          user_id: string
+          verified_at?: string
+        }
+        Update: {
+          byte_size?: number
+          generated_at?: string
+          pdf_version?: string
+          pending_delete_path?: string | null
+          period_start?: string
+          sha256_hex?: string
+          snapshot_id?: string
+          source_fingerprint?: string
+          storage_path?: string
+          user_id?: string
+          verified_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "monthly_training_report_pdf_artifacts_snapshot_user_fkey"
+            columns: ["snapshot_id", "user_id"]
+            isOneToOne: false
+            referencedRelation: "monthly_training_report_source_snapshots"
+            referencedColumns: ["id", "user_id"]
+          },
+          {
+            foreignKeyName: "monthly_training_report_pdf_artifacts_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -1789,6 +1795,10 @@ export type Database = {
         Args: { p_edge_function_url: string }
         Returns: undefined
       }
+      confirm_my_monthly_training_report_pdf_cleanup: {
+        Args: { p_current_storage_path: string }
+        Returns: boolean
+      }
       copy_lifting_workout_set: {
         Args: { p_workout_set_id: string }
         Returns: string
@@ -1836,6 +1846,15 @@ export type Database = {
       finish_lifting_workout: {
         Args: { p_workout_id: string }
         Returns: string
+      }
+      freeze_my_monthly_training_report_source: {
+        Args: { p_month_start: string }
+        Returns: {
+          created: boolean
+          snapshot_id: string
+          source_fingerprint: string
+          verified_at: string
+        }[]
       }
       get_exercise_picker_catalog: {
         Args: never
@@ -1977,6 +1996,43 @@ export type Database = {
           total_activities: number
         }[]
       }
+      get_my_completed_training_report_period: {
+        Args: { p_period_kind: string; p_period_start: string }
+        Returns: {
+          active_training_seconds: number
+          benchmark_evidence_confidence: string
+          benchmark_window_days: number
+          completed_lifting_sessions: number
+          completed_working_sets: number
+          eligible_logical_sets: number
+          eligible_stages: number
+          exercise_count: number
+          high_confidence_effective_sets: number
+          high_confidence_proportion: number
+          high_review_above: number
+          low_or_provisional_effective_sets: number
+          low_or_provisional_proportion: number
+          low_status_fraction_of_target_min: number
+          medium_confidence_effective_sets: number
+          medium_confidence_proportion: number
+          methodology_version: string
+          muscle_group: string
+          period_direct_effective_sets: number
+          period_effective_sets: number
+          period_end: string
+          period_indirect_effective_sets: number
+          period_kind: string
+          period_start: string
+          pr_count: number
+          provisional_effective_sets: number
+          report_version: string
+          review_flagged_logical_sets: number
+          target_max: number
+          target_midpoint: number
+          target_min: number
+          volume_kg_reps: number
+        }[]
+      }
       get_my_exercise_progress_history: {
         Args: { p_exercise_id: string }
         Returns: {
@@ -2059,52 +2115,6 @@ export type Database = {
           current_week_target: number
           goals_hit: number
           recent_weeks: Json
-        }[]
-      }
-      freeze_my_monthly_training_report_source: {
-        Args: { p_month_start: string }
-        Returns: {
-          created: boolean
-          snapshot_id: string
-          source_fingerprint: string
-          verified_at: string
-        }[]
-      }
-      get_my_completed_training_report_period: {
-        Args: { p_period_kind: string; p_period_start: string }
-        Returns: {
-          active_training_seconds: number
-          benchmark_evidence_confidence: string
-          benchmark_window_days: number
-          completed_lifting_sessions: number
-          completed_working_sets: number
-          eligible_logical_sets: number
-          eligible_stages: number
-          exercise_count: number
-          high_confidence_effective_sets: number
-          high_confidence_proportion: number
-          high_review_above: number
-          low_or_provisional_effective_sets: number
-          low_or_provisional_proportion: number
-          low_status_fraction_of_target_min: number
-          medium_confidence_effective_sets: number
-          medium_confidence_proportion: number
-          methodology_version: string
-          muscle_group: string
-          period_direct_effective_sets: number
-          period_effective_sets: number
-          period_end: string
-          period_indirect_effective_sets: number
-          period_kind: string
-          period_start: string
-          pr_count: number
-          provisional_effective_sets: number
-          report_version: string
-          review_flagged_logical_sets: number
-          target_max: number
-          target_midpoint: number
-          target_min: number
-          volume_kg_reps: number
         }[]
       }
       get_my_muscle_performance_observations: {
@@ -2509,10 +2519,6 @@ export type Database = {
           preview_id: string
           recipient_count: number
         }[]
-      }
-      confirm_my_monthly_training_report_pdf_cleanup: {
-        Args: { p_current_storage_path: string }
-        Returns: boolean
       }
       promote_my_monthly_training_report_pdf: {
         Args: {

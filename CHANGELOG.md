@@ -1,5 +1,14 @@
 # Changelog
 
+## v1.1.1 - Exercise Catalogue and Load Capability Maintenance
+
+- Reconciled the source-controlled exercise catalogue with the hosted 568-exercise state and retained explicit `muscle-volume-v1` coverage for every active canonical exercise.
+- Added per-exercise `supports_added_weight` and `supports_assisted` capability flags for `BODYWEIGHT_REPS` movements and enforced those capabilities in both the set editor and guarded save RPC.
+- Kept rep-based plyometrics loggable as bodyweight or added-load sets while removing nonsensical Assisted choices from plyometric movements.
+- Refreshed the Phase 19 exercise-muscle matrix to 568 exercises / 418 eligible / 150 excluded-deferred with 781 contribution rows and updated the validator to lock those counts.
+- Regenerated checked-in Supabase TypeScript types and documented the bodyweight load-capability model and current catalogue snapshot.
+- Tightened the Phase 19.3B pgTAP reconciliation test from a minimum-count assertion to the exact locked 568-exercise catalogue count.
+- No v1.1.1 maintenance change alters the authoritative `lifting-v1` XP/scoring model or the `muscle-volume-v1` contribution methodology.
 ## v1.1.0 - Phase 19 Muscle Volume Intelligence
 
 - Added the versioned `muscle-volume-v1` effective-volume methodology, reviewed exercise-to-muscle contribution matrix, personalized set-quality confidence, and rolling 7/28-day read model.

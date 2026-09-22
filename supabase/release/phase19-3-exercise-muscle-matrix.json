@@ -1,10 +1,11 @@
 {
   "methodology_version": "muscle-volume-v1",
-  "phase": "19.3A",
-  "catalog_snapshot_date": "2026-09-18",
-  "catalog_count": 464,
-  "eligible_count": 326,
-  "excluded_count": 138,
+  "phase": "19.3B",
+  "catalog_snapshot_date": "2026-09-22",
+  "catalog_count": 568,
+  "eligible_count": 418,
+  "excluded_count": 150,
+  "contribution_count": 781,
   "reportable_muscle_groups": [
     "CHEST",
     "BACK",
@@ -30,7 +31,8 @@
     "FULL_BODY catalogue exercises are excluded in v1 because the Epley/bodyweight set-quality model is not calibrated for mixed ballistic whole-body patterns.",
     "Review flags identify technique-sensitive, taxonomy-limited, or intentionally deferred cases; they do not make an eligible row invalid.",
     "Phase 19.4 should persist these reviewed decisions as versioned reference data rather than re-deriving mappings from names or primary muscle groups at runtime.",
-    "Phase 19.3A expands the catalogue with 58 dumbbell exercises and refreshes this same versioned matrix to 464 canonical exercises; 50 new rows are volume-eligible and 8 FULL_BODY dumbbell patterns remain explicitly excluded."
+    "Phase 19.3B reconciles the source artifact to 568 active canonical exercises: 418 volume-eligible and 150 explicitly excluded/deferred, with 781 exercise-to-muscle contribution rows.",
+    "Rep-based plyometrics use BODYWEIGHT_REPS so bodyweight and optional added-load sets can be logged, while remaining explicitly excluded from muscle-volume-v1 hypertrophy scoring until a ballistic set-stimulus calibration exists."
   ],
   "exercises": [
     {
@@ -2150,7 +2152,7 @@
     },
     {
       "canonical_name": "Double-Under",
-      "measurement_type": "OTHER",
+      "measurement_type": "BODYWEIGHT_REPS",
       "primary_muscle_group": "CALVES",
       "workout_type": "PLYOMETRIC",
       "volume_eligible": false,
@@ -2158,7 +2160,7 @@
       "mapping_confidence": "HIGH",
       "review_flag": true,
       "contributions": [],
-      "rationale": "OTHER has no v1 set-stimulus calibration; excluded pending a dedicated scoring rule."
+      "rationale": "Plyometric/ballistic movement is trackable by repetitions and optional added load, but remains excluded from muscle-volume-v1 because the current hypertrophy set-stimulus model is not calibrated for explosive contacts."
     },
     {
       "canonical_name": "Jump Rope",
@@ -2174,7 +2176,7 @@
     },
     {
       "canonical_name": "Pogo Jump",
-      "measurement_type": "OTHER",
+      "measurement_type": "BODYWEIGHT_REPS",
       "primary_muscle_group": "CALVES",
       "workout_type": "PLYOMETRIC",
       "volume_eligible": false,
@@ -2182,7 +2184,7 @@
       "mapping_confidence": "HIGH",
       "review_flag": true,
       "contributions": [],
-      "rationale": "OTHER has no v1 set-stimulus calibration; excluded pending a dedicated scoring rule."
+      "rationale": "Plyometric/ballistic movement is trackable by repetitions and optional added load, but remains excluded from muscle-volume-v1 because the current hypertrophy set-stimulus model is not calibrated for explosive contacts."
     },
     {
       "canonical_name": "Soleus Raise",
@@ -3204,7 +3206,7 @@
     },
     {
       "canonical_name": "Clap Push-Up",
-      "measurement_type": "OTHER",
+      "measurement_type": "BODYWEIGHT_REPS",
       "primary_muscle_group": "CHEST",
       "workout_type": "PLYOMETRIC",
       "volume_eligible": false,
@@ -3212,11 +3214,11 @@
       "mapping_confidence": "HIGH",
       "review_flag": true,
       "contributions": [],
-      "rationale": "OTHER has no v1 set-stimulus calibration; excluded pending a dedicated scoring rule."
+      "rationale": "Plyometric/ballistic movement is trackable by repetitions and optional added load, but remains excluded from muscle-volume-v1 because the current hypertrophy set-stimulus model is not calibrated for explosive contacts."
     },
     {
       "canonical_name": "Plyometric Push-Up",
-      "measurement_type": "OTHER",
+      "measurement_type": "BODYWEIGHT_REPS",
       "primary_muscle_group": "CHEST",
       "workout_type": "PLYOMETRIC",
       "volume_eligible": false,
@@ -3224,7 +3226,7 @@
       "mapping_confidence": "HIGH",
       "review_flag": true,
       "contributions": [],
-      "rationale": "OTHER has no v1 set-stimulus calibration; excluded pending a dedicated scoring rule."
+      "rationale": "Plyometric/ballistic movement is trackable by repetitions and optional added load, but remains excluded from muscle-volume-v1 because the current hypertrophy set-stimulus model is not calibrated for explosive contacts."
     },
     {
       "canonical_name": "Swiss Bar Bench Press",
@@ -4342,7 +4344,7 @@
     },
     {
       "canonical_name": "Burpee",
-      "measurement_type": "OTHER",
+      "measurement_type": "BODYWEIGHT_REPS",
       "primary_muscle_group": "FULL_BODY",
       "workout_type": "PLYOMETRIC",
       "volume_eligible": false,
@@ -4350,11 +4352,11 @@
       "mapping_confidence": "HIGH",
       "review_flag": true,
       "contributions": [],
-      "rationale": "OTHER has no v1 set-stimulus calibration; excluded pending a dedicated scoring rule."
+      "rationale": "Plyometric/ballistic movement is trackable by repetitions and optional added load, but remains excluded from muscle-volume-v1 because the current hypertrophy set-stimulus model is not calibrated for explosive contacts."
     },
     {
       "canonical_name": "Burpee Box Jump",
-      "measurement_type": "OTHER",
+      "measurement_type": "BODYWEIGHT_REPS",
       "primary_muscle_group": "FULL_BODY",
       "workout_type": "PLYOMETRIC",
       "volume_eligible": false,
@@ -4362,7 +4364,7 @@
       "mapping_confidence": "HIGH",
       "review_flag": true,
       "contributions": [],
-      "rationale": "OTHER has no v1 set-stimulus calibration; excluded pending a dedicated scoring rule."
+      "rationale": "Plyometric/ballistic movement is trackable by repetitions and optional added load, but remains excluded from muscle-volume-v1 because the current hypertrophy set-stimulus model is not calibrated for explosive contacts."
     },
     {
       "canonical_name": "Reverse Sled Drag",
@@ -7206,7 +7208,7 @@
     },
     {
       "canonical_name": "Bounds",
-      "measurement_type": "OTHER",
+      "measurement_type": "BODYWEIGHT_REPS",
       "primary_muscle_group": "QUADS",
       "workout_type": "PLYOMETRIC",
       "volume_eligible": false,
@@ -7214,11 +7216,11 @@
       "mapping_confidence": "HIGH",
       "review_flag": true,
       "contributions": [],
-      "rationale": "OTHER has no v1 set-stimulus calibration; excluded pending a dedicated scoring rule."
+      "rationale": "Plyometric/ballistic movement is trackable by repetitions and optional added load, but remains excluded from muscle-volume-v1 because the current hypertrophy set-stimulus model is not calibrated for explosive contacts."
     },
     {
       "canonical_name": "Box Jump",
-      "measurement_type": "OTHER",
+      "measurement_type": "BODYWEIGHT_REPS",
       "primary_muscle_group": "QUADS",
       "workout_type": "PLYOMETRIC",
       "volume_eligible": false,
@@ -7226,11 +7228,11 @@
       "mapping_confidence": "HIGH",
       "review_flag": true,
       "contributions": [],
-      "rationale": "OTHER has no v1 set-stimulus calibration; excluded pending a dedicated scoring rule."
+      "rationale": "Plyometric/ballistic movement is trackable by repetitions and optional added load, but remains excluded from muscle-volume-v1 because the current hypertrophy set-stimulus model is not calibrated for explosive contacts."
     },
     {
       "canonical_name": "Broad Jump",
-      "measurement_type": "OTHER",
+      "measurement_type": "BODYWEIGHT_REPS",
       "primary_muscle_group": "QUADS",
       "workout_type": "PLYOMETRIC",
       "volume_eligible": false,
@@ -7238,11 +7240,11 @@
       "mapping_confidence": "HIGH",
       "review_flag": true,
       "contributions": [],
-      "rationale": "OTHER has no v1 set-stimulus calibration; excluded pending a dedicated scoring rule."
+      "rationale": "Plyometric/ballistic movement is trackable by repetitions and optional added load, but remains excluded from muscle-volume-v1 because the current hypertrophy set-stimulus model is not calibrated for explosive contacts."
     },
     {
       "canonical_name": "Depth Jump",
-      "measurement_type": "OTHER",
+      "measurement_type": "BODYWEIGHT_REPS",
       "primary_muscle_group": "QUADS",
       "workout_type": "PLYOMETRIC",
       "volume_eligible": false,
@@ -7250,11 +7252,11 @@
       "mapping_confidence": "HIGH",
       "review_flag": true,
       "contributions": [],
-      "rationale": "OTHER has no v1 set-stimulus calibration; excluded pending a dedicated scoring rule."
+      "rationale": "Plyometric/ballistic movement is trackable by repetitions and optional added load, but remains excluded from muscle-volume-v1 because the current hypertrophy set-stimulus model is not calibrated for explosive contacts."
     },
     {
       "canonical_name": "Drop Jump",
-      "measurement_type": "OTHER",
+      "measurement_type": "BODYWEIGHT_REPS",
       "primary_muscle_group": "QUADS",
       "workout_type": "PLYOMETRIC",
       "volume_eligible": false,
@@ -7262,11 +7264,11 @@
       "mapping_confidence": "HIGH",
       "review_flag": true,
       "contributions": [],
-      "rationale": "OTHER has no v1 set-stimulus calibration; excluded pending a dedicated scoring rule."
+      "rationale": "Plyometric/ballistic movement is trackable by repetitions and optional added load, but remains excluded from muscle-volume-v1 because the current hypertrophy set-stimulus model is not calibrated for explosive contacts."
     },
     {
       "canonical_name": "Hurdle Hop",
-      "measurement_type": "OTHER",
+      "measurement_type": "BODYWEIGHT_REPS",
       "primary_muscle_group": "QUADS",
       "workout_type": "PLYOMETRIC",
       "volume_eligible": false,
@@ -7274,11 +7276,11 @@
       "mapping_confidence": "HIGH",
       "review_flag": true,
       "contributions": [],
-      "rationale": "OTHER has no v1 set-stimulus calibration; excluded pending a dedicated scoring rule."
+      "rationale": "Plyometric/ballistic movement is trackable by repetitions and optional added load, but remains excluded from muscle-volume-v1 because the current hypertrophy set-stimulus model is not calibrated for explosive contacts."
     },
     {
       "canonical_name": "Jumping Lunge",
-      "measurement_type": "OTHER",
+      "measurement_type": "BODYWEIGHT_REPS",
       "primary_muscle_group": "QUADS",
       "workout_type": "PLYOMETRIC",
       "volume_eligible": false,
@@ -7286,11 +7288,11 @@
       "mapping_confidence": "HIGH",
       "review_flag": true,
       "contributions": [],
-      "rationale": "OTHER has no v1 set-stimulus calibration; excluded pending a dedicated scoring rule."
+      "rationale": "Plyometric/ballistic movement is trackable by repetitions and optional added load, but remains excluded from muscle-volume-v1 because the current hypertrophy set-stimulus model is not calibrated for explosive contacts."
     },
     {
       "canonical_name": "Lateral Bound",
-      "measurement_type": "OTHER",
+      "measurement_type": "BODYWEIGHT_REPS",
       "primary_muscle_group": "QUADS",
       "workout_type": "PLYOMETRIC",
       "volume_eligible": false,
@@ -7298,11 +7300,11 @@
       "mapping_confidence": "HIGH",
       "review_flag": true,
       "contributions": [],
-      "rationale": "OTHER has no v1 set-stimulus calibration; excluded pending a dedicated scoring rule."
+      "rationale": "Plyometric/ballistic movement is trackable by repetitions and optional added load, but remains excluded from muscle-volume-v1 because the current hypertrophy set-stimulus model is not calibrated for explosive contacts."
     },
     {
       "canonical_name": "Lateral Hurdle Hop",
-      "measurement_type": "OTHER",
+      "measurement_type": "BODYWEIGHT_REPS",
       "primary_muscle_group": "QUADS",
       "workout_type": "PLYOMETRIC",
       "volume_eligible": false,
@@ -7310,11 +7312,11 @@
       "mapping_confidence": "HIGH",
       "review_flag": true,
       "contributions": [],
-      "rationale": "OTHER has no v1 set-stimulus calibration; excluded pending a dedicated scoring rule."
+      "rationale": "Plyometric/ballistic movement is trackable by repetitions and optional added load, but remains excluded from muscle-volume-v1 because the current hypertrophy set-stimulus model is not calibrated for explosive contacts."
     },
     {
       "canonical_name": "Power Skip",
-      "measurement_type": "OTHER",
+      "measurement_type": "BODYWEIGHT_REPS",
       "primary_muscle_group": "QUADS",
       "workout_type": "PLYOMETRIC",
       "volume_eligible": false,
@@ -7322,11 +7324,11 @@
       "mapping_confidence": "HIGH",
       "review_flag": true,
       "contributions": [],
-      "rationale": "OTHER has no v1 set-stimulus calibration; excluded pending a dedicated scoring rule."
+      "rationale": "Plyometric/ballistic movement is trackable by repetitions and optional added load, but remains excluded from muscle-volume-v1 because the current hypertrophy set-stimulus model is not calibrated for explosive contacts."
     },
     {
       "canonical_name": "Single-Leg Broad Jump",
-      "measurement_type": "OTHER",
+      "measurement_type": "BODYWEIGHT_REPS",
       "primary_muscle_group": "QUADS",
       "workout_type": "PLYOMETRIC",
       "volume_eligible": false,
@@ -7334,11 +7336,11 @@
       "mapping_confidence": "HIGH",
       "review_flag": true,
       "contributions": [],
-      "rationale": "OTHER has no v1 set-stimulus calibration; excluded pending a dedicated scoring rule."
+      "rationale": "Plyometric/ballistic movement is trackable by repetitions and optional added load, but remains excluded from muscle-volume-v1 because the current hypertrophy set-stimulus model is not calibrated for explosive contacts."
     },
     {
       "canonical_name": "Skater Jump",
-      "measurement_type": "OTHER",
+      "measurement_type": "BODYWEIGHT_REPS",
       "primary_muscle_group": "QUADS",
       "workout_type": "PLYOMETRIC",
       "volume_eligible": false,
@@ -7346,11 +7348,11 @@
       "mapping_confidence": "HIGH",
       "review_flag": true,
       "contributions": [],
-      "rationale": "OTHER has no v1 set-stimulus calibration; excluded pending a dedicated scoring rule."
+      "rationale": "Plyometric/ballistic movement is trackable by repetitions and optional added load, but remains excluded from muscle-volume-v1 because the current hypertrophy set-stimulus model is not calibrated for explosive contacts."
     },
     {
       "canonical_name": "Split Squat Jump",
-      "measurement_type": "OTHER",
+      "measurement_type": "BODYWEIGHT_REPS",
       "primary_muscle_group": "QUADS",
       "workout_type": "PLYOMETRIC",
       "volume_eligible": false,
@@ -7358,11 +7360,11 @@
       "mapping_confidence": "HIGH",
       "review_flag": true,
       "contributions": [],
-      "rationale": "OTHER has no v1 set-stimulus calibration; excluded pending a dedicated scoring rule."
+      "rationale": "Plyometric/ballistic movement is trackable by repetitions and optional added load, but remains excluded from muscle-volume-v1 because the current hypertrophy set-stimulus model is not calibrated for explosive contacts."
     },
     {
       "canonical_name": "Squat Jump",
-      "measurement_type": "OTHER",
+      "measurement_type": "BODYWEIGHT_REPS",
       "primary_muscle_group": "QUADS",
       "workout_type": "PLYOMETRIC",
       "volume_eligible": false,
@@ -7370,11 +7372,11 @@
       "mapping_confidence": "HIGH",
       "review_flag": true,
       "contributions": [],
-      "rationale": "OTHER has no v1 set-stimulus calibration; excluded pending a dedicated scoring rule."
+      "rationale": "Plyometric/ballistic movement is trackable by repetitions and optional added load, but remains excluded from muscle-volume-v1 because the current hypertrophy set-stimulus model is not calibrated for explosive contacts."
     },
     {
       "canonical_name": "Tuck Jump",
-      "measurement_type": "OTHER",
+      "measurement_type": "BODYWEIGHT_REPS",
       "primary_muscle_group": "QUADS",
       "workout_type": "PLYOMETRIC",
       "volume_eligible": false,
@@ -7382,11 +7384,11 @@
       "mapping_confidence": "HIGH",
       "review_flag": true,
       "contributions": [],
-      "rationale": "OTHER has no v1 set-stimulus calibration; excluded pending a dedicated scoring rule."
+      "rationale": "Plyometric/ballistic movement is trackable by repetitions and optional added load, but remains excluded from muscle-volume-v1 because the current hypertrophy set-stimulus model is not calibrated for explosive contacts."
     },
     {
       "canonical_name": "Vertical Jump",
-      "measurement_type": "OTHER",
+      "measurement_type": "BODYWEIGHT_REPS",
       "primary_muscle_group": "QUADS",
       "workout_type": "PLYOMETRIC",
       "volume_eligible": false,
@@ -7394,7 +7396,7 @@
       "mapping_confidence": "HIGH",
       "review_flag": true,
       "contributions": [],
-      "rationale": "OTHER has no v1 set-stimulus calibration; excluded pending a dedicated scoring rule."
+      "rationale": "Plyometric/ballistic movement is trackable by repetitions and optional added load, but remains excluded from muscle-volume-v1 because the current hypertrophy set-stimulus model is not calibrated for explosive contacts."
     },
     {
       "canonical_name": "Cambered Bar Squat",
@@ -8946,6 +8948,2231 @@
         }
       ],
       "rationale": "Elbow-extension isolation directly trains triceps."
+    },
+    {
+      "canonical_name": "180-Degree Squat Jump",
+      "measurement_type": "BODYWEIGHT_REPS",
+      "primary_muscle_group": "QUADS",
+      "workout_type": "PLYOMETRIC",
+      "volume_eligible": false,
+      "set_quality_mode": "NONE",
+      "mapping_confidence": "HIGH",
+      "review_flag": true,
+      "contributions": [],
+      "rationale": "Plyometric/ballistic movement is trackable by repetitions and optional added load, but remains excluded from muscle-volume-v1 because the current hypertrophy set-stimulus model is not calibrated for explosive contacts."
+    },
+    {
+      "canonical_name": "Kneeling Jump",
+      "measurement_type": "BODYWEIGHT_REPS",
+      "primary_muscle_group": "QUADS",
+      "workout_type": "PLYOMETRIC",
+      "volume_eligible": false,
+      "set_quality_mode": "NONE",
+      "mapping_confidence": "HIGH",
+      "review_flag": true,
+      "contributions": [],
+      "rationale": "Plyometric/ballistic movement is trackable by repetitions and optional added load, but remains excluded from muscle-volume-v1 because the current hypertrophy set-stimulus model is not calibrated for explosive contacts."
+    },
+    {
+      "canonical_name": "Seated Box Jump",
+      "measurement_type": "BODYWEIGHT_REPS",
+      "primary_muscle_group": "QUADS",
+      "workout_type": "PLYOMETRIC",
+      "volume_eligible": false,
+      "set_quality_mode": "NONE",
+      "mapping_confidence": "HIGH",
+      "review_flag": true,
+      "contributions": [],
+      "rationale": "Plyometric/ballistic movement is trackable by repetitions and optional added load, but remains excluded from muscle-volume-v1 because the current hypertrophy set-stimulus model is not calibrated for explosive contacts."
+    },
+    {
+      "canonical_name": "Lateral Box Jump",
+      "measurement_type": "BODYWEIGHT_REPS",
+      "primary_muscle_group": "QUADS",
+      "workout_type": "PLYOMETRIC",
+      "volume_eligible": false,
+      "set_quality_mode": "NONE",
+      "mapping_confidence": "HIGH",
+      "review_flag": true,
+      "contributions": [],
+      "rationale": "Plyometric/ballistic movement is trackable by repetitions and optional added load, but remains excluded from muscle-volume-v1 because the current hypertrophy set-stimulus model is not calibrated for explosive contacts."
+    },
+    {
+      "canonical_name": "Single-Leg Box Jump",
+      "measurement_type": "BODYWEIGHT_REPS",
+      "primary_muscle_group": "QUADS",
+      "workout_type": "PLYOMETRIC",
+      "volume_eligible": false,
+      "set_quality_mode": "NONE",
+      "mapping_confidence": "HIGH",
+      "review_flag": true,
+      "contributions": [],
+      "rationale": "Plyometric/ballistic movement is trackable by repetitions and optional added load, but remains excluded from muscle-volume-v1 because the current hypertrophy set-stimulus model is not calibrated for explosive contacts."
+    },
+    {
+      "canonical_name": "Jumping Bulgarian Split Squat",
+      "measurement_type": "BODYWEIGHT_REPS",
+      "primary_muscle_group": "QUADS",
+      "workout_type": "PLYOMETRIC",
+      "volume_eligible": false,
+      "set_quality_mode": "NONE",
+      "mapping_confidence": "HIGH",
+      "review_flag": true,
+      "contributions": [],
+      "rationale": "Plyometric/ballistic movement is trackable by repetitions and optional added load, but remains excluded from muscle-volume-v1 because the current hypertrophy set-stimulus model is not calibrated for explosive contacts."
+    },
+    {
+      "canonical_name": "Depth Push-Up",
+      "measurement_type": "BODYWEIGHT_REPS",
+      "primary_muscle_group": "CHEST",
+      "workout_type": "PLYOMETRIC",
+      "volume_eligible": false,
+      "set_quality_mode": "NONE",
+      "mapping_confidence": "HIGH",
+      "review_flag": true,
+      "contributions": [],
+      "rationale": "Plyometric/ballistic movement is trackable by repetitions and optional added load, but remains excluded from muscle-volume-v1 because the current hypertrophy set-stimulus model is not calibrated for explosive contacts."
+    },
+    {
+      "canonical_name": "Explosive Push-Up to Box",
+      "measurement_type": "BODYWEIGHT_REPS",
+      "primary_muscle_group": "CHEST",
+      "workout_type": "PLYOMETRIC",
+      "volume_eligible": false,
+      "set_quality_mode": "NONE",
+      "mapping_confidence": "HIGH",
+      "review_flag": true,
+      "contributions": [],
+      "rationale": "Plyometric/ballistic movement is trackable by repetitions and optional added load, but remains excluded from muscle-volume-v1 because the current hypertrophy set-stimulus model is not calibrated for explosive contacts."
+    },
+    {
+      "canonical_name": "Plyometric Pull-Up",
+      "measurement_type": "BODYWEIGHT_REPS",
+      "primary_muscle_group": "BACK",
+      "workout_type": "PLYOMETRIC",
+      "volume_eligible": false,
+      "set_quality_mode": "NONE",
+      "mapping_confidence": "HIGH",
+      "review_flag": true,
+      "contributions": [],
+      "rationale": "Plyometric/ballistic movement is trackable by repetitions and optional added load, but remains excluded from muscle-volume-v1 because the current hypertrophy set-stimulus model is not calibrated for explosive contacts."
+    },
+    {
+      "canonical_name": "Frog Jump",
+      "measurement_type": "BODYWEIGHT_REPS",
+      "primary_muscle_group": "QUADS",
+      "workout_type": "PLYOMETRIC",
+      "volume_eligible": false,
+      "set_quality_mode": "NONE",
+      "mapping_confidence": "HIGH",
+      "review_flag": true,
+      "contributions": [],
+      "rationale": "Plyometric/ballistic movement is trackable by repetitions and optional added load, but remains excluded from muscle-volume-v1 because the current hypertrophy set-stimulus model is not calibrated for explosive contacts."
+    },
+    {
+      "canonical_name": "Lateral Pogo Jump",
+      "measurement_type": "BODYWEIGHT_REPS",
+      "primary_muscle_group": "CALVES",
+      "workout_type": "PLYOMETRIC",
+      "volume_eligible": false,
+      "set_quality_mode": "NONE",
+      "mapping_confidence": "HIGH",
+      "review_flag": true,
+      "contributions": [],
+      "rationale": "Plyometric/ballistic movement is trackable by repetitions and optional added load, but remains excluded from muscle-volume-v1 because the current hypertrophy set-stimulus model is not calibrated for explosive contacts."
+    },
+    {
+      "canonical_name": "Single-Leg Pogo Jump",
+      "measurement_type": "BODYWEIGHT_REPS",
+      "primary_muscle_group": "CALVES",
+      "workout_type": "PLYOMETRIC",
+      "volume_eligible": false,
+      "set_quality_mode": "NONE",
+      "mapping_confidence": "HIGH",
+      "review_flag": true,
+      "contributions": [],
+      "rationale": "Plyometric/ballistic movement is trackable by repetitions and optional added load, but remains excluded from muscle-volume-v1 because the current hypertrophy set-stimulus model is not calibrated for explosive contacts."
+    },
+    {
+      "canonical_name": "Egyptian Cable Lateral Raise",
+      "measurement_type": "WEIGHT_REPS",
+      "primary_muscle_group": "SHOULDERS",
+      "workout_type": "CABLE",
+      "volume_eligible": true,
+      "set_quality_mode": "WEIGHT_EPLEY",
+      "mapping_confidence": "HIGH",
+      "review_flag": false,
+      "contributions": [
+        {
+          "muscle_group": "SHOULDERS",
+          "role": "DIRECT",
+          "weight": 1
+        }
+      ],
+      "rationale": "Shoulder-raise isolation directly trains deltoid musculature. This equipment/bodyweight variant uses the same reviewed movement-pattern contribution model as Cable Lateral Raise."
+    },
+    {
+      "canonical_name": "Single-Arm Cable Biceps Curl",
+      "measurement_type": "WEIGHT_REPS",
+      "primary_muscle_group": "BICEPS",
+      "workout_type": "CABLE",
+      "volume_eligible": true,
+      "set_quality_mode": "WEIGHT_EPLEY",
+      "mapping_confidence": "HIGH",
+      "review_flag": false,
+      "contributions": [
+        {
+          "muscle_group": "BICEPS",
+          "role": "DIRECT",
+          "weight": 1
+        }
+      ],
+      "rationale": "Elbow-flexion isolation directly trains biceps. This equipment/bodyweight variant uses the same reviewed movement-pattern contribution model as Cable Biceps Curl."
+    },
+    {
+      "canonical_name": "Cable Preacher Curl",
+      "measurement_type": "WEIGHT_REPS",
+      "primary_muscle_group": "BICEPS",
+      "workout_type": "CABLE",
+      "volume_eligible": true,
+      "set_quality_mode": "WEIGHT_EPLEY",
+      "mapping_confidence": "HIGH",
+      "review_flag": false,
+      "contributions": [
+        {
+          "muscle_group": "BICEPS",
+          "role": "DIRECT",
+          "weight": 1
+        }
+      ],
+      "rationale": "Elbow-flexion isolation directly trains biceps. This equipment/bodyweight variant uses the same reviewed movement-pattern contribution model as Cable Biceps Curl."
+    },
+    {
+      "canonical_name": "Cable Spider Curl",
+      "measurement_type": "WEIGHT_REPS",
+      "primary_muscle_group": "BICEPS",
+      "workout_type": "CABLE",
+      "volume_eligible": true,
+      "set_quality_mode": "WEIGHT_EPLEY",
+      "mapping_confidence": "HIGH",
+      "review_flag": false,
+      "contributions": [
+        {
+          "muscle_group": "BICEPS",
+          "role": "DIRECT",
+          "weight": 1
+        }
+      ],
+      "rationale": "Elbow-flexion isolation directly trains biceps. This equipment/bodyweight variant uses the same reviewed movement-pattern contribution model as Cable Biceps Curl."
+    },
+    {
+      "canonical_name": "Cable Reverse Curl",
+      "measurement_type": "WEIGHT_REPS",
+      "primary_muscle_group": "BICEPS",
+      "workout_type": "CABLE",
+      "volume_eligible": true,
+      "set_quality_mode": "WEIGHT_EPLEY",
+      "mapping_confidence": "MEDIUM",
+      "review_flag": true,
+      "contributions": [
+        {
+          "muscle_group": "BICEPS",
+          "role": "DIRECT",
+          "weight": 1
+        },
+        {
+          "muscle_group": "FOREARMS_GRIP",
+          "role": "INDIRECT",
+          "weight": 0.5
+        }
+      ],
+      "rationale": "Pronated curl directly trains elbow flexors with meaningful brachioradialis/forearm contribution. This equipment/bodyweight variant uses the same reviewed movement-pattern contribution model as Dumbbell Reverse Curl."
+    },
+    {
+      "canonical_name": "Cable Upright Row",
+      "measurement_type": "WEIGHT_REPS",
+      "primary_muscle_group": "SHOULDERS",
+      "workout_type": "CABLE",
+      "volume_eligible": true,
+      "set_quality_mode": "WEIGHT_EPLEY",
+      "mapping_confidence": "MEDIUM",
+      "review_flag": true,
+      "contributions": [
+        {
+          "muscle_group": "SHOULDERS",
+          "role": "DIRECT",
+          "weight": 1
+        },
+        {
+          "muscle_group": "BACK",
+          "role": "INDIRECT",
+          "weight": 0.5
+        },
+        {
+          "muscle_group": "BICEPS",
+          "role": "INDIRECT",
+          "weight": 0.5
+        }
+      ],
+      "rationale": "Upright-row pattern directly trains shoulders with meaningful trapezius/upper-back and elbow-flexor contribution; grip width changes emphasis. This equipment/bodyweight variant uses the same reviewed movement-pattern contribution model as Dumbbell Upright Row."
+    },
+    {
+      "canonical_name": "Cable Shrug",
+      "measurement_type": "WEIGHT_REPS",
+      "primary_muscle_group": "BACK",
+      "workout_type": "CABLE",
+      "volume_eligible": true,
+      "set_quality_mode": "WEIGHT_EPLEY",
+      "mapping_confidence": "HIGH",
+      "review_flag": false,
+      "contributions": [
+        {
+          "muscle_group": "BACK",
+          "role": "DIRECT",
+          "weight": 1
+        }
+      ],
+      "rationale": "Shrug pattern directly loads upper trapezius/back; incidental grip is not separately credited in v1. This equipment/bodyweight variant uses the same reviewed movement-pattern contribution model as Dumbbell Shrug."
+    },
+    {
+      "canonical_name": "Cable Romanian Deadlift",
+      "measurement_type": "WEIGHT_REPS",
+      "primary_muscle_group": "HAMSTRINGS",
+      "workout_type": "CABLE",
+      "volume_eligible": true,
+      "set_quality_mode": "WEIGHT_EPLEY",
+      "mapping_confidence": "MEDIUM",
+      "review_flag": true,
+      "contributions": [
+        {
+          "muscle_group": "BACK",
+          "role": "INDIRECT",
+          "weight": 0.5
+        },
+        {
+          "muscle_group": "HAMSTRINGS",
+          "role": "DIRECT",
+          "weight": 1
+        },
+        {
+          "muscle_group": "GLUTES",
+          "role": "DIRECT",
+          "weight": 1
+        }
+      ],
+      "rationale": "Loaded hip hinge directly trains hamstrings and glutes, with meaningful erector/back contribution; execution affects emphasis. This equipment/bodyweight variant uses the same reviewed movement-pattern contribution model as Dumbbell Romanian Deadlift."
+    },
+    {
+      "canonical_name": "Cable Squat",
+      "measurement_type": "WEIGHT_REPS",
+      "primary_muscle_group": "QUADS",
+      "workout_type": "CABLE",
+      "volume_eligible": true,
+      "set_quality_mode": "WEIGHT_EPLEY",
+      "mapping_confidence": "MEDIUM",
+      "review_flag": true,
+      "contributions": [
+        {
+          "muscle_group": "QUADS",
+          "role": "DIRECT",
+          "weight": 1
+        },
+        {
+          "muscle_group": "GLUTES",
+          "role": "INDIRECT",
+          "weight": 0.5
+        }
+      ],
+      "rationale": "Squat/press pattern directly trains quadriceps with meaningful glute contribution; depth and stance affect the hip-extensor share. This equipment/bodyweight variant uses the same reviewed movement-pattern contribution model as Landmine Squat."
+    },
+    {
+      "canonical_name": "Cable Reverse Lunge",
+      "measurement_type": "WEIGHT_REPS",
+      "primary_muscle_group": "QUADS",
+      "workout_type": "CABLE",
+      "volume_eligible": true,
+      "set_quality_mode": "WEIGHT_EPLEY",
+      "mapping_confidence": "MEDIUM",
+      "review_flag": true,
+      "contributions": [
+        {
+          "muscle_group": "QUADS",
+          "role": "DIRECT",
+          "weight": 1
+        },
+        {
+          "muscle_group": "GLUTES",
+          "role": "DIRECT",
+          "weight": 1
+        }
+      ],
+      "rationale": "Unilateral squat/lunge/step pattern meaningfully loads both knee and hip extensors; stance and depth shift emphasis. This equipment/bodyweight variant uses the same reviewed movement-pattern contribution model as Barbell Reverse Lunge."
+    },
+    {
+      "canonical_name": "Cable Lateral Lunge",
+      "measurement_type": "WEIGHT_REPS",
+      "primary_muscle_group": "QUADS",
+      "workout_type": "CABLE",
+      "volume_eligible": true,
+      "set_quality_mode": "WEIGHT_EPLEY",
+      "mapping_confidence": "MEDIUM",
+      "review_flag": true,
+      "contributions": [
+        {
+          "muscle_group": "QUADS",
+          "role": "DIRECT",
+          "weight": 1
+        },
+        {
+          "muscle_group": "GLUTES",
+          "role": "DIRECT",
+          "weight": 1
+        }
+      ],
+      "rationale": "Lateral-lunge pattern directly loads quadriceps and glutes; substantial adductor contribution is not separately reportable in v1. This equipment/bodyweight variant uses the same reviewed movement-pattern contribution model as Dumbbell Lateral Lunge."
+    },
+    {
+      "canonical_name": "Cable Curtsy Lunge",
+      "measurement_type": "WEIGHT_REPS",
+      "primary_muscle_group": "GLUTES",
+      "workout_type": "CABLE",
+      "volume_eligible": true,
+      "set_quality_mode": "WEIGHT_EPLEY",
+      "mapping_confidence": "MEDIUM",
+      "review_flag": true,
+      "contributions": [
+        {
+          "muscle_group": "GLUTES",
+          "role": "DIRECT",
+          "weight": 1
+        },
+        {
+          "muscle_group": "QUADS",
+          "role": "INDIRECT",
+          "weight": 0.5
+        }
+      ],
+      "rationale": "Curtsy-lunge pattern directly loads glutes with meaningful quadriceps contribution; frontal/transverse-plane emphasis varies by step path. This equipment/bodyweight variant uses the same reviewed movement-pattern contribution model as Dumbbell Curtsy Lunge."
+    },
+    {
+      "canonical_name": "Cable Leg Curl",
+      "measurement_type": "WEIGHT_REPS",
+      "primary_muscle_group": "HAMSTRINGS",
+      "workout_type": "CABLE",
+      "volume_eligible": true,
+      "set_quality_mode": "WEIGHT_EPLEY",
+      "mapping_confidence": "HIGH",
+      "review_flag": false,
+      "contributions": [
+        {
+          "muscle_group": "HAMSTRINGS",
+          "role": "DIRECT",
+          "weight": 1
+        }
+      ],
+      "rationale": "Knee-flexion hamstring pattern directly trains hamstrings. This equipment/bodyweight variant uses the same reviewed movement-pattern contribution model as Lying Leg Curl."
+    },
+    {
+      "canonical_name": "Single-Arm Cable Chest Fly",
+      "measurement_type": "WEIGHT_REPS",
+      "primary_muscle_group": "CHEST",
+      "workout_type": "CABLE",
+      "volume_eligible": true,
+      "set_quality_mode": "WEIGHT_EPLEY",
+      "mapping_confidence": "HIGH",
+      "review_flag": false,
+      "contributions": [
+        {
+          "muscle_group": "CHEST",
+          "role": "DIRECT",
+          "weight": 1
+        }
+      ],
+      "rationale": "Horizontal-adduction isolation directly trains chest; elbow extensors are not meaningfully loaded. This equipment/bodyweight variant uses the same reviewed movement-pattern contribution model as Cable Chest Fly."
+    },
+    {
+      "canonical_name": "Single-Arm Cable Chest Press",
+      "measurement_type": "WEIGHT_REPS",
+      "primary_muscle_group": "CHEST",
+      "workout_type": "CABLE",
+      "volume_eligible": true,
+      "set_quality_mode": "WEIGHT_EPLEY",
+      "mapping_confidence": "HIGH",
+      "review_flag": false,
+      "contributions": [
+        {
+          "muscle_group": "CHEST",
+          "role": "DIRECT",
+          "weight": 1
+        },
+        {
+          "muscle_group": "SHOULDERS",
+          "role": "INDIRECT",
+          "weight": 0.5
+        },
+        {
+          "muscle_group": "TRICEPS",
+          "role": "INDIRECT",
+          "weight": 0.5
+        }
+      ],
+      "rationale": "Press/push-up pattern directly trains chest with meaningful triceps and anterior-shoulder contribution. This equipment/bodyweight variant uses the same reviewed movement-pattern contribution model as Cable Chest Press."
+    },
+    {
+      "canonical_name": "Cable Rear Delt Row",
+      "measurement_type": "WEIGHT_REPS",
+      "primary_muscle_group": "SHOULDERS",
+      "workout_type": "CABLE",
+      "volume_eligible": true,
+      "set_quality_mode": "WEIGHT_EPLEY",
+      "mapping_confidence": "MEDIUM",
+      "review_flag": true,
+      "contributions": [
+        {
+          "muscle_group": "SHOULDERS",
+          "role": "DIRECT",
+          "weight": 1
+        },
+        {
+          "muscle_group": "BACK",
+          "role": "DIRECT",
+          "weight": 1
+        },
+        {
+          "muscle_group": "BICEPS",
+          "role": "INDIRECT",
+          "weight": 0.5
+        }
+      ],
+      "rationale": "Elbows-out row directly trains rear deltoids and upper back with meaningful elbow-flexor contribution; technique materially changes emphasis. This equipment/bodyweight variant uses the same reviewed movement-pattern contribution model as Dumbbell Rear Delt Row."
+    },
+    {
+      "canonical_name": "Cable Wrist Curl",
+      "measurement_type": "WEIGHT_REPS",
+      "primary_muscle_group": "FOREARMS_GRIP",
+      "workout_type": "CABLE",
+      "volume_eligible": true,
+      "set_quality_mode": "WEIGHT_EPLEY",
+      "mapping_confidence": "HIGH",
+      "review_flag": false,
+      "contributions": [
+        {
+          "muscle_group": "FOREARMS_GRIP",
+          "role": "DIRECT",
+          "weight": 1
+        }
+      ],
+      "rationale": "Loaded forearm/wrist or grip isolation directly trains the reportable forearms/grip group. This equipment/bodyweight variant uses the same reviewed movement-pattern contribution model as Dumbbell Wrist Curl."
+    },
+    {
+      "canonical_name": "Cable Reverse Wrist Curl",
+      "measurement_type": "WEIGHT_REPS",
+      "primary_muscle_group": "FOREARMS_GRIP",
+      "workout_type": "CABLE",
+      "volume_eligible": true,
+      "set_quality_mode": "WEIGHT_EPLEY",
+      "mapping_confidence": "HIGH",
+      "review_flag": false,
+      "contributions": [
+        {
+          "muscle_group": "FOREARMS_GRIP",
+          "role": "DIRECT",
+          "weight": 1
+        }
+      ],
+      "rationale": "Loaded forearm/wrist or grip isolation directly trains the reportable forearms/grip group. This equipment/bodyweight variant uses the same reviewed movement-pattern contribution model as Dumbbell Reverse Wrist Curl."
+    },
+    {
+      "canonical_name": "Cable High Row",
+      "measurement_type": "WEIGHT_REPS",
+      "primary_muscle_group": "BACK",
+      "workout_type": "CABLE",
+      "volume_eligible": true,
+      "set_quality_mode": "WEIGHT_EPLEY",
+      "mapping_confidence": "HIGH",
+      "review_flag": false,
+      "contributions": [
+        {
+          "muscle_group": "BACK",
+          "role": "DIRECT",
+          "weight": 1
+        },
+        {
+          "muscle_group": "BICEPS",
+          "role": "INDIRECT",
+          "weight": 0.5
+        }
+      ],
+      "rationale": "Row/pull pattern directly trains back with meaningful elbow-flexor contribution. This equipment/bodyweight variant uses the same reviewed movement-pattern contribution model as Machine High Row."
+    },
+    {
+      "canonical_name": "Cable Low Row",
+      "measurement_type": "WEIGHT_REPS",
+      "primary_muscle_group": "BACK",
+      "workout_type": "CABLE",
+      "volume_eligible": true,
+      "set_quality_mode": "WEIGHT_EPLEY",
+      "mapping_confidence": "HIGH",
+      "review_flag": false,
+      "contributions": [
+        {
+          "muscle_group": "BACK",
+          "role": "DIRECT",
+          "weight": 1
+        },
+        {
+          "muscle_group": "BICEPS",
+          "role": "INDIRECT",
+          "weight": 0.5
+        }
+      ],
+      "rationale": "Row/pull pattern directly trains back with meaningful elbow-flexor contribution. This equipment/bodyweight variant uses the same reviewed movement-pattern contribution model as Machine Low Row."
+    },
+    {
+      "canonical_name": "Barbell Split Squat",
+      "measurement_type": "WEIGHT_REPS",
+      "primary_muscle_group": "QUADS",
+      "workout_type": "BARBELL",
+      "volume_eligible": true,
+      "set_quality_mode": "WEIGHT_EPLEY",
+      "mapping_confidence": "HIGH",
+      "review_flag": false,
+      "contributions": [
+        {
+          "muscle_group": "QUADS",
+          "role": "DIRECT",
+          "weight": 1
+        },
+        {
+          "muscle_group": "GLUTES",
+          "role": "INDIRECT",
+          "weight": 0.5
+        }
+      ],
+      "rationale": "Split-squat pattern directly trains quadriceps with meaningful glute contribution. This equipment/bodyweight variant uses the same reviewed movement-pattern contribution model as Dumbbell Split Squat."
+    },
+    {
+      "canonical_name": "Barbell Forward Lunge",
+      "measurement_type": "WEIGHT_REPS",
+      "primary_muscle_group": "QUADS",
+      "workout_type": "BARBELL",
+      "volume_eligible": true,
+      "set_quality_mode": "WEIGHT_EPLEY",
+      "mapping_confidence": "MEDIUM",
+      "review_flag": true,
+      "contributions": [
+        {
+          "muscle_group": "QUADS",
+          "role": "DIRECT",
+          "weight": 1
+        },
+        {
+          "muscle_group": "GLUTES",
+          "role": "INDIRECT",
+          "weight": 0.5
+        }
+      ],
+      "rationale": "Forward-lunge pattern directly trains quadriceps with meaningful glute contribution; stride length changes emphasis. This equipment/bodyweight variant uses the same reviewed movement-pattern contribution model as Dumbbell Forward Lunge."
+    },
+    {
+      "canonical_name": "Barbell Lateral Lunge",
+      "measurement_type": "WEIGHT_REPS",
+      "primary_muscle_group": "QUADS",
+      "workout_type": "BARBELL",
+      "volume_eligible": true,
+      "set_quality_mode": "WEIGHT_EPLEY",
+      "mapping_confidence": "MEDIUM",
+      "review_flag": true,
+      "contributions": [
+        {
+          "muscle_group": "QUADS",
+          "role": "DIRECT",
+          "weight": 1
+        },
+        {
+          "muscle_group": "GLUTES",
+          "role": "DIRECT",
+          "weight": 1
+        }
+      ],
+      "rationale": "Lateral-lunge pattern directly loads quadriceps and glutes; substantial adductor contribution is not separately reportable in v1. This equipment/bodyweight variant uses the same reviewed movement-pattern contribution model as Dumbbell Lateral Lunge."
+    },
+    {
+      "canonical_name": "Barbell Curtsy Lunge",
+      "measurement_type": "WEIGHT_REPS",
+      "primary_muscle_group": "GLUTES",
+      "workout_type": "BARBELL",
+      "volume_eligible": true,
+      "set_quality_mode": "WEIGHT_EPLEY",
+      "mapping_confidence": "MEDIUM",
+      "review_flag": true,
+      "contributions": [
+        {
+          "muscle_group": "GLUTES",
+          "role": "DIRECT",
+          "weight": 1
+        },
+        {
+          "muscle_group": "QUADS",
+          "role": "INDIRECT",
+          "weight": 0.5
+        }
+      ],
+      "rationale": "Curtsy-lunge pattern directly loads glutes with meaningful quadriceps contribution; frontal/transverse-plane emphasis varies by step path. This equipment/bodyweight variant uses the same reviewed movement-pattern contribution model as Dumbbell Curtsy Lunge."
+    },
+    {
+      "canonical_name": "JM Press",
+      "measurement_type": "WEIGHT_REPS",
+      "primary_muscle_group": "TRICEPS",
+      "workout_type": "BARBELL",
+      "volume_eligible": true,
+      "set_quality_mode": "WEIGHT_EPLEY",
+      "mapping_confidence": "HIGH",
+      "review_flag": false,
+      "contributions": [
+        {
+          "muscle_group": "CHEST",
+          "role": "INDIRECT",
+          "weight": 0.5
+        },
+        {
+          "muscle_group": "SHOULDERS",
+          "role": "INDIRECT",
+          "weight": 0.5
+        },
+        {
+          "muscle_group": "TRICEPS",
+          "role": "DIRECT",
+          "weight": 1
+        }
+      ],
+      "rationale": "Triceps-emphasized compound press directly trains triceps with meaningful chest and anterior-shoulder contribution. This equipment/bodyweight variant uses the same reviewed movement-pattern contribution model as Close-Grip Barbell Bench Press."
+    },
+    {
+      "canonical_name": "Spoto Press",
+      "measurement_type": "WEIGHT_REPS",
+      "primary_muscle_group": "CHEST",
+      "workout_type": "BARBELL",
+      "volume_eligible": true,
+      "set_quality_mode": "WEIGHT_EPLEY",
+      "mapping_confidence": "HIGH",
+      "review_flag": false,
+      "contributions": [
+        {
+          "muscle_group": "CHEST",
+          "role": "DIRECT",
+          "weight": 1
+        },
+        {
+          "muscle_group": "SHOULDERS",
+          "role": "INDIRECT",
+          "weight": 0.5
+        },
+        {
+          "muscle_group": "TRICEPS",
+          "role": "INDIRECT",
+          "weight": 0.5
+        }
+      ],
+      "rationale": "Press/push-up pattern directly trains chest with meaningful triceps and anterior-shoulder contribution. This equipment/bodyweight variant uses the same reviewed movement-pattern contribution model as Barbell Bench Press."
+    },
+    {
+      "canonical_name": "Larsen Press",
+      "measurement_type": "WEIGHT_REPS",
+      "primary_muscle_group": "CHEST",
+      "workout_type": "BARBELL",
+      "volume_eligible": true,
+      "set_quality_mode": "WEIGHT_EPLEY",
+      "mapping_confidence": "HIGH",
+      "review_flag": false,
+      "contributions": [
+        {
+          "muscle_group": "CHEST",
+          "role": "DIRECT",
+          "weight": 1
+        },
+        {
+          "muscle_group": "SHOULDERS",
+          "role": "INDIRECT",
+          "weight": 0.5
+        },
+        {
+          "muscle_group": "TRICEPS",
+          "role": "INDIRECT",
+          "weight": 0.5
+        }
+      ],
+      "rationale": "Press/push-up pattern directly trains chest with meaningful triceps and anterior-shoulder contribution. This equipment/bodyweight variant uses the same reviewed movement-pattern contribution model as Barbell Bench Press."
+    },
+    {
+      "canonical_name": "Paused Barbell Bench Press",
+      "measurement_type": "WEIGHT_REPS",
+      "primary_muscle_group": "CHEST",
+      "workout_type": "BARBELL",
+      "volume_eligible": true,
+      "set_quality_mode": "WEIGHT_EPLEY",
+      "mapping_confidence": "HIGH",
+      "review_flag": false,
+      "contributions": [
+        {
+          "muscle_group": "CHEST",
+          "role": "DIRECT",
+          "weight": 1
+        },
+        {
+          "muscle_group": "SHOULDERS",
+          "role": "INDIRECT",
+          "weight": 0.5
+        },
+        {
+          "muscle_group": "TRICEPS",
+          "role": "INDIRECT",
+          "weight": 0.5
+        }
+      ],
+      "rationale": "Press/push-up pattern directly trains chest with meaningful triceps and anterior-shoulder contribution. This equipment/bodyweight variant uses the same reviewed movement-pattern contribution model as Barbell Bench Press."
+    },
+    {
+      "canonical_name": "Pin Bench Press",
+      "measurement_type": "WEIGHT_REPS",
+      "primary_muscle_group": "CHEST",
+      "workout_type": "BARBELL",
+      "volume_eligible": true,
+      "set_quality_mode": "WEIGHT_EPLEY",
+      "mapping_confidence": "HIGH",
+      "review_flag": false,
+      "contributions": [
+        {
+          "muscle_group": "CHEST",
+          "role": "DIRECT",
+          "weight": 1
+        },
+        {
+          "muscle_group": "SHOULDERS",
+          "role": "INDIRECT",
+          "weight": 0.5
+        },
+        {
+          "muscle_group": "TRICEPS",
+          "role": "INDIRECT",
+          "weight": 0.5
+        }
+      ],
+      "rationale": "Press/push-up pattern directly trains chest with meaningful triceps and anterior-shoulder contribution. This equipment/bodyweight variant uses the same reviewed movement-pattern contribution model as Barbell Bench Press."
+    },
+    {
+      "canonical_name": "Board Press",
+      "measurement_type": "WEIGHT_REPS",
+      "primary_muscle_group": "CHEST",
+      "workout_type": "BARBELL",
+      "volume_eligible": true,
+      "set_quality_mode": "WEIGHT_EPLEY",
+      "mapping_confidence": "HIGH",
+      "review_flag": false,
+      "contributions": [
+        {
+          "muscle_group": "CHEST",
+          "role": "DIRECT",
+          "weight": 1
+        },
+        {
+          "muscle_group": "SHOULDERS",
+          "role": "INDIRECT",
+          "weight": 0.5
+        },
+        {
+          "muscle_group": "TRICEPS",
+          "role": "INDIRECT",
+          "weight": 0.5
+        }
+      ],
+      "rationale": "Press/push-up pattern directly trains chest with meaningful triceps and anterior-shoulder contribution. This equipment/bodyweight variant uses the same reviewed movement-pattern contribution model as Barbell Bench Press."
+    },
+    {
+      "canonical_name": "Seal Row",
+      "measurement_type": "WEIGHT_REPS",
+      "primary_muscle_group": "BACK",
+      "workout_type": "BARBELL",
+      "volume_eligible": true,
+      "set_quality_mode": "WEIGHT_EPLEY",
+      "mapping_confidence": "HIGH",
+      "review_flag": false,
+      "contributions": [
+        {
+          "muscle_group": "BACK",
+          "role": "DIRECT",
+          "weight": 1
+        },
+        {
+          "muscle_group": "BICEPS",
+          "role": "INDIRECT",
+          "weight": 0.5
+        }
+      ],
+      "rationale": "Row/pull pattern directly trains back with meaningful elbow-flexor contribution. This equipment/bodyweight variant uses the same reviewed movement-pattern contribution model as Chest-Supported Dumbbell Row."
+    },
+    {
+      "canonical_name": "Chest-Supported Barbell Row",
+      "measurement_type": "WEIGHT_REPS",
+      "primary_muscle_group": "BACK",
+      "workout_type": "BARBELL",
+      "volume_eligible": true,
+      "set_quality_mode": "WEIGHT_EPLEY",
+      "mapping_confidence": "HIGH",
+      "review_flag": false,
+      "contributions": [
+        {
+          "muscle_group": "BACK",
+          "role": "DIRECT",
+          "weight": 1
+        },
+        {
+          "muscle_group": "BICEPS",
+          "role": "INDIRECT",
+          "weight": 0.5
+        }
+      ],
+      "rationale": "Row/pull pattern directly trains back with meaningful elbow-flexor contribution. This equipment/bodyweight variant uses the same reviewed movement-pattern contribution model as Chest-Supported Dumbbell Row."
+    },
+    {
+      "canonical_name": "Barbell Upright Row",
+      "measurement_type": "WEIGHT_REPS",
+      "primary_muscle_group": "SHOULDERS",
+      "workout_type": "BARBELL",
+      "volume_eligible": true,
+      "set_quality_mode": "WEIGHT_EPLEY",
+      "mapping_confidence": "MEDIUM",
+      "review_flag": true,
+      "contributions": [
+        {
+          "muscle_group": "SHOULDERS",
+          "role": "DIRECT",
+          "weight": 1
+        },
+        {
+          "muscle_group": "BACK",
+          "role": "INDIRECT",
+          "weight": 0.5
+        },
+        {
+          "muscle_group": "BICEPS",
+          "role": "INDIRECT",
+          "weight": 0.5
+        }
+      ],
+      "rationale": "Upright-row pattern directly trains shoulders with meaningful trapezius/upper-back and elbow-flexor contribution; grip width changes emphasis. This equipment/bodyweight variant uses the same reviewed movement-pattern contribution model as Dumbbell Upright Row."
+    },
+    {
+      "canonical_name": "Bradford Press",
+      "measurement_type": "WEIGHT_REPS",
+      "primary_muscle_group": "SHOULDERS",
+      "workout_type": "BARBELL",
+      "volume_eligible": true,
+      "set_quality_mode": "WEIGHT_EPLEY",
+      "mapping_confidence": "HIGH",
+      "review_flag": false,
+      "contributions": [
+        {
+          "muscle_group": "SHOULDERS",
+          "role": "DIRECT",
+          "weight": 1
+        },
+        {
+          "muscle_group": "TRICEPS",
+          "role": "INDIRECT",
+          "weight": 0.5
+        }
+      ],
+      "rationale": "Overhead/vertical press directly trains shoulders with meaningful triceps contribution. This equipment/bodyweight variant uses the same reviewed movement-pattern contribution model as Overhead Press."
+    },
+    {
+      "canonical_name": "Reverse-Grip Barbell Bench Press",
+      "measurement_type": "WEIGHT_REPS",
+      "primary_muscle_group": "CHEST",
+      "workout_type": "BARBELL",
+      "volume_eligible": true,
+      "set_quality_mode": "WEIGHT_EPLEY",
+      "mapping_confidence": "HIGH",
+      "review_flag": false,
+      "contributions": [
+        {
+          "muscle_group": "CHEST",
+          "role": "DIRECT",
+          "weight": 1
+        },
+        {
+          "muscle_group": "SHOULDERS",
+          "role": "INDIRECT",
+          "weight": 0.5
+        },
+        {
+          "muscle_group": "TRICEPS",
+          "role": "INDIRECT",
+          "weight": 0.5
+        }
+      ],
+      "rationale": "Press/push-up pattern directly trains chest with meaningful triceps and anterior-shoulder contribution. This equipment/bodyweight variant uses the same reviewed movement-pattern contribution model as Barbell Bench Press."
+    },
+    {
+      "canonical_name": "Barbell Sumo Squat",
+      "measurement_type": "WEIGHT_REPS",
+      "primary_muscle_group": "QUADS",
+      "workout_type": "BARBELL",
+      "volume_eligible": true,
+      "set_quality_mode": "WEIGHT_EPLEY",
+      "mapping_confidence": "MEDIUM",
+      "review_flag": true,
+      "contributions": [
+        {
+          "muscle_group": "QUADS",
+          "role": "DIRECT",
+          "weight": 1
+        },
+        {
+          "muscle_group": "GLUTES",
+          "role": "DIRECT",
+          "weight": 1
+        }
+      ],
+      "rationale": "Wide-stance squat directly trains quadriceps and glutes; substantial adductor contribution is not separately reportable in v1. This equipment/bodyweight variant uses the same reviewed movement-pattern contribution model as Dumbbell Sumo Squat."
+    },
+    {
+      "canonical_name": "Barbell Wrist Curl",
+      "measurement_type": "WEIGHT_REPS",
+      "primary_muscle_group": "FOREARMS_GRIP",
+      "workout_type": "BARBELL",
+      "volume_eligible": true,
+      "set_quality_mode": "WEIGHT_EPLEY",
+      "mapping_confidence": "HIGH",
+      "review_flag": false,
+      "contributions": [
+        {
+          "muscle_group": "FOREARMS_GRIP",
+          "role": "DIRECT",
+          "weight": 1
+        }
+      ],
+      "rationale": "Loaded forearm/wrist or grip isolation directly trains the reportable forearms/grip group. This equipment/bodyweight variant uses the same reviewed movement-pattern contribution model as Dumbbell Wrist Curl."
+    },
+    {
+      "canonical_name": "Barbell Reverse Wrist Curl",
+      "measurement_type": "WEIGHT_REPS",
+      "primary_muscle_group": "FOREARMS_GRIP",
+      "workout_type": "BARBELL",
+      "volume_eligible": true,
+      "set_quality_mode": "WEIGHT_EPLEY",
+      "mapping_confidence": "HIGH",
+      "review_flag": false,
+      "contributions": [
+        {
+          "muscle_group": "FOREARMS_GRIP",
+          "role": "DIRECT",
+          "weight": 1
+        }
+      ],
+      "rationale": "Loaded forearm/wrist or grip isolation directly trains the reportable forearms/grip group. This equipment/bodyweight variant uses the same reviewed movement-pattern contribution model as Dumbbell Reverse Wrist Curl."
+    },
+    {
+      "canonical_name": "Barbell B-Stance Romanian Deadlift",
+      "measurement_type": "WEIGHT_REPS",
+      "primary_muscle_group": "HAMSTRINGS",
+      "workout_type": "BARBELL",
+      "volume_eligible": true,
+      "set_quality_mode": "WEIGHT_EPLEY",
+      "mapping_confidence": "MEDIUM",
+      "review_flag": true,
+      "contributions": [
+        {
+          "muscle_group": "HAMSTRINGS",
+          "role": "DIRECT",
+          "weight": 1
+        },
+        {
+          "muscle_group": "GLUTES",
+          "role": "DIRECT",
+          "weight": 1
+        },
+        {
+          "muscle_group": "BACK",
+          "role": "INDIRECT",
+          "weight": 0.5
+        }
+      ],
+      "rationale": "Staggered-stance hip hinge directly trains hamstrings and glutes with meaningful spinal-erector/back contribution; stance and support-leg loading change emphasis. This equipment/bodyweight variant uses the same reviewed movement-pattern contribution model as Dumbbell Kickstand Romanian Deadlift."
+    },
+    {
+      "canonical_name": "Barbell B-Stance Hip Thrust",
+      "measurement_type": "WEIGHT_REPS",
+      "primary_muscle_group": "GLUTES",
+      "workout_type": "BARBELL",
+      "volume_eligible": true,
+      "set_quality_mode": "WEIGHT_EPLEY",
+      "mapping_confidence": "HIGH",
+      "review_flag": false,
+      "contributions": [
+        {
+          "muscle_group": "GLUTES",
+          "role": "DIRECT",
+          "weight": 1
+        }
+      ],
+      "rationale": "Hip-extension/glute-focused pattern directly trains glutes. This equipment/bodyweight variant uses the same reviewed movement-pattern contribution model as Barbell Hip Thrust."
+    },
+    {
+      "canonical_name": "Bodyweight Forward Lunge",
+      "measurement_type": "BODYWEIGHT_REPS",
+      "primary_muscle_group": "QUADS",
+      "workout_type": "BODYWEIGHT",
+      "volume_eligible": true,
+      "set_quality_mode": "BODYWEIGHT_REPS",
+      "mapping_confidence": "MEDIUM",
+      "review_flag": true,
+      "contributions": [
+        {
+          "muscle_group": "QUADS",
+          "role": "DIRECT",
+          "weight": 1
+        },
+        {
+          "muscle_group": "GLUTES",
+          "role": "INDIRECT",
+          "weight": 0.5
+        }
+      ],
+      "rationale": "Forward-lunge pattern directly trains quadriceps with meaningful glute contribution; stride length changes emphasis. This equipment/bodyweight variant uses the same reviewed movement-pattern contribution model as Dumbbell Forward Lunge."
+    },
+    {
+      "canonical_name": "Bodyweight Lateral Lunge",
+      "measurement_type": "BODYWEIGHT_REPS",
+      "primary_muscle_group": "QUADS",
+      "workout_type": "BODYWEIGHT",
+      "volume_eligible": true,
+      "set_quality_mode": "BODYWEIGHT_REPS",
+      "mapping_confidence": "MEDIUM",
+      "review_flag": true,
+      "contributions": [
+        {
+          "muscle_group": "QUADS",
+          "role": "DIRECT",
+          "weight": 1
+        },
+        {
+          "muscle_group": "GLUTES",
+          "role": "DIRECT",
+          "weight": 1
+        }
+      ],
+      "rationale": "Lateral-lunge pattern directly loads quadriceps and glutes; substantial adductor contribution is not separately reportable in v1. This equipment/bodyweight variant uses the same reviewed movement-pattern contribution model as Dumbbell Lateral Lunge."
+    },
+    {
+      "canonical_name": "Bodyweight Curtsy Lunge",
+      "measurement_type": "BODYWEIGHT_REPS",
+      "primary_muscle_group": "GLUTES",
+      "workout_type": "BODYWEIGHT",
+      "volume_eligible": true,
+      "set_quality_mode": "BODYWEIGHT_REPS",
+      "mapping_confidence": "MEDIUM",
+      "review_flag": true,
+      "contributions": [
+        {
+          "muscle_group": "GLUTES",
+          "role": "DIRECT",
+          "weight": 1
+        },
+        {
+          "muscle_group": "QUADS",
+          "role": "INDIRECT",
+          "weight": 0.5
+        }
+      ],
+      "rationale": "Curtsy-lunge pattern directly loads glutes with meaningful quadriceps contribution; frontal/transverse-plane emphasis varies by step path. This equipment/bodyweight variant uses the same reviewed movement-pattern contribution model as Dumbbell Curtsy Lunge."
+    },
+    {
+      "canonical_name": "Reverse Crunch",
+      "measurement_type": "BODYWEIGHT_REPS",
+      "primary_muscle_group": "CORE",
+      "workout_type": "BODYWEIGHT",
+      "volume_eligible": true,
+      "set_quality_mode": "BODYWEIGHT_REPS",
+      "mapping_confidence": "HIGH",
+      "review_flag": false,
+      "contributions": [
+        {
+          "muscle_group": "CORE",
+          "role": "DIRECT",
+          "weight": 1
+        }
+      ],
+      "rationale": "Trunk-flexion/anti-extension bodyweight or loaded pattern directly trains the reportable CORE group. This equipment/bodyweight variant uses the same reviewed movement-pattern contribution model as Crunch."
+    },
+    {
+      "canonical_name": "V-Up",
+      "measurement_type": "BODYWEIGHT_REPS",
+      "primary_muscle_group": "CORE",
+      "workout_type": "BODYWEIGHT",
+      "volume_eligible": true,
+      "set_quality_mode": "BODYWEIGHT_REPS",
+      "mapping_confidence": "HIGH",
+      "review_flag": false,
+      "contributions": [
+        {
+          "muscle_group": "CORE",
+          "role": "DIRECT",
+          "weight": 1
+        }
+      ],
+      "rationale": "Trunk-flexion/anti-extension bodyweight or loaded pattern directly trains the reportable CORE group. This equipment/bodyweight variant uses the same reviewed movement-pattern contribution model as Sit-Up."
+    },
+    {
+      "canonical_name": "Lying Leg Raise",
+      "measurement_type": "BODYWEIGHT_REPS",
+      "primary_muscle_group": "CORE",
+      "workout_type": "BODYWEIGHT",
+      "volume_eligible": true,
+      "set_quality_mode": "BODYWEIGHT_REPS",
+      "mapping_confidence": "HIGH",
+      "review_flag": false,
+      "contributions": [
+        {
+          "muscle_group": "CORE",
+          "role": "DIRECT",
+          "weight": 1
+        }
+      ],
+      "rationale": "Trunk-flexion/anti-extension bodyweight or loaded pattern directly trains the reportable CORE group. This equipment/bodyweight variant uses the same reviewed movement-pattern contribution model as Hanging Leg Raise."
+    },
+    {
+      "canonical_name": "Dragon Flag",
+      "measurement_type": "BODYWEIGHT_REPS",
+      "primary_muscle_group": "CORE",
+      "workout_type": "BODYWEIGHT",
+      "volume_eligible": true,
+      "set_quality_mode": "BODYWEIGHT_REPS",
+      "mapping_confidence": "HIGH",
+      "review_flag": false,
+      "contributions": [
+        {
+          "muscle_group": "CORE",
+          "role": "DIRECT",
+          "weight": 1
+        }
+      ],
+      "rationale": "Trunk-flexion/anti-extension bodyweight or loaded pattern directly trains the reportable CORE group. This equipment/bodyweight variant uses the same reviewed movement-pattern contribution model as Hanging Leg Raise."
+    },
+    {
+      "canonical_name": "Archer Push-Up",
+      "measurement_type": "BODYWEIGHT_REPS",
+      "primary_muscle_group": "CHEST",
+      "workout_type": "BODYWEIGHT",
+      "volume_eligible": true,
+      "set_quality_mode": "BODYWEIGHT_REPS",
+      "mapping_confidence": "HIGH",
+      "review_flag": false,
+      "contributions": [
+        {
+          "muscle_group": "CHEST",
+          "role": "DIRECT",
+          "weight": 1
+        },
+        {
+          "muscle_group": "SHOULDERS",
+          "role": "INDIRECT",
+          "weight": 0.5
+        },
+        {
+          "muscle_group": "TRICEPS",
+          "role": "INDIRECT",
+          "weight": 0.5
+        }
+      ],
+      "rationale": "Press/push-up pattern directly trains chest with meaningful triceps and anterior-shoulder contribution. This equipment/bodyweight variant uses the same reviewed movement-pattern contribution model as Push-Up."
+    },
+    {
+      "canonical_name": "One-Arm Push-Up",
+      "measurement_type": "BODYWEIGHT_REPS",
+      "primary_muscle_group": "CHEST",
+      "workout_type": "BODYWEIGHT",
+      "volume_eligible": true,
+      "set_quality_mode": "BODYWEIGHT_REPS",
+      "mapping_confidence": "HIGH",
+      "review_flag": false,
+      "contributions": [
+        {
+          "muscle_group": "CHEST",
+          "role": "DIRECT",
+          "weight": 1
+        },
+        {
+          "muscle_group": "SHOULDERS",
+          "role": "INDIRECT",
+          "weight": 0.5
+        },
+        {
+          "muscle_group": "TRICEPS",
+          "role": "INDIRECT",
+          "weight": 0.5
+        }
+      ],
+      "rationale": "Press/push-up pattern directly trains chest with meaningful triceps and anterior-shoulder contribution. This equipment/bodyweight variant uses the same reviewed movement-pattern contribution model as Push-Up."
+    },
+    {
+      "canonical_name": "Archer Pull-Up",
+      "measurement_type": "BODYWEIGHT_REPS",
+      "primary_muscle_group": "BACK",
+      "workout_type": "BODYWEIGHT",
+      "volume_eligible": true,
+      "set_quality_mode": "BODYWEIGHT_REPS",
+      "mapping_confidence": "HIGH",
+      "review_flag": false,
+      "contributions": [
+        {
+          "muscle_group": "BACK",
+          "role": "DIRECT",
+          "weight": 1
+        },
+        {
+          "muscle_group": "BICEPS",
+          "role": "INDIRECT",
+          "weight": 0.5
+        }
+      ],
+      "rationale": "Row/pull pattern directly trains back with meaningful elbow-flexor contribution. This equipment/bodyweight variant uses the same reviewed movement-pattern contribution model as Pull-Up."
+    },
+    {
+      "canonical_name": "Sternum Pull-Up",
+      "measurement_type": "BODYWEIGHT_REPS",
+      "primary_muscle_group": "BACK",
+      "workout_type": "BODYWEIGHT",
+      "volume_eligible": true,
+      "set_quality_mode": "BODYWEIGHT_REPS",
+      "mapping_confidence": "HIGH",
+      "review_flag": false,
+      "contributions": [
+        {
+          "muscle_group": "BACK",
+          "role": "DIRECT",
+          "weight": 1
+        },
+        {
+          "muscle_group": "BICEPS",
+          "role": "INDIRECT",
+          "weight": 0.5
+        }
+      ],
+      "rationale": "Row/pull pattern directly trains back with meaningful elbow-flexor contribution. This equipment/bodyweight variant uses the same reviewed movement-pattern contribution model as Pull-Up."
+    },
+    {
+      "canonical_name": "Hindu Push-Up",
+      "measurement_type": "BODYWEIGHT_REPS",
+      "primary_muscle_group": "CHEST",
+      "workout_type": "BODYWEIGHT",
+      "volume_eligible": true,
+      "set_quality_mode": "BODYWEIGHT_REPS",
+      "mapping_confidence": "HIGH",
+      "review_flag": false,
+      "contributions": [
+        {
+          "muscle_group": "CHEST",
+          "role": "DIRECT",
+          "weight": 1
+        },
+        {
+          "muscle_group": "SHOULDERS",
+          "role": "INDIRECT",
+          "weight": 0.5
+        },
+        {
+          "muscle_group": "TRICEPS",
+          "role": "INDIRECT",
+          "weight": 0.5
+        }
+      ],
+      "rationale": "Press/push-up pattern directly trains chest with meaningful triceps and anterior-shoulder contribution. This equipment/bodyweight variant uses the same reviewed movement-pattern contribution model as Push-Up."
+    },
+    {
+      "canonical_name": "Pseudo Planche Push-Up",
+      "measurement_type": "BODYWEIGHT_REPS",
+      "primary_muscle_group": "SHOULDERS",
+      "workout_type": "BODYWEIGHT",
+      "volume_eligible": true,
+      "set_quality_mode": "BODYWEIGHT_REPS",
+      "mapping_confidence": "HIGH",
+      "review_flag": false,
+      "contributions": [
+        {
+          "muscle_group": "SHOULDERS",
+          "role": "DIRECT",
+          "weight": 1
+        },
+        {
+          "muscle_group": "TRICEPS",
+          "role": "INDIRECT",
+          "weight": 0.5
+        }
+      ],
+      "rationale": "Overhead/vertical press directly trains shoulders with meaningful triceps contribution. This equipment/bodyweight variant uses the same reviewed movement-pattern contribution model as Pike Push-Up."
+    },
+    {
+      "canonical_name": "Bench Dip",
+      "measurement_type": "BODYWEIGHT_REPS",
+      "primary_muscle_group": "TRICEPS",
+      "workout_type": "BODYWEIGHT",
+      "volume_eligible": true,
+      "set_quality_mode": "BODYWEIGHT_REPS",
+      "mapping_confidence": "MEDIUM",
+      "review_flag": true,
+      "contributions": [
+        {
+          "muscle_group": "CHEST",
+          "role": "INDIRECT",
+          "weight": 0.5
+        },
+        {
+          "muscle_group": "SHOULDERS",
+          "role": "INDIRECT",
+          "weight": 0.5
+        },
+        {
+          "muscle_group": "TRICEPS",
+          "role": "DIRECT",
+          "weight": 1
+        }
+      ],
+      "rationale": "Triceps-emphasized compound press directly trains triceps with meaningful chest and anterior-shoulder contribution. This equipment/bodyweight variant uses the same reviewed movement-pattern contribution model as Dip."
+    },
+    {
+      "canonical_name": "Step-Down",
+      "measurement_type": "BODYWEIGHT_REPS",
+      "primary_muscle_group": "QUADS",
+      "workout_type": "BODYWEIGHT",
+      "volume_eligible": true,
+      "set_quality_mode": "BODYWEIGHT_REPS",
+      "mapping_confidence": "MEDIUM",
+      "review_flag": true,
+      "contributions": [
+        {
+          "muscle_group": "QUADS",
+          "role": "DIRECT",
+          "weight": 1
+        },
+        {
+          "muscle_group": "GLUTES",
+          "role": "DIRECT",
+          "weight": 1
+        }
+      ],
+      "rationale": "Unilateral squat/lunge/step pattern meaningfully loads both knee and hip extensors; stance and depth shift emphasis. This equipment/bodyweight variant uses the same reviewed movement-pattern contribution model as Bodyweight Step-Up."
+    },
+    {
+      "canonical_name": "Single-Leg Sit-to-Stand",
+      "measurement_type": "BODYWEIGHT_REPS",
+      "primary_muscle_group": "QUADS",
+      "workout_type": "BODYWEIGHT",
+      "volume_eligible": true,
+      "set_quality_mode": "BODYWEIGHT_REPS",
+      "mapping_confidence": "MEDIUM",
+      "review_flag": true,
+      "contributions": [
+        {
+          "muscle_group": "QUADS",
+          "role": "DIRECT",
+          "weight": 1
+        },
+        {
+          "muscle_group": "GLUTES",
+          "role": "INDIRECT",
+          "weight": 0.5
+        }
+      ],
+      "rationale": "Squat/press pattern directly trains quadriceps with meaningful glute contribution; depth and stance affect the hip-extensor share. This equipment/bodyweight variant uses the same reviewed movement-pattern contribution model as Pistol Squat."
+    },
+    {
+      "canonical_name": "Frog Pump",
+      "measurement_type": "BODYWEIGHT_REPS",
+      "primary_muscle_group": "GLUTES",
+      "workout_type": "BODYWEIGHT",
+      "volume_eligible": true,
+      "set_quality_mode": "BODYWEIGHT_REPS",
+      "mapping_confidence": "MEDIUM",
+      "review_flag": true,
+      "contributions": [
+        {
+          "muscle_group": "GLUTES",
+          "role": "DIRECT",
+          "weight": 1
+        }
+      ],
+      "rationale": "Short-range externally rotated hip-extension pattern directly targets glutes; execution and loading position vary. This equipment/bodyweight variant uses the same reviewed movement-pattern contribution model as Dumbbell Frog Pump."
+    },
+    {
+      "canonical_name": "Donkey Kick",
+      "measurement_type": "BODYWEIGHT_REPS",
+      "primary_muscle_group": "GLUTES",
+      "workout_type": "BODYWEIGHT",
+      "volume_eligible": true,
+      "set_quality_mode": "BODYWEIGHT_REPS",
+      "mapping_confidence": "HIGH",
+      "review_flag": false,
+      "contributions": [
+        {
+          "muscle_group": "GLUTES",
+          "role": "DIRECT",
+          "weight": 1
+        }
+      ],
+      "rationale": "Hip-extension/glute-focused pattern directly trains glutes. This equipment/bodyweight variant uses the same reviewed movement-pattern contribution model as Machine Glute Kickback."
+    },
+    {
+      "canonical_name": "Fire Hydrant",
+      "measurement_type": "BODYWEIGHT_REPS",
+      "primary_muscle_group": "GLUTES",
+      "workout_type": "BODYWEIGHT",
+      "volume_eligible": true,
+      "set_quality_mode": "BODYWEIGHT_REPS",
+      "mapping_confidence": "HIGH",
+      "review_flag": false,
+      "contributions": [
+        {
+          "muscle_group": "GLUTES",
+          "role": "DIRECT",
+          "weight": 1
+        }
+      ],
+      "rationale": "Hip-abduction resistance directly trains gluteal abductors. This equipment/bodyweight variant uses the same reviewed movement-pattern contribution model as Cable Hip Abduction."
+    },
+    {
+      "canonical_name": "Side-Lying Hip Abduction",
+      "measurement_type": "BODYWEIGHT_REPS",
+      "primary_muscle_group": "GLUTES",
+      "workout_type": "BODYWEIGHT",
+      "volume_eligible": true,
+      "set_quality_mode": "BODYWEIGHT_REPS",
+      "mapping_confidence": "HIGH",
+      "review_flag": false,
+      "contributions": [
+        {
+          "muscle_group": "GLUTES",
+          "role": "DIRECT",
+          "weight": 1
+        }
+      ],
+      "rationale": "Hip-abduction resistance directly trains gluteal abductors. This equipment/bodyweight variant uses the same reviewed movement-pattern contribution model as Cable Hip Abduction."
+    },
+    {
+      "canonical_name": "Single-Leg Hip Thrust",
+      "measurement_type": "BODYWEIGHT_REPS",
+      "primary_muscle_group": "GLUTES",
+      "workout_type": "BODYWEIGHT",
+      "volume_eligible": true,
+      "set_quality_mode": "BODYWEIGHT_REPS",
+      "mapping_confidence": "HIGH",
+      "review_flag": false,
+      "contributions": [
+        {
+          "muscle_group": "GLUTES",
+          "role": "DIRECT",
+          "weight": 1
+        }
+      ],
+      "rationale": "Hip-extension/glute-focused pattern directly trains glutes. This equipment/bodyweight variant uses the same reviewed movement-pattern contribution model as Bodyweight Hip Thrust."
+    },
+    {
+      "canonical_name": "Heel-Elevated Bodyweight Squat",
+      "measurement_type": "BODYWEIGHT_REPS",
+      "primary_muscle_group": "QUADS",
+      "workout_type": "BODYWEIGHT",
+      "volume_eligible": true,
+      "set_quality_mode": "BODYWEIGHT_REPS",
+      "mapping_confidence": "MEDIUM",
+      "review_flag": true,
+      "contributions": [
+        {
+          "muscle_group": "QUADS",
+          "role": "DIRECT",
+          "weight": 1
+        },
+        {
+          "muscle_group": "GLUTES",
+          "role": "INDIRECT",
+          "weight": 0.5
+        }
+      ],
+      "rationale": "Squat/press pattern directly trains quadriceps with meaningful glute contribution; depth and stance affect the hip-extensor share. This equipment/bodyweight variant uses the same reviewed movement-pattern contribution model as Bodyweight Squat."
+    },
+    {
+      "canonical_name": "Kettlebell Bulgarian Split Squat",
+      "measurement_type": "WEIGHT_REPS",
+      "primary_muscle_group": "QUADS",
+      "workout_type": "KETTLEBELL",
+      "volume_eligible": true,
+      "set_quality_mode": "WEIGHT_EPLEY",
+      "mapping_confidence": "MEDIUM",
+      "review_flag": true,
+      "contributions": [
+        {
+          "muscle_group": "QUADS",
+          "role": "DIRECT",
+          "weight": 1
+        },
+        {
+          "muscle_group": "GLUTES",
+          "role": "DIRECT",
+          "weight": 1
+        }
+      ],
+      "rationale": "Unilateral squat/lunge/step pattern meaningfully loads both knee and hip extensors; stance and depth shift emphasis. This equipment/bodyweight variant uses the same reviewed movement-pattern contribution model as Dumbbell Bulgarian Split Squat."
+    },
+    {
+      "canonical_name": "Kettlebell Reverse Lunge",
+      "measurement_type": "WEIGHT_REPS",
+      "primary_muscle_group": "QUADS",
+      "workout_type": "KETTLEBELL",
+      "volume_eligible": true,
+      "set_quality_mode": "WEIGHT_EPLEY",
+      "mapping_confidence": "MEDIUM",
+      "review_flag": true,
+      "contributions": [
+        {
+          "muscle_group": "QUADS",
+          "role": "DIRECT",
+          "weight": 1
+        },
+        {
+          "muscle_group": "GLUTES",
+          "role": "DIRECT",
+          "weight": 1
+        }
+      ],
+      "rationale": "Unilateral squat/lunge/step pattern meaningfully loads both knee and hip extensors; stance and depth shift emphasis. This equipment/bodyweight variant uses the same reviewed movement-pattern contribution model as Dumbbell Reverse Lunge."
+    },
+    {
+      "canonical_name": "Kettlebell Walking Lunge",
+      "measurement_type": "WEIGHT_REPS",
+      "primary_muscle_group": "QUADS",
+      "workout_type": "KETTLEBELL",
+      "volume_eligible": true,
+      "set_quality_mode": "WEIGHT_EPLEY",
+      "mapping_confidence": "MEDIUM",
+      "review_flag": true,
+      "contributions": [
+        {
+          "muscle_group": "QUADS",
+          "role": "DIRECT",
+          "weight": 1
+        },
+        {
+          "muscle_group": "GLUTES",
+          "role": "DIRECT",
+          "weight": 1
+        }
+      ],
+      "rationale": "Unilateral squat/lunge/step pattern meaningfully loads both knee and hip extensors; stance and depth shift emphasis. This equipment/bodyweight variant uses the same reviewed movement-pattern contribution model as Dumbbell Walking Lunge."
+    },
+    {
+      "canonical_name": "Kettlebell Curtsy Lunge",
+      "measurement_type": "WEIGHT_REPS",
+      "primary_muscle_group": "GLUTES",
+      "workout_type": "KETTLEBELL",
+      "volume_eligible": true,
+      "set_quality_mode": "WEIGHT_EPLEY",
+      "mapping_confidence": "MEDIUM",
+      "review_flag": true,
+      "contributions": [
+        {
+          "muscle_group": "GLUTES",
+          "role": "DIRECT",
+          "weight": 1
+        },
+        {
+          "muscle_group": "QUADS",
+          "role": "INDIRECT",
+          "weight": 0.5
+        }
+      ],
+      "rationale": "Curtsy-lunge pattern directly loads glutes with meaningful quadriceps contribution; frontal/transverse-plane emphasis varies by step path. This equipment/bodyweight variant uses the same reviewed movement-pattern contribution model as Dumbbell Curtsy Lunge."
+    },
+    {
+      "canonical_name": "Kettlebell Lateral Lunge",
+      "measurement_type": "WEIGHT_REPS",
+      "primary_muscle_group": "QUADS",
+      "workout_type": "KETTLEBELL",
+      "volume_eligible": true,
+      "set_quality_mode": "WEIGHT_EPLEY",
+      "mapping_confidence": "MEDIUM",
+      "review_flag": true,
+      "contributions": [
+        {
+          "muscle_group": "QUADS",
+          "role": "DIRECT",
+          "weight": 1
+        },
+        {
+          "muscle_group": "GLUTES",
+          "role": "DIRECT",
+          "weight": 1
+        }
+      ],
+      "rationale": "Lateral-lunge pattern directly loads quadriceps and glutes; substantial adductor contribution is not separately reportable in v1. This equipment/bodyweight variant uses the same reviewed movement-pattern contribution model as Dumbbell Lateral Lunge."
+    },
+    {
+      "canonical_name": "Kettlebell Sumo Squat",
+      "measurement_type": "WEIGHT_REPS",
+      "primary_muscle_group": "QUADS",
+      "workout_type": "KETTLEBELL",
+      "volume_eligible": true,
+      "set_quality_mode": "WEIGHT_EPLEY",
+      "mapping_confidence": "MEDIUM",
+      "review_flag": true,
+      "contributions": [
+        {
+          "muscle_group": "QUADS",
+          "role": "DIRECT",
+          "weight": 1
+        },
+        {
+          "muscle_group": "GLUTES",
+          "role": "DIRECT",
+          "weight": 1
+        }
+      ],
+      "rationale": "Wide-stance squat directly trains quadriceps and glutes; substantial adductor contribution is not separately reportable in v1. This equipment/bodyweight variant uses the same reviewed movement-pattern contribution model as Dumbbell Sumo Squat."
+    },
+    {
+      "canonical_name": "Double Kettlebell Romanian Deadlift",
+      "measurement_type": "WEIGHT_REPS",
+      "primary_muscle_group": "HAMSTRINGS",
+      "workout_type": "KETTLEBELL",
+      "volume_eligible": true,
+      "set_quality_mode": "WEIGHT_EPLEY",
+      "mapping_confidence": "MEDIUM",
+      "review_flag": true,
+      "contributions": [
+        {
+          "muscle_group": "BACK",
+          "role": "INDIRECT",
+          "weight": 0.5
+        },
+        {
+          "muscle_group": "HAMSTRINGS",
+          "role": "DIRECT",
+          "weight": 1
+        },
+        {
+          "muscle_group": "GLUTES",
+          "role": "DIRECT",
+          "weight": 1
+        }
+      ],
+      "rationale": "Loaded hip hinge directly trains hamstrings and glutes, with meaningful erector/back contribution; execution affects emphasis. This equipment/bodyweight variant uses the same reviewed movement-pattern contribution model as Kettlebell Romanian Deadlift."
+    },
+    {
+      "canonical_name": "Double Kettlebell Deadlift",
+      "measurement_type": "WEIGHT_REPS",
+      "primary_muscle_group": "HAMSTRINGS",
+      "workout_type": "KETTLEBELL",
+      "volume_eligible": true,
+      "set_quality_mode": "WEIGHT_EPLEY",
+      "mapping_confidence": "MEDIUM",
+      "review_flag": true,
+      "contributions": [
+        {
+          "muscle_group": "BACK",
+          "role": "INDIRECT",
+          "weight": 0.5
+        },
+        {
+          "muscle_group": "QUADS",
+          "role": "INDIRECT",
+          "weight": 0.5
+        },
+        {
+          "muscle_group": "HAMSTRINGS",
+          "role": "INDIRECT",
+          "weight": 0.5
+        },
+        {
+          "muscle_group": "GLUTES",
+          "role": "DIRECT",
+          "weight": 1
+        }
+      ],
+      "rationale": "Deadlift-family compound; glutes are direct with meaningful erector/back and hamstring involvement, and most floor-start variants also load quadriceps. Technique changes emphasis. This equipment/bodyweight variant uses the same reviewed movement-pattern contribution model as Kettlebell Deadlift."
+    },
+    {
+      "canonical_name": "Double Kettlebell Strict Press",
+      "measurement_type": "WEIGHT_REPS",
+      "primary_muscle_group": "SHOULDERS",
+      "workout_type": "KETTLEBELL",
+      "volume_eligible": true,
+      "set_quality_mode": "WEIGHT_EPLEY",
+      "mapping_confidence": "HIGH",
+      "review_flag": false,
+      "contributions": [
+        {
+          "muscle_group": "SHOULDERS",
+          "role": "DIRECT",
+          "weight": 1
+        },
+        {
+          "muscle_group": "TRICEPS",
+          "role": "INDIRECT",
+          "weight": 0.5
+        }
+      ],
+      "rationale": "Overhead/vertical press directly trains shoulders with meaningful triceps contribution. This equipment/bodyweight variant uses the same reviewed movement-pattern contribution model as Kettlebell Strict Press."
+    },
+    {
+      "canonical_name": "Double Kettlebell Bent-Over Row",
+      "measurement_type": "WEIGHT_REPS",
+      "primary_muscle_group": "BACK",
+      "workout_type": "KETTLEBELL",
+      "volume_eligible": true,
+      "set_quality_mode": "WEIGHT_EPLEY",
+      "mapping_confidence": "HIGH",
+      "review_flag": false,
+      "contributions": [
+        {
+          "muscle_group": "BACK",
+          "role": "DIRECT",
+          "weight": 1
+        },
+        {
+          "muscle_group": "BICEPS",
+          "role": "INDIRECT",
+          "weight": 0.5
+        }
+      ],
+      "rationale": "Row/pull pattern directly trains back with meaningful elbow-flexor contribution. This equipment/bodyweight variant uses the same reviewed movement-pattern contribution model as Kettlebell Bent-Over Row."
+    },
+    {
+      "canonical_name": "Kettlebell Biceps Curl",
+      "measurement_type": "WEIGHT_REPS",
+      "primary_muscle_group": "BICEPS",
+      "workout_type": "KETTLEBELL",
+      "volume_eligible": true,
+      "set_quality_mode": "WEIGHT_EPLEY",
+      "mapping_confidence": "HIGH",
+      "review_flag": false,
+      "contributions": [
+        {
+          "muscle_group": "BICEPS",
+          "role": "DIRECT",
+          "weight": 1
+        }
+      ],
+      "rationale": "Elbow-flexion isolation directly trains biceps. This equipment/bodyweight variant uses the same reviewed movement-pattern contribution model as Dumbbell Biceps Curl."
+    },
+    {
+      "canonical_name": "Kettlebell Triceps Extension",
+      "measurement_type": "WEIGHT_REPS",
+      "primary_muscle_group": "TRICEPS",
+      "workout_type": "KETTLEBELL",
+      "volume_eligible": true,
+      "set_quality_mode": "WEIGHT_EPLEY",
+      "mapping_confidence": "HIGH",
+      "review_flag": false,
+      "contributions": [
+        {
+          "muscle_group": "TRICEPS",
+          "role": "DIRECT",
+          "weight": 1
+        }
+      ],
+      "rationale": "Elbow-extension isolation directly trains triceps. This equipment/bodyweight variant uses the same reviewed movement-pattern contribution model as Dumbbell Triceps Extension."
+    },
+    {
+      "canonical_name": "Kettlebell Calf Raise",
+      "measurement_type": "WEIGHT_REPS",
+      "primary_muscle_group": "CALVES",
+      "workout_type": "KETTLEBELL",
+      "volume_eligible": true,
+      "set_quality_mode": "WEIGHT_EPLEY",
+      "mapping_confidence": "HIGH",
+      "review_flag": false,
+      "contributions": [
+        {
+          "muscle_group": "CALVES",
+          "role": "DIRECT",
+          "weight": 1
+        }
+      ],
+      "rationale": "Dynamic plantar-flexion resistance directly trains the calf complex. This equipment/bodyweight variant uses the same reviewed movement-pattern contribution model as Dumbbell Calf Raise."
+    },
+    {
+      "canonical_name": "Kettlebell Step-Up",
+      "measurement_type": "WEIGHT_REPS",
+      "primary_muscle_group": "QUADS",
+      "workout_type": "KETTLEBELL",
+      "volume_eligible": true,
+      "set_quality_mode": "WEIGHT_EPLEY",
+      "mapping_confidence": "MEDIUM",
+      "review_flag": true,
+      "contributions": [
+        {
+          "muscle_group": "QUADS",
+          "role": "DIRECT",
+          "weight": 1
+        },
+        {
+          "muscle_group": "GLUTES",
+          "role": "DIRECT",
+          "weight": 1
+        }
+      ],
+      "rationale": "Unilateral squat/lunge/step pattern meaningfully loads both knee and hip extensors; stance and depth shift emphasis. This equipment/bodyweight variant uses the same reviewed movement-pattern contribution model as Dumbbell Step-Up."
+    },
+    {
+      "canonical_name": "Kettlebell Hip Thrust",
+      "measurement_type": "WEIGHT_REPS",
+      "primary_muscle_group": "GLUTES",
+      "workout_type": "KETTLEBELL",
+      "volume_eligible": true,
+      "set_quality_mode": "WEIGHT_EPLEY",
+      "mapping_confidence": "HIGH",
+      "review_flag": false,
+      "contributions": [
+        {
+          "muscle_group": "GLUTES",
+          "role": "DIRECT",
+          "weight": 1
+        }
+      ],
+      "rationale": "Loaded hip-extension thrust pattern directly trains the glutes. This equipment/bodyweight variant uses the same reviewed movement-pattern contribution model as Dumbbell Hip Thrust."
+    },
+    {
+      "canonical_name": "Kettlebell Glute Bridge",
+      "measurement_type": "WEIGHT_REPS",
+      "primary_muscle_group": "GLUTES",
+      "workout_type": "KETTLEBELL",
+      "volume_eligible": true,
+      "set_quality_mode": "WEIGHT_EPLEY",
+      "mapping_confidence": "HIGH",
+      "review_flag": false,
+      "contributions": [
+        {
+          "muscle_group": "GLUTES",
+          "role": "DIRECT",
+          "weight": 1
+        }
+      ],
+      "rationale": "Loaded bridge/hip-extension pattern directly trains the glutes. This equipment/bodyweight variant uses the same reviewed movement-pattern contribution model as Dumbbell Glute Bridge."
+    },
+    {
+      "canonical_name": "Kettlebell Lateral Raise",
+      "measurement_type": "WEIGHT_REPS",
+      "primary_muscle_group": "SHOULDERS",
+      "workout_type": "KETTLEBELL",
+      "volume_eligible": true,
+      "set_quality_mode": "WEIGHT_EPLEY",
+      "mapping_confidence": "HIGH",
+      "review_flag": false,
+      "contributions": [
+        {
+          "muscle_group": "SHOULDERS",
+          "role": "DIRECT",
+          "weight": 1
+        }
+      ],
+      "rationale": "Shoulder-raise isolation directly trains deltoid musculature. This equipment/bodyweight variant uses the same reviewed movement-pattern contribution model as Dumbbell Lateral Raise."
+    },
+    {
+      "canonical_name": "Kettlebell Front Raise",
+      "measurement_type": "WEIGHT_REPS",
+      "primary_muscle_group": "SHOULDERS",
+      "workout_type": "KETTLEBELL",
+      "volume_eligible": true,
+      "set_quality_mode": "WEIGHT_EPLEY",
+      "mapping_confidence": "HIGH",
+      "review_flag": false,
+      "contributions": [
+        {
+          "muscle_group": "SHOULDERS",
+          "role": "DIRECT",
+          "weight": 1
+        }
+      ],
+      "rationale": "Shoulder-raise isolation directly trains deltoid musculature. This equipment/bodyweight variant uses the same reviewed movement-pattern contribution model as Dumbbell Front Raise."
+    },
+    {
+      "canonical_name": "Kettlebell Shrug",
+      "measurement_type": "WEIGHT_REPS",
+      "primary_muscle_group": "BACK",
+      "workout_type": "KETTLEBELL",
+      "volume_eligible": true,
+      "set_quality_mode": "WEIGHT_EPLEY",
+      "mapping_confidence": "HIGH",
+      "review_flag": false,
+      "contributions": [
+        {
+          "muscle_group": "BACK",
+          "role": "DIRECT",
+          "weight": 1
+        }
+      ],
+      "rationale": "Shrug pattern directly loads upper trapezius/back; incidental grip is not separately credited in v1. This equipment/bodyweight variant uses the same reviewed movement-pattern contribution model as Dumbbell Shrug."
+    },
+    {
+      "canonical_name": "Kettlebell Chest-Supported Row",
+      "measurement_type": "WEIGHT_REPS",
+      "primary_muscle_group": "BACK",
+      "workout_type": "KETTLEBELL",
+      "volume_eligible": true,
+      "set_quality_mode": "WEIGHT_EPLEY",
+      "mapping_confidence": "HIGH",
+      "review_flag": false,
+      "contributions": [
+        {
+          "muscle_group": "BACK",
+          "role": "DIRECT",
+          "weight": 1
+        },
+        {
+          "muscle_group": "BICEPS",
+          "role": "INDIRECT",
+          "weight": 0.5
+        }
+      ],
+      "rationale": "Row/pull pattern directly trains back with meaningful elbow-flexor contribution. This equipment/bodyweight variant uses the same reviewed movement-pattern contribution model as Chest-Supported Dumbbell Row."
+    },
+    {
+      "canonical_name": "Landmine Split Squat",
+      "measurement_type": "WEIGHT_REPS",
+      "primary_muscle_group": "QUADS",
+      "workout_type": "LANDMINE",
+      "volume_eligible": true,
+      "set_quality_mode": "WEIGHT_EPLEY",
+      "mapping_confidence": "HIGH",
+      "review_flag": false,
+      "contributions": [
+        {
+          "muscle_group": "QUADS",
+          "role": "DIRECT",
+          "weight": 1
+        },
+        {
+          "muscle_group": "GLUTES",
+          "role": "INDIRECT",
+          "weight": 0.5
+        }
+      ],
+      "rationale": "Split-squat pattern directly trains quadriceps with meaningful glute contribution. This equipment/bodyweight variant uses the same reviewed movement-pattern contribution model as Dumbbell Split Squat."
+    },
+    {
+      "canonical_name": "Landmine Bulgarian Split Squat",
+      "measurement_type": "WEIGHT_REPS",
+      "primary_muscle_group": "QUADS",
+      "workout_type": "LANDMINE",
+      "volume_eligible": true,
+      "set_quality_mode": "WEIGHT_EPLEY",
+      "mapping_confidence": "MEDIUM",
+      "review_flag": true,
+      "contributions": [
+        {
+          "muscle_group": "QUADS",
+          "role": "DIRECT",
+          "weight": 1
+        },
+        {
+          "muscle_group": "GLUTES",
+          "role": "DIRECT",
+          "weight": 1
+        }
+      ],
+      "rationale": "Unilateral squat/lunge/step pattern meaningfully loads both knee and hip extensors; stance and depth shift emphasis. This equipment/bodyweight variant uses the same reviewed movement-pattern contribution model as Dumbbell Bulgarian Split Squat."
+    },
+    {
+      "canonical_name": "Landmine Lateral Lunge",
+      "measurement_type": "WEIGHT_REPS",
+      "primary_muscle_group": "QUADS",
+      "workout_type": "LANDMINE",
+      "volume_eligible": true,
+      "set_quality_mode": "WEIGHT_EPLEY",
+      "mapping_confidence": "MEDIUM",
+      "review_flag": true,
+      "contributions": [
+        {
+          "muscle_group": "QUADS",
+          "role": "DIRECT",
+          "weight": 1
+        },
+        {
+          "muscle_group": "GLUTES",
+          "role": "DIRECT",
+          "weight": 1
+        }
+      ],
+      "rationale": "Lateral-lunge pattern directly loads quadriceps and glutes; substantial adductor contribution is not separately reportable in v1. This equipment/bodyweight variant uses the same reviewed movement-pattern contribution model as Dumbbell Lateral Lunge."
+    },
+    {
+      "canonical_name": "Landmine Curtsy Lunge",
+      "measurement_type": "WEIGHT_REPS",
+      "primary_muscle_group": "GLUTES",
+      "workout_type": "LANDMINE",
+      "volume_eligible": true,
+      "set_quality_mode": "WEIGHT_EPLEY",
+      "mapping_confidence": "MEDIUM",
+      "review_flag": true,
+      "contributions": [
+        {
+          "muscle_group": "GLUTES",
+          "role": "DIRECT",
+          "weight": 1
+        },
+        {
+          "muscle_group": "QUADS",
+          "role": "INDIRECT",
+          "weight": 0.5
+        }
+      ],
+      "rationale": "Curtsy-lunge pattern directly loads glutes with meaningful quadriceps contribution; frontal/transverse-plane emphasis varies by step path. This equipment/bodyweight variant uses the same reviewed movement-pattern contribution model as Dumbbell Curtsy Lunge."
+    },
+    {
+      "canonical_name": "Landmine Calf Raise",
+      "measurement_type": "WEIGHT_REPS",
+      "primary_muscle_group": "CALVES",
+      "workout_type": "LANDMINE",
+      "volume_eligible": true,
+      "set_quality_mode": "WEIGHT_EPLEY",
+      "mapping_confidence": "HIGH",
+      "review_flag": false,
+      "contributions": [
+        {
+          "muscle_group": "CALVES",
+          "role": "DIRECT",
+          "weight": 1
+        }
+      ],
+      "rationale": "Dynamic plantar-flexion resistance directly trains the calf complex. This equipment/bodyweight variant uses the same reviewed movement-pattern contribution model as Barbell Calf Raise."
+    },
+    {
+      "canonical_name": "Landmine Single-Leg Romanian Deadlift",
+      "measurement_type": "WEIGHT_REPS",
+      "primary_muscle_group": "HAMSTRINGS",
+      "workout_type": "LANDMINE",
+      "volume_eligible": true,
+      "set_quality_mode": "WEIGHT_EPLEY",
+      "mapping_confidence": "MEDIUM",
+      "review_flag": true,
+      "contributions": [
+        {
+          "muscle_group": "BACK",
+          "role": "INDIRECT",
+          "weight": 0.5
+        },
+        {
+          "muscle_group": "HAMSTRINGS",
+          "role": "DIRECT",
+          "weight": 1
+        },
+        {
+          "muscle_group": "GLUTES",
+          "role": "DIRECT",
+          "weight": 1
+        }
+      ],
+      "rationale": "Loaded hip hinge directly trains hamstrings and glutes, with meaningful erector/back contribution; execution affects emphasis. This equipment/bodyweight variant uses the same reviewed movement-pattern contribution model as Dumbbell Single-Leg Romanian Deadlift."
+    },
+    {
+      "canonical_name": "Landmine High Row",
+      "measurement_type": "WEIGHT_REPS",
+      "primary_muscle_group": "BACK",
+      "workout_type": "LANDMINE",
+      "volume_eligible": true,
+      "set_quality_mode": "WEIGHT_EPLEY",
+      "mapping_confidence": "MEDIUM",
+      "review_flag": true,
+      "contributions": [
+        {
+          "muscle_group": "BACK",
+          "role": "DIRECT",
+          "weight": 1
+        },
+        {
+          "muscle_group": "SHOULDERS",
+          "role": "DIRECT",
+          "weight": 1
+        },
+        {
+          "muscle_group": "BICEPS",
+          "role": "INDIRECT",
+          "weight": 0.5
+        }
+      ],
+      "rationale": "High-row pattern directly loads upper back and rear-deltoid shoulder musculature with meaningful elbow-flexor contribution; execution angle changes emphasis. This equipment/bodyweight variant uses the same reviewed movement-pattern contribution model as Dumbbell High Row."
+    },
+    {
+      "canonical_name": "Glute Ham Raise",
+      "measurement_type": "BODYWEIGHT_REPS",
+      "primary_muscle_group": "HAMSTRINGS",
+      "workout_type": "SPECIALTY",
+      "volume_eligible": true,
+      "set_quality_mode": "BODYWEIGHT_REPS",
+      "mapping_confidence": "HIGH",
+      "review_flag": false,
+      "contributions": [
+        {
+          "muscle_group": "HAMSTRINGS",
+          "role": "DIRECT",
+          "weight": 1
+        }
+      ],
+      "rationale": "Knee-flexion hamstring pattern directly trains hamstrings. This equipment/bodyweight variant uses the same reviewed movement-pattern contribution model as Nordic Hamstring Curl."
+    },
+    {
+      "canonical_name": "45-Degree Hip Extension",
+      "measurement_type": "BODYWEIGHT_REPS",
+      "primary_muscle_group": "GLUTES",
+      "workout_type": "SPECIALTY",
+      "volume_eligible": true,
+      "set_quality_mode": "BODYWEIGHT_REPS",
+      "mapping_confidence": "MEDIUM",
+      "review_flag": true,
+      "contributions": [
+        {
+          "muscle_group": "BACK",
+          "role": "INDIRECT",
+          "weight": 0.5
+        },
+        {
+          "muscle_group": "HAMSTRINGS",
+          "role": "INDIRECT",
+          "weight": 0.5
+        },
+        {
+          "muscle_group": "GLUTES",
+          "role": "DIRECT",
+          "weight": 1
+        }
+      ],
+      "rationale": "Hip-extension pattern; glutes are direct with meaningful hamstring and erector involvement. This equipment/bodyweight variant uses the same reviewed movement-pattern contribution model as GHD Hip Extension."
+    },
+    {
+      "canonical_name": "Single-Leg 45-Degree Hip Extension",
+      "measurement_type": "BODYWEIGHT_REPS",
+      "primary_muscle_group": "GLUTES",
+      "workout_type": "SPECIALTY",
+      "volume_eligible": true,
+      "set_quality_mode": "BODYWEIGHT_REPS",
+      "mapping_confidence": "MEDIUM",
+      "review_flag": true,
+      "contributions": [
+        {
+          "muscle_group": "BACK",
+          "role": "INDIRECT",
+          "weight": 0.5
+        },
+        {
+          "muscle_group": "HAMSTRINGS",
+          "role": "INDIRECT",
+          "weight": 0.5
+        },
+        {
+          "muscle_group": "GLUTES",
+          "role": "DIRECT",
+          "weight": 1
+        }
+      ],
+      "rationale": "Hip-extension pattern; glutes are direct with meaningful hamstring and erector involvement. This equipment/bodyweight variant uses the same reviewed movement-pattern contribution model as GHD Hip Extension."
     }
   ]
 }

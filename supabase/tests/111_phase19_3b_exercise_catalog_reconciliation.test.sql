@@ -2,8 +2,11 @@ begin;
 create extension if not exists pgtap with schema extensions;
 select plan(10);
 
-select ok((select count(*) from public.exercise_catalog where active=true) >= 568,
-  'reconciled catalogue contains at least 568 active exercises');
+select results_eq(
+  $$select count(*)::bigint from public.exercise_catalog where active=true$$,
+  array[568::bigint],
+  'reconciled catalogue contains exactly 568 active exercises'
+);
 select results_eq(
   $$select count(*)::bigint from public.exercise_catalog where active=true and created_at is not null and canonical_name in ('Egyptian Cable Lateral Raise','Bodyweight Curtsy Lunge','Barbell Curtsy Lunge','Kettlebell Curtsy Lunge','Landmine Curtsy Lunge')$$,
   array[5::bigint], 'representative expansion exercises are present');

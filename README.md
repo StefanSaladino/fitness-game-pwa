@@ -6,7 +6,7 @@ The active product scoring model is `lifting-v1`. Lifting is primary; cardio is 
 
 ## Current development status
 
-Phase 19 is complete in **Top Set v1.1.0**. Muscle Volume Intelligence, performance-aware recommendations, completed-period reports, frozen monthly source snapshots, private latest-PDF retention, hosted end-to-end proof, capacity/security validation, and the final browser release gate are complete. **Phase 20 - Personalized Training Programs - is next.**
+Phase 19 remains complete in **Top Set v1.1.1**. v1.1.1 is a maintenance release that reconciles the 568-exercise catalogue, adds explicit per-exercise bodyweight load-mode capabilities, and refreshes generated database types, the Phase 19 exercise matrix, validation, and documentation. Muscle Volume Intelligence, performance-aware recommendations, completed-period reports, frozen monthly source snapshots, private latest-PDF retention, hosted end-to-end proof, and capacity/security validation remain unchanged. **Phase 20 - Personalized Training Programs - is next.**
 
 The completed Phase 19 release includes completed-period Reports UI, idempotent frozen monthly source snapshots, deterministic development QA, real `pdf-lib` PDF generation, hosted workout-to-report E2E validation, verified private latest-PDF retention with short-lived signed downloads, and measured capacity/security validation. Long-term structured snapshots plus latest-only PDF retention remain the shipped retention contract; destructive workout-history cleanup is deferred.
 

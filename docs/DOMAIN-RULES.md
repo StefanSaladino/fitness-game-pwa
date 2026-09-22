@@ -82,7 +82,15 @@ Relative improvement tiers:
 
 ### Bodyweight exercises
 
-For unweighted `BODYWEIGHT_REPS`, compare best completed working-set reps against the prior best:
+`BODYWEIGHT_REPS` is the rep-based measurement family; it does not imply that every exercise supports every loading mode. Canonical load capabilities live on `exercise_catalog`:
+
+- `supports_added_weight = true` allows an `ADDED_WEIGHT` set with a positive external load;
+- `supports_assisted = true` allows an `ASSISTED` set with a positive measurable assistance load;
+- unsupported modes must be hidden by the client and rejected by the guarded save boundary.
+
+Plain `BODYWEIGHT` remains available for `BODYWEIGHT_REPS`. In v1.1.1, rep-based plyometrics support bodyweight and optional added load but do not expose Assisted mode. Measurable assistance is reserved for movements where a counterweight/assistance load has a meaningful interpretation, such as the supported pull-up/dip family.
+
+For plain unweighted `BODYWEIGHT_REPS`, compare best completed working-set reps against the prior best:
 
 - no improvement: 0 XP
 - +1 rep: +5 XP

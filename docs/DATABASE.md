@@ -39,10 +39,12 @@ Do not restore assumptions that a user has one group or a group has a fixed size
 
 Core lifting persistence is built around:
 
-- `exercise_catalog`: canonical exercise identity and measurement type;
+- `exercise_catalog`: canonical exercise identity, measurement type, picker taxonomy, aliases, and bodyweight load capabilities;
 - `workout_sessions`: lifecycle/category/timing/scoring-date context;
 - `workout_exercises`: ordered canonical exercises in a workout;
 - `workout_sets`: ordered per-exercise logical sets with independent weight/reps/type/completion data.
+
+For `BODYWEIGHT_REPS`, `exercise_catalog.supports_added_weight` and `exercise_catalog.supports_assisted` are canonical exercise capabilities, not user preferences. The set editor only exposes supported modes and `save_lifting_workout_set` enforces the same contract server-side. Plain bodyweight remains the base mode; an external load is accepted only when the corresponding capability is enabled. Rep-based plyometrics intentionally support optional added load but not Assisted mode.
 
 Set and exercise mutations that require protection are performed through authenticated RPC/guarded mutation boundaries rather than unrestricted browser table writes.
 
@@ -113,11 +115,11 @@ The Phase 19.4 foundation is implemented and provides versioned persistence for 
 
 The implementation preserves the key boundary that the browser cannot author an authoritative "effective set" value on `workout_sets`. Completed workout rows remain evidence; the methodology-versioned database model derives the interpretation.
 
-#### Phase 19.3 / 19.3A matrix handoff
+#### Phase 19.3 / 19.3A / 19.3B matrix handoff
 
-The reviewed source artifact remains `supabase/release/phase19-3-exercise-muscle-matrix.json`. Phase 19.3A refreshed that same artifact after the dumbbell-heavy catalogue expansion, and Phase 19.4 consumes the explicit reviewed decision set rather than deriving mappings from `exercise_catalog.primary_muscle_group`, exercise-name pattern matching, or a runtime fallback.
+The reviewed source artifact remains `supabase/release/phase19-3-exercise-muscle-matrix.json`. Phase 19.3A expanded the original matrix with the dumbbell-heavy catalogue work; Phase 19.3B reconciles the later catalogue expansion and rep-based plyometric tracking model back into the same versioned artifact. Phase 19.4 and later read models consume this explicit reviewed decision set rather than deriving mappings from `exercise_catalog.primary_muscle_group`, exercise-name pattern matching, or a runtime fallback.
 
-The persisted `muscle-volume-v1` dataset resolves canonical exercise identity by `exercise_catalog.id`, preserves explicit exclusions/deferred cases, and retains contribution/review metadata needed by the derived read model. The reviewed Phase 19.3A snapshot is **464 total active canonical exercises / 326 eligible / 138 excluded-deferred**.
+The persisted `muscle-volume-v1` dataset resolves canonical exercise identity by `exercise_catalog.id`, preserves explicit exclusions/deferred cases, and retains contribution/review metadata needed by the derived read model. The locked Phase 19.3B snapshot is **568 total active canonical exercises / 418 eligible / 150 excluded-deferred / 781 exercise-to-muscle contribution rows**. All 35 plyometric catalogue entries remain excluded from hypertrophy contribution scoring; 34 are rep-trackable `BODYWEIGHT_REPS` movements and Jump Rope remains duration-based.
 
 ### Phase 19.5 personalized set-quality calculation
 
