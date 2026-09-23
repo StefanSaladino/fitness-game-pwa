@@ -26,7 +26,7 @@ describe('training report QA fixtures', () => {
       'MONITOR',
       'NO_ACTION',
     ]));
-    expect(report.muscles).toHaveLength(12);
+    expect(report.muscles).toHaveLength(17);
     expect(
       report.muscles.some(
         (muscle) => muscle.snapshot.muscleGroup === 'FOREARMS_GRIP',

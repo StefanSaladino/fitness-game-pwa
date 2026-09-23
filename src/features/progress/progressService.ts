@@ -1,6 +1,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { getSupabaseClient } from '../../lib/supabase';
 import {
+  ALL_MUSCLE_VOLUME_MUSCLE_GROUPS,
   MUSCLE_VOLUME_MUSCLE_GROUPS,
   type ExerciseProgressHistoryEntry,
   type ExerciseProgressMeasurementType,
@@ -112,7 +113,7 @@ function requiredNumber(value: number | string): number {
 }
 
 function muscleGroup(value: string): MuscleVolumeMuscleGroup {
-  if ((MUSCLE_VOLUME_MUSCLE_GROUPS as readonly string[]).includes(value)) {
+  if ((ALL_MUSCLE_VOLUME_MUSCLE_GROUPS as readonly string[]).includes(value)) {
     return value as MuscleVolumeMuscleGroup;
   }
   throw new Error(`Unexpected muscle-volume muscle group: ${value}`);

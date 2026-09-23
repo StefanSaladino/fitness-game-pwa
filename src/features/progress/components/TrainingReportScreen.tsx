@@ -33,7 +33,14 @@ interface TrainingReportScreenProps {
 }
 
 const MUSCLE_LABELS: Record<string, string> = {
-  CHEST: 'Chest', BACK: 'Back', SHOULDERS: 'Shoulders', BICEPS: 'Biceps',
+  CHEST: 'Chest',
+  LATS: 'Lats',
+  UPPER_BACK: 'Upper back',
+  TRAPS: 'Traps',
+  SPINAL_ERECTORS: 'Spinal erectors',
+  ANTERIOR_DELTS: 'Front delts',
+  LATERAL_DELTS: 'Side delts',
+  POSTERIOR_DELTS: 'Rear delts', BACK: 'Back', SHOULDERS: 'Shoulders', BICEPS: 'Biceps',
   TRICEPS: 'Triceps', QUADS: 'Quads', HAMSTRINGS: 'Hamstrings', GLUTES: 'Glutes',
   CALVES: 'Calves', FOREARMS_GRIP: 'Forearms & grip', CORE: 'Core', OBLIQUES: 'Obliques', NECK: 'Neck',
 };

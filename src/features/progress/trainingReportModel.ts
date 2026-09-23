@@ -140,9 +140,24 @@ export interface BuildCompletedTrainingReportInput {
 }
 
 export const TRAINING_REPORT_MUSCLE_GROUPS = MUSCLE_VOLUME_MUSCLE_GROUPS.filter(
-  (muscleGroup): muscleGroup is Exclude<MuscleVolumeMuscleGroup, 'NECK'> =>
+  (muscleGroup): muscleGroup is Exclude<(typeof MUSCLE_VOLUME_MUSCLE_GROUPS)[number], 'NECK'> =>
     muscleGroup !== 'NECK',
 );
+
+export const LEGACY_TRAINING_REPORT_MUSCLE_GROUPS = [
+  'CHEST',
+  'BACK',
+  'SHOULDERS',
+  'BICEPS',
+  'TRICEPS',
+  'QUADS',
+  'HAMSTRINGS',
+  'GLUTES',
+  'CALVES',
+  'FOREARMS_GRIP',
+  'CORE',
+  'OBLIQUES',
+] as const satisfies readonly MuscleVolumeMuscleGroup[];
 
 function parseIsoDate(value: string): number {
   const parsed = Date.parse(`${value}T00:00:00Z`);
@@ -501,7 +516,12 @@ export function buildCompletedTrainingReport(
     input.muscleVolume.map((muscle) => [muscle.muscleGroup, muscle] as const),
   );
 
-  const muscles = TRAINING_REPORT_MUSCLE_GROUPS
+  const reportMuscleGroups: readonly MuscleVolumeMuscleGroup[] =
+    methodologyVersions[0] === 'muscle-volume-v1'
+      ? LEGACY_TRAINING_REPORT_MUSCLE_GROUPS
+      : TRAINING_REPORT_MUSCLE_GROUPS;
+
+  const muscles = reportMuscleGroups
     .map((muscleGroup) => muscleByGroup.get(muscleGroup))
     .filter(
       (muscle): muscle is TrainingReportMusclePeriodInput =>

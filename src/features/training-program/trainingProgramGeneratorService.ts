@@ -48,8 +48,13 @@ function muscleGroup(value: string): TrainingProgramMuscleGroup {
   if (
     [
       'CHEST',
-      'BACK',
-      'SHOULDERS',
+      'LATS',
+      'UPPER_BACK',
+      'TRAPS',
+      'SPINAL_ERECTORS',
+      'ANTERIOR_DELTS',
+      'LATERAL_DELTS',
+      'POSTERIOR_DELTS',
       'BICEPS',
       'TRICEPS',
       'QUADS',
@@ -130,12 +135,20 @@ export function createTrainingProgramGeneratorService(
 
       const volumeSignals: TrainingProgramVolumeSignal[] = recommendationPayloads
         .filter((payload) => payload.windowDays === 7)
-        .map((payload) => ({
-          muscleGroup: muscleGroup(payload.muscleGroup),
-          action: payload.recommendation.action,
-          suggestedEffectiveSetChange:
-            payload.recommendation.suggestedEffectiveSetChange,
-        }));
+        .flatMap((payload) => {
+          try {
+            return [{
+              muscleGroup: muscleGroup(payload.muscleGroup),
+              action: payload.recommendation.action,
+              suggestedEffectiveSetChange:
+                payload.recommendation.suggestedEffectiveSetChange,
+            }];
+          } catch {
+            // During the staged v1 -> v2 rollout, legacy BACK/SHOULDERS
+            // recommendation rows are not valid Phase 20 granular targets.
+            return [];
+          }
+        });
 
       const history: TrainingProgramExerciseHistory[] = progressOverview.map(
         (entry) => ({
@@ -152,7 +165,7 @@ export function createTrainingProgramGeneratorService(
       );
 
       const methodologyVersion = volumeRows[0]?.methodologyVersion
-        ?? 'muscle-volume-v1';
+        ?? 'muscle-volume-v2';
 
       return generateTrainingProgram({
         profile: {

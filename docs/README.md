@@ -45,3 +45,5 @@ Once a phase is complete:
 - Do not commit temporary handoff files, patch manifests, hotfix READMEs, or scratch notes.
 - Remove superseded standalone notes once their lasting decision is represented in current docs or Git history.
 - Prefer primary vendor documentation over copied third-party instructions for external APIs/platform behavior.
+
+- `PHASE19-10-MUSCLE-VOLUME-V2.md` - granular back/deltoid volume methodology and safe v1-to-v2 rollout.

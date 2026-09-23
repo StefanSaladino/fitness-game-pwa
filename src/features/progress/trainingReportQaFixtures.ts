@@ -33,6 +33,13 @@ export const TRAINING_REPORT_QA_SCENARIOS: readonly TrainingReportQaScenario[] =
 
 const MUSCLE_NAMES: Record<MuscleVolumeMuscleGroup, string> = {
   CHEST: 'Chest',
+  LATS: 'Lats',
+  UPPER_BACK: 'Upper Back',
+  TRAPS: 'Traps',
+  SPINAL_ERECTORS: 'Spinal Erectors',
+  ANTERIOR_DELTS: 'Front Delts',
+  LATERAL_DELTS: 'Side Delts',
+  POSTERIOR_DELTS: 'Rear Delts',
   BACK: 'Back',
   SHOULDERS: 'Shoulders',
   BICEPS: 'Biceps',
@@ -414,7 +421,7 @@ function statesForScenario(
     }));
   }
 
-  return [
+  const mixed: QaMuscleState[] = [
     { action: 'ADD_VOLUME_CAUTIOUSLY', trend: 'PLATEAU' },
     { action: 'MAINTAIN', trend: 'IMPROVING' },
     { action: 'MONITOR', trend: 'VARIABLE' },
@@ -428,6 +435,10 @@ function statesForScenario(
     { action: 'MAINTAIN', trend: 'STABLE' },
     { action: 'MONITOR', trend: 'STABLE' },
   ];
+
+  return TRAINING_REPORT_MUSCLE_GROUPS.map(
+    (_, index) => mixed[index % mixed.length]!,
+  );
 }
 
 function statusCounts(

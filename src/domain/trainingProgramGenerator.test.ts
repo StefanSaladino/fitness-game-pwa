@@ -47,12 +47,15 @@ const candidates: TrainingProgramGeneratorCandidate[] = [
   candidate('bench', 'Barbell Bench Press', 'CHEST', 'BARBELL', 'WEIGHT_REPS', ['TRICEPS']),
   candidate('chest-press', 'Machine Chest Press', 'CHEST'),
   candidate('pushup', 'Push-Up', 'CHEST', 'BODYWEIGHT', 'BODYWEIGHT_REPS', ['TRICEPS']),
-  candidate('row', 'Barbell Row', 'BACK', 'BARBELL', 'WEIGHT_REPS', ['BICEPS']),
-  candidate('pulldown', 'Lat Pulldown', 'BACK'),
-  candidate('machine-row', 'Machine Seated Row', 'BACK'),
-  candidate('ohp', 'Overhead Press', 'SHOULDERS', 'BARBELL', 'WEIGHT_REPS', ['TRICEPS']),
-  candidate('machine-shoulder', 'Machine Shoulder Press', 'SHOULDERS'),
-  candidate('lateral', 'Machine Lateral Raise', 'SHOULDERS'),
+  candidate('row', 'Barbell Row', 'UPPER_BACK', 'BARBELL', 'WEIGHT_REPS', ['LATS', 'BICEPS']),
+  candidate('pulldown', 'Lat Pulldown', 'LATS'),
+  candidate('machine-row', 'Machine Seated Row', 'UPPER_BACK', 'MACHINE', 'WEIGHT_REPS', ['LATS']),
+  candidate('ohp', 'Overhead Press', 'ANTERIOR_DELTS', 'BARBELL', 'WEIGHT_REPS', ['LATERAL_DELTS', 'TRICEPS']),
+  candidate('machine-shoulder', 'Machine Shoulder Press', 'ANTERIOR_DELTS', 'MACHINE', 'WEIGHT_REPS', ['LATERAL_DELTS']),
+  candidate('lateral', 'Machine Lateral Raise', 'LATERAL_DELTS'),
+  candidate('rear-delt', 'Reverse Pec Deck Fly', 'POSTERIOR_DELTS'),
+  candidate('shrug', 'Machine Shrug', 'TRAPS'),
+  candidate('erector', 'Back Extension', 'SPINAL_ERECTORS', 'SPECIALTY'),
   candidate('curl', 'Machine Biceps Curl', 'BICEPS'),
   candidate('curl-2', 'Single-Arm Machine Biceps Curl', 'BICEPS'),
   candidate('triceps', 'Machine Triceps Extension', 'TRICEPS'),
@@ -78,7 +81,7 @@ function input(): GenerateTrainingProgramInput {
     volumeSignals: [],
     generatedAt: '2026-09-22T21:00:00.000Z',
     historyThroughDate: '2026-09-22',
-    muscleVolumeMethodologyVersion: 'muscle-volume-v1',
+    muscleVolumeMethodologyVersion: 'muscle-volume-v2',
   };
 }
 
@@ -100,7 +103,7 @@ describe('training-program-v1 generator', () => {
       profileRevision: 5,
       constraintRevision: 0,
       historyThroughDate: '2026-09-22',
-      muscleVolumeMethodologyVersion: 'muscle-volume-v1',
+      muscleVolumeMethodologyVersion: 'muscle-volume-v2',
     }));
   });
 

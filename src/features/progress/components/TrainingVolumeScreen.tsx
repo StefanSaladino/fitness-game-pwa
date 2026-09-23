@@ -49,8 +49,18 @@ interface TrainingVolumeScreenProps {
   onRetryRecommendations?: () => void;
 }
 
-const MUSCLE_META: Record<MuscleVolumeMuscleGroup, { label: string; icon: string }> = {
+const MUSCLE_META: Record<
+  MuscleVolumeMuscleGroup,
+  { label: string; icon: string; parentLabel?: string }
+> = {
   CHEST: { label: 'Chest', icon: chestIcon },
+  LATS: { label: 'Lats', icon: backIcon, parentLabel: 'Back' },
+  UPPER_BACK: { label: 'Upper back', icon: backIcon, parentLabel: 'Back' },
+  TRAPS: { label: 'Traps', icon: backIcon, parentLabel: 'Back' },
+  SPINAL_ERECTORS: { label: 'Spinal erectors', icon: backIcon, parentLabel: 'Back' },
+  ANTERIOR_DELTS: { label: 'Front delts', icon: shouldersIcon, parentLabel: 'Shoulders' },
+  LATERAL_DELTS: { label: 'Side delts', icon: shouldersIcon, parentLabel: 'Shoulders' },
+  POSTERIOR_DELTS: { label: 'Rear delts', icon: shouldersIcon, parentLabel: 'Shoulders' },
   BACK: { label: 'Back', icon: backIcon },
   SHOULDERS: { label: 'Shoulders', icon: shouldersIcon },
   BICEPS: { label: 'Biceps', icon: bicepsIcon },
@@ -65,9 +75,27 @@ const MUSCLE_META: Record<MuscleVolumeMuscleGroup, { label: string; icon: string
   NECK: { label: 'Neck', icon: neckIcon },
 };
 
-const VOLUME_TARGET_MUSCLE_GROUPS = MUSCLE_VOLUME_MUSCLE_GROUPS.filter(
-  (muscleGroup): muscleGroup is Exclude<MuscleVolumeMuscleGroup, 'NECK'> => muscleGroup !== 'NECK',
+const ACTIVE_VOLUME_TARGET_MUSCLE_GROUPS = MUSCLE_VOLUME_MUSCLE_GROUPS.filter(
+  (muscleGroup): muscleGroup is Exclude<
+    (typeof MUSCLE_VOLUME_MUSCLE_GROUPS)[number],
+    'NECK'
+  > => muscleGroup !== 'NECK',
 );
+
+const LEGACY_VOLUME_TARGET_MUSCLE_GROUPS: readonly MuscleVolumeMuscleGroup[] = [
+  'CHEST',
+  'BACK',
+  'SHOULDERS',
+  'BICEPS',
+  'TRICEPS',
+  'QUADS',
+  'HAMSTRINGS',
+  'GLUTES',
+  'CALVES',
+  'FOREARMS_GRIP',
+  'CORE',
+  'OBLIQUES',
+];
 
 const STATUS_LABELS: Record<MuscleVolumeStatus, string> = {
   NO_DATA: 'No data',
@@ -228,7 +256,7 @@ function MuscleVolumeCard({
             <img alt="" aria-hidden="true" src={meta.icon} />
           </div>
           <div>
-            <p>Muscle group</p>
+            <p>{meta.parentLabel ?? 'Muscle group'}</p>
             <h2>{meta.label}</h2>
           </div>
         </div>
@@ -348,13 +376,17 @@ export function TrainingVolumeScreen({
   const [windowDays, setWindowDays] = useState<MuscleVolumeWindowDays>(7);
 
   const visibleRows = useMemo(() => {
+    const windowRows = rows.filter((row) => row.windowDays === windowDays);
     const byMuscle = new Map(
-      rows
-        .filter((row) => row.windowDays === windowDays)
-        .map((row) => [row.muscleGroup, row] as const),
+      windowRows.map((row) => [row.muscleGroup, row] as const),
     );
 
-    return VOLUME_TARGET_MUSCLE_GROUPS
+    const methodologyVersion = windowRows[0]?.methodologyVersion;
+    const displayGroups = methodologyVersion === 'muscle-volume-v1'
+      ? LEGACY_VOLUME_TARGET_MUSCLE_GROUPS
+      : ACTIVE_VOLUME_TARGET_MUSCLE_GROUPS;
+
+    return displayGroups
       .map((muscleGroup) => byMuscle.get(muscleGroup))
       .filter((row): row is MuscleVolumeSummary => Boolean(row));
   }, [rows, windowDays]);
@@ -459,7 +491,7 @@ export function TrainingVolumeScreen({
                 <strong>
                   {firstRow ? `${formatWindowDate(firstRow.windowStart)} – ${formatWindowDate(firstRow.windowEnd)}` : '—'}
                 </strong>
-                <span>{firstRow?.methodologyVersion ?? 'muscle-volume-v1'}</span>
+                <span>{firstRow?.methodologyVersion ?? 'muscle-volume-v2'}</span>
               </div>
 
               <div className={styles.summaryStrip} aria-label="Volume target status summary">

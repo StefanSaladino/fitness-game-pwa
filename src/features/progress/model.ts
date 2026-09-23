@@ -58,8 +58,13 @@ export interface LiftingCalendarSummary {
 
 export const MUSCLE_VOLUME_MUSCLE_GROUPS = [
   'CHEST',
-  'BACK',
-  'SHOULDERS',
+  'LATS',
+  'UPPER_BACK',
+  'TRAPS',
+  'SPINAL_ERECTORS',
+  'ANTERIOR_DELTS',
+  'LATERAL_DELTS',
+  'POSTERIOR_DELTS',
   'BICEPS',
   'TRICEPS',
   'QUADS',
@@ -72,7 +77,23 @@ export const MUSCLE_VOLUME_MUSCLE_GROUPS = [
   'NECK',
 ] as const;
 
-export type MuscleVolumeMuscleGroup = typeof MUSCLE_VOLUME_MUSCLE_GROUPS[number];
+export const LEGACY_MUSCLE_VOLUME_MUSCLE_GROUPS = [
+  'BACK',
+  'SHOULDERS',
+] as const;
+
+export const ALL_MUSCLE_VOLUME_MUSCLE_GROUPS = [
+  ...MUSCLE_VOLUME_MUSCLE_GROUPS,
+  ...LEGACY_MUSCLE_VOLUME_MUSCLE_GROUPS,
+] as const;
+
+export type ActiveMuscleVolumeMuscleGroup =
+  typeof MUSCLE_VOLUME_MUSCLE_GROUPS[number];
+export type LegacyMuscleVolumeMuscleGroup =
+  typeof LEGACY_MUSCLE_VOLUME_MUSCLE_GROUPS[number];
+export type MuscleVolumeMuscleGroup =
+  | ActiveMuscleVolumeMuscleGroup
+  | LegacyMuscleVolumeMuscleGroup;
 export type MuscleVolumeWindowDays = 7 | 28;
 
 export type MuscleVolumeStatus =

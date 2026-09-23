@@ -23,8 +23,13 @@ function contributionMuscleGroup(value: unknown): TrainingProgramMuscleGroup {
     typeof value === 'string'
     && [
       'CHEST',
-      'BACK',
-      'SHOULDERS',
+      'LATS',
+      'UPPER_BACK',
+      'TRAPS',
+      'SPINAL_ERECTORS',
+      'ANTERIOR_DELTS',
+      'LATERAL_DELTS',
+      'POSTERIOR_DELTS',
       'BICEPS',
       'TRICEPS',
       'QUADS',

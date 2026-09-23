@@ -19,8 +19,13 @@ import type {
 
 export type TrainingProgramMuscleGroup =
   | 'CHEST'
-  | 'BACK'
-  | 'SHOULDERS'
+  | 'LATS'
+  | 'UPPER_BACK'
+  | 'TRAPS'
+  | 'SPINAL_ERECTORS'
+  | 'ANTERIOR_DELTS'
+  | 'LATERAL_DELTS'
+  | 'POSTERIOR_DELTS'
   | 'BICEPS'
   | 'TRICEPS'
   | 'QUADS'
@@ -127,236 +132,104 @@ const slot = (
 ): SessionSlot => ({ muscleGroup, compoundPreferred });
 
 const SPLITS: Record<number, SessionBlueprint[]> = {
-  1: [
-    {
-      title: 'Full Body',
-      slots: [
-        slot('QUADS', true),
-        slot('CHEST', true),
-        slot('BACK', true),
-        slot('HAMSTRINGS', true),
-        slot('SHOULDERS'),
-        slot('CORE'),
-      ],
-    },
-  ],
+  1: [{ title: 'Full Body', slots: [
+    slot('QUADS', true), slot('CHEST', true), slot('LATS', true),
+    slot('HAMSTRINGS', true), slot('UPPER_BACK'),
+    slot('LATERAL_DELTS'), slot('CORE'),
+  ] }],
   2: [
-    {
-      title: 'Full Body A',
-      slots: [
-        slot('QUADS', true),
-        slot('CHEST', true),
-        slot('BACK', true),
-        slot('HAMSTRINGS'),
-        slot('SHOULDERS'),
-        slot('CORE'),
-      ],
-    },
-    {
-      title: 'Full Body B',
-      slots: [
-        slot('GLUTES', true),
-        slot('BACK', true),
-        slot('CHEST', true),
-        slot('QUADS'),
-        slot('BICEPS'),
-        slot('TRICEPS'),
-      ],
-    },
+    { title: 'Full Body A', slots: [
+      slot('QUADS', true), slot('CHEST', true), slot('LATS', true),
+      slot('HAMSTRINGS'), slot('LATERAL_DELTS'), slot('CORE'),
+    ] },
+    { title: 'Full Body B', slots: [
+      slot('GLUTES', true), slot('UPPER_BACK', true), slot('CHEST', true),
+      slot('QUADS'), slot('POSTERIOR_DELTS'), slot('TRICEPS'),
+    ] },
   ],
   3: [
-    {
-      title: 'Full Body A',
-      slots: [
-        slot('QUADS', true),
-        slot('CHEST', true),
-        slot('BACK', true),
-        slot('HAMSTRINGS'),
-        slot('CORE'),
-      ],
-    },
-    {
-      title: 'Full Body B',
-      slots: [
-        slot('GLUTES', true),
-        slot('SHOULDERS', true),
-        slot('BACK', true),
-        slot('QUADS'),
-        slot('TRICEPS'),
-      ],
-    },
-    {
-      title: 'Full Body C',
-      slots: [
-        slot('HAMSTRINGS', true),
-        slot('CHEST', true),
-        slot('BACK', true),
-        slot('GLUTES'),
-        slot('BICEPS'),
-        slot('CORE'),
-      ],
-    },
+    { title: 'Full Body A', slots: [
+      slot('QUADS', true), slot('CHEST', true), slot('LATS', true),
+      slot('HAMSTRINGS'), slot('LATERAL_DELTS'), slot('CORE'),
+    ] },
+    { title: 'Full Body B', slots: [
+      slot('GLUTES', true), slot('ANTERIOR_DELTS', true),
+      slot('UPPER_BACK', true), slot('QUADS'), slot('TRICEPS'),
+      slot('TRAPS'),
+    ] },
+    { title: 'Full Body C', slots: [
+      slot('HAMSTRINGS', true), slot('CHEST', true), slot('LATS', true),
+      slot('GLUTES'), slot('POSTERIOR_DELTS'), slot('BICEPS'),
+      slot('SPINAL_ERECTORS'),
+    ] },
   ],
   4: [
-    {
-      title: 'Upper A',
-      slots: [
-        slot('CHEST', true),
-        slot('BACK', true),
-        slot('SHOULDERS', true),
-        slot('BACK'),
-        slot('BICEPS'),
-        slot('TRICEPS'),
-      ],
-    },
-    {
-      title: 'Lower A',
-      slots: [
-        slot('QUADS', true),
-        slot('HAMSTRINGS', true),
-        slot('GLUTES'),
-        slot('CALVES'),
-        slot('CORE'),
-      ],
-    },
-    {
-      title: 'Upper B',
-      slots: [
-        slot('BACK', true),
-        slot('CHEST', true),
-        slot('SHOULDERS'),
-        slot('CHEST'),
-        slot('BICEPS'),
-        slot('TRICEPS'),
-      ],
-    },
-    {
-      title: 'Lower B',
-      slots: [
-        slot('GLUTES', true),
-        slot('QUADS', true),
-        slot('HAMSTRINGS'),
-        slot('CALVES'),
-        slot('CORE'),
-      ],
-    },
+    { title: 'Upper A', slots: [
+      slot('CHEST', true), slot('LATS', true),
+      slot('ANTERIOR_DELTS', true), slot('UPPER_BACK'),
+      slot('BICEPS'), slot('TRICEPS'),
+    ] },
+    { title: 'Lower A', slots: [
+      slot('QUADS', true), slot('HAMSTRINGS', true), slot('GLUTES'),
+      slot('CALVES'), slot('CORE'),
+    ] },
+    { title: 'Upper B', slots: [
+      slot('UPPER_BACK', true), slot('CHEST', true),
+      slot('LATERAL_DELTS'), slot('LATS'),
+      slot('POSTERIOR_DELTS'), slot('TRAPS'), slot('BICEPS'),
+    ] },
+    { title: 'Lower B', slots: [
+      slot('GLUTES', true), slot('QUADS', true), slot('HAMSTRINGS'),
+      slot('SPINAL_ERECTORS'), slot('CALVES'), slot('CORE'),
+    ] },
   ],
   5: [
-    {
-      title: 'Upper',
-      slots: [
-        slot('CHEST', true),
-        slot('BACK', true),
-        slot('SHOULDERS'),
-        slot('BACK'),
-        slot('BICEPS'),
-        slot('TRICEPS'),
-      ],
-    },
-    {
-      title: 'Lower',
-      slots: [
-        slot('QUADS', true),
-        slot('HAMSTRINGS', true),
-        slot('GLUTES'),
-        slot('CALVES'),
-        slot('CORE'),
-      ],
-    },
-    {
-      title: 'Push',
-      slots: [
-        slot('CHEST', true),
-        slot('SHOULDERS', true),
-        slot('TRICEPS'),
-        slot('CHEST'),
-        slot('SHOULDERS'),
-      ],
-    },
-    {
-      title: 'Pull',
-      slots: [
-        slot('BACK', true),
-        slot('BACK'),
-        slot('BICEPS'),
-        slot('SHOULDERS'),
-        slot('FOREARMS_GRIP'),
-      ],
-    },
-    {
-      title: 'Legs',
-      slots: [
-        slot('QUADS', true),
-        slot('HAMSTRINGS', true),
-        slot('GLUTES'),
-        slot('QUADS'),
-        slot('CALVES'),
-        slot('CORE'),
-      ],
-    },
+    { title: 'Upper', slots: [
+      slot('CHEST', true), slot('LATS', true), slot('LATERAL_DELTS'),
+      slot('UPPER_BACK'), slot('BICEPS'), slot('TRICEPS'),
+    ] },
+    { title: 'Lower', slots: [
+      slot('QUADS', true), slot('HAMSTRINGS', true), slot('GLUTES'),
+      slot('SPINAL_ERECTORS'), slot('CALVES'), slot('CORE'),
+    ] },
+    { title: 'Push', slots: [
+      slot('CHEST', true), slot('ANTERIOR_DELTS', true), slot('TRICEPS'),
+      slot('CHEST'), slot('LATERAL_DELTS'),
+    ] },
+    { title: 'Pull', slots: [
+      slot('LATS', true), slot('UPPER_BACK'), slot('BICEPS'),
+      slot('POSTERIOR_DELTS'), slot('TRAPS'), slot('FOREARMS_GRIP'),
+    ] },
+    { title: 'Legs', slots: [
+      slot('QUADS', true), slot('HAMSTRINGS', true), slot('GLUTES'),
+      slot('QUADS'), slot('CALVES'), slot('CORE'),
+    ] },
   ],
   6: [
-    {
-      title: 'Push A',
-      slots: [
-        slot('CHEST', true),
-        slot('SHOULDERS', true),
-        slot('TRICEPS'),
-        slot('CHEST'),
-        slot('SHOULDERS'),
-      ],
-    },
-    {
-      title: 'Pull A',
-      slots: [
-        slot('BACK', true),
-        slot('BACK'),
-        slot('BICEPS'),
-        slot('SHOULDERS'),
-        slot('FOREARMS_GRIP'),
-      ],
-    },
-    {
-      title: 'Legs A',
-      slots: [
-        slot('QUADS', true),
-        slot('HAMSTRINGS', true),
-        slot('GLUTES'),
-        slot('CALVES'),
-        slot('CORE'),
-      ],
-    },
-    {
-      title: 'Push B',
-      slots: [
-        slot('SHOULDERS', true),
-        slot('CHEST', true),
-        slot('TRICEPS'),
-        slot('CHEST'),
-        slot('SHOULDERS'),
-      ],
-    },
-    {
-      title: 'Pull B',
-      slots: [
-        slot('BACK', true),
-        slot('BICEPS'),
-        slot('BACK'),
-        slot('FOREARMS_GRIP'),
-        slot('CORE'),
-      ],
-    },
-    {
-      title: 'Legs B',
-      slots: [
-        slot('GLUTES', true),
-        slot('QUADS', true),
-        slot('HAMSTRINGS'),
-        slot('QUADS'),
-        slot('CALVES'),
-        slot('CORE'),
-      ],
-    },
+    { title: 'Push A', slots: [
+      slot('CHEST', true), slot('ANTERIOR_DELTS', true), slot('TRICEPS'),
+      slot('CHEST'), slot('LATERAL_DELTS'),
+    ] },
+    { title: 'Pull A', slots: [
+      slot('LATS', true), slot('UPPER_BACK'), slot('BICEPS'),
+      slot('POSTERIOR_DELTS'), slot('FOREARMS_GRIP'),
+    ] },
+    { title: 'Legs A', slots: [
+      slot('QUADS', true), slot('HAMSTRINGS', true), slot('GLUTES'),
+      slot('CALVES'), slot('CORE'),
+    ] },
+    { title: 'Push B', slots: [
+      slot('ANTERIOR_DELTS', true), slot('CHEST', true), slot('TRICEPS'),
+      slot('CHEST'), slot('LATERAL_DELTS'),
+    ] },
+    { title: 'Pull B', slots: [
+      slot('UPPER_BACK', true), slot('LATS'), slot('BICEPS'),
+      slot('TRAPS'), slot('POSTERIOR_DELTS'), slot('CORE'),
+    ] },
+    { title: 'Legs B', slots: [
+      slot('GLUTES', true), slot('QUADS', true), slot('HAMSTRINGS'),
+      slot('SPINAL_ERECTORS'), slot('CALVES'), slot('CORE'),
+    ] },
   ],
 };
 
@@ -403,8 +276,13 @@ function integerInRange(value: number, min: number, max: number): boolean {
 function isMuscleGroup(value: string): value is TrainingProgramMuscleGroup {
   return [
     'CHEST',
-    'BACK',
-    'SHOULDERS',
+    'LATS',
+    'UPPER_BACK',
+    'TRAPS',
+    'SPINAL_ERECTORS',
+    'ANTERIOR_DELTS',
+    'LATERAL_DELTS',
+    'POSTERIOR_DELTS',
     'BICEPS',
     'TRICEPS',
     'QUADS',

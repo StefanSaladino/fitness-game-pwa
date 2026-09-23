@@ -1,5 +1,14 @@
 # Changelog
 
+## Unreleased - Phase 19.10 muscle-volume-v2
+
+- Kept BACK and SHOULDERS as human-facing exercise/workout categories while splitting volume analytics into lats, upper back, traps, spinal erectors, front delts, side delts, and rear delts.
+- Seeded muscle-volume-v2 as an inactive methodology so production remains on v1 until compatible client code is deployed.
+- Preserved all 568 exercise rules and 418 eligible exercises; v2 contains 825 reviewed contribution rows and no broad BACK/SHOULDERS volume rows.
+- Added independent subgroup benchmark calibration with conservative evidence-confidence labels.
+- Preserved legacy muscle-volume-v1 report readability.
+- Updated Phase 20 generator internals to consume granular muscle targets while retaining conventional Full Body, Upper/Lower, Push/Pull/Legs session names.
+
 ## Unreleased - Phase 20.2 personalized program generator
 
 - Added nullable explicit `STRENGTH` / `HYPERTROPHY` / `BALANCED` program goal and 1-6 requested sessions/week to the shared revisioned training-program profile.

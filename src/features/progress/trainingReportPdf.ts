@@ -27,6 +27,13 @@ const ACTIONABLE = new Set<VolumeRecommendationAction>([
 
 const MUSCLE_LABELS: Record<string, string> = {
   CHEST: 'Chest',
+  LATS: 'Lats',
+  UPPER_BACK: 'Upper back',
+  TRAPS: 'Traps',
+  SPINAL_ERECTORS: 'Spinal erectors',
+  ANTERIOR_DELTS: 'Front delts',
+  LATERAL_DELTS: 'Side delts',
+  POSTERIOR_DELTS: 'Rear delts',
   BACK: 'Back',
   SHOULDERS: 'Shoulders',
   BICEPS: 'Biceps',

@@ -23,7 +23,7 @@ const rows: MuscleVolumeSummary[] = [
     windowDays: 7,
     windowStart: '2026-09-13',
     windowEnd: '2026-09-19',
-    methodologyVersion: 'muscle-volume-v1',
+    methodologyVersion: 'muscle-volume-v2',
     effectiveSets: 9,
     directEffectiveSets: 8,
     indirectEffectiveSets: 1,
@@ -45,21 +45,21 @@ const rows: MuscleVolumeSummary[] = [
     lowOrProvisionalProportion: 0.055556,
   },
   {
-    muscleGroup: 'BACK',
+    muscleGroup: 'LATS',
     windowDays: 7,
     windowStart: '2026-09-13',
     windowEnd: '2026-09-19',
-    methodologyVersion: 'muscle-volume-v1',
+    methodologyVersion: 'muscle-volume-v2',
     effectiveSets: 14,
     directEffectiveSets: 12,
     indirectEffectiveSets: 2,
     eligibleLogicalSets: 10,
     eligibleStages: 14,
     reviewFlaggedLogicalSets: 0,
-    targetMin: 12,
-    targetMidpoint: 16,
-    targetMax: 20,
-    highReviewAbove: 22,
+    targetMin: 8,
+    targetMidpoint: 11,
+    targetMax: 14,
+    highReviewAbove: 18,
     volumeStatus: 'ON_TARGET',
     benchmarkEvidenceConfidence: 'MODERATE_HIGH',
     highConfidenceEffectiveSets: 14,
@@ -75,7 +75,7 @@ const rows: MuscleVolumeSummary[] = [
     windowDays: 7,
     windowStart: '2026-09-13',
     windowEnd: '2026-09-19',
-    methodologyVersion: 'muscle-volume-v1',
+    methodologyVersion: 'muscle-volume-v2',
     effectiveSets: 7,
     directEffectiveSets: 7,
     indirectEffectiveSets: 0,
@@ -101,7 +101,7 @@ const rows: MuscleVolumeSummary[] = [
     windowDays: 28,
     windowStart: '2026-08-23',
     windowEnd: '2026-09-19',
-    methodologyVersion: 'muscle-volume-v1',
+    methodologyVersion: 'muscle-volume-v2',
     effectiveSets: 44,
     directEffectiveSets: 40,
     indirectEffectiveSets: 4,
@@ -200,7 +200,7 @@ describe('TrainingVolumeScreen', () => {
 
     expect(screen.getByRole('heading', { name: 'Volume targets' })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Chest' })).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: 'Back' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Lats' })).toBeInTheDocument();
     expect(screen.queryByRole('heading', { name: 'Neck' })).not.toBeInTheDocument();
     expect(document.querySelectorAll('[data-muscle-volume-card] img')).toHaveLength(2);
 
@@ -208,7 +208,7 @@ describe('TrainingVolumeScreen', () => {
 
     expect(screen.getByRole('button', { name: '28 days' })).toHaveAttribute('aria-pressed', 'true');
     expect(screen.getByRole('heading', { name: 'Chest' })).toBeInTheDocument();
-    expect(screen.queryByRole('heading', { name: 'Back' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: 'Lats' })).not.toBeInTheDocument();
     expect(screen.getByText('44', { selector: 'strong' })).toBeInTheDocument();
   });
 
@@ -229,7 +229,7 @@ describe('TrainingVolumeScreen', () => {
     );
 
     const chestSummary = screen.getByLabelText('Chest volume details');
-    const backSummary = screen.getByLabelText('Back volume details');
+    const backSummary = screen.getByLabelText('Lats volume details');
     const chestDetails = chestSummary.closest('details');
     const backDetails = backSummary.closest('details');
 
