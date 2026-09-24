@@ -7,6 +7,11 @@ import {
   type TrainingProgramVolumeSignal,
 } from '../../domain/trainingProgramGenerator';
 import type { TrainingProgramDefinition } from '../../domain/trainingProgram';
+import type {
+  TrainingProgramDayOfWeek,
+  TrainingProgramDurationWeeks,
+  TrainingProgramRequestedSplit,
+} from '../../domain/trainingProgramSchedule';
 import {
   createExerciseProgressService,
   type ExerciseProgressService,
@@ -21,6 +26,10 @@ import {
   type TrainingProgramCandidateService,
 } from './trainingProgramCandidateService';
 import {
+  createTrainingProgramConstraintService,
+  type TrainingProgramConstraintService,
+} from './trainingProgramConstraintService';
+import {
   createTrainingProgramGeneratorProfileService,
   type TrainingProgramGeneratorProfileService,
 } from './trainingProgramGeneratorProfileService';
@@ -28,12 +37,17 @@ import {
 export interface TrainingProgramGeneratorServiceDependencies {
   profileService: TrainingProgramGeneratorProfileService;
   candidateService: TrainingProgramCandidateService;
+  constraintService: TrainingProgramConstraintService;
   progressService: ExerciseProgressService;
   performanceService: MusclePerformanceService;
 }
 
 export interface TrainingProgramGenerateRequest {
   userId: string;
+  durationWeeks: TrainingProgramDurationWeeks;
+  startDate: string;
+  trainingDays: TrainingProgramDayOfWeek[];
+  requestedSplit: TrainingProgramRequestedSplit;
   generatedAt: string;
   historyThroughDate: string;
 }
@@ -89,6 +103,8 @@ export function createTrainingProgramGeneratorService(
       ?? createTrainingProgramGeneratorProfileService(getClient()),
     candidateService: injected?.candidateService
       ?? createTrainingProgramCandidateService(getClient()),
+    constraintService: injected?.constraintService
+      ?? createTrainingProgramConstraintService(getClient()),
     progressService: injected?.progressService
       ?? createExerciseProgressService(getClient()),
     performanceService: injected?.performanceService
@@ -112,11 +128,13 @@ export function createTrainingProgramGeneratorService(
       }
 
       const [
+        constraints,
         candidates,
         progressOverview,
         volumeRows,
         performanceObservations,
       ] = await Promise.all([
+        dependencies.constraintService.load(),
         dependencies.candidateService.load(),
         dependencies.progressService.listOverview(),
         dependencies.progressService.loadMuscleVolume(
@@ -178,10 +196,14 @@ export function createTrainingProgramGeneratorService(
         candidates,
         history,
         volumeSignals,
+        constraints,
+        durationWeeks: request.durationWeeks,
+        startDate: request.startDate,
+        trainingDays: request.trainingDays,
+        requestedSplit: request.requestedSplit,
         generatedAt: request.generatedAt,
         historyThroughDate: request.historyThroughDate,
         muscleVolumeMethodologyVersion: methodologyVersion,
-        constraintRevision: 0,
       });
     },
   };

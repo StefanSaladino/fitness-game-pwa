@@ -1,6 +1,13 @@
 import { useMemo, useState, type CSSProperties } from 'react';
 import progressBanner from '../../../assets/fitness/top-set-progress-log.jpg';
 import backIcon from '../../../assets/muscle-groups/back.png';
+import frontDeltsIcon from '../../../assets/muscle-groups/front-delts.png';
+import latsIcon from '../../../assets/muscle-groups/lats.png';
+import rearDeltsIcon from '../../../assets/muscle-groups/rear-delts.png';
+import sideDeltsIcon from '../../../assets/muscle-groups/side-delts.png';
+import spinalErectorsIcon from '../../../assets/muscle-groups/spinal-erectors.png';
+import trapsIcon from '../../../assets/muscle-groups/traps.png';
+import upperBackIcon from '../../../assets/muscle-groups/upper-back.png';
 import bicepsIcon from '../../../assets/muscle-groups/biceps.png';
 import calvesIcon from '../../../assets/muscle-groups/calves.png';
 import chestIcon from '../../../assets/muscle-groups/chest.png';
@@ -51,28 +58,28 @@ interface TrainingVolumeScreenProps {
 
 const MUSCLE_META: Record<
   MuscleVolumeMuscleGroup,
-  { label: string; icon: string; parentLabel?: string }
+  { label: string; icon: string; categoryLabel: string }
 > = {
-  CHEST: { label: 'Chest', icon: chestIcon },
-  LATS: { label: 'Lats', icon: backIcon, parentLabel: 'Back' },
-  UPPER_BACK: { label: 'Upper back', icon: backIcon, parentLabel: 'Back' },
-  TRAPS: { label: 'Traps', icon: backIcon, parentLabel: 'Back' },
-  SPINAL_ERECTORS: { label: 'Spinal erectors', icon: backIcon, parentLabel: 'Back' },
-  ANTERIOR_DELTS: { label: 'Front delts', icon: shouldersIcon, parentLabel: 'Shoulders' },
-  LATERAL_DELTS: { label: 'Side delts', icon: shouldersIcon, parentLabel: 'Shoulders' },
-  POSTERIOR_DELTS: { label: 'Rear delts', icon: shouldersIcon, parentLabel: 'Shoulders' },
-  BACK: { label: 'Back', icon: backIcon },
-  SHOULDERS: { label: 'Shoulders', icon: shouldersIcon },
-  BICEPS: { label: 'Biceps', icon: bicepsIcon },
-  TRICEPS: { label: 'Triceps', icon: tricepsIcon },
-  QUADS: { label: 'Quads', icon: quadsIcon },
-  HAMSTRINGS: { label: 'Hamstrings', icon: hamstringsIcon },
-  GLUTES: { label: 'Glutes', icon: glutesIcon },
-  CALVES: { label: 'Calves', icon: calvesIcon },
-  FOREARMS_GRIP: { label: 'Forearms & grip', icon: forearmsGripIcon },
-  CORE: { label: 'Core', icon: coreIcon },
-  OBLIQUES: { label: 'Obliques', icon: obliquesIcon },
-  NECK: { label: 'Neck', icon: neckIcon },
+  CHEST: { label: 'Chest', icon: chestIcon, categoryLabel: 'Chest' },
+  LATS: { label: 'Lats', icon: latsIcon, categoryLabel: 'Back' },
+  UPPER_BACK: { label: 'Upper back', icon: upperBackIcon, categoryLabel: 'Back' },
+  TRAPS: { label: 'Traps', icon: trapsIcon, categoryLabel: 'Back' },
+  SPINAL_ERECTORS: { label: 'Spinal erectors', icon: spinalErectorsIcon, categoryLabel: 'Back' },
+  ANTERIOR_DELTS: { label: 'Front delts', icon: frontDeltsIcon, categoryLabel: 'Shoulders' },
+  LATERAL_DELTS: { label: 'Side delts', icon: sideDeltsIcon, categoryLabel: 'Shoulders' },
+  POSTERIOR_DELTS: { label: 'Rear delts', icon: rearDeltsIcon, categoryLabel: 'Shoulders' },
+  BACK: { label: 'Back', icon: backIcon, categoryLabel: 'Back' },
+  SHOULDERS: { label: 'Shoulders', icon: shouldersIcon, categoryLabel: 'Shoulders' },
+  BICEPS: { label: 'Biceps', icon: bicepsIcon, categoryLabel: 'Arms' },
+  TRICEPS: { label: 'Triceps', icon: tricepsIcon, categoryLabel: 'Arms' },
+  QUADS: { label: 'Quads', icon: quadsIcon, categoryLabel: 'Legs' },
+  HAMSTRINGS: { label: 'Hamstrings', icon: hamstringsIcon, categoryLabel: 'Legs' },
+  GLUTES: { label: 'Glutes', icon: glutesIcon, categoryLabel: 'Legs' },
+  CALVES: { label: 'Calves', icon: calvesIcon, categoryLabel: 'Legs' },
+  FOREARMS_GRIP: { label: 'Forearms & grip', icon: forearmsGripIcon, categoryLabel: 'Arms' },
+  CORE: { label: 'Core', icon: coreIcon, categoryLabel: 'Core' },
+  OBLIQUES: { label: 'Obliques', icon: obliquesIcon, categoryLabel: 'Core' },
+  NECK: { label: 'Neck', icon: neckIcon, categoryLabel: 'Neck' },
 };
 
 const ACTIVE_VOLUME_TARGET_MUSCLE_GROUPS = MUSCLE_VOLUME_MUSCLE_GROUPS.filter(
@@ -256,7 +263,7 @@ function MuscleVolumeCard({
             <img alt="" aria-hidden="true" src={meta.icon} />
           </div>
           <div>
-            <p>{meta.parentLabel ?? 'Muscle group'}</p>
+            <p>{meta.categoryLabel}</p>
             <h2>{meta.label}</h2>
           </div>
         </div>

@@ -1,7 +1,7 @@
 # Phase 20 — Personalized Training Programs
 
-Status: **20.2 IMPLEMENTED - hosted validation pending; 20.3 follows after closeout**
-Phase 20 adds structured, personalized four-week lifting programs while preserving Top Set's existing workout, scoring, Phase 19 analytics, recovery, and security boundaries. The program layer is a planning/template system, not a second workout engine.
+Status: **20.3A IMPLEMENTED - local validation pending; 20.4 persistence follows**
+Phase 20 adds structured, personalized four- or eight-week lifting programs while preserving Top Set's existing workout, scoring, Phase 19 analytics, recovery, and security boundaries. The program layer is a planning/template system, not a second workout engine.
 
 ## 20.0 contract
 
@@ -15,7 +15,7 @@ A generated program is a four-week training block that can begin on any date. In
 - Program sessions launch into the ordinary lifting workflow.
 - Workout/session/set history remains authoritative evidence.
 - `lifting-v1` remains authoritative for XP/scoring.
-- `muscle-volume-v1` remains authoritative for effective-volume interpretation.
+- `muscle-volume-v2` is the active development methodology for effective-volume interpretation.
 - Phase 19 performance/volume read models supply personalization signals instead of being reimplemented.
 - The existing preset start boundary caps one generated session at 8 exercises.
 - Live workout editing remains allowed; editing/skipping a session does not rewrite history to force plan compliance.
@@ -171,6 +171,82 @@ Phase 20.1 is complete when the persisted profile, RLS/RPC boundary, settings ed
 - Generated bodyweight work begins in plain `BODYWEIGHT` mode. Added/assisted loading is not inferred.
 - 20.2 output is a validated `training-program-v1` definition. Durable program persistence remains Phase 20.4.
 - Physical-limitation/exercise exclusions and substitutions remain Phase 20.3 and must be applied before persistence.
+
+## 20.3 implementation - constraints and substitution
+
+20.3 adds an independently revisioned per-user exercise-constraint snapshot.
+
+- `EXCLUDE` is hard and is applied before generator ranking.
+- `PREFER` is a bounded ranking signal only and never overrides equipment, logging support, volume eligibility, contribution role, or another hard exclusion.
+- reasons are limited to `PREFERENCE`, `PHYSICAL_LIMITATION`, `UNAVAILABLE`, and `OTHER`.
+- free-text diagnosis fields are not stored and unexpected payload properties are rejected.
+- physical-limitation intent is treated only as an exclusion request; Top Set does not infer diagnosis, rehabilitation, clearance, or medical safety.
+
+Generated prescriptions now retain:
+- granular `targetMuscleGroup` from `muscle-volume-v2`;
+- `targetContributionRole` (`DIRECT` or `INDIRECT`);
+- actual selection intent (`COMPOUND` or `ACCESSORY`).
+
+The deterministic substitution engine must preserve all three, plus measurement semantics and equipment compatibility. It also avoids occupied exercises, persisted hard exclusions, and temporary unavailable exercises. Added/assisted bodyweight substitutions must support the original load mode.
+
+If no compatible replacement exists, substitution returns no result rather than weakening a hard constraint.
+
+The generator now records the real independent constraint revision in its source snapshot. Primary exercise browsing taxonomy remains broad (`BACK`, `SHOULDERS`, etc.); granular Phase 19 groups are used only for analytics/programming intent.
+
+User-facing constraint and substitution controls remain deferred to the later Phase 20 UI slice.
+
+## 20.3A implementation - configuration and scheduling
+
+20.3A replaces the fixed four-week / implicit-split generator boundary with an explicit deterministic configuration contract.
+
+### Duration
+
+- `training-program-v1` supports exactly 4 or 8 weeks.
+- 4 weeks remains the default product choice, but generation receives the duration explicitly.
+- An 8-week program continues the same deterministic framework. 20.3A does not fabricate progression into weeks 5-8; adaptive progression remains Phase 20.5.
+- The generated session count is always `durationWeeks x sessionsPerWeek`.
+
+### Start date and weekdays
+
+- The user supplies a calendar `startDate` as `YYYY-MM-DD`.
+- The user selects exactly one distinct weekday for each requested weekly session.
+- Calendar dates are date-only values; timezone is used by the UI only to determine the users local today.
+- Program week 1 is the seven-day interval beginning on `startDate`.
+- The first planned workout is therefore the first selected training weekday on or after `startDate`.
+- Every seven-day program week contains exactly the requested session frequency.
+- Each planned workout stores an exact `scheduledDate`.
+- Missing a planned date does not silently shift future dates.
+
+### Split registry
+
+`AUTO` remains available, but it resolves to a named explicit split so the source snapshot is reproducible.
+
+Compatible explicit splits are:
+
+- 1 day: Full Body
+- 2 days: Full Body A/B; Upper/Lower
+- 3 days: Full Body A/B/C; Push/Pull/Legs; Upper/Lower/Full Body
+- 4 days: Upper/Lower x2; Push/Pull/Upper/Lower
+- 5 days: PPL/Upper/Lower; Upper/Lower/PPL
+- 6 days: PPL x2; Upper/Lower x3
+
+An incompatible requested split fails closed. The immutable source snapshot records both `requestedSplit` and `resolvedSplit`.
+
+### Planned versus actual execution
+
+A planned program workout remains guidance rather than workout history.
+
+- `PLANNED` and `MISSED` states have no workout-session id.
+- `COMPLETED_PROGRAMMED` links the planned workout to the ordinary Top Set workout session launched from it.
+- `COMPLETED_OWN_WORKOUT` also links the planned slot to an ordinary workout session while preserving that the user chose their own workout.
+- Actual workout exercises/sets remain authoritative for Phase 19 volume, history, E1RM/performance, PRs, XP, and future Phase 20.5 adaptation.
+- A planned template earns no training credit by itself.
+- No XP penalty is attached to doing an own workout or missing a planned workout.
+- 20.4 will persist the source-program / source-planned-workout lineage; 20.3A defines the domain invariant first.
+
+### Persistence boundary
+
+20.3A intentionally adds no database migration. Goal, frequency, and equipment remain reusable user-profile settings. Duration, dates, weekdays, and split describe one generated program instance and belong in the immutable program source/configuration snapshot that Phase 20.4 will persist.
 
 ## Evidence background
 

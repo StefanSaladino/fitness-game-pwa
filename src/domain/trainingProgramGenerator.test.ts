@@ -8,6 +8,25 @@ import {
 } from './trainingProgramGenerator';
 import { validateTrainingProgramDefinition } from './trainingProgram';
 
+function primaryGroupFor(
+  muscleGroup: TrainingProgramMuscleGroup,
+): string {
+  if (
+    muscleGroup === 'LATS'
+    || muscleGroup === 'UPPER_BACK'
+    || muscleGroup === 'TRAPS'
+    || muscleGroup === 'SPINAL_ERECTORS'
+  ) return 'BACK';
+
+  if (
+    muscleGroup === 'ANTERIOR_DELTS'
+    || muscleGroup === 'LATERAL_DELTS'
+    || muscleGroup === 'POSTERIOR_DELTS'
+  ) return 'SHOULDERS';
+
+  return muscleGroup;
+}
+
 function candidate(
   id: string,
   canonicalName: string,
@@ -20,7 +39,7 @@ function candidate(
     exerciseId: id,
     canonicalName,
     measurementType,
-    primaryMuscleGroup: muscleGroup,
+    primaryMuscleGroup: primaryGroupFor(muscleGroup),
     workoutType,
     supportsAddedWeight: measurementType === 'BODYWEIGHT_REPS',
     supportsAssisted: false,
@@ -79,6 +98,14 @@ function input(): GenerateTrainingProgramInput {
     candidates,
     history: [],
     volumeSignals: [],
+    constraints: {
+      revision: 0,
+      entries: [],
+    },
+    durationWeeks: 4,
+    startDate: '2026-09-24',
+    trainingDays: ['MONDAY', 'WEDNESDAY', 'FRIDAY', 'SATURDAY'],
+    requestedSplit: 'AUTO',
     generatedAt: '2026-09-22T21:00:00.000Z',
     historyThroughDate: '2026-09-22',
     muscleVolumeMethodologyVersion: 'muscle-volume-v2',
@@ -92,6 +119,21 @@ describe('training-program-v1 generator', () => {
 
     expect(first).toEqual(second);
     expect(first.workouts).toHaveLength(16);
+    expect(first.source).toEqual(expect.objectContaining({
+      durationWeeks: 4,
+      startDate: '2026-09-24',
+      trainingDays: ['MONDAY', 'WEDNESDAY', 'FRIDAY', 'SATURDAY'],
+      requestedSplit: 'AUTO',
+      resolvedSplit: 'UPPER_LOWER_X2',
+    }));
+    expect(first.workouts.slice(0, 4).map(
+      (workout) => workout.scheduledDate,
+    )).toEqual([
+      '2026-09-25',
+      '2026-09-26',
+      '2026-09-28',
+      '2026-09-30',
+    ]);
     expect(first.workouts.every((workout) => workout.exercises.length >= 4)).toBe(true);
     expect(validateTrainingProgramDefinition(first)).toEqual([]);
   });
@@ -105,6 +147,126 @@ describe('training-program-v1 generator', () => {
       historyThroughDate: '2026-09-22',
       muscleVolumeMethodologyVersion: 'muscle-volume-v2',
     }));
+  });
+
+  it('supports an eight-week program without fabricating progression', () => {
+    const data = input();
+    data.durationWeeks = 8;
+
+    const program = generateTrainingProgram(data);
+
+    expect(program.weeks).toBe(8);
+    expect(program.workouts).toHaveLength(32);
+    expect(program.workouts[0]?.exercises).toEqual(
+      program.workouts[16]?.exercises,
+    );
+    expect(validateTrainingProgramDefinition(program)).toEqual([]);
+  });
+
+  it('honours a compatible explicit split', () => {
+    const data = input();
+    data.requestedSplit = 'PUSH_PULL_UPPER_LOWER';
+
+    const program = generateTrainingProgram(data);
+
+    expect(program.source.requestedSplit).toBe('PUSH_PULL_UPPER_LOWER');
+    expect(program.source.resolvedSplit).toBe('PUSH_PULL_UPPER_LOWER');
+    expect(
+      program.workouts
+        .filter((workout) => workout.weekIndex === 0)
+        .map((workout) => workout.title),
+    ).toEqual(['Push', 'Pull', 'Upper', 'Lower']);
+  });
+
+  it('fails closed on incompatible split or weekday configuration', () => {
+    const invalidSplit = input();
+    invalidSplit.requestedSplit = 'PUSH_PULL_LEGS';
+
+    try {
+      generateTrainingProgram(invalidSplit);
+      throw new Error('Expected incompatible split generation to fail.');
+    } catch (error) {
+      expect(error).toEqual(expect.objectContaining({
+        code: 'INVALID_PROFILE',
+      }));
+    }
+
+    const invalidDays = input();
+    invalidDays.trainingDays = ['MONDAY', 'WEDNESDAY'];
+
+    try {
+      generateTrainingProgram(invalidDays);
+      throw new Error('Expected invalid weekday generation to fail.');
+    } catch (error) {
+      expect(error).toEqual(expect.objectContaining({
+        code: 'INVALID_PROFILE',
+      }));
+    }
+  });
+
+  it('records the real independent constraint revision', () => {
+    const data = input();
+    data.constraints = {
+      revision: 7,
+      entries: [],
+    };
+
+    const program = generateTrainingProgram(data);
+    expect(program.source.constraintRevision).toBe(7);
+  });
+
+  it('hard-excludes constrained exercises from every generated week', () => {
+    const data = input();
+    data.constraints = {
+      revision: 2,
+      entries: [{
+        exerciseId: 'row',
+        kind: 'EXCLUDE',
+        reason: 'PHYSICAL_LIMITATION',
+      }],
+    };
+
+    const program = generateTrainingProgram(data);
+    expect(
+      program.workouts
+        .flatMap((workout) => workout.exercises)
+        .map((exercise) => exercise.exerciseId),
+    ).not.toContain('row');
+  });
+
+  it('uses a compatible soft preference as a bounded ranking signal', () => {
+    const data = input();
+    data.constraints = {
+      revision: 1,
+      entries: [{
+        exerciseId: 'machine-row',
+        kind: 'PREFER',
+        reason: 'PREFERENCE',
+      }],
+    };
+
+    const program = generateTrainingProgram(data);
+    const firstUpper = program.workouts.find(
+      (workout) => workout.weekIndex === 0 && workout.sessionIndex === 0,
+    );
+    const upperBack = firstUpper?.exercises.find(
+      (exercise) => exercise.targetMuscleGroup === 'UPPER_BACK',
+    );
+
+    expect(upperBack?.exerciseId).toBe('machine-row');
+  });
+
+  it('records granular target and contribution-role selection metadata', () => {
+    const program = generateTrainingProgram(input());
+    expect(
+      program.workouts.flatMap((workout) => workout.exercises),
+    ).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        targetMuscleGroup: expect.any(String),
+        targetContributionRole: expect.stringMatching(/DIRECT|INDIRECT/),
+        selectionIntent: expect.stringMatching(/COMPOUND|ACCESSORY/),
+      }),
+    ]));
   });
 
   it('reuses an established same-exercise reference load when reps already match', () => {

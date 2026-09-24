@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import type { ExerciseProgressService } from '../progress/progressService';
 import type { MusclePerformanceService } from '../progress/musclePerformanceService';
 import type { TrainingProgramCandidateService } from './trainingProgramCandidateService';
+import type { TrainingProgramConstraintService } from './trainingProgramConstraintService';
 import type { TrainingProgramGeneratorProfileService } from './trainingProgramGeneratorProfileService';
 import { createTrainingProgramGeneratorService } from './trainingProgramGeneratorService';
 
@@ -26,12 +27,20 @@ describe('training program generator service', () => {
       candidateService: {
         load: vi.fn(),
       } as unknown as TrainingProgramCandidateService,
+      constraintService: {
+        load: vi.fn(async () => ({ revision: 0, entries: [] })),
+        replace: vi.fn(),
+      } as unknown as TrainingProgramConstraintService,
       progressService: {} as ExerciseProgressService,
       performanceService: {} as MusclePerformanceService,
     });
 
     await expect(service.generate({
       userId: 'user-1',
+      durationWeeks: 4,
+      startDate: '2026-09-24',
+      trainingDays: ['MONDAY'],
+      requestedSplit: 'AUTO',
       generatedAt: '2026-09-22T21:00:00Z',
       historyThroughDate: '2026-09-22',
     })).rejects.toThrow('goal and weekly frequency');

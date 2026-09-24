@@ -8,13 +8,13 @@ select ok(
 );
 select is(
   (select is_active from public.muscle_volume_methodologies where version='muscle-volume-v2'),
-  false,
-  'v2 remains inactive until the compatible application is deployed'
+  true,
+  'v2 is active after Phase 19.10B'
 );
 select is(
   (select version from public.muscle_volume_methodologies where is_active),
-  'muscle-volume-v1',
-  'v1 remains the active production methodology during staging'
+  'muscle-volume-v2',
+  'v2 is the active development methodology'
 );
 select results_eq(
   $$select count(*)::bigint from public.muscle_volume_exercise_rules where methodology_version='muscle-volume-v2'$$,

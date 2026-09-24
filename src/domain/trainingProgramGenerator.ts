@@ -1,11 +1,26 @@
 import {
   TRAINING_PROGRAM_VERSION,
-  TRAINING_PROGRAM_WEEKS,
   validateTrainingProgramDefinition,
   type TrainingProgramDefinition,
   type TrainingProgramExercisePrescription,
   type TrainingProgramGoal,
+  type TrainingProgramTargetMuscleGroup,
 } from './trainingProgram';
+import {
+  buildTrainingProgramSchedule,
+  normalizeTrainingProgramDays,
+  resolveTrainingProgramSplit,
+  type TrainingProgramDayOfWeek,
+  type TrainingProgramDurationWeeks,
+  type TrainingProgramRequestedSplit,
+  type TrainingProgramResolvedSplit,
+} from './trainingProgramSchedule';
+import {
+  normalizeTrainingProgramConstraintSnapshot,
+  trainingProgramExcludedExerciseIds,
+  trainingProgramPreferredExerciseIds,
+  type TrainingProgramConstraintSnapshot,
+} from './trainingProgramConstraints';
 import {
   availableTrainingProgramEquipment,
   isTrainingProgramMeasurementType,
@@ -17,25 +32,7 @@ import type {
   TrainingProgramEquipmentKey,
 } from './trainingProgramEquipment';
 
-export type TrainingProgramMuscleGroup =
-  | 'CHEST'
-  | 'LATS'
-  | 'UPPER_BACK'
-  | 'TRAPS'
-  | 'SPINAL_ERECTORS'
-  | 'ANTERIOR_DELTS'
-  | 'LATERAL_DELTS'
-  | 'POSTERIOR_DELTS'
-  | 'BICEPS'
-  | 'TRICEPS'
-  | 'QUADS'
-  | 'HAMSTRINGS'
-  | 'GLUTES'
-  | 'CALVES'
-  | 'FOREARMS_GRIP'
-  | 'CORE'
-  | 'OBLIQUES'
-  | 'NECK';
+export type TrainingProgramMuscleGroup = TrainingProgramTargetMuscleGroup;
 
 export interface TrainingProgramCandidateContribution {
   muscleGroup: TrainingProgramMuscleGroup;
@@ -94,10 +91,14 @@ export interface GenerateTrainingProgramInput {
   candidates: TrainingProgramGeneratorCandidate[];
   history: TrainingProgramExerciseHistory[];
   volumeSignals: TrainingProgramVolumeSignal[];
+  constraints: TrainingProgramConstraintSnapshot;
+  durationWeeks: TrainingProgramDurationWeeks;
+  startDate: string;
+  trainingDays: TrainingProgramDayOfWeek[];
+  requestedSplit: TrainingProgramRequestedSplit;
   generatedAt: string;
   historyThroughDate: string;
   muscleVolumeMethodologyVersion: string;
-  constraintRevision?: number;
 }
 
 export type TrainingProgramGenerationErrorCode =
@@ -131,13 +132,16 @@ const slot = (
   compoundPreferred = false,
 ): SessionSlot => ({ muscleGroup, compoundPreferred });
 
-const SPLITS: Record<number, SessionBlueprint[]> = {
-  1: [{ title: 'Full Body', slots: [
+const SPLIT_BLUEPRINTS: Record<
+  TrainingProgramResolvedSplit,
+  SessionBlueprint[]
+> = {
+  FULL_BODY: [{ title: 'Full Body', slots: [
     slot('QUADS', true), slot('CHEST', true), slot('LATS', true),
     slot('HAMSTRINGS', true), slot('UPPER_BACK'),
     slot('LATERAL_DELTS'), slot('CORE'),
   ] }],
-  2: [
+  FULL_BODY_AB: [
     { title: 'Full Body A', slots: [
       slot('QUADS', true), slot('CHEST', true), slot('LATS', true),
       slot('HAMSTRINGS'), slot('LATERAL_DELTS'), slot('CORE'),
@@ -147,7 +151,17 @@ const SPLITS: Record<number, SessionBlueprint[]> = {
       slot('QUADS'), slot('POSTERIOR_DELTS'), slot('TRICEPS'),
     ] },
   ],
-  3: [
+  UPPER_LOWER: [
+    { title: 'Upper', slots: [
+      slot('CHEST', true), slot('LATS', true), slot('ANTERIOR_DELTS'),
+      slot('UPPER_BACK'), slot('BICEPS'), slot('TRICEPS'),
+    ] },
+    { title: 'Lower', slots: [
+      slot('QUADS', true), slot('HAMSTRINGS', true), slot('GLUTES'),
+      slot('SPINAL_ERECTORS'), slot('CALVES'), slot('CORE'),
+    ] },
+  ],
+  FULL_BODY_ABC: [
     { title: 'Full Body A', slots: [
       slot('QUADS', true), slot('CHEST', true), slot('LATS', true),
       slot('HAMSTRINGS'), slot('LATERAL_DELTS'), slot('CORE'),
@@ -163,7 +177,35 @@ const SPLITS: Record<number, SessionBlueprint[]> = {
       slot('SPINAL_ERECTORS'),
     ] },
   ],
-  4: [
+  PUSH_PULL_LEGS: [
+    { title: 'Push', slots: [
+      slot('CHEST', true), slot('ANTERIOR_DELTS', true), slot('TRICEPS'),
+      slot('CHEST'), slot('LATERAL_DELTS'),
+    ] },
+    { title: 'Pull', slots: [
+      slot('LATS', true), slot('UPPER_BACK'), slot('BICEPS'),
+      slot('POSTERIOR_DELTS'), slot('TRAPS'), slot('FOREARMS_GRIP'),
+    ] },
+    { title: 'Legs', slots: [
+      slot('QUADS', true), slot('HAMSTRINGS', true), slot('GLUTES'),
+      slot('QUADS'), slot('CALVES'), slot('CORE'),
+    ] },
+  ],
+  UPPER_LOWER_FULL_BODY: [
+    { title: 'Upper', slots: [
+      slot('CHEST', true), slot('LATS', true), slot('ANTERIOR_DELTS'),
+      slot('UPPER_BACK'), slot('BICEPS'), slot('TRICEPS'),
+    ] },
+    { title: 'Lower', slots: [
+      slot('QUADS', true), slot('HAMSTRINGS', true), slot('GLUTES'),
+      slot('SPINAL_ERECTORS'), slot('CALVES'), slot('CORE'),
+    ] },
+    { title: 'Full Body', slots: [
+      slot('QUADS', true), slot('CHEST', true), slot('LATS', true),
+      slot('HAMSTRINGS'), slot('LATERAL_DELTS'), slot('CORE'),
+    ] },
+  ],
+  UPPER_LOWER_X2: [
     { title: 'Upper A', slots: [
       slot('CHEST', true), slot('LATS', true),
       slot('ANTERIOR_DELTS', true), slot('UPPER_BACK'),
@@ -183,7 +225,47 @@ const SPLITS: Record<number, SessionBlueprint[]> = {
       slot('SPINAL_ERECTORS'), slot('CALVES'), slot('CORE'),
     ] },
   ],
-  5: [
+  PUSH_PULL_UPPER_LOWER: [
+    { title: 'Push', slots: [
+      slot('CHEST', true), slot('ANTERIOR_DELTS', true), slot('TRICEPS'),
+      slot('CHEST'), slot('LATERAL_DELTS'),
+    ] },
+    { title: 'Pull', slots: [
+      slot('LATS', true), slot('UPPER_BACK'), slot('BICEPS'),
+      slot('POSTERIOR_DELTS'), slot('TRAPS'), slot('FOREARMS_GRIP'),
+    ] },
+    { title: 'Upper', slots: [
+      slot('CHEST', true), slot('UPPER_BACK', true), slot('LATS'),
+      slot('LATERAL_DELTS'), slot('BICEPS'), slot('TRICEPS'),
+    ] },
+    { title: 'Lower', slots: [
+      slot('QUADS', true), slot('HAMSTRINGS', true), slot('GLUTES'),
+      slot('SPINAL_ERECTORS'), slot('CALVES'), slot('CORE'),
+    ] },
+  ],
+  PPL_UPPER_LOWER: [
+    { title: 'Push', slots: [
+      slot('CHEST', true), slot('ANTERIOR_DELTS', true), slot('TRICEPS'),
+      slot('CHEST'), slot('LATERAL_DELTS'),
+    ] },
+    { title: 'Pull', slots: [
+      slot('LATS', true), slot('UPPER_BACK'), slot('BICEPS'),
+      slot('POSTERIOR_DELTS'), slot('TRAPS'), slot('FOREARMS_GRIP'),
+    ] },
+    { title: 'Legs', slots: [
+      slot('QUADS', true), slot('HAMSTRINGS', true), slot('GLUTES'),
+      slot('QUADS'), slot('CALVES'), slot('CORE'),
+    ] },
+    { title: 'Upper', slots: [
+      slot('CHEST', true), slot('LATS', true), slot('LATERAL_DELTS'),
+      slot('UPPER_BACK'), slot('BICEPS'), slot('TRICEPS'),
+    ] },
+    { title: 'Lower', slots: [
+      slot('QUADS', true), slot('HAMSTRINGS', true), slot('GLUTES'),
+      slot('SPINAL_ERECTORS'), slot('CALVES'), slot('CORE'),
+    ] },
+  ],
+  UPPER_LOWER_PPL: [
     { title: 'Upper', slots: [
       slot('CHEST', true), slot('LATS', true), slot('LATERAL_DELTS'),
       slot('UPPER_BACK'), slot('BICEPS'), slot('TRICEPS'),
@@ -205,7 +287,7 @@ const SPLITS: Record<number, SessionBlueprint[]> = {
       slot('QUADS'), slot('CALVES'), slot('CORE'),
     ] },
   ],
-  6: [
+  PPL_X2: [
     { title: 'Push A', slots: [
       slot('CHEST', true), slot('ANTERIOR_DELTS', true), slot('TRICEPS'),
       slot('CHEST'), slot('LATERAL_DELTS'),
@@ -228,6 +310,32 @@ const SPLITS: Record<number, SessionBlueprint[]> = {
     ] },
     { title: 'Legs B', slots: [
       slot('GLUTES', true), slot('QUADS', true), slot('HAMSTRINGS'),
+      slot('SPINAL_ERECTORS'), slot('CALVES'), slot('CORE'),
+    ] },
+  ],
+  UPPER_LOWER_X3: [
+    { title: 'Upper A', slots: [
+      slot('CHEST', true), slot('LATS', true), slot('ANTERIOR_DELTS'),
+      slot('UPPER_BACK'), slot('BICEPS'), slot('TRICEPS'),
+    ] },
+    { title: 'Lower A', slots: [
+      slot('QUADS', true), slot('HAMSTRINGS', true), slot('GLUTES'),
+      slot('CALVES'), slot('CORE'),
+    ] },
+    { title: 'Upper B', slots: [
+      slot('UPPER_BACK', true), slot('CHEST', true), slot('LATS'),
+      slot('LATERAL_DELTS'), slot('POSTERIOR_DELTS'), slot('BICEPS'),
+    ] },
+    { title: 'Lower B', slots: [
+      slot('GLUTES', true), slot('QUADS', true), slot('HAMSTRINGS'),
+      slot('SPINAL_ERECTORS'), slot('CALVES'), slot('CORE'),
+    ] },
+    { title: 'Upper C', slots: [
+      slot('CHEST', true), slot('LATS', true), slot('UPPER_BACK'),
+      slot('ANTERIOR_DELTS'), slot('TRAPS'), slot('TRICEPS'),
+    ] },
+    { title: 'Lower C', slots: [
+      slot('HAMSTRINGS', true), slot('QUADS', true), slot('GLUTES'),
       slot('SPINAL_ERECTORS'), slot('CALVES'), slot('CORE'),
     ] },
   ],
@@ -273,27 +381,34 @@ function integerInRange(value: number, min: number, max: number): boolean {
   return Number.isInteger(value) && value >= min && value <= max;
 }
 
-function isMuscleGroup(value: string): value is TrainingProgramMuscleGroup {
-  return [
-    'CHEST',
-    'LATS',
-    'UPPER_BACK',
-    'TRAPS',
-    'SPINAL_ERECTORS',
-    'ANTERIOR_DELTS',
-    'LATERAL_DELTS',
-    'POSTERIOR_DELTS',
-    'BICEPS',
-    'TRICEPS',
-    'QUADS',
-    'HAMSTRINGS',
-    'GLUTES',
-    'CALVES',
-    'FOREARMS_GRIP',
-    'CORE',
-    'OBLIQUES',
-    'NECK',
-  ].includes(value);
+function primaryCategoryForTarget(
+  target: TrainingProgramMuscleGroup,
+): string {
+  if (
+    target === 'LATS'
+    || target === 'UPPER_BACK'
+    || target === 'TRAPS'
+    || target === 'SPINAL_ERECTORS'
+  ) {
+    return 'BACK';
+  }
+
+  if (
+    target === 'ANTERIOR_DELTS'
+    || target === 'LATERAL_DELTS'
+    || target === 'POSTERIOR_DELTS'
+  ) {
+    return 'SHOULDERS';
+  }
+
+  return target;
+}
+
+export function trainingProgramPrimaryGroupMatchesTarget(
+  primaryMuscleGroup: string,
+  target: TrainingProgramMuscleGroup,
+): boolean {
+  return primaryMuscleGroup === primaryCategoryForTarget(target);
 }
 
 function contributionFor(
@@ -305,7 +420,7 @@ function contributionFor(
   ) ?? null;
 }
 
-function compoundExercise(candidate: TrainingProgramGeneratorCandidate): boolean {
+export function isTrainingProgramCompoundCandidate(candidate: TrainingProgramGeneratorCandidate): boolean {
   const name = candidate.canonicalName.toLocaleLowerCase('en-CA');
   return (
     candidate.contributions.filter(
@@ -371,10 +486,11 @@ function candidateScore(
   goal: TrainingProgramGoal,
   history: TrainingProgramExerciseHistory | undefined,
   priorProgramUseCount: number,
+  preferredExerciseIds: ReadonlySet<string>,
 ): number {
   const contribution = contributionFor(candidate, target.muscleGroup);
   const direct = contribution?.role === 'DIRECT';
-  const compound = compoundExercise(candidate);
+  const compound = isTrainingProgramCompoundCandidate(candidate);
   const historyScore = history
     ? Math.min(8, Math.max(0, history.sessionCount)) * 5
       + Math.min(12, Math.max(0, history.observationCount))
@@ -383,12 +499,20 @@ function candidateScore(
   return (
     (direct ? 110 : 45)
     + Math.round((contribution?.weight ?? 0) * 20)
-    + (candidate.primaryMuscleGroup === target.muscleGroup ? 15 : 0)
+    + (
+      trainingProgramPrimaryGroupMatchesTarget(
+        candidate.primaryMuscleGroup,
+        target.muscleGroup,
+      )
+        ? 15
+        : 0
+    )
     + (target.compoundPreferred && compound ? 22 : 0)
     + (!target.compoundPreferred && !compound ? 8 : 0)
     + goalEquipmentScore(goal, candidate.workoutType)
     + (foundationPriority.get(candidate.canonicalName) ?? 0)
     + historyScore
+    + (preferredExerciseIds.has(candidate.exerciseId) ? 40 : 0)
     - priorProgramUseCount * 28
   );
 }
@@ -431,7 +555,7 @@ function setCount(
   return Math.max(2, Math.min(4, sets));
 }
 
-function historicalTargetWeight(
+export function resolveTrainingProgramReferenceWeight(
   candidate: TrainingProgramGeneratorCandidate,
   history: TrainingProgramExerciseHistory | undefined,
   repsMin: number,
@@ -459,6 +583,7 @@ function prescription(
   goal: TrainingProgramGoal,
   history: TrainingProgramExerciseHistory | undefined,
   signals: Map<TrainingProgramMuscleGroup, TrainingProgramVolumeSignal>,
+  target: SessionSlot,
 ): TrainingProgramExercisePrescription {
   if (!isTrainingProgramMeasurementType(candidate.measurementType)) {
     throw new TrainingProgramGenerationError(
@@ -467,18 +592,32 @@ function prescription(
     );
   }
 
-  const compound = compoundExercise(candidate);
+  const compound = isTrainingProgramCompoundCandidate(candidate);
   const [repsMin, repsMax] = repRange(goal, compound);
+  const targetContribution = contributionFor(
+    candidate,
+    target.muscleGroup,
+  );
+
+  if (!targetContribution) {
+    throw new TrainingProgramGenerationError(
+      'INVALID_OUTPUT',
+      `${candidate.canonicalName} is missing its generated target contribution.`,
+    );
+  }
 
   return {
     exerciseId: candidate.exerciseId,
     canonicalName: candidate.canonicalName,
+    targetMuscleGroup: target.muscleGroup,
+    targetContributionRole: targetContribution.role,
+    selectionIntent: compound ? 'COMPOUND' : 'ACCESSORY',
     measurementType: candidate.measurementType,
     orderIndex,
     workingSets: setCount(goal, compound, candidate, signals),
     repsMin,
     repsMax,
-    targetWeightKg: historicalTargetWeight(
+    targetWeightKg: resolveTrainingProgramReferenceWeight(
       candidate,
       history,
       repsMin,
@@ -494,19 +633,23 @@ function prescription(
 
 function candidatePool(
   input: GenerateTrainingProgramInput,
+  constraints: TrainingProgramConstraintSnapshot,
 ): TrainingProgramGeneratorCandidate[] {
   const available = availableTrainingProgramEquipment(
     input.profile.accessMode,
     input.profile.equipmentKeys,
   );
+  const excludedExerciseIds = trainingProgramExcludedExerciseIds(
+    constraints,
+  );
 
   return input.candidates
     .filter((candidate) => {
+      if (excludedExerciseIds.has(candidate.exerciseId)) return false;
       if (!candidate.volumeEligible) return false;
       if (!isTrainingProgramMeasurementType(candidate.measurementType)) {
         return false;
       }
-      if (!isMuscleGroup(candidate.primaryMuscleGroup)) return false;
       if (candidate.contributions.length < 1) return false;
 
       const requirements = resolveTrainingProgramExerciseRequirements(candidate);
@@ -536,7 +679,46 @@ export function generateTrainingProgram(
     );
   }
 
-  const pool = candidatePool(input);
+  let constraints: TrainingProgramConstraintSnapshot;
+  try {
+    constraints = normalizeTrainingProgramConstraintSnapshot(
+      input.constraints.revision,
+      input.constraints.entries,
+    );
+  } catch {
+    throw new TrainingProgramGenerationError(
+      'INVALID_PROFILE',
+      'Training program constraints are incomplete or invalid.',
+    );
+  }
+
+  let trainingDays: TrainingProgramDayOfWeek[];
+  let resolvedSplit: TrainingProgramResolvedSplit;
+  let schedule;
+
+  try {
+    trainingDays = normalizeTrainingProgramDays(
+      input.trainingDays,
+      input.profile.sessionsPerWeek,
+    );
+    resolvedSplit = resolveTrainingProgramSplit(
+      input.profile.sessionsPerWeek,
+      input.requestedSplit,
+    );
+    schedule = buildTrainingProgramSchedule({
+      startDate: input.startDate,
+      durationWeeks: input.durationWeeks,
+      trainingDays,
+      sessionsPerWeek: input.profile.sessionsPerWeek,
+    });
+  } catch {
+    throw new TrainingProgramGenerationError(
+      'INVALID_PROFILE',
+      'Training program schedule or split configuration is invalid.',
+    );
+  }
+
+  const pool = candidatePool(input, constraints);
   if (pool.length === 0) {
     throw new TrainingProgramGenerationError(
       'NO_ELIGIBLE_CANDIDATES',
@@ -551,10 +733,21 @@ export function generateTrainingProgram(
     input.volumeSignals.map((signal) => [signal.muscleGroup, signal]),
   );
   const programUseCount = new Map<string, number>();
-  const blueprints = SPLITS[input.profile.sessionsPerWeek]!;
+  const preferredExerciseIds = trainingProgramPreferredExerciseIds(
+    constraints,
+  );
+  const blueprints = SPLIT_BLUEPRINTS[resolvedSplit];
+
+  if (blueprints.length !== input.profile.sessionsPerWeek) {
+    throw new TrainingProgramGenerationError(
+      'INVALID_PROFILE',
+      'Resolved training split does not match weekly frequency.',
+    );
+  }
 
   const baseWorkouts = blueprints.map((blueprint, sessionIndex) => {
     const selected: TrainingProgramGeneratorCandidate[] = [];
+    const selectedTargets: SessionSlot[] = [];
     const used = new Set<string>();
 
     for (const target of blueprint.slots) {
@@ -571,6 +764,7 @@ export function generateTrainingProgram(
             input.profile.goal,
             historyByExercise.get(candidate.exerciseId),
             programUseCount.get(candidate.exerciseId) ?? 0,
+            preferredExerciseIds,
           ),
         }))
         .sort((left, right) => {
@@ -588,6 +782,7 @@ export function generateTrainingProgram(
       if (!winner) continue;
 
       selected.push(winner);
+      selectedTargets.push(target);
       used.add(winner.exerciseId);
       programUseCount.set(
         winner.exerciseId,
@@ -611,24 +806,26 @@ export function generateTrainingProgram(
         input.profile.goal,
         historyByExercise.get(candidate.exerciseId),
         signals,
+        selectedTargets[orderIndex]!,
       )),
     };
   });
 
-  const workouts = Array.from(
-    { length: TRAINING_PROGRAM_WEEKS },
-    (_, weekIndex) => baseWorkouts.map((workout) => ({
-      weekIndex,
-      sessionIndex: workout.sessionIndex,
+  const workouts = schedule.map((slot) => {
+    const workout = baseWorkouts[slot.sessionIndex]!;
+    return {
+      weekIndex: slot.weekIndex,
+      sessionIndex: slot.sessionIndex,
+      scheduledDate: slot.scheduledDate,
       title: workout.title,
       exercises: workout.exercises.map((exercise) => ({ ...exercise })),
-    })),
-  ).flat();
+    };
+  });
 
   const program: TrainingProgramDefinition = {
     version: TRAINING_PROGRAM_VERSION,
     goal: input.profile.goal,
-    weeks: TRAINING_PROGRAM_WEEKS,
+    weeks: input.durationWeeks,
     sessionsPerWeek: input.profile.sessionsPerWeek,
     source: {
       generatorVersion: TRAINING_PROGRAM_VERSION,
@@ -636,7 +833,12 @@ export function generateTrainingProgram(
       historyThroughDate: input.historyThroughDate,
       muscleVolumeMethodologyVersion: input.muscleVolumeMethodologyVersion,
       profileRevision: input.profile.revision,
-      constraintRevision: input.constraintRevision ?? 0,
+      constraintRevision: constraints.revision,
+      durationWeeks: input.durationWeeks,
+      startDate: input.startDate,
+      trainingDays,
+      requestedSplit: input.requestedSplit,
+      resolvedSplit,
     },
     workouts,
   };

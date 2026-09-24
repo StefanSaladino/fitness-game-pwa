@@ -1,6 +1,6 @@
 # Phase 19.10 - Muscle Volume V2
 
-Status: 19.10A seeded in Supabase; application compatibility is implemented by this patch; activation is intentionally deferred until the compatible application is deployed.
+Status: 19.10B active on the hosted development backend for local Phase 19/20 validation. The Phase 19/20 frontend has not been deployed to users.
 
 ## Contract
 

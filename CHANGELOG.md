@@ -1,5 +1,29 @@
 # Changelog
 
+## Unreleased - Phase 20.3A program configuration and scheduling
+
+- Expanded `training-program-v1` from fixed 4-week generation to explicit 4- or 8-week duration.
+- Added deterministic date-only scheduling from a user-selected start date and exact training weekdays.
+- Added a frequency-compatible split registry with Auto plus explicit Full Body, Upper/Lower, PPL, and mixed variants.
+- Generator source snapshots now retain duration, start date, normalized weekdays, requested split, and resolved split.
+- Every planned workout now carries an exact scheduled calendar date.
+- Eight-week generation preserves the baseline structure without pretending Phase 20.5 adaptive progression has already occurred.
+- Formalized planned-vs-actual lineage for programmed workouts, own workouts, and missed planned sessions while keeping actual workout history authoritative.
+- No database migration was added; Phase 20.4 owns durable program-instance persistence.
+
+## Unreleased - Phase 20.3 exercise constraints and substitutions
+
+- Added independently revisioned per-user exercise constraints with hard `EXCLUDE` and soft `PREFER` semantics.
+- Added bounded reasons for preference, physical-limitation intent, unavailable exercises, and other exclusion intent without storing diagnosis text.
+- Added RLS-protected constraint persistence and guarded optimistic-revision RPCs.
+- Exercise catalogue foreign keys use delete restriction so catalogue deletion cannot silently mutate a users constraint revision.
+- Generator hard exclusions are applied before ranking; compatible preferences are a bounded ranking signal.
+- Fixed the v2 generator boundary so broad `BACK`/`SHOULDERS` picker taxonomy does not exclude granular back/deltoid candidates.
+- Generated prescriptions now retain granular target muscle, direct/indirect contribution role, and compound/accessory selection intent.
+- Added deterministic fail-closed substitution preserving v2 target, contribution role, selection intent, measurement/bodyweight mode, equipment access, and hard exclusions.
+- Program source snapshots now record the real independent constraint revision.
+- User-facing constraint/substitution controls remain deferred to the Phase 20 UI slice.
+
 ## Unreleased - Phase 19.10 muscle-volume-v2
 
 - Kept BACK and SHOULDERS as human-facing exercise/workout categories while splitting volume analytics into lats, upper back, traps, spinal erectors, front delts, side delts, and rear delts.
