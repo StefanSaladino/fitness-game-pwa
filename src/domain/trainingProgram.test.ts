@@ -140,6 +140,13 @@ describe('trainingProgram domain contract', () => {
     expect(isValidTrainingProgramExecutionLineage({
       sourceProgramId: 'program-1',
       sourceProgramWorkoutId: 'planned-1',
+      workoutSessionId: 'session-0',
+      status: 'STARTED_PROGRAMMED',
+    })).toBe(true);
+
+    expect(isValidTrainingProgramExecutionLineage({
+      sourceProgramId: 'program-1',
+      sourceProgramWorkoutId: 'planned-1',
       workoutSessionId: 'session-1',
       status: 'COMPLETED_OWN_WORKOUT',
     })).toBe(true);

@@ -206,8 +206,8 @@ This is the shipped Phase 19 release contract.
 | 20.1 | **DONE** | Equipment/access profile â€” explicit commercial-gym vs custom/home access, persisted equipment taxonomy, RLS/RPC mutation boundary, Settings editor, and 568/512 generator-loggability audit |
 | 20.2 | **DONE** | Deterministic four-week generator using persisted goal/frequency, explicit equipment resolution, established same-exercise history, and Phase 19 volume/performance inputs |
 | 20.3 | **DONE** | Versioned hard exclusions/soft preferences plus fail-closed intelligent substitutions preserving granular v2 muscle target, contribution role, selection intent, measurement semantics, and equipment compatibility |
-| 20.3A | **IN VALIDATION** | Program configuration and scheduling: 4/8 weeks, compatible split selection, start date, training weekdays, exact scheduled dates, and planned-vs-actual execution lineage |
-| 20.4 | **PLANNED** | Persist generated monthly programs in-app as structured workout templates/presets that can launch into the normal workout flow |
+| 20.3A | **DONE** | Program configuration and scheduling: 4/8 weeks, compatible split selection, start date, training weekdays, exact scheduled dates, and planned-vs-actual execution lineage |
+| 20.4 | **IN VALIDATION** | Persist generated monthly programs in-app as structured workout templates/presets that can launch into the normal workout flow |
 | 20.5 | **PLANNED** | Adaptive progression across the month using completed-workout and performance feedback |
 | 20.6 | **PLANNED** | Program UI plus optional downloadable PDF export; the in-app structured program remains authoritative |
 | 20.7 | **PLANNED** | Regression, safety/quality validation, documentation, and production release |

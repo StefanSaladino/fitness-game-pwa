@@ -1,5 +1,17 @@
 # Changelog
 
+## Unreleased - Phase 20.4 durable program persistence
+
+- Added RLS-protected persistent program, planned-workout, and program-exercise tables.
+- Added immutable generation-source snapshot storage and one-active-program-per-user lifecycle enforcement.
+- Added atomic guarded program creation with catalogue, bodyweight capability, `muscle-volume-v2`, order, and Superset validation.
+- Added programmed-workout launch through the existing preset-start workout boundary.
+- Planned working-set counts and optional starting load/bodyweight mode are copied into ordinary editable workout sets; planned rep ranges do not masquerade as completed reps.
+- Added explicit started/completed programmed and own-workout lineage plus missed planned-session state.
+- Ordinary workout completion automatically finalizes linked program lineage; cancellation returns an in-progress planned slot to `PLANNED`.
+- Added a client persistence service for create/read/lifecycle/launch/own-workout/missed operations.
+- Phase 20.5 remains responsible for append-only adaptive program revisions.
+
 ## Unreleased - Phase 20.3A program configuration and scheduling
 
 - Expanded `training-program-v1` from fixed 4-week generation to explicit 4- or 8-week duration.

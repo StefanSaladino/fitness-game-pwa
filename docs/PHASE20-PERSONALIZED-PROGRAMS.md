@@ -1,6 +1,6 @@
 # Phase 20 — Personalized Training Programs
 
-Status: **20.3A IMPLEMENTED - local validation pending; 20.4 persistence follows**
+Status: **20.4 IMPLEMENTED - local validation pending; 20.5 adaptive progression follows**
 Phase 20 adds structured, personalized four- or eight-week lifting programs while preserving Top Set's existing workout, scoring, Phase 19 analytics, recovery, and security boundaries. The program layer is a planning/template system, not a second workout engine.
 
 ## 20.0 contract
@@ -247,6 +247,47 @@ A planned program workout remains guidance rather than workout history.
 ### Persistence boundary
 
 20.3A intentionally adds no database migration. Goal, frequency, and equipment remain reusable user-profile settings. Duration, dates, weekdays, and split describe one generated program instance and belong in the immutable program source/configuration snapshot that Phase 20.4 will persist.
+
+## 20.4 implementation - durable program persistence
+
+20.4 persists the generated definition without creating a second workout engine.
+
+### Durable program model
+
+- `training_programs` stores user ownership, lifecycle, duration/frequency, exact calendar bounds, immutable source snapshot, Phase 19 methodology, profile/constraint revisions, requested/resolved split, and program revision.
+- `training_program_workouts` stores exact planned dates/titles plus execution lineage.
+- `training_program_exercises` stores the reviewed canonical exercise, granular v2 target, direct/indirect contribution role, compound/accessory intent, set/rep prescription, optional load, bodyweight mode, and Superset structure.
+- Catalogue exercise foreign keys use `ON DELETE RESTRICT` so a historical plan cannot be silently rewritten by catalogue deletion.
+- At most one `ACTIVE` program is permitted per user.
+
+### Security and mutation boundary
+
+The three tables are browser-read-only and RLS-scoped to the owner. Program creation/lifecycle/launch/link/missed mutations go through active-account-guarded RPCs with explicit execute grants and pinned empty search paths.
+
+Creation validates the current canonical exercise and measurement type, bodyweight load capabilities, v2 volume eligibility, exact target contribution role, contiguous exercise order, and valid Superset membership before committing the program atomically.
+
+### Launch into the ordinary workout engine
+
+`launch_my_training_program_workout` calls the existing guarded preset-start boundary instead of creating a new workout model. It then seeds ordinary editable `WORKING` set rows from the planned working-set count and optional starting load/bodyweight mode.
+
+Prescribed rep ranges remain on the plan. Actual workout-set reps stay null until the user records them. Therefore merely launching or planning a workout does not fabricate completed training evidence.
+
+Program launch introduces two persisted in-progress lineage states:
+
+- `STARTED_PROGRAMMED`
+- `STARTED_OWN_WORKOUT`
+
+The existing ordinary workout remains authoritative. A `workout_sessions` status trigger maps a linked completed session to `COMPLETED_PROGRAMMED` / `COMPLETED_OWN_WORKOUT`; cancelling the linked in-progress session returns the planned slot to `PLANNED`.
+
+### Own workout and missed workout
+
+A user may link an ordinary in-app strength session to a planned slot as their own workout. The prescribed template remains unchanged while the actual session remains authoritative for analytics/scoring.
+
+A missed planned slot stores `MISSED` with no fabricated workout-session id. It creates no XP, Phase 19 volume, PR, E1RM, or history evidence.
+
+### 20.5 boundary
+
+20.4 deliberately persists the immutable baseline plan and execution lineage only. Adaptive progression must append explicit revisions/adaptation history in 20.5 rather than silently rewriting already-completed evidence.
 
 ## Evidence background
 

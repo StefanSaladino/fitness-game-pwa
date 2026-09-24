@@ -100,6 +100,8 @@ export interface TrainingProgramDefinition {
 
 export type TrainingProgramExecutionStatus =
   | 'PLANNED'
+  | 'STARTED_PROGRAMMED'
+  | 'STARTED_OWN_WORKOUT'
   | 'COMPLETED_PROGRAMMED'
   | 'COMPLETED_OWN_WORKOUT'
   | 'MISSED';
@@ -121,12 +123,14 @@ export function isValidTrainingProgramExecutionLineage(
     return false;
   }
 
-  const completed = (
-    lineage.status === 'COMPLETED_PROGRAMMED'
+  const linked = (
+    lineage.status === 'STARTED_PROGRAMMED'
+    || lineage.status === 'STARTED_OWN_WORKOUT'
+    || lineage.status === 'COMPLETED_PROGRAMMED'
     || lineage.status === 'COMPLETED_OWN_WORKOUT'
   );
 
-  return completed
+  return linked
     ? Boolean(lineage.workoutSessionId?.trim())
     : lineage.workoutSessionId === null;
 }
