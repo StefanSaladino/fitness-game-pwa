@@ -1,5 +1,18 @@
 # Changelog
 
+## Unreleased - Phase 20.5 adaptive progression
+
+- Added `training-program-adaptation-v1` deterministic future-prescription adaptation driven only by completed linked workout evidence.
+- Added append-only adaptation/audit tables with owner RLS, idempotent trigger-workout uniqueness, source/result revision tracking, compact evidence snapshots, and per-field old/new change rows.
+- Added conservative double progression: establish an open weighted target from successful standard work, progress load only after all required standard sets reach the top of the rep range, and never auto-reduce load after one poor workout.
+- Added plain-bodyweight rep-range progression while deferring automatic added-weight/assisted bodyweight progression.
+- Reused the existing `muscle-volume-v2` performance-aware seven-day recommendation engine for bounded future set changes instead of creating another volume model.
+- Advanced set edits do not automatically drive load/rep progression.
+- Adaptation mutates only later unstarted `PLANNED` prescriptions; completed, started, missed, and ordinary workout evidence remain untouched.
+- Added persisted `NO_CHANGE` evaluations so retrying the same completed workout cannot progress a program twice.
+- Added a guarded optimistic-revision apply RPC plus an invoker-mode adaptation-context read boundary.
+- Hosted end-to-end validation confirmed a completed 100 kg x 8 squat trigger remained unchanged while three future 100 kg prescriptions advanced once to 102.5 kg.
+
 ## Unreleased - Phase 20.4 durable program persistence
 
 - Added RLS-protected persistent program, planned-workout, and program-exercise tables.

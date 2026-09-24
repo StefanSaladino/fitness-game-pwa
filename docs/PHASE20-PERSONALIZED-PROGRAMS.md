@@ -1,6 +1,6 @@
 # Phase 20 — Personalized Training Programs
 
-Status: **20.4 IMPLEMENTED - local validation pending; 20.5 adaptive progression follows**
+Status: **20.5 IMPLEMENTED - local validation pending; 20.6 program UI/PDF follows**
 Phase 20 adds structured, personalized four- or eight-week lifting programs while preserving Top Set's existing workout, scoring, Phase 19 analytics, recovery, and security boundaries. The program layer is a planning/template system, not a second workout engine.
 
 ## 20.0 contract
@@ -288,6 +288,55 @@ A missed planned slot stores `MISSED` with no fabricated workout-session id. It 
 ### 20.5 boundary
 
 20.4 deliberately persists the immutable baseline plan and execution lineage only. Adaptive progression must append explicit revisions/adaptation history in 20.5 rather than silently rewriting already-completed evidence.
+
+## 20.5 implementation - adaptive progression
+
+20.5 adds deterministic, append-only adaptation driven only by completed ordinary workout evidence. It does not rewrite completed training history, started sessions, missed slots, or the immutable generation source snapshot.
+
+### Evidence and trigger boundary
+
+- A linked `COMPLETED_PROGRAMMED` or `COMPLETED_OWN_WORKOUT` session is the only adaptation trigger.
+- The ordinary completed workout and its actual completed sets remain authoritative.
+- The same completed workout may be evaluated only once. `NO_CHANGE` evaluations are persisted too, so a retry cannot accidentally progress the program twice.
+- Only later `PLANNED` / unlinked exercise prescriptions can change.
+- A current hard exercise exclusion blocks adaptation of that future exercise.
+- Drop Sets, Pyramids, Failure sets, and other non-standard completed-set edits do not automatically drive load or repetition progression.
+
+### Load and repetition progression
+
+`training-program-adaptation-v1` uses a conservative double-progression boundary.
+
+- For weighted exercises with no load target, sufficiently completed standard working sets may establish a future target from the minimum successful completed load.
+- For weighted exercises with an existing target, all required standard working sets must reach the top of the current rep range at at least the target load before future load increases.
+- The client policy uses an approximately 2.5% load step rounded to a quarter kilogram; the mutation boundary independently caps a single automatic increase at 10%.
+- A poor or incomplete workout never automatically reduces prescribed load.
+- Plain-bodyweight work that completes all required standard working sets at the top of its rep range may advance both rep bounds by one.
+- Automatic added-weight and assisted-bodyweight progression remains deferred in adaptation v1.
+
+### Phase 19 volume integration
+
+20.5 consumes the existing `muscle-volume-v2` seven-day performance-aware recommendation engine. It does not create another hypertrophy/volume model.
+
+- Only `ADD_VOLUME_CAUTIOUSLY` / `REDUCE_VOLUME_CAUTIOUSLY` can alter future working-set counts.
+- A future prescription must target the same granular muscle as a `DIRECT` contribution.
+- One selected future prescription changes by only one working set and remains inside the 2-4 generator adaptation band.
+- At most two future prescriptions are adjusted for one Phase 19 signal in one adaptation.
+- Load/rep progression and volume changes are not stacked onto the same future prescription when another bounded option is unavailable.
+- `MONITOR`, `MAINTAIN`, `HOLD_AND_REVIEW`, insufficient evidence, and sub-one-set changes are recorded as hold/no-change reasons rather than forced changes.
+
+### Audit and revision model
+
+`training_program_adaptations` records the trigger workout, source/result program revision, evidence-through date, outcome, reason codes, and compact evidence snapshot.
+
+`training_program_adaptation_changes` records each changed future exercise field with old value, new value, and bounded reason code.
+
+An applied adaptation increments the program revision exactly once and increments each affected planned-workout revision once. A `NO_CHANGE` evaluation leaves the program revision untouched.
+
+No private chain-of-thought or hidden model reasoning is persisted. The audit contains reviewable completed-set facts, Phase 19 signal summaries, changed fields, and user-facing reason codes.
+
+### Security boundary
+
+Adaptation context is a `SECURITY INVOKER` read using existing owner RLS. The apply RPC is the narrow privileged mutation boundary: active-account guard, ownership checks, optimistic program revision, completed-trigger verification, exact future-PLANNED targeting, current exclusion checks, bounded field mutations, and explicit authenticated-only execute grants.
 
 ## Evidence background
 
