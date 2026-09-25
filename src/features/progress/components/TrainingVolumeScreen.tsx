@@ -427,17 +427,14 @@ export function TrainingVolumeScreen({
     <AppShell
       activeItem="progress"
       mobileTitle="Volume Targets"
+      backLabel="Back to Progress"
+      onBack={onBack}
       onNavigate={onNavigate}
       onSignOut={onSignOut}
       userLabel={profile.displayName}
       userMeta={`@${profile.username}`}
     >
       <div className={styles.page} data-training-volume-page>
-        <button aria-label="Back to Progress" className={styles.backButton} onClick={onBack} type="button">
-          <span aria-hidden="true">←</span>
-          Progress
-        </button>
-
         <DestinationBanner
           className={styles.banner}
           data-progress-surface="volume-identity"

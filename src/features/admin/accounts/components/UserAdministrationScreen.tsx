@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { BackButton } from '../../../../components/layout';
 import { SelectField } from '../../../../components/ui';
 import type {
   PlatformAccountDetail,
@@ -308,7 +309,7 @@ export function UserAdministrationScreen(props: UserAdministrationScreenProps) {
             </div>
           )}
           {selectedUserId && (
-            <button aria-label="Back to users" className={styles.mobileDetailBack} onClick={onClearSelection} type="button">‹ Users</button>
+            <BackButton className={styles.mobileDetailBack} label="Back to users" onClick={onClearSelection} text="Users" />
           )}
           {selectedUserId && detailState === 'loading' && !detail && <div className={styles.detailState} role="status">Loading account…</div>}
           {selectedUserId && detailError && !detail && (

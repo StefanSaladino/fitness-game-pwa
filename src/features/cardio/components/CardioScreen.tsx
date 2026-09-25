@@ -98,6 +98,8 @@ export function CardioScreen({
     <AppShell
       activeItem="workouts"
       mobileTitle="Cardio"
+      backLabel="Back to Lift"
+      onBack={() => onNavigate('workouts')}
       onNavigate={onNavigate}
       onSignOut={onSignOut}
       userLabel={profile.displayName}
@@ -110,14 +112,6 @@ export function CardioScreen({
             <h1>Log cardio</h1>
             <p>A small daily bonus. Cardio never counts as a lifting day.</p>
           </div>
-          <button
-            aria-label="Back to Lift"
-            className={styles.backToLift}
-            onClick={() => onNavigate('workouts')}
-            type="button"
-          >
-            <span aria-hidden="true">‹</span> Lift
-          </button>
         </DestinationBanner>
 
         <div className={styles.desktopGrid}>

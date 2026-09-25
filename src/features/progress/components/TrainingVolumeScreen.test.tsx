@@ -307,7 +307,7 @@ describe('TrainingVolumeScreen', () => {
       />,
     );
 
-    await user.click(screen.getByRole('button', { name: 'Back to Progress' }));
+    await user.click(screen.getAllByRole('button', { name: 'Back to Progress' })[0]);
     expect(onBack).toHaveBeenCalledTimes(1);
   });
 });

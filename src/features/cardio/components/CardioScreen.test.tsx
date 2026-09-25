@@ -100,7 +100,7 @@ describe('CardioScreen', () => {
     await user.click(screen.getByRole('button', { name: /Delete Running/ }));
     expect(remove).toHaveBeenCalledWith('w1');
 
-    await user.click(screen.getByRole('button', { name: 'Back to Lift' }));
+    await user.click(screen.getAllByRole('button', { name: 'Back to Lift' })[0]);
     expect(onNavigate).toHaveBeenCalledWith('workouts');
   });
 

@@ -1,5 +1,6 @@
 import appPackage from '../../package.json';
 import { useState } from 'react';
+import { TUTORIAL_PATH, usePathname } from '../lib/appNavigation';
 import type { PwaService } from './pwaService';
 import { usePwaLifecycle } from './usePwaLifecycle';
 import styles from './PwaStatus.module.css';
@@ -10,6 +11,7 @@ interface PwaStatusProps {
 
 export function PwaStatus({ service }: PwaStatusProps) {
   const pwa = usePwaLifecycle(service);
+  const pathname = usePathname();
   const [busy, setBusy] = useState<'install' | 'update' | 'storage' | null>(null);
   const [dismissedUpdate, setDismissedUpdate] = useState(false);
 
@@ -37,7 +39,9 @@ export function PwaStatus({ service }: PwaStatusProps) {
     if (!applying) setBusy(null);
   };
 
-  if ((pwa.updateAvailable && !dismissedUpdate) || pwa.applyingUpdate) {
+  const tutorialActive = pathname === TUTORIAL_PATH;
+
+  if (!tutorialActive && ((pwa.updateAvailable && !dismissedUpdate) || pwa.applyingUpdate)) {
     return (
       <section className={styles.notice} data-system-notice role="status" aria-live="polite" data-kind="update">
         <div className={styles.updateContent}>

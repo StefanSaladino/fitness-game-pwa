@@ -1,5 +1,5 @@
 import appPackage from '../../package.json';
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import type { PwaService, PwaSnapshot } from './pwaService';
 import { PwaStatus } from './PwaStatus';
@@ -149,6 +149,37 @@ describe('PwaStatus', () => {
     expect(
       screen.getByRole('button', { name: 'Dismiss' }),
     ).toBeInTheDocument();
+  });
+
+  it('defers a waiting update until the tutorial has finished', async () => {
+    const originalPath = `${window.location.pathname}${window.location.search}`;
+    window.history.replaceState({}, '', '/tutorial?step=0');
+
+    try {
+      const fake = fakeService({ updateAvailable: true });
+      render(<PwaStatus service={fake.service} />);
+
+      expect(screen.queryByRole('button', { name: 'Update app' })).not.toBeInTheDocument();
+      expect(screen.queryByText(`Update ready · v${appPackage.version}`)).not.toBeInTheDocument();
+      expect(fake.service.applyUpdate).not.toHaveBeenCalled();
+
+      act(() => {
+        window.history.replaceState({}, '', '/');
+        window.dispatchEvent(new PopStateEvent('popstate'));
+      });
+
+      await waitFor(() => {
+        expect(screen.getByRole('button', { name: 'Update app' })).toBeInTheDocument();
+      });
+
+      expect(screen.getByText(`Update ready · v${appPackage.version}`)).toBeInTheDocument();
+      expect(fake.service.applyUpdate).not.toHaveBeenCalled();
+    } finally {
+      act(() => {
+        window.history.replaceState({}, '', originalPath || '/');
+        window.dispatchEvent(new PopStateEvent('popstate'));
+      });
+    }
   });
 
 });

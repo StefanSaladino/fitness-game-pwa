@@ -281,9 +281,7 @@ describe('SettingsScreen program deep link', () => {
       screen.getByRole('heading', { name: 'Equipment access' }),
     ).toBeInTheDocument();
 
-    await user.click(
-      screen.getByRole('button', { name: 'Back to training program' }),
-    );
+    await user.click(screen.getByRole('button', { name: 'Back' }));
 
     expect(window.location.pathname).toBe('/program');
   });

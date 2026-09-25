@@ -47,6 +47,30 @@ describe('AppShell', () => {
     expect(within(screen.getByRole('banner')).getByText('Cardio')).toBeInTheDocument();
   });
 
+  it('normalizes back navigation into the app header while preserving Settings access', async () => {
+    const onBack = vi.fn();
+    const onNavigate = vi.fn();
+    render(
+      <AppShell
+        activeItem="progress"
+        backLabel="Back to Progress"
+        mobileTitle="Volume Targets"
+        onBack={onBack}
+        onNavigate={onNavigate}
+        userLabel="Stefan"
+      >
+        <p>Volume content</p>
+      </AppShell>,
+    );
+
+    const mobileHeader = screen.getByRole('banner');
+    await userEvent.click(within(mobileHeader).getByRole('button', { name: 'Back to Progress' }));
+    expect(onBack).toHaveBeenCalledOnce();
+
+    await userEvent.click(within(mobileHeader).getByRole('button', { name: 'Open Profile and Settings for Stefan' }));
+    expect(onNavigate).toHaveBeenCalledWith('profile');
+  });
+
   it('can override the active destination with a grounded page title while preserving Settings access', async () => {
     const onNavigate = vi.fn();
     render(

@@ -1,5 +1,6 @@
 import { TopSetMark } from '../brand/TopSetMark';
 import { Icon } from '../ui';
+import { BackButton } from './BackButton';
 import type { AppSection, NavigationItem } from './navigation';
 import styles from './DesktopSidebar.module.css';
 
@@ -8,11 +9,13 @@ interface DesktopSidebarProps {
   items: NavigationItem[];
   userLabel: string;
   userMeta?: string;
+  backLabel?: string;
+  onBack?: () => void;
   onNavigate?: (item: AppSection) => void;
   onSignOut?: () => void;
 }
 
-export function DesktopSidebar({ activeItem, items, userLabel, userMeta, onNavigate, onSignOut }: DesktopSidebarProps) {
+export function DesktopSidebar({ activeItem, items, userLabel, userMeta, backLabel = 'Go back', onBack, onNavigate, onSignOut }: DesktopSidebarProps) {
   const initial = userLabel.trim().slice(0, 1).toUpperCase() || 'U';
 
   return (
@@ -24,6 +27,14 @@ export function DesktopSidebar({ activeItem, items, userLabel, userMeta, onNavig
       </div>
 
       <nav className={styles.nav}>
+        {onBack ? (
+          <BackButton
+            className={styles.backNavigation}
+            label={backLabel}
+            onClick={onBack}
+            text={backLabel.replace(/^Back to /, '')}
+          />
+        ) : null}
         {items.map((item) => {
           const active = item.id === activeItem;
           return (

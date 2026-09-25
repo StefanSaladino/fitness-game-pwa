@@ -214,11 +214,9 @@ export function TrainingReportScreen({
   };
 
   return (
-    <AppShell activeItem="progress" mobileTitle="Reports" onNavigate={onNavigate} onSignOut={onSignOut}
+    <AppShell activeItem="progress" backLabel="Back to Progress" mobileTitle="Reports" onBack={onBack} onNavigate={onNavigate} onSignOut={onSignOut}
       userLabel={profile.displayName} userMeta={`@${profile.username}`}>
       <div className={styles.page} data-training-report-page>
-        <button className={styles.backButton} onClick={onBack} type="button"><span aria-hidden="true">←</span>Progress</button>
-
         <DestinationBanner className={styles.banner} data-progress-surface="report-identity"
           imagePosition="center 43%" imageSrc={progressBanner}>
           <div className={styles.bannerCopy}>

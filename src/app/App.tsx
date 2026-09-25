@@ -5,7 +5,7 @@
  * must work on direct refresh as well as in-app navigation.
  */
 
-import { lazy, Suspense, useEffect } from 'react';
+import { lazy, Suspense, useEffect, useLayoutEffect } from 'react';
 import { TopSetLoadingScreen } from '../components/feedback/TopSetLoadingScreen';
 import { AuthProvider, useAuth } from '../features/auth/AuthProvider';
 import { AuthScreen } from '../features/auth/AuthScreen';
@@ -65,7 +65,9 @@ function UnknownAuthenticatedRoute() {
 }
 
 function TutorialStartRedirect({ fromSettings = false }: { fromSettings?: boolean }) {
-  useEffect(() => {
+  // Move to the tutorial route before paint so global notices can defer cleanly
+  // without flashing over the first tutorial frame.
+  useLayoutEffect(() => {
     replacePath(`/tutorial?step=0${fromSettings ? '&from=settings' : ''}`);
   }, [fromSettings]);
   return <RouteLoading />;

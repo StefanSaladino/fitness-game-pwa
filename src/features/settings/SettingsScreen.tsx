@@ -5,7 +5,8 @@
  */
 
 import { useEffect, useRef, useState, type ReactNode } from 'react';
-import { Button, Icon } from '../../components/ui';
+import { AppHeader } from '../../components/layout';
+import { Button } from '../../components/ui';
 import { navigateToPath,
   TUTORIAL_PATH,
 } from '../../lib/appNavigation';
@@ -142,21 +143,15 @@ export function SettingsScreen({
 
   return (
     <div className={styles.page}>
-      <header className={styles.header}>
-        <button aria-label="Back" className={styles.back} onClick={goBack} type="button">
-          <Icon name="chevron-left" size={26} />
-        </button>
-        <div className={styles.headerTitle}>
-          <p className={styles.eyebrow}>{panel ? 'SETTINGS' : 'YOUR ACCOUNT'}</p>
-          <h1>{panel ? panelTitles[panel] : 'Settings'}</h1>
-        </div>
-        <div className={styles.headerActions}>
-          <span className={styles.messageSlot} data-app-message-slot="settings" />
-          <button aria-label="Sign out" className={styles.headerSignOut} onClick={() => void signOut()} type="button">
-            <Icon name="logout" size={19} />
-          </button>
-        </div>
-      </header>
+      <AppHeader
+        backLabel="Back"
+        messageSlot="settings"
+        onBack={goBack}
+        onSignOut={() => void signOut()}
+        title={panel ? panelTitles[panel] : 'Settings'}
+        titleAsHeading
+        userLabel={profileSettings.profile.displayName}
+      />
 
       <main className={styles.main} data-settings-view={panel ?? 'index'}>
         {!panel ? (
@@ -217,13 +212,6 @@ export function SettingsScreen({
 
         {panel === 'training' ? (
           <div className={styles.panelStack}>
-            {returnPath ? (
-              <div className={styles.actions}>
-                <Button onClick={() => navigateToPath(returnPath)} variant="secondary">
-                  Back to training program
-                </Button>
-              </div>
-            ) : null}
             <ProfileSettingsForm
               busy={profileSettings.busy}
               error={profileSettings.error}

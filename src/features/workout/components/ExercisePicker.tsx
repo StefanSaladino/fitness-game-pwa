@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState, type ChangeEvent } from 'react';
+import { BackButton } from '../../../components/layout';
 import {
   filterAndRankExercises,
   groupExercises,
@@ -63,9 +64,7 @@ function PickerHeader({ title, eyebrow, canGoBack, onBack, onClose }: {
     <header className={styles.header}>
       <div className={styles.headerIdentity}>
         {canGoBack && (
-          <button aria-label="Back to exercise library" className={styles.back} onClick={onBack} type="button">
-            <span aria-hidden="true">←</span>
-          </button>
+          <BackButton label="Back to exercise library" onClick={onBack} />
         )}
         <div>
           <p>{eyebrow}</p>

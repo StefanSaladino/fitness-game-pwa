@@ -37,6 +37,16 @@
   margin-top: 28px;
 }
 
+
+.backNavigation {
+  width: 100%;
+  min-height: 44px;
+  justify-content: flex-start;
+  margin-bottom: 10px;
+  padding-left: 8px;
+  border-bottom: 1px solid transparent;
+}
+
 .navItem {
   position: relative;
   display: flex;

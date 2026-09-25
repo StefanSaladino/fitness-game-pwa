@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { TopSetMark } from '../../../components/brand/TopSetMark';
-import { Icon } from '../../../components/ui';
+import { AppHeader } from '../../../components/layout';
 import styles from './PlatformAdminShell.module.css';
 
 export type PlatformAdminSection = 'capacity' | 'users' | 'moderation' | 'messages';
@@ -54,12 +54,14 @@ export function PlatformAdminShell({
       </aside>
 
       <div className={styles.content} data-admin-scroll-owner>
-        <div className={styles.mobileBar}>
-          <button aria-label="Back to Top Set" className={styles.mobileBack} onClick={onBackToApp} type="button">
-            <Icon name="chevron-left" size={24} />
-          </button>
-          <strong className={styles.mobileTitle}>{mobileTitle}</strong>
-          <span aria-hidden="true" />
+        <div className={styles.mobileHeader}>
+          <AppHeader
+            backLabel="Back to Top Set"
+            messageSlot={null}
+            onBack={onBackToApp}
+            title={mobileTitle}
+            userLabel="Platform administrator"
+          />
         </div>
         <nav className={styles.mobileNav} aria-label="Platform administration destinations">
           {destinations.map((destination) => (

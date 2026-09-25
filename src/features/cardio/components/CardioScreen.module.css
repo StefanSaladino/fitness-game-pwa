@@ -64,22 +64,6 @@
 .kicker,
 .sectionLabel { color: var(--color-accent); }
 
-.backToLift {
-  min-height: 44px;
-  flex: 0 0 auto;
-  border: 1px solid var(--color-border-strong);
-  border-radius: var(--radius-md);
-  padding: 0 var(--space-4);
-  color: var(--color-text-soft);
-  background: var(--color-surface);
-  cursor: pointer;
-  font: inherit;
-  font-size: 0.76rem;
-  font-weight: 760;
-}
-
-.backToLift:hover { border-color: var(--color-accent); color: var(--color-accent); }
-.backToLift:focus-visible { outline: 2px solid var(--color-accent-hover); outline-offset: 2px; }
 
 .desktopGrid,
 .activityHistory { display: grid; min-width: 0; gap: var(--app-category-gap); }
@@ -270,7 +254,6 @@
 
 @media (max-width: 560px) {
   .header { align-items: flex-start; flex-direction: column; gap: var(--space-3); }
-  .backToLift { align-self: stretch; }
 }
 
 @media (max-width: 420px) {

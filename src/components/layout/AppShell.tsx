@@ -11,6 +11,8 @@ interface AppShellProps {
   userLabel: string;
   userMeta?: string;
   mobileTitle?: string;
+  backLabel?: string;
+  onBack?: () => void;
   onNavigate?: (item: AppSection) => void;
   onSignOut?: () => void;
 }
@@ -32,6 +34,8 @@ export function AppShell({
   userLabel,
   userMeta,
   mobileTitle,
+  backLabel,
+  onBack,
   onNavigate,
   onSignOut,
 }: PropsWithChildren<AppShellProps>) {
@@ -44,13 +48,15 @@ export function AppShell({
       <DesktopSidebar
         activeItem={activeItem}
         items={navigationItems}
+        backLabel={backLabel}
+        onBack={onBack}
         onNavigate={onNavigate}
         onSignOut={onSignOut}
         userLabel={userLabel}
         userMeta={userMeta}
       />
       <div className={styles.viewport}>
-        <ShellHeader onNavigate={onNavigate} onSignOut={onSignOut} title={resolvedMobileTitle} userLabel={userLabel} />
+        <ShellHeader backLabel={backLabel} onBack={onBack} onNavigate={onNavigate} onSignOut={onSignOut} title={resolvedMobileTitle} userLabel={userLabel} />
         <main className={styles.main} data-app-scroll-owner>{children}</main>
       </div>
       <MobileNav activeItem={activeItem} items={navigationItems} onNavigate={onNavigate} />

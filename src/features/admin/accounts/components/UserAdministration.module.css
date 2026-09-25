@@ -119,7 +119,6 @@
 .secondaryButton:focus-visible,
 .dangerButton:focus-visible,
 .dangerOutlineButton:focus-visible,
-.mobileDetailBack:focus-visible,
 .closeButton:focus-visible {
   outline: 3px solid rgba(241, 90, 8, 0.38);
   outline-offset: 2px;
@@ -129,7 +128,6 @@
 .secondaryButton,
 .dangerButton,
 .dangerOutlineButton,
-.mobileDetailBack,
 .closeButton {
   min-height: 42px;
   min-width: 0;
@@ -166,7 +164,6 @@
 .secondaryButton:disabled,
 .dangerButton:disabled,
 .dangerOutlineButton:disabled,
-.mobileDetailBack:disabled,
 .closeButton:disabled {
   cursor: not-allowed;
   opacity: 0.5;
@@ -393,10 +390,6 @@
 
 .mobileDetailBack {
   margin-bottom: 14px;
-  border-color: transparent;
-  padding-left: 0;
-  background: transparent;
-  color: var(--color-text-soft);
 }
 
 .detailHeader {
