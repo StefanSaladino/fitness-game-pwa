@@ -1,3 +1,9 @@
+/**
+ * Maintainer boundary: durable mutation-envelope contract for workout writes.
+ * Idempotency keys, attempt state, and conflict classification are part of the
+ * offline/reconnect safety model; change them only with replay/storage coverage.
+ */
+
 export const WORKOUT_MUTATION_QUEUE_VERSION = 1 as const;
 export const WORKOUT_MUTATION_MAX_REPLAY_AGE_MS = 30 * 24 * 60 * 60 * 1_000;
 export const WORKOUT_MUTATION_EXPIRED_ERROR = 'Workout mutation expired after 30 days and was not replayed.';

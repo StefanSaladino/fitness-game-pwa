@@ -124,3 +124,17 @@ active roadmap to pass.
 
 When a required command changes, update this document and `package.json` in the
 same change.
+
+## 9. Phase 20 program checks
+
+During Phase 20 program work, use focused checks while iterating:
+
+```bash
+npm run typecheck
+npx vitest run src/domain/trainingProgram*.test.ts src/features/training-program/*.test.ts
+npx playwright test tests/e2e/training-program.spec.ts
+```
+
+The dedicated Program E2E fixture uses injected deterministic services. It validates responsive Program behavior without substituting for hosted database/RPC proof. Top Set's `SelectField` exposes a button with `role="combobox"` and portal-rendered `role="option"` buttons; Playwright should click the combobox then the option rather than using native `.selectOption()`.
+
+Before Phase 20.7 release closeout, run the canonical full acceptance/release gates above and repeat the required hosted migration/pgTAP/advisor verification for the final Phase 20 migration set.

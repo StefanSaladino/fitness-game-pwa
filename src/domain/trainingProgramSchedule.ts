@@ -1,3 +1,10 @@
+/**
+ * Maintainer boundary: calendar scheduling and split compatibility.
+ * Internal split identifiers are persistence/domain keys; UI labels may change
+ * independently. Calendar-date logic deliberately avoids local Date parsing that
+ * can move a workout across days because of timezone offsets.
+ */
+
 export const TRAINING_PROGRAM_SUPPORTED_DURATION_WEEKS = [4, 8] as const;
 
 export type TrainingProgramDurationWeeks =

@@ -1,3 +1,10 @@
+/**
+ * Maintainer boundary: versioned exercise-level selection intent.
+ * EXCLUDE is hard; PREFER is only a ranking hint. PHYSICAL_LIMITATION records
+ * user exclusion intent and must never be interpreted as diagnosis or proof that
+ * an alternative exercise is medically safe.
+ */
+
 export type TrainingProgramConstraintKind = 'EXCLUDE' | 'PREFER';
 
 export type TrainingProgramConstraintReason =

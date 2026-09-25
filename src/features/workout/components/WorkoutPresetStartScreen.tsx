@@ -2,6 +2,10 @@ import { useEffect, useMemo, useState } from 'react';
 import dumbbellBanner from '../../../assets/fitness/top-set-dumbbell-grip.jpg';
 import { AppShell, DestinationBanner, type AppSection } from '../../../components/layout';
 import { Button } from '../../../components/ui';
+import {
+  TRAINING_PROGRAM_PATH,
+  navigateToPath,
+} from '../../../lib/appNavigation';
 import type { OnboardingProfile } from '../../onboarding';
 import { TrainingTipSurface, trainingTipForDate } from '../../training-content';
 import type { ExercisePickerStatus } from '../hooks/useExercisePickerCatalog';
@@ -93,7 +97,22 @@ export function WorkoutPresetStartScreen(props: WorkoutPresetStartScreenProps) {
             <Button disabled={starting} fullWidth onClick={startEmpty}>
               {starting && selectedPresetId === null ? 'Starting…' : 'Start empty lift'}
             </Button>
-            <Button variant="secondary" disabled={starting} fullWidth onClick={() => props.onNavigate('cardio')}>Log cardio instead</Button>
+            <Button
+              variant="secondary"
+              disabled={starting}
+              fullWidth
+              onClick={() => navigateToPath(TRAINING_PROGRAM_PATH)}
+            >
+              My training program
+            </Button>
+            <Button
+              variant="ghost"
+              disabled={starting}
+              fullWidth
+              onClick={() => props.onNavigate('cardio')}
+            >
+              Log cardio instead
+            </Button>
           </div>
         </DestinationBanner>
 

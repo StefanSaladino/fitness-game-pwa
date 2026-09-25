@@ -1,9 +1,19 @@
+/**
+ * Maintainer boundary: canonical client navigation without a routing dependency.
+ * navigateToPath/replacePath must dispatch popstate so usePathname subscribers
+ * observe history changes. Keep special deep links explicit instead of hiding
+ * route ownership inside feature components.
+ */
+
 import { useEffect, useState } from 'react';
 
 export type ProductPathSection = 'home' | 'workouts' | 'cardio' | 'groups' | 'progress' | 'compete';
 
 export const TRAINING_VOLUME_PATH = '/progress/volume';
 export const TRAINING_REPORTS_PATH = '/progress/reports';
+export const TRAINING_PROGRAM_PATH = '/program';
+export const TRAINING_SETTINGS_PATH = '/settings/training';
+export const TUTORIAL_PATH = '/tutorial';
 
 const PRODUCT_SECTION_PATHS: Record<ProductPathSection, string> = {
   home: '/',

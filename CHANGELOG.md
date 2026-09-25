@@ -1,5 +1,31 @@
 # Changelog
 
+## Unreleased - Phase 20.7 first-run product tutorial
+
+- Added a versioned, account-persisted first-run tutorial that appears after profile onboarding and before the main product for users who have not completed the current tutorial version.
+- Reworked the first-run tutorial to coach users over the real production Home, Lift, Program, Progress, Groups, Compete, and Settings screens instead of rendering miniature/mock feature screens.
+- Added a responsive spotlight + coach layer with step navigation, Back/Next controls, skip/close behavior, and explicit launch choices at completion.
+- Added a permanent Settings → Help & tutorial replay entry.
+- Tutorial mode suppresses the platform message center while the tutorial is active so system message controls cannot cover the coach or compete for focus.
+- Tutorial mode now renders the real production screen components with synthetic tutorial fixture data; no real profile, email, group, leaderboard, workout, progress, Program, or Settings account values are rendered inside the walkthrough.
+- Persisted tutorial completion monotonically on `profiles.tutorial_completed_version` through the active-account-guarded `complete_my_tutorial` RPC.
+- Kept injury/physical-limitation tutorial language review-and-confirm only; the tutorial does not diagnose injuries or declare exercises medically safe.
+- Added focused model/service/screen tests and hosted rollback-safe pgTAP coverage.
+
+## Unreleased - Phase 20.6 program UI, printable plans, and personalization
+
+- Added the authenticated `/program` route and a Lift-owned entry point without expanding the primary app navigation.
+- Added direct `/settings/training` routing with a return-to-program path for equipment and training preferences.
+- Added durable Program creation/preview/draft/activation/lifecycle UI, saved-program selection, collapsible program weeks, substitutions, missed/own-workout paths, and ordinary-workout launch.
+- Added guarded user working-set overrides while preserving the system recommendation as the adaptation baseline.
+- Added reviewed personal-volume history and evidence-weighted individual baseline learning on top of the Phase 19 methodology.
+- Added a guided injury/physical-limitation review flow that suggests exercises from user-selected movement restrictions but persists only user-confirmed `PHYSICAL_LIMITATION` exclusions.
+- Prevented Program start dates in the past relative to the user's configured profile timezone.
+- Updated split display labels to show workout-day boundaries with slash separators.
+- Updated the Program PDF for print use with write-in actual sets, load, reps, and completion fields.
+- Added dedicated Program browser coverage across desktop Chromium, Android Chromium, and mobile WebKit plus focused domain/PDF/settings tests.
+- Kept the ordinary lifting workflow authoritative for actual sets, history, XP/scoring, progression, and Phase 19 analytics.
+
 ## Unreleased - Phase 20.5 adaptive progression
 
 - Added `training-program-adaptation-v1` deterministic future-prescription adaptation driven only by completed linked workout evidence.
@@ -68,7 +94,7 @@
 - Generator muscle-slot selection uses only Phase-19-eligible candidates and does not duplicate `muscle-volume-v1`.
 - Generated program persistence remains Phase 20.4; exclusions/substitutions remain Phase 20.3.
 
-## Unreleased â€” Phase 20.1 equipment/access profile
+## Unreleased — Phase 20.1 equipment/access profile
 
 - Added an explicit personalized-program access profile with `COMMERCIAL_GYM` and `CUSTOM` modes; an absent profile remains unconfigured rather than silently assuming full-gym access.
 - Added the source-controlled equipment taxonomy covering dumbbells, barbell/rack/bench, pull-up/dip stations, cables, machines, bands, kettlebells, landmine, rings, plyometric box, GHD/back-extension equipment, medicine ball, specialty bars, and strongman equipment.
@@ -77,10 +103,10 @@
 - Locked the 2026-09-22 generator-loggability audit at 568 active exercises / 512 `WEIGHT_REPS` or `BODYWEIGHT_REPS` exercises / 56 deferred by the current logging model.
 - Kept Bands (0/15 generator-loggable) and Medicine Ball (0/8) profile-selectable but generator-ineligible instead of misrepresenting their resistance as weight or bodyweight load.
 - No Phase 20.1 change alters `lifting-v1`, `muscle-volume-v1`, XP, workout history, or exercise progression.
-## Unreleased â€” Phase 20.0 personalized-program foundation
+## Unreleased — Phase 20.0 personalized-program foundation
 
 - Locked `training-program-v1` as a deterministic four-week planning/template layer that launches into the ordinary lifting workflow rather than creating a second workout system.
-- Added a pure TypeScript program-definition contract and validator for 1â€“6 sessions/week, four program weeks, the existing 8-exercise/session launch limit, canonical exercise uniqueness/order, rep/set ranges, bodyweight load modes, and optional Superset structure.
+- Added a pure TypeScript program-definition contract and validator for 1–6 sessions/week, four program weeks, the existing 8-exercise/session launch limit, canonical exercise uniqueness/order, rep/set ranges, bodyweight load modes, and optional Superset structure.
 - Limited v1 generated prescriptions to currently loggable `WEIGHT_REPS` / `BODYWEIGHT_REPS` exercises; `DURATION` / `OTHER` remain excluded until normal set-completion semantics exist.
 - Locked physical-limitation/injury input as exclusion intent only: no diagnosis, rehabilitation protocol, pain interpretation, or claim that a substitute is medically safe.
 - Locked Phase 19 volume/performance read models as program inputs rather than duplicating hypertrophy-volume or progression methodology.

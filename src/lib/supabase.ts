@@ -1,3 +1,9 @@
+/**
+ * Maintainer boundary: browser Supabase client only.
+ * Hosted Supabase is authoritative; this module must use browser-safe public
+ * configuration and must never receive service-role credentials.
+ */
+
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import { resolveTopSetAppOrigin } from './appOrigin';
 

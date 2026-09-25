@@ -1,3 +1,9 @@
+/**
+ * Maintainer boundary: narrow versioned RPC adapter for program constraints.
+ * Preserve optimistic revision checks and normalized full-snapshot replacement;
+ * do not replace this with direct authenticated table writes.
+ */
+
 import type { SupabaseClient } from '@supabase/supabase-js';
 import {
   normalizeTrainingProgramConstraintEntries,

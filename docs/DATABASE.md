@@ -266,3 +266,19 @@ User reports and moderation-case data are privacy-bounded and administrator-auth
 Canonical database tests live under `supabase/tests/*.test.sql` and are rollback-safe pgTAP suites. Repository structural validation (`npm run db:test:ci`) does not replace applying migrations and executing relevant pgTAP tests against hosted Supabase.
 
 See [`SUPABASE-SETUP.md`](SUPABASE-SETUP.md) and [`CI-VALIDATION.md`](CI-VALIDATION.md).
+
+## Phase 20 personalized-program persistence — current
+
+Phase 20 persists reusable generation preferences, versioned exercise constraints, durable programs/workouts/exercises, adaptation revisions/audit data, and Phase 20.6 volume adjustments. The normal workout tables remain authoritative once a planned slot is launched.
+
+Important 20.6 persistence rules:
+
+- `training_program_exercises.working_sets` remains the system recommendation/adaptation baseline.
+- `user_working_sets_override` is nullable user intent for the planned workout. Launch uses `coalesce(user_working_sets_override, working_sets)`.
+- `training_program_volume_adjustments` is an owner-readable audit record; direct authenticated writes are not the mutation boundary.
+- `set_my_training_program_workout_volume` is the guarded self-service mutation boundary and requires an owned DRAFT/ACTIVE program plus an unlinked PLANNED/MISSED slot with optimistic revision checks.
+- `get_my_weekly_muscle_volume_history` is an authenticated owner-scoped read model over reviewed Phase 19 muscle-stimulus history.
+- Guided injury/limitation UI does not introduce diagnosis tables. Confirmed exercise exclusions continue to use the versioned `training_program_exercise_constraints` model with reason `PHYSICAL_LIMITATION`.
+- Public generated TypeScript definitions must be regenerated after hosted public-schema changes; never patch the generated file by hand.
+
+Repository SQL hygiene checks do not prove these migrations are present on hosted Supabase. Apply and verify the exact hosted migration versions, execute the matching pgTAP suites, and review advisors as described in `SUPABASE-SETUP.md`.

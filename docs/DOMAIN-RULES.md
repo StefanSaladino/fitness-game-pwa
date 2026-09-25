@@ -491,3 +491,29 @@ The methodology is anchored to the following evidence while keeping product-spec
 - Kassiano et al. (2024), PMID `38684187`, and Krause Neto et al. (2025), PMID `40276368`, help inform calf/glute evidence confidence but do not justify pretending all muscle-specific benchmark ranges are equally certain.
 
 The `0.90` / `0.80` performance-index tiers, 180-day baseline window, single-rep cap, Drop Set continuation coefficient/cap, and muscle-specific high-review cutoffs are **methodology-versioned Top Set decisions** informed by the evidence above; they are not presented as universally validated physiological constants.
+
+## Personalized training program rules
+
+### Planning is not execution
+
+A training program describes planned work. A linked ordinary workout session describes what the user actually performed. Never infer completed sets, XP, PRs, or Phase 19 stimulus directly from a plan.
+
+### Determinism and snapshots
+
+Generation is deterministic for the same validated source snapshot. Persist generation inputs/version metadata with the program. Do not read mutable profile/history state later and pretend it was part of the original generation decision.
+
+### Constraints
+
+`EXCLUDE` is hard. `PREFER` is a ranking hint and never overrides equipment availability, loggability, or a hard exclusion. `PHYSICAL_LIMITATION` is a reason for a user-confirmed exercise exclusion; it is not a diagnosis or a declaration that another exercise is medically safe.
+
+### Volume override
+
+The recommended working-set count and the user's current override are distinct values. Adaptation reasoning must preserve the recommendation baseline; launch may use the override when present.
+
+### Personal-volume learning
+
+The learned personal-volume baseline is evidence weighted and deliberately conservative at low sample counts. It is a product heuristic over reviewed historical signals, not a causal or medical estimate of optimal volume.
+
+### Start dates and calendar semantics
+
+Program dates are calendar dates. UI start dates may not be earlier than "today" in the user's configured profile timezone. Schedule construction avoids local-time parsing drift.

@@ -195,3 +195,15 @@ See [`UI-ARCHITECTURE.md`](UI-ARCHITECTURE.md) and [`CSS-ARCHITECTURE.md`](CSS-A
 Phase 20 is reserved for Personalized Training Programs. Native-shell work begins in Phase 21 with a Capacitor-first architecture proof and must not rewrite or fork Top Set's React/Supabase authority boundaries.
 
 Nothing in the current PWA architecture depends on future Phase 21/22 native live-workout surfaces.
+
+## Personalized-program planning layer
+
+Phase 20 is a planning/template layer above the existing workout engine.
+
+- Domain generation/scheduling/constraints/adaptation live under `src/domain/trainingProgram*`.
+- Supabase composition/persistence lives under `src/features/training-program/`.
+- `/program` owns planning UI. `/settings/training` owns reusable equipment/training preferences.
+- Program launch creates/links an ordinary workout session. The normal workout subsystem remains authoritative for performed sets, completion state, XP/scoring, PRs, history, and downstream Phase 19 analytics.
+- Phase 19 remains the source for muscle-volume/performance evidence. Phase 20 may consume that evidence; it must not fork a second hypertrophy/scoring model.
+- User volume overrides are presentation/planning intent. Keep the system recommendation separately so future adaptation can still explain its baseline.
+- Injury/physical-limitation inputs are exclusion intent only. Suggested exercises require explicit user confirmation before becoming hard exclusions.

@@ -1,3 +1,9 @@
+/**
+ * Maintainer boundary: gathers reviewed evidence, builds a deterministic
+ * adaptation decision, then applies it through the guarded atomic RPC. Keep the
+ * evidence read and mutation boundary distinct so revisions remain auditable.
+ */
+
 import type { SupabaseClient } from '@supabase/supabase-js';
 import {
   TRAINING_PROGRAM_TARGET_MUSCLE_GROUPS,
@@ -21,6 +27,11 @@ import {
   type MusclePerformanceService,
 } from '../progress/musclePerformanceService';
 import { buildMuscleVolumeRecommendationPayloads } from '../progress/muscleVolumeRecommendationModel';
+import { personalizeMuscleVolumeRows } from '../progress/personalVolumeBaseline';
+import {
+  createPersonalVolumeHistoryService,
+  type PersonalVolumeHistoryService,
+} from '../progress/personalVolumeHistoryService';
 import {
   createExerciseProgressService,
   type ExerciseProgressService,
@@ -40,6 +51,7 @@ export interface TrainingProgramAdaptationResult {
 export interface TrainingProgramAdaptationServiceDependencies {
   progressService: ExerciseProgressService;
   performanceService: MusclePerformanceService;
+  personalVolumeHistoryService?: PersonalVolumeHistoryService;
 }
 
 export interface TrainingProgramAdaptationService {
@@ -397,18 +409,33 @@ export function createTrainingProgramAdaptationService(
         return shortCircuitResult(context.existingAdaptation);
       }
 
-      const [volumeRows, performanceObservations] = await Promise.all([
+      const personalVolumeHistoryService =
+        injected?.personalVolumeHistoryService
+        ?? createPersonalVolumeHistoryService(getClient());
+
+      const [volumeRows, performanceObservations, personalVolumeHistory] =
+        await Promise.all([
         dependencies.progressService.loadMuscleVolume(
           context.triggerScoringDate,
         ),
         dependencies.performanceService.loadObservations(
           context.triggerScoringDate,
-          56,
+          126,
+        ),
+        personalVolumeHistoryService.load(
+          context.triggerScoringDate,
+          126,
         ),
       ]);
 
-      const payloads = buildMuscleVolumeRecommendationPayloads(
+      const personalized = personalizeMuscleVolumeRows(
         volumeRows,
+        personalVolumeHistory,
+        performanceObservations,
+      );
+
+      const payloads = buildMuscleVolumeRecommendationPayloads(
+        personalized.rows,
         performanceObservations,
       );
 

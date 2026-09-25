@@ -107,13 +107,20 @@ const scenarios: Scenario[] = [
     { label: 'Administration', panel: 'admin' },
   ].map(({ label, panel }): Scenario => ({
     name: `settings-${label.toLowerCase().replaceAll(' ', '-').replaceAll('&', 'and')}`,
-    url: '/release-visual-audit.e2e.html?surface=settings', group: 'settings',
-    prepare: async (page) => {
-      const row = page.getByRole('button', { name: label });
-      await expect(row).toBeVisible({ timeout: 5_000 });
-      await row.click();
-      await expect(page.locator(`[data-settings-view="${panel}"]`)).toBeVisible({ timeout: 5_000 });
-    },
+    url: panel === 'training'
+      ? '/release-visual-audit.e2e.html?surface=settings&panel=training'
+      : '/release-visual-audit.e2e.html?surface=settings',
+    group: 'settings',
+    prepare: panel === 'training'
+      ? async (page) => {
+          await expect(page.locator('[data-settings-view="training"]')).toBeVisible({ timeout: 5_000 });
+        }
+      : async (page) => {
+          const row = page.getByRole('button', { name: label });
+          await expect(row).toBeVisible({ timeout: 5_000 });
+          await row.click();
+          await expect(page.locator(`[data-settings-view="${panel}"]`)).toBeVisible({ timeout: 5_000 });
+        },
   })),
   { name: 'admin-overview', url: '/app-composition.e2e.html?surface=admin', group: 'admin' },
   { name: 'admin-users-list', url: '/user-administration.e2e.html', group: 'admin' },

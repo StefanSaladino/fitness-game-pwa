@@ -1,3 +1,9 @@
+/**
+ * Maintainer boundary: local active-workout recovery snapshot.
+ * Recovery data preserves unsynced UI/session continuity; it does not supersede
+ * authoritative server revisions once reconnect/reconciliation succeeds.
+ */
+
 import type {
   ActiveWorkoutSession,
   BodyweightLoadMode,

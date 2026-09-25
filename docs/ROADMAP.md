@@ -1,6 +1,6 @@
 # Top Set Development Roadmap
 
-Status: **Phase 20 active - 20.5 adaptive progression in validation**
+Status: **Phase 20 active — 20.6 program UI/PDF and personalization are implemented; closeout validation is in progress**
 
 This document is the canonical milestone index. Detailed historical implementation records live in the corresponding `PHASE*.md` files.
 
@@ -203,16 +203,32 @@ This is the shipped Phase 19 release contract.
 | Phase | Status | Goal |
 |---|---|---|
 | 20.0 | **DONE** | Personalized-program specification, safety boundaries, four-week `training-program-v1` structure, source-snapshot rules, and persistence responsibilities |
-| 20.1 | **DONE** | Equipment/access profile â€” explicit commercial-gym vs custom/home access, persisted equipment taxonomy, RLS/RPC mutation boundary, Settings editor, and 568/512 generator-loggability audit |
+| 20.1 | **DONE** | Equipment/access profile — explicit commercial-gym vs custom/home access, persisted equipment taxonomy, RLS/RPC mutation boundary, Settings editor, and 568/512 generator-loggability audit |
 | 20.2 | **DONE** | Deterministic four-week generator using persisted goal/frequency, explicit equipment resolution, established same-exercise history, and Phase 19 volume/performance inputs |
 | 20.3 | **DONE** | Versioned hard exclusions/soft preferences plus fail-closed intelligent substitutions preserving granular v2 muscle target, contribution role, selection intent, measurement semantics, and equipment compatibility |
 | 20.3A | **DONE** | Program configuration and scheduling: 4/8 weeks, compatible split selection, start date, training weekdays, exact scheduled dates, and planned-vs-actual execution lineage |
 | 20.4 | **DONE** | Persist generated programs as structured planned workouts/prescriptions that launch into the normal workout flow with durable execution lineage |
 | 20.5 | **IN VALIDATION** | Append-only adaptive progression of future planned prescriptions from completed workout evidence plus existing Phase 19 performance-aware volume signals |
 | 20.6 | **PLANNED** | Program UI plus optional downloadable PDF export; the in-app structured program remains authoritative |
-| 20.7 | **PLANNED** | Regression, safety/quality validation, documentation, and production release |
+| 20.7 | **IN PROGRESS** | First-run tutorial, regression, safety/quality validation, documentation, and production release |
 
 Phase 20 consumes Phase 19 intelligence rather than duplicating it. Program generation should use the user's goals, schedule, equipment, established exercise history/E1RM confidence, recent performance, and muscle-volume status. A generated exercise can be marked unavailable and replaced with a compatible alternative that preserves program intent as closely as possible. Injury/physical-limitation input is treated as an exclusion constraint, not a diagnosis or claim that a substitute is medically safe.
+
+### Phase 20.6 current checkpoint
+
+Status: **IMPLEMENTED — CLOSEOUT VALIDATION IN PROGRESS**
+
+Phase 20.6 now includes the real `/program` application route and Lift entry point, direct `/settings/training` preference routing with return-to-program navigation, durable draft/active program workflows, collapsible saved-program weeks, user-controlled working-set overrides that remain separate from the recommendation baseline, learned personal-volume history, guided injury/physical-limitation review that only persists user-confirmed exercise exclusions, substitutions, and a print-oriented program PDF with write-in fields for actual sets, load, reps, and completion.
+
+Program start dates are bounded to today-or-later in the user's profile timezone. Split labels are presentation-friendly (`Push / Pull / Legs`, `Upper / Lower`, and similar) while the internal split registry remains stable. The guided limitation flow is not a diagnostic system: body area and movement selections are used only to suggest exercises for the user to review; no exercise becomes a hard `PHYSICAL_LIMITATION` exclusion until the user confirms it.
+
+Phase 20.7 remains the release checkpoint: run the full repository/browser gate, repeat hosted database verification for the final migration set, review advisors, reconcile generated types/documentation, and close the production release only from a clean approved commit.
+
+
+
+### Phase 20.7 first-run tutorial
+
+Phase 20.7 begins with release-readiness onboarding: a versioned interactive tutorial appears once per account after profile setup, remains replayable from Settings, and explains Home, Lift, Programs, Progress, and optional Groups without hiding the normal product behind fragile DOM tooltips. Tutorial completion is persisted through a guarded self-service RPC and is independent of workout/program state.
 
 ## Phase 21 — Native architecture
 

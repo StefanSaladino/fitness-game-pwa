@@ -1,3 +1,9 @@
+/**
+ * Maintainer note: reliability E2E HTML entry points are conditionally added to
+ * the Vite build. A new fixture needs both its HTML input here and corresponding
+ * harness/spec coverage; production builds should not accidentally depend on it.
+ */
+
 import { resolve } from 'node:path';
 import { defineConfig, type Plugin } from 'vite';
 import react from '@vitejs/plugin-react';
@@ -39,6 +45,7 @@ export default defineConfig({
           progress: resolve(process.cwd(), 'progress.e2e.html'),
           cardio: resolve(process.cwd(), 'cardio.e2e.html'),
           appComposition: resolve(process.cwd(), 'app-composition.e2e.html'),
+          trainingProgram: resolve(process.cwd(), 'training-program.e2e.html'),
           userAdministration: resolve(process.cwd(), 'user-administration.e2e.html'),
         },
       } : {}),

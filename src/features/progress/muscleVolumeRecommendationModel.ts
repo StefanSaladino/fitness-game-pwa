@@ -1,3 +1,9 @@
+/**
+ * Maintainer boundary: joins Phase 19 volume rows with performance monitoring.
+ * This is the shared recommendation composition point used by reporting/program
+ * personalization; avoid creating parallel recommendation rules in UI code.
+ */
+
 import type { MuscleVolumeMuscleGroup, MuscleVolumeSummary, MuscleVolumeWindowDays } from './model';
 import {
   buildMusclePerformanceMonitor,

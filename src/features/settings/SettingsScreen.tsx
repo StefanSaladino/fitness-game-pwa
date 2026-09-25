@@ -1,6 +1,14 @@
-import { useRef, useState, type ReactNode } from 'react';
+/**
+ * Maintainer boundary: Settings category index plus deep-linkable focused panels.
+ * Program-originated /settings/training navigation may carry a return path; keep
+ * Back behavior contextual instead of always collapsing to the Settings index.
+ */
+
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { Button, Icon } from '../../components/ui';
-import { navigateToPath } from '../../lib/appNavigation';
+import { navigateToPath,
+  TUTORIAL_PATH,
+} from '../../lib/appNavigation';
 import type { PushNotificationService } from '../../pwa/pushNotificationService';
 import type { PwaService } from '../../pwa/pwaService';
 import { usePlatformAccess } from '../admin/hooks/usePlatformAccess';
@@ -53,6 +61,8 @@ interface SettingsScreenProps {
   notificationPreferenceService?: NotificationPreferenceService;
   pushNotificationService?: PushNotificationService;
   trainingProgramProfileService?: TrainingProgramProfileService;
+  initialPanel?: SettingsPanel | null;
+  returnPath?: string | null;
   onProfileChanged?: () => Promise<unknown> | unknown;
 }
 
@@ -91,9 +101,11 @@ export function SettingsScreen({
   notificationPreferenceService,
   pushNotificationService,
   trainingProgramProfileService,
+  initialPanel = null,
+  returnPath = null,
   onProfileChanged,
 }: SettingsScreenProps) {
-  const [panel, setPanel] = useState<SettingsPanel | null>(null);
+  const [panel, setPanel] = useState<SettingsPanel | null>(initialPanel);
   const platformAccess = usePlatformAccess(accessService);
   const profileSettings = useProfileSettings(profile, settingsService, onProfileChanged);
   const groupServiceRef = useRef<GroupService | null>(null);
@@ -107,16 +119,25 @@ export function SettingsScreen({
     ? `${groups.groups.length} ${groups.groups.length === 1 ? 'group' : 'groups'}`
     : 'Checking membership';
 
+  useEffect(() => {
+    setPanel(initialPanel);
+  }, [initialPanel]);
+
   const openPanel = (nextPanel: SettingsPanel) => {
     setPanel(nextPanel);
   };
 
   const goBack = () => {
     if (panel) {
+      if (returnPath && panel === initialPanel) {
+        navigateToPath(returnPath);
+        return;
+      }
       setPanel(null);
       return;
     }
-    navigateToPath('/');
+
+    navigateToPath(returnPath ?? '/');
   };
 
   return (
@@ -161,6 +182,11 @@ export function SettingsScreen({
 
             <SettingsGroup title="App & control">
               <SettingsRow detail="Install, offline storage, and updates" label="App status" onClick={() => openPanel('app')} />
+              <SettingsRow
+                detail="Replay the guided Top Set introduction"
+                label="Help & tutorial"
+                onClick={() => navigateToPath(`${TUTORIAL_PATH}?from=settings`)}
+              />
               <SettingsRow detail="Account-owned data and deletion" label="Privacy & data" onClick={() => openPanel('privacy')} />
               {showAdministration ? <SettingsRow detail="Authorized platform controls" label="Administration" onClick={() => openPanel('admin')} /> : null}
             </SettingsGroup>
@@ -191,6 +217,13 @@ export function SettingsScreen({
 
         {panel === 'training' ? (
           <div className={styles.panelStack}>
+            {returnPath ? (
+              <div className={styles.actions}>
+                <Button onClick={() => navigateToPath(returnPath)} variant="secondary">
+                  Back to training program
+                </Button>
+              </div>
+            ) : null}
             <ProfileSettingsForm
               busy={profileSettings.busy}
               error={profileSettings.error}

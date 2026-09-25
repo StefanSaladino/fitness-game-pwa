@@ -18,6 +18,7 @@ function createClient(overrides?: {
       onboarding_completed_at: null,
       profile_code: 'FG-1A2B3C4D5E',
       preferred_weight_unit: 'KG',
+      tutorial_completed_version: 0,
     },
     error: overrides?.profileError ?? null,
   });
@@ -45,6 +46,7 @@ describe('onboarding service', () => {
       onboardingCompletedAt: null,
       profileCode: 'FG-1A2B3C4D5E',
       preferredWeightUnit: 'KG',
+      tutorialCompletedVersion: 0,
     });
 
     expect(fake.from).toHaveBeenCalledWith('profiles');

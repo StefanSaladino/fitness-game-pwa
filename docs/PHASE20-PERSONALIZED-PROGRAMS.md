@@ -1,6 +1,6 @@
 # Phase 20 — Personalized Training Programs
 
-Status: **20.5 IMPLEMENTED - local validation pending; 20.6 program UI/PDF follows**
+Status: **20.6 IMPLEMENTED — program UI/PDF and personalization are in closeout validation; 20.7 release validation follows**
 Phase 20 adds structured, personalized four- or eight-week lifting programs while preserving Top Set's existing workout, scoring, Phase 19 analytics, recovery, and security boundaries. The program layer is a planning/template system, not a second workout engine.
 
 ## 20.0 contract
@@ -90,7 +90,7 @@ Equipment/access work begins with an equipment-to-loggable-exercise audit. Comme
 
 The current BAND/`OTHER` mismatch must be resolved before band-only program generation is enabled.
 
-## 20.1 implementation â€” equipment/access profile
+## 20.1 implementation — equipment/access profile
 
 Phase 20.1 persists the user's program-generation equipment boundary without silently assuming a training environment.
 
@@ -338,6 +338,32 @@ No private chain-of-thought or hidden model reasoning is persisted. The audit co
 
 Adaptation context is a `SECURITY INVOKER` read using existing owner RLS. The apply RPC is the narrow privileged mutation boundary: active-account guard, ownership checks, optimistic program revision, completed-trigger verification, exact future-PLANNED targeting, current exclusion checks, bounded field mutations, and explicit authenticated-only execute grants.
 
+## 20.6 implementation — program UI, printable plan, volume controls, and guided limitations
+
+20.6 exposes the planning layer through the authenticated `/program` route, entered from Lift. The Program surface remains associated with Lift rather than becoming a new primary navigation destination. Program-owned equipment/training-preference links deep-link to `/settings/training` and preserve a clear return path to `/program`.
+
+Creation supports 1–6 sessions per week, four- or eight-week blocks, exact weekdays, and the existing deterministic split registry. A program cannot start before the current calendar day in the user's configured profile timezone. Display labels use slash separators between workout days; internal enum values remain stable persistence/domain identifiers.
+
+Draft and active programs are persisted through the Phase 20.4 model. Saved weeks are collapsible to keep long programs usable on phones. Launching a programmed workout still seeds the ordinary lifting workflow; Phase 20 never becomes a second set-completion or XP engine. Own-workout and missed-workout paths remain explicit.
+
+The planned-workout volume control stores a nullable user override separately from the system recommendation. `working_sets` remains the recommendation/adaptation baseline; `user_working_sets_override` is the user's current planned prescription. Program launch uses the override when present and falls back to the recommendation otherwise. The adjustment boundary is revision-guarded and audited.
+
+Personal volume learning consumes reviewed Phase 19 muscle-stimulus history through `get_my_weekly_muscle_volume_history`. The implementation is an evidence-weighted personalization heuristic, not a causal estimator of an individual's optimal training volume. Low-evidence users retain the population benchmark as the dominant prior.
+
+The Injuries & physical limitations flow is intentionally non-diagnostic. Users may identify an affected area and movement restrictions to obtain exercise suggestions for review. Suggestions do not become constraints automatically. Only exercises explicitly confirmed by the user are persisted through the existing `EXCLUDE + PHYSICAL_LIMITATION` constraint boundary. Manual exercise exclusion remains available. Top Set does not infer diagnosis, rehabilitation, or medical safety from the selected area or movement.
+
+The downloadable PDF is a snapshot of the current persisted program, not an authoritative execution record. It is designed for printing and includes blank write-in fields for actual sets, load/weight, reps, and completion so a user can carry the plan offline on paper.
+
+20.6 database/support migrations in the current working release line are:
+
+- `20260924014131_phase20_6_program_ui_workflow_support.sql`
+- `20260924015313_phase20_6_training_program_substitution_ui_boundary.sql`
+- `20260924015542_phase20_6_remove_duplicate_substitution_overload.sql`
+- `20260924230116_phase20_6_user_volume_overrides.sql`
+- `20260924230130_phase20_6_personal_volume_history.sql`
+
+The public generated database types must be regenerated from the linked hosted project after these migrations. 20.7 owns the final full regression, hosted verification, advisor review, documentation reconciliation, and release decision.
+
 ## Evidence background
 
 - ACSM 2026 resistance training guideline summary: https://acsm.org/resistance-training-guidelines-update-2026/
@@ -347,3 +373,18 @@ Adaptation context is a `SECURITY INVOKER` read using existing owner RLS. The ap
 ## 20.0 exit criteria
 
 20.0 is complete when the methodology/scope, safety semantics, persistence responsibilities, four-week / 1–6-session / max-8-exercise structure, loggable-measurement boundary, reproducibility rules, and Phase 19 dependency are explicit and unit-tested. 20.1 can then implement equipment/access persistence and resolve catalogue-equipment gaps.
+
+
+## 20.7 first-run tutorial and release-readiness UX
+
+Before the final Phase 20 release gate, new users receive a versioned interactive product tutorial after profile onboarding. Completion is stored per account in `profiles.tutorial_completed_version`; version zero means the current tutorial has not been completed or skipped. Completion is monotonic through `complete_my_tutorial`, so an older client cannot lower a newer completion marker.
+
+The tutorial teaches directly on the real production screens. A fixed coach and responsive spotlight guide the user through Home, Lift, Program, Progress, Groups, Compete, and Settings while the underlying screen is the same screen they will use after the tutorial. The final step can launch the user's first lift, open Program setup, or go Home.
+
+The walkthrough is replayable from Settings → Help & tutorial. Replaying does not require resetting account state. Physical-limitation examples remain non-diagnostic and emphasize that suggested exercises are for review until the user explicitly confirms an exclusion.
+
+
+The platform message center is intentionally not mounted while tutorial mode is active. Tutorial controls own the temporary modal/focus layer; inbox triggers and platform popups return immediately after the tutorial exits.
+
+
+Tutorial screen content is synthetic by design. The walkthrough renders the same production screen components used by the app, but supplies dedicated demo profile, workout, progress, Program, group, competition, and Settings fixtures. Real account-owned values are not loaded into the tutorial presentation. Tutorial completion still persists against the authenticated account through the versioned tutorial RPC.

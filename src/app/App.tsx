@@ -1,3 +1,10 @@
+/**
+ * Maintainer boundary: this file owns top-level authenticated route composition.
+ * Top Set intentionally uses the small history/popstate helpers in appNavigation
+ * instead of a general router. Deep links such as /program and /settings/training
+ * must work on direct refresh as well as in-app navigation.
+ */
+
 import { lazy, Suspense, useEffect } from 'react';
 import { TopSetLoadingScreen } from '../components/feedback/TopSetLoadingScreen';
 import { AuthProvider, useAuth } from '../features/auth/AuthProvider';
@@ -13,13 +20,17 @@ import { TermsOfServicePage } from '../features/legal/TermsOfServicePage';
 import { OnboardingScreen, OnboardingStatusScreen, useOnboarding } from '../features/onboarding';
 import { ProductController } from '../features/product';
 import { UserMessageCenter } from '../features/messaging';
+import { tutorialIsRequired } from '../features/tutorial/model';
 import { isSupabaseConfigured } from '../lib/supabase';
 import {
   legacyProductSectionFromLocation,
   productPathForSection,
   productSectionFromPathname,
   replacePath,
+  TRAINING_PROGRAM_PATH,
+  TRAINING_SETTINGS_PATH,
   usePathname,
+  TUTORIAL_PATH,
 } from '../lib/appNavigation';
 
 const PlatformAdminRoute = lazy(async () => {
@@ -32,12 +43,31 @@ const SettingsScreen = lazy(async () => {
   return { default: module.SettingsScreen };
 });
 
+const TutorialExperience = lazy(async () => {
+  const module = await import('../features/tutorial');
+  return { default: module.TutorialExperience };
+});
+
+const TrainingProgramController = lazy(async () => {
+  const module = await import(
+    '../features/training-program/components/TrainingProgramController'
+  );
+  return { default: module.TrainingProgramController };
+});
+
 function RouteLoading() {
   return <TopSetLoadingScreen />;
 }
 
 function UnknownAuthenticatedRoute() {
   useEffect(() => { replacePath('/'); }, []);
+  return <RouteLoading />;
+}
+
+function TutorialStartRedirect({ fromSettings = false }: { fromSettings?: boolean }) {
+  useEffect(() => {
+    replacePath(`/tutorial?step=0${fromSettings ? '&from=settings' : ''}`);
+  }, [fromSettings]);
   return <RouteLoading />;
 }
 
@@ -76,15 +106,67 @@ function ProfileGate({ userId, userEmail, memberSince, pathname }: { userId: str
     );
   }
 
-  if (pathname === '/settings') {
+  const needsTutorial = tutorialIsRequired(onboarding.profile);
+  const tutorialParams =
+    typeof window === 'undefined'
+      ? new URLSearchParams()
+      : new URLSearchParams(window.location.search);
+  const tutorialReturnPath =
+    tutorialParams.get('from') === 'settings' ? '/settings' : '/';
+  const tutorialActive = pathname === TUTORIAL_PATH;
+
+  if (needsTutorial && !tutorialActive) {
+    return <TutorialStartRedirect />;
+  }
+
+  if (tutorialActive) {
+    return (
+      <Suspense fallback={<RouteLoading />}>
+        <TutorialExperience
+          onProfileChanged={onboarding.retry}
+          profile={onboarding.profile}
+          required={needsTutorial}
+          returnPath={tutorialReturnPath}
+        />
+      </Suspense>
+    );
+  }
+
+  if (pathname === '/settings' || pathname === TRAINING_SETTINGS_PATH) {
+    const programTrainingSettings = pathname === TRAINING_SETTINGS_PATH;
+
     return (
       <>
         <Suspense fallback={<RouteLoading />}>
           <SettingsScreen
+            initialPanel={programTrainingSettings ? 'training' : null}
             memberSince={memberSince}
             onProfileChanged={onboarding.retry}
             profile={onboarding.profile}
+            returnPath={programTrainingSettings ? TRAINING_PROGRAM_PATH : null}
             userEmail={userEmail}
+          />
+        </Suspense>
+        <UserMessageCenter />
+      </>
+    );
+  }
+
+  if (pathname === TRAINING_PROGRAM_PATH) {
+    return (
+      <>
+        <Suspense fallback={<RouteLoading />}>
+          <TrainingProgramController
+            profile={onboarding.profile}
+            onNavigate={(section) => {
+              if (section === 'profile') {
+                replacePath('/settings');
+                return;
+              }
+
+              replacePath(productPathForSection(section));
+            }}
+            onSignOut={() => void signOut()}
           />
         </Suspense>
         <UserMessageCenter />

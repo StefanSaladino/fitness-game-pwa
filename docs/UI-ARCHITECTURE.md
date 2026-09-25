@@ -94,3 +94,23 @@ For substantial UI work validate:
 ## Native boundary
 
 The PWA is not a simulated native watch/iOS/Android app. Phase 19 native shells and Phase 20 live workout surfaces consume explicit shared state/contracts rather than forcing native-only behavior into web presentation components.
+
+## Program surface ownership
+
+The personalized Program surface is a Lift-owned planning destination at `/program`, not a new primary-nav product area. Reusable training/equipment preferences live at `/settings/training`; Program-originated settings navigation must preserve a clear return path to Program.
+
+Long saved programs must stay compact on phones: weeks are collapsible, actions must remain readable at 320px, and custom controls must use the shared UI components rather than browser-native styling that diverges across engines.
+
+The Injuries & physical limitations UI is a review-and-confirm flow. Body area/movement selections may suggest exercises, but the UI must visibly distinguish "suggested to review" from a persisted hard exclusion.
+
+
+### First-run tutorial coach
+
+The first-run tutorial overlays the real application rather than maintaining a second miniature UI. Each step owns a production route plus a stable semantic selector used for spotlight positioning. The underlying route remains visually authentic but is click-shielded during the walkthrough so a user cannot accidentally start or mutate real training state while following the tour.
+
+Desktop uses a compact lower-right coach panel; mobile uses a bottom sheet capped below half the viewport so the highlighted app surface remains visible. The message center is not mounted during tutorial mode.
+
+
+#### Tutorial privacy boundary
+
+The tutorial must use production screen components with synthetic fixture data. It must not present live account profile names, usernames, email addresses, group/member names, workout history, PRs, volume values, Program contents, leaderboard rows, or profile pictures. The tutorial service may write only the authenticated account's tutorial completion version; presentation data is entirely synthetic.

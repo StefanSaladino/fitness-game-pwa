@@ -26,3 +26,10 @@ For every migration-bearing slice:
 `npm run db:test:ci` does not start PostgreSQL/Docker and does not prove hosted migration execution.
 
 Do not edit already-applied migrations or reintroduce a Docker/local-Supabase dependency into the supported workflow. See [`../docs/SUPABASE-SETUP.md`](../docs/SUPABASE-SETUP.md) for the full operating procedure.
+
+## Maintainer cautions
+
+- Applied migration files are immutable history. Add a new migration instead of editing an old one.
+- `src/types/database.generated.ts` is generated from hosted public schema and must not be hand-maintained.
+- Security-definer RPCs are narrow mutation/read boundaries; do not "simplify" them into direct authenticated table writes without re-evaluating RLS, optimistic revision checks, and advisor output.
+- Phase 20 program rows are planning state. Actual workout/session/set rows remain authoritative execution history.

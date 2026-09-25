@@ -1,3 +1,9 @@
+/**
+ * Maintainer boundary: serialized workout mutation/replay coordinator.
+ * The promise chain is deliberate. Parallel replay can violate optimistic
+ * revisions and ordering even when individual mutations are idempotent.
+ */
+
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   createWorkoutMutationQueueItem,

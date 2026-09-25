@@ -6,11 +6,11 @@ The active product scoring model is `lifting-v1`. Lifting is primary; cardio is 
 
 ## Current development status
 
-Phase 19 remains complete in **Top Set v1.1.1**. v1.1.1 is a maintenance release that reconciles the 568-exercise catalogue, adds explicit per-exercise bodyweight load-mode capabilities, and refreshes generated database types, the Phase 19 exercise matrix, validation, and documentation. Muscle Volume Intelligence, performance-aware recommendations, completed-period reports, frozen monthly source snapshots, private latest-PDF retention, hosted end-to-end proof, and capacity/security validation remain unchanged. **Phase 20 - Personalized Training Programs - is next.**
+Phase 19 remains complete in **Top Set v1.1.1**. **Phase 20 — Personalized Training Programs — is active. Phases 20.0–20.5 are complete; Phase 20.6 program UI/PDF, user volume controls, learned personal-volume baselines, guided limitation exclusions, and real-app routing are implemented and in closeout validation. Phase 20.7 is the full Phase 20 regression/safety/release gate.**
 
 The completed Phase 19 release includes completed-period Reports UI, idempotent frozen monthly source snapshots, deterministic development QA, real `pdf-lib` PDF generation, hosted workout-to-report E2E validation, verified private latest-PDF retention with short-lived signed downloads, and measured capacity/security validation. Long-term structured snapshots plus latest-only PDF retention remain the shipped retention contract; destructive workout-history cleanup is deferred.
 
-See [`docs/ROADMAP.md`](docs/ROADMAP.md) for the milestone view and completed Phase 19 release and Phase 20 next milestone.
+See [`docs/ROADMAP.md`](docs/ROADMAP.md) for the milestone view, the completed Phase 19 release, and the active Phase 20 checkpoint.
 
 ## Stack
 
@@ -68,6 +68,10 @@ docs/                canonical technical docs + historical phase records
 Start with [`docs/README.md`](docs/README.md). It identifies the source of truth for each topic and distinguishes current reference documents from historical phase records.
 
 Repository history belongs in Git and `CHANGELOG.md`. One-off patch manifests, handoff text files, hotfix READMEs, and duplicated validation instructions should not be committed.
+
+## Maintainer handoff
+
+For architecture boundaries, change recipes, generated-file rules, Phase 20 ownership, and the "do not casually change this" list, read [`docs/MAINTAINER-GUIDE.md`](docs/MAINTAINER-GUIDE.md) before making cross-cutting changes.
 
 ## Contributing
 

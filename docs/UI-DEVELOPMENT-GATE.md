@@ -72,3 +72,17 @@ A deliberate UI review is expected for the remaining Phase 18 surfaces when they
 - Phase 19/20 native and live workout surfaces.
 
 See [`UI-ARCHITECTURE.md`](UI-ARCHITECTURE.md), [`CSS-ARCHITECTURE.md`](CSS-ARCHITECTURE.md), and [`../CONTRIBUTING.md`](../CONTRIBUTING.md).
+
+### Phase 20 program UI
+
+For Program changes, explicitly validate:
+
+- Lift → Program entry and direct `/program` refresh;
+- Program → `/settings/training` → Program return path;
+- 320px containment and readable button/SelectField states;
+- custom SelectField behavior on Chromium and WebKit;
+- guided limitation suggestions versus confirmed exclusions;
+- draft/active saved-program switching and collapsible weeks;
+- start-date lower bound in the profile timezone;
+- volume override → refresh → restore-recommended behavior;
+- printable PDF write-in layout and page continuation.

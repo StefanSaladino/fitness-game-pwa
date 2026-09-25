@@ -1,3 +1,10 @@
+/**
+ * Maintainer boundary: deterministic, side-effect-free program generation.
+ * Database/history reads belong in the service layer. Given the same validated
+ * source snapshot, candidate set, constraints, and evidence, generation should
+ * produce the same definition and fail closed on unsupported inputs.
+ */
+
 import {
   TRAINING_PROGRAM_VERSION,
   validateTrainingProgramDefinition,

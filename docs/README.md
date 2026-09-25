@@ -24,7 +24,11 @@ Repository-wide contribution rules live in [`../CONTRIBUTING.md`](../CONTRIBUTIN
 
 ## Active documentation checkpoint
 
-Phase 19 is complete in Top Set v1.1.1. Phase 20 Personalized Training Programs is active: **20.0 and 20.1 are complete; 20.2 is implemented and in validation** with persisted goal/frequency, a guarded Phase-19-backed candidate catalogue, explicit equipment resolution, and a deterministic four-week generator. **20.3 exclusions/substitutions follows after 20.2 hosted closeout.**
+Phase 19 is complete in Top Set v1.1.1. Phase 20 Personalized Training Programs is active: **20.0–20.5 are complete; 20.6 is implemented and in closeout validation; 20.7 is the planned full regression/safety/release gate.** The current Phase 20 contract is maintained in `PHASE20-PERSONALIZED-PROGRAMS.md`.
+
+## Maintainer guide
+
+[`MAINTAINER-GUIDE.md`](MAINTAINER-GUIDE.md) is the first handoff document for engineers changing the repository. It explains runtime ownership, routing, hosted-Supabase discipline, generated files, high-risk modules, Phase 20 boundaries, browser-test fixtures, and the expected validation path.
 
 ## Historical phase records
 

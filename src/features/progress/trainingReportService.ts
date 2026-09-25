@@ -1,3 +1,9 @@
+/**
+ * Maintainer boundary: constructs completed-period reports from authoritative
+ * read models/frozen sources. Historical monthly snapshots are the source
+ * boundary; do not silently rebuild a frozen month from mutable current data.
+ */
+
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { getSupabaseClient } from '../../lib/supabase';
 import {

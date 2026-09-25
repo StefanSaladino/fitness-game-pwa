@@ -202,6 +202,7 @@ describe('training program persistence service', () => {
       measurement_type: 'WEIGHT_REPS',
       order_index: 0,
       working_sets: 3,
+      user_working_sets_override: index === 3 ? 4 : null,
       reps_min: 5,
       reps_max: 8,
       target_weight_kg: null,
@@ -226,11 +227,24 @@ describe('training program persistence service', () => {
 
     expect(loaded.status).toBe('ACTIVE');
     expect(loaded.revision).toBe(2);
-    expect(loaded.definition).toEqual(program);
+
+    const expectedDefinition = definition();
+    expectedDefinition.workouts[3].exercises[0].workingSets = 4;
+    expect(loaded.definition).toEqual(expectedDefinition);
+
     expect(loaded.workouts[0]).toEqual(expect.objectContaining({
       id: 'planned-0',
       executionStatus: 'COMPLETED_PROGRAMMED',
       workoutSessionId: 'session-1',
+      recommendedTotalWorkingSets: 3,
+      hasUserVolumeOverride: false,
     }));
+
+    expect(loaded.workouts[3]).toEqual(expect.objectContaining({
+      id: 'planned-3',
+      recommendedTotalWorkingSets: 3,
+      hasUserVolumeOverride: true,
+    }));
+    expect(loaded.workouts[3].exercises[0].workingSets).toBe(4);
   });
 });

@@ -1,3 +1,10 @@
+/**
+ * Maintainer note: SelectField renders an accessible custom combobox.
+ * The visible control is a button with role="combobox"; the native <select> is
+ * hidden and options are portal-rendered role="option" buttons. Playwright tests
+ * should click the combobox and option, not call selectOption() on the trigger.
+ */
+
 import {
   Children,
   forwardRef,

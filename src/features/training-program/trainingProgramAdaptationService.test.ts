@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { MusclePerformanceService } from '../progress/musclePerformanceService';
 import type { ExerciseProgressService } from '../progress/progressService';
+import type { PersonalVolumeHistoryService } from '../progress/personalVolumeHistoryService';
 import { createTrainingProgramAdaptationService } from './trainingProgramAdaptationService';
 
 function contextPayload(overrides: Record<string, unknown> = {}) {
@@ -60,6 +61,9 @@ function dependencies() {
     performanceService: {
       loadObservations: vi.fn(async () => []),
     } as unknown as MusclePerformanceService,
+    personalVolumeHistoryService: {
+      load: vi.fn(async () => []),
+    } as unknown as PersonalVolumeHistoryService,
   };
 }
 
@@ -159,7 +163,11 @@ describe('training program adaptation service', () => {
     );
     expect(deps.performanceService.loadObservations).toHaveBeenCalledWith(
       '2026-09-24',
-      56,
+      126,
+    );
+    expect(deps.personalVolumeHistoryService?.load).toHaveBeenCalledWith(
+      '2026-09-24',
+      126,
     );
   });
 

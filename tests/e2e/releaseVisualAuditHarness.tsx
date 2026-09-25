@@ -1,5 +1,5 @@
 import { createRoot } from 'react-dom/client';
-import type { ReactNode } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { AuthLayout } from '../../src/features/auth/components/AuthLayout';
 import { SignUpForm } from '../../src/features/auth/components/SignUpForm';
 import { ForgotPasswordForm } from '../../src/features/auth/components/ForgotPasswordForm';
@@ -14,6 +14,7 @@ import { OptionalGroupSetupScreen } from '../../src/features/groups/components/O
 import type { GroupService, GroupSummary } from '../../src/features/groups';
 import { SettingsScreen } from '../../src/features/settings/SettingsScreen';
 import type { SettingsService } from '../../src/features/settings/settingsService';
+import type { TrainingProgramProfileService } from '../../src/features/settings/trainingProgramProfileService';
 import type { AccountDeletionService } from '../../src/features/settings/accountDeletionService';
 import type { AccountSecurityService } from '../../src/features/settings/accountSecurityService';
 import type { NotificationPreferenceService, NotificationPreferences } from '../../src/features/settings/notificationPreferenceService';
@@ -68,6 +69,17 @@ const exerciseCatalog: ExercisePickerItem[] = presetWorkoutById('FULL_BODY').exe
 }));
 
 const settingsService = { load: async () => profile, update: async () => profile } satisfies SettingsService;
+const trainingProgramProfileService = {
+  load: async () => null,
+  update: async (input) => ({
+    userId: profile.id,
+    accessMode: input.accessMode,
+    equipmentKeys: [...input.equipmentKeys],
+    revision: 1,
+    createdAt: measuredAt,
+    updatedAt: measuredAt,
+  }),
+} satisfies TrainingProgramProfileService;
 const deletionService = { request: async () => 'DELETE stefan', cancel: async () => undefined, confirm: async () => undefined } satisfies AccountDeletionService;
 const accountSecurityService = { changePassword: async () => undefined } satisfies AccountSecurityService;
 const groupService = {
@@ -133,6 +145,44 @@ function AdminShell({ section, title, children }: { section: 'capacity' | 'users
   return <PlatformAdminShell activeSection={section} mobileTitle={title} onBackToApp={() => undefined} onNavigate={() => undefined}>{children}</PlatformAdminShell>;
 }
 
+
+function SettingsVisualFixture() {
+  const [pathname, setPathname] = useState(() => window.location.pathname);
+
+  useEffect(() => {
+    const sync = () => setPathname(window.location.pathname);
+    window.addEventListener('popstate', sync);
+    return () => window.removeEventListener('popstate', sync);
+  }, []);
+
+  const requestedPanel = new URLSearchParams(window.location.search).get('panel');
+  const initialPanel =
+    requestedPanel === 'training' || pathname === '/settings/training'
+      ? 'training'
+      : undefined;
+
+  return (
+    <SettingsScreen
+      key={pathname}
+      accountSecurityService={accountSecurityService}
+      accessService={platformAccess}
+      deletionService={deletionService}
+      groupService={groupService}
+      initialPanel={initialPanel}
+      memberSince="2026-08-18T00:00:00.000Z"
+      notificationPreferenceService={notificationPreferenceService}
+      profile={profile}
+      profilePictureService={profilePictureService}
+      pushNotificationService={pushNotificationService}
+      pwaService={pwaService}
+      returnPath="/"
+      settingsService={settingsService}
+      trainingProgramProfileService={trainingProgramProfileService}
+      userEmail="stefan@example.com"
+    />
+  );
+}
+
 function Fixture() {
   const surface = new URLSearchParams(window.location.search).get('surface') ?? 'dashboard';
   document.body.dataset.releaseVisualAuditSurface = surface;
@@ -146,7 +196,7 @@ function Fixture() {
   if (surface === 'dashboard-solo') return <DashboardScreen group={null} groupNotice={<section aria-label="Group status">Groups are optional.</section>} onNavigate={() => undefined} onSignOut={() => undefined} profile={profile} snapshot={{ ...dashboard, leaderboard: [] }} />;
   if (surface === 'lift-start') return <WorkoutPresetStartScreen busyAction={null} error="" exerciseCatalog={exerciseCatalog} exercisePickerError="" exercisePickerStatus="ready" onNavigate={() => undefined} onRetryExercisePicker={async () => exerciseCatalog} onSignOut={() => undefined} onStart={async () => null} onStartPreset={async () => null} profile={profile} />;
   if (surface === 'groups-empty') return <OptionalGroupSetupScreen activeItem="groups" busyAction={null} createError="" creating={false} inviteError="" inviteStatus="ready" onAcceptInvite={() => undefined} onCreate={() => undefined} onDeclineInvite={() => undefined} onNavigate={() => undefined} onRetryInvites={() => undefined} onSignOut={() => undefined} pendingInvites={[]} profile={profile} />;
-  if (surface === 'settings') return <SettingsScreen accountSecurityService={accountSecurityService} accessService={platformAccess} deletionService={deletionService} groupService={groupService} memberSince="2026-08-18T00:00:00.000Z" notificationPreferenceService={notificationPreferenceService} profile={profile} profilePictureService={profilePictureService} pushNotificationService={pushNotificationService} pwaService={pwaService} settingsService={settingsService} userEmail="stefan@example.com" />;
+  if (surface === 'settings') return <SettingsVisualFixture />;
   if (surface === 'admin-moderation') return <AdminShell section="moderation" title="Moderation"><ModerationWorkspaceScreen actionBusy={false} actionError="" activity={null} activityAccess={null} activityError="" activityLoading={false} activityTypes={['ACCOUNT', 'WORKOUT', 'GROUP_MEMBERSHIP', 'GROUP_ACTIVITY', 'REPORT', 'COMMUNICATION'] as ModerationActivityType[]} currentUserId="admin-id" detailError="" detailLoading={false} directReview={false} directory={moderationDirectory} directoryError="" directoryLoading={false} notice="" onAddNote={async () => true} onAssignSelf={async () => true} onBeginActivityReview={async () => true} onChangePage={() => undefined} onChangeStatus={() => undefined} onClearSelection={() => undefined} onLoadMoreActivity={() => undefined} onOpenCase={() => undefined} onRetryDetail={() => undefined} onRetryDirectory={() => undefined} onUpdateStatus={async () => true} page={1} record={moderationRecord} reviewSubjectId="target-id" selectedCaseId="case-id" status={null} /></AdminShell>;
   if (surface === 'admin-messages') return <AdminShell section="messages" title="Messages"><PlatformMessagingController service={messagingService} /></AdminShell>;
 

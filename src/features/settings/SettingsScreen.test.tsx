@@ -119,7 +119,7 @@ describe('SettingsScreen foundation', () => {
     const user = userEvent.setup();
     render(<SettingsScreen {...shared} accessService={access(false)} memberSince="2026-01-01T00:00:00Z" profile={profile} userEmail="stefan@example.com" />);
 
-    for (const destination of ['Profile', 'Security', 'Training', 'Notifications', 'Groups', 'Privacy & data', 'App status']) {
+    for (const destination of ['Profile', 'Security', 'Training', 'Notifications', 'Groups', 'Privacy & data', 'App status', 'Help & tutorial']) {
       expect(screen.getByRole('button', { name: destination })).toBeInTheDocument();
     }
     expect(screen.getByText('stefan@example.com')).toBeInTheDocument();
@@ -258,4 +258,33 @@ describe('SettingsScreen foundation', () => {
     expect(applyUpdate).toHaveBeenCalledTimes(1);
   });
 
+});
+describe('SettingsScreen program deep link', () => {
+  it('opens a deep-linked Training panel and returns to the training program', async () => {
+    const user = userEvent.setup();
+    window.history.replaceState({}, '', '/settings/training');
+
+    render(
+      <SettingsScreen
+        {...shared}
+        accessService={access(false)}
+        initialPanel="training"
+        profile={profile}
+        returnPath="/program"
+      />,
+    );
+
+    expect(
+      screen.getByRole('heading', { name: 'Training', level: 1 }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('heading', { name: 'Equipment access' }),
+    ).toBeInTheDocument();
+
+    await user.click(
+      screen.getByRole('button', { name: 'Back to training program' }),
+    );
+
+    expect(window.location.pathname).toBe('/program');
+  });
 });

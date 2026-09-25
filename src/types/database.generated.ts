@@ -1,4 +1,4 @@
-﻿export type Json =
+export type Json =
   | string
   | number
   | boolean
@@ -11,31 +11,6 @@ export type Database = {
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "14.5"
-  }
-  graphql_public: {
-    Tables: {
-      [_ in never]: never
-    }
-    Views: {
-      [_ in never]: never
-    }
-    Functions: {
-      graphql: {
-        Args: {
-          extensions?: Json
-          operationName?: string
-          query?: string
-          variables?: Json
-        }
-        Returns: Json
-      }
-    }
-    Enums: {
-      [_ in never]: never
-    }
-    CompositeTypes: {
-      [_ in never]: never
-    }
   }
   public: {
     Tables: {
@@ -1130,6 +1105,7 @@ export type Database = {
           profile_code: string
           profile_picture_path: string | null
           timezone: string
+          tutorial_completed_version: number
           updated_at: string
           username: string
           weekly_workout_target: number
@@ -1145,6 +1121,7 @@ export type Database = {
           profile_code?: string
           profile_picture_path?: string | null
           timezone?: string
+          tutorial_completed_version?: number
           updated_at?: string
           username: string
           weekly_workout_target?: number
@@ -1160,6 +1137,7 @@ export type Database = {
           profile_code?: string
           profile_picture_path?: string | null
           timezone?: string
+          tutorial_completed_version?: number
           updated_at?: string
           username?: string
           weekly_workout_target?: number
@@ -1227,6 +1205,267 @@ export type Database = {
           },
         ]
       }
+      training_program_adaptation_changes: {
+        Row: {
+          adaptation_id: string
+          created_at: string
+          field_name: string
+          id: string
+          new_value: Json
+          old_value: Json
+          program_exercise_id: string
+          reason_code: string
+        }
+        Insert: {
+          adaptation_id: string
+          created_at?: string
+          field_name: string
+          id?: string
+          new_value: Json
+          old_value: Json
+          program_exercise_id: string
+          reason_code: string
+        }
+        Update: {
+          adaptation_id?: string
+          created_at?: string
+          field_name?: string
+          id?: string
+          new_value?: Json
+          old_value?: Json
+          program_exercise_id?: string
+          reason_code?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "training_program_adaptation_changes_adaptation_id_fkey"
+            columns: ["adaptation_id"]
+            isOneToOne: false
+            referencedRelation: "training_program_adaptations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "training_program_adaptation_changes_program_exercise_id_fkey"
+            columns: ["program_exercise_id"]
+            isOneToOne: false
+            referencedRelation: "training_program_exercises"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      training_program_adaptations: {
+        Row: {
+          created_at: string
+          evidence_snapshot: Json
+          evidence_through_date: string
+          id: string
+          outcome: string
+          policy_version: string
+          program_id: string
+          reason_codes: string[]
+          resulting_program_revision: number
+          source_program_revision: number
+          trigger_program_workout_id: string
+          trigger_workout_session_id: string
+        }
+        Insert: {
+          created_at?: string
+          evidence_snapshot: Json
+          evidence_through_date: string
+          id?: string
+          outcome: string
+          policy_version: string
+          program_id: string
+          reason_codes: string[]
+          resulting_program_revision: number
+          source_program_revision: number
+          trigger_program_workout_id: string
+          trigger_workout_session_id: string
+        }
+        Update: {
+          created_at?: string
+          evidence_snapshot?: Json
+          evidence_through_date?: string
+          id?: string
+          outcome?: string
+          policy_version?: string
+          program_id?: string
+          reason_codes?: string[]
+          resulting_program_revision?: number
+          source_program_revision?: number
+          trigger_program_workout_id?: string
+          trigger_workout_session_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "training_program_adaptations_program_id_fkey"
+            columns: ["program_id"]
+            isOneToOne: false
+            referencedRelation: "training_programs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "training_program_adaptations_trigger_program_workout_id_fkey"
+            columns: ["trigger_program_workout_id"]
+            isOneToOne: false
+            referencedRelation: "training_program_workouts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "training_program_adaptations_trigger_workout_session_id_fkey"
+            columns: ["trigger_workout_session_id"]
+            isOneToOne: false
+            referencedRelation: "workout_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      training_program_constraints: {
+        Row: {
+          created_at: string
+          revision: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          revision?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          revision?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "training_program_constraints_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      training_program_exercise_constraints: {
+        Row: {
+          constraint_kind: string
+          created_at: string
+          exercise_id: string
+          reason: string
+          user_id: string
+        }
+        Insert: {
+          constraint_kind: string
+          created_at?: string
+          exercise_id: string
+          reason: string
+          user_id: string
+        }
+        Update: {
+          constraint_kind?: string
+          created_at?: string
+          exercise_id?: string
+          reason?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "training_program_exercise_constraints_exercise_id_fkey"
+            columns: ["exercise_id"]
+            isOneToOne: false
+            referencedRelation: "exercise_catalog"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "training_program_exercise_constraints_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "training_program_constraints"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
+      training_program_exercises: {
+        Row: {
+          bodyweight_mode: string | null
+          canonical_name: string
+          created_at: string
+          exercise_id: string
+          id: string
+          measurement_type: string
+          order_index: number
+          program_workout_id: string
+          reps_max: number
+          reps_min: number
+          selection_intent: string
+          superset_group_index: number | null
+          superset_order: number | null
+          target_contribution_role: string
+          target_muscle_group: string
+          target_weight_kg: number | null
+          user_working_sets_override: number | null
+          working_sets: number
+        }
+        Insert: {
+          bodyweight_mode?: string | null
+          canonical_name: string
+          created_at?: string
+          exercise_id: string
+          id?: string
+          measurement_type: string
+          order_index: number
+          program_workout_id: string
+          reps_max: number
+          reps_min: number
+          selection_intent: string
+          superset_group_index?: number | null
+          superset_order?: number | null
+          target_contribution_role: string
+          target_muscle_group: string
+          target_weight_kg?: number | null
+          user_working_sets_override?: number | null
+          working_sets: number
+        }
+        Update: {
+          bodyweight_mode?: string | null
+          canonical_name?: string
+          created_at?: string
+          exercise_id?: string
+          id?: string
+          measurement_type?: string
+          order_index?: number
+          program_workout_id?: string
+          reps_max?: number
+          reps_min?: number
+          selection_intent?: string
+          superset_group_index?: number | null
+          superset_order?: number | null
+          target_contribution_role?: string
+          target_muscle_group?: string
+          target_weight_kg?: number | null
+          user_working_sets_override?: number | null
+          working_sets?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "training_program_exercises_exercise_id_fkey"
+            columns: ["exercise_id"]
+            isOneToOne: false
+            referencedRelation: "exercise_catalog"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "training_program_exercises_program_workout_id_fkey"
+            columns: ["program_workout_id"]
+            isOneToOne: false
+            referencedRelation: "training_program_workouts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       training_program_profiles: {
         Row: {
           access_mode: string
@@ -1263,6 +1502,294 @@ export type Database = {
             foreignKeyName: "training_program_profiles_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      training_program_substitutions: {
+        Row: {
+          constraint_revision: number
+          created_at: string
+          id: string
+          old_canonical_name: string
+          old_exercise_id: string
+          program_exercise_id: string
+          program_id: string
+          program_workout_id: string
+          replacement_canonical_name: string
+          replacement_exercise_id: string
+          resulting_program_revision: number
+          source_program_revision: number
+        }
+        Insert: {
+          constraint_revision: number
+          created_at?: string
+          id?: string
+          old_canonical_name: string
+          old_exercise_id: string
+          program_exercise_id: string
+          program_id: string
+          program_workout_id: string
+          replacement_canonical_name: string
+          replacement_exercise_id: string
+          resulting_program_revision: number
+          source_program_revision: number
+        }
+        Update: {
+          constraint_revision?: number
+          created_at?: string
+          id?: string
+          old_canonical_name?: string
+          old_exercise_id?: string
+          program_exercise_id?: string
+          program_id?: string
+          program_workout_id?: string
+          replacement_canonical_name?: string
+          replacement_exercise_id?: string
+          resulting_program_revision?: number
+          source_program_revision?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "training_program_substitutions_old_exercise_id_fkey"
+            columns: ["old_exercise_id"]
+            isOneToOne: false
+            referencedRelation: "exercise_catalog"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "training_program_substitutions_program_exercise_id_fkey"
+            columns: ["program_exercise_id"]
+            isOneToOne: false
+            referencedRelation: "training_program_exercises"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "training_program_substitutions_program_id_fkey"
+            columns: ["program_id"]
+            isOneToOne: false
+            referencedRelation: "training_programs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "training_program_substitutions_program_workout_id_fkey"
+            columns: ["program_workout_id"]
+            isOneToOne: false
+            referencedRelation: "training_program_workouts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "training_program_substitutions_replacement_exercise_id_fkey"
+            columns: ["replacement_exercise_id"]
+            isOneToOne: false
+            referencedRelation: "exercise_catalog"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      training_program_volume_adjustments: {
+        Row: {
+          after_total_working_sets: number
+          before_total_working_sets: number
+          change_snapshot: Json
+          created_at: string
+          id: string
+          program_id: string
+          program_workout_id: string
+          restored_recommended: boolean
+          resulting_program_revision: number
+          resulting_workout_revision: number
+          source_program_revision: number
+          source_workout_revision: number
+        }
+        Insert: {
+          after_total_working_sets: number
+          before_total_working_sets: number
+          change_snapshot: Json
+          created_at?: string
+          id?: string
+          program_id: string
+          program_workout_id: string
+          restored_recommended?: boolean
+          resulting_program_revision: number
+          resulting_workout_revision: number
+          source_program_revision: number
+          source_workout_revision: number
+        }
+        Update: {
+          after_total_working_sets?: number
+          before_total_working_sets?: number
+          change_snapshot?: Json
+          created_at?: string
+          id?: string
+          program_id?: string
+          program_workout_id?: string
+          restored_recommended?: boolean
+          resulting_program_revision?: number
+          resulting_workout_revision?: number
+          source_program_revision?: number
+          source_workout_revision?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "training_program_volume_adjustments_program_id_fkey"
+            columns: ["program_id"]
+            isOneToOne: false
+            referencedRelation: "training_programs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "training_program_volume_adjustments_program_workout_id_fkey"
+            columns: ["program_workout_id"]
+            isOneToOne: false
+            referencedRelation: "training_program_workouts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      training_program_workouts: {
+        Row: {
+          created_at: string
+          execution_status: string
+          id: string
+          program_id: string
+          revision: number
+          scheduled_date: string
+          session_index: number
+          title: string
+          updated_at: string
+          week_index: number
+          workout_session_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          execution_status?: string
+          id?: string
+          program_id: string
+          revision?: number
+          scheduled_date: string
+          session_index: number
+          title: string
+          updated_at?: string
+          week_index: number
+          workout_session_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          execution_status?: string
+          id?: string
+          program_id?: string
+          revision?: number
+          scheduled_date?: string
+          session_index?: number
+          title?: string
+          updated_at?: string
+          week_index?: number
+          workout_session_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "training_program_workouts_program_id_fkey"
+            columns: ["program_id"]
+            isOneToOne: false
+            referencedRelation: "training_programs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "training_program_workouts_workout_session_id_fkey"
+            columns: ["workout_session_id"]
+            isOneToOne: true
+            referencedRelation: "workout_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      training_programs: {
+        Row: {
+          constraint_revision: number
+          created_at: string
+          duration_weeks: number
+          end_date: string
+          generated_at: string
+          generator_version: string
+          goal: string
+          history_through_date: string
+          id: string
+          muscle_volume_methodology_version: string
+          profile_revision: number
+          requested_split: string
+          resolved_split: string
+          revision: number
+          sessions_per_week: number
+          source_snapshot: Json
+          start_date: string
+          status: string
+          training_days: string[]
+          updated_at: string
+          user_id: string
+          version: string
+        }
+        Insert: {
+          constraint_revision: number
+          created_at?: string
+          duration_weeks: number
+          end_date: string
+          generated_at: string
+          generator_version: string
+          goal: string
+          history_through_date: string
+          id?: string
+          muscle_volume_methodology_version: string
+          profile_revision: number
+          requested_split: string
+          resolved_split: string
+          revision?: number
+          sessions_per_week: number
+          source_snapshot: Json
+          start_date: string
+          status?: string
+          training_days: string[]
+          updated_at?: string
+          user_id: string
+          version: string
+        }
+        Update: {
+          constraint_revision?: number
+          created_at?: string
+          duration_weeks?: number
+          end_date?: string
+          generated_at?: string
+          generator_version?: string
+          goal?: string
+          history_through_date?: string
+          id?: string
+          muscle_volume_methodology_version?: string
+          profile_revision?: number
+          requested_split?: string
+          resolved_split?: string
+          revision?: number
+          sessions_per_week?: number
+          source_snapshot?: Json
+          start_date?: string
+          status?: string
+          training_days?: string[]
+          updated_at?: string
+          user_id?: string
+          version?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "training_programs_muscle_volume_methodology_version_fkey"
+            columns: ["muscle_volume_methodology_version"]
+            isOneToOne: false
+            referencedRelation: "muscle_volume_methodologies"
+            referencedColumns: ["version"]
+          },
+          {
+            foreignKeyName: "training_programs_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
@@ -1767,6 +2294,17 @@ export type Database = {
         }
         Returns: Json
       }
+      apply_my_training_program_adaptation: {
+        Args: {
+          p_changes: Json
+          p_evidence_snapshot: Json
+          p_expected_revision: number
+          p_program_id: string
+          p_reason_codes: string[]
+          p_trigger_program_workout_id: string
+        }
+        Returns: Json
+      }
       assign_moderation_case: {
         Args: {
           p_assignee_user_id: string
@@ -1813,6 +2351,7 @@ export type Database = {
           snapshot_id: number
         }[]
       }
+      complete_my_tutorial: { Args: { p_version: number }; Returns: number }
       complete_onboarding: {
         Args: {
           p_display_name: string
@@ -1849,6 +2388,7 @@ export type Database = {
         Args: { p_group_id: string; p_recipient: string }
         Returns: Json
       }
+      create_my_training_program: { Args: { p_program: Json }; Returns: string }
       current_group_role: {
         Args: { p_group_id: string }
         Returns: Database["public"]["Enums"]["group_role"]
@@ -2228,6 +2768,10 @@ export type Database = {
           active_device_count: number
         }[]
       }
+      get_my_training_program_adaptation_context: {
+        Args: { p_program_id: string; p_trigger_program_workout_id: string }
+        Returns: Json
+      }
       get_my_training_program_candidate_catalog: {
         Args: never
         Returns: {
@@ -2240,6 +2784,18 @@ export type Database = {
           supports_assisted: boolean
           volume_eligible: boolean
           workout_type: string
+        }[]
+      }
+      get_my_training_program_constraints: { Args: never; Returns: Json }
+      get_my_weekly_muscle_volume_history: {
+        Args: { p_anchor_date?: string; p_lookback_days?: number }
+        Returns: {
+          direct_effective_sets: number
+          effective_sets: number
+          eligible_logical_sets: number
+          indirect_effective_sets: number
+          muscle_group: string
+          week_start: string
         }[]
       }
       get_platform_account_detail: {
@@ -2320,7 +2876,19 @@ export type Database = {
         }[]
       }
       is_active_group_member: { Args: { p_group_id: string }; Returns: boolean }
+      launch_my_training_program_own_workout: {
+        Args: { p_action_at?: string; p_program_workout_id: string }
+        Returns: Json
+      }
+      launch_my_training_program_workout: {
+        Args: { p_action_at?: string; p_program_workout_id: string }
+        Returns: Json
+      }
       leave_group: { Args: { p_group_id: string }; Returns: undefined }
+      link_my_training_program_own_workout: {
+        Args: { p_program_workout_id: string; p_workout_session_id: string }
+        Returns: Json
+      }
       list_group_chat_messages: {
         Args: {
           p_before_created_at?: string
@@ -2493,6 +3061,10 @@ export type Database = {
         }
         Returns: string
       }
+      mark_my_training_program_workout_missed: {
+        Args: { p_program_workout_id: string }
+        Returns: Json
+      }
       mark_platform_account_deletion_storage_cleared: {
         Args: {
           p_actor_user_id: string
@@ -2639,6 +3211,20 @@ export type Database = {
         Args: { p_workout_set_id: string }
         Returns: string
       }
+      replace_my_training_program_exercise: {
+        Args: {
+          p_expected_constraint_revision: number
+          p_expected_program_revision: number
+          p_program_exercise_id: string
+          p_replacement_exercise_id: string
+          p_target_weight_kg?: number
+        }
+        Returns: Json
+      }
+      replace_my_training_program_exercise_constraints: {
+        Args: { p_constraints: Json; p_expected_revision: number }
+        Returns: Json
+      }
       request_own_platform_account_deletion: { Args: never; Returns: string }
       request_platform_account_deletion: {
         Args: { p_reason: string; p_target_user_id: string }
@@ -2747,6 +3333,24 @@ export type Database = {
         Args: { p_exercise_id: string; p_tracked: boolean }
         Returns: boolean
       }
+      set_my_training_program_status: {
+        Args: {
+          p_expected_revision: number
+          p_program_id: string
+          p_status: string
+        }
+        Returns: Json
+      }
+      set_my_training_program_workout_volume: {
+        Args: {
+          p_expected_program_revision: number
+          p_expected_workout_revision: number
+          p_overrides?: Json
+          p_program_workout_id: string
+          p_restore_recommended?: boolean
+        }
+        Returns: Json
+      }
       start_lifting_workout_from_preset:
         | {
             Args: { p_action_at?: string; p_exercise_ids: string[] }
@@ -2854,6 +3458,7 @@ export type Database = {
           profile_code: string
           profile_picture_path: string | null
           timezone: string
+          tutorial_completed_version: number
           updated_at: string
           username: string
           weekly_workout_target: number
@@ -3097,9 +3702,6 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
-  graphql_public: {
-    Enums: {},
-  },
   public: {
     Enums: {
       benchmark_state: ["UNSEEN", "CALIBRATING", "ESTABLISHED"],

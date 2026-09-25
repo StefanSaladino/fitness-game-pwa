@@ -92,6 +92,14 @@ Rules:
 - use Git history and `CHANGELOG.md` for delivery history;
 - prefer primary vendor documentation when external behavior is relevant.
 
+## Comments and maintainer notes
+
+Comments should explain **ownership, invariants, failure modes, or reasons**, not restate syntax. Add a short maintainer note when a file sits on a cross-cutting boundary (routing, optimistic revisions, offline replay, generated data, security/RPC composition, deterministic program generation, PDF snapshot semantics, or hosted-only database behavior).
+
+Do not hand-edit `src/types/database.generated.ts`; regenerate it from the migrated hosted schema. Do not edit already-applied Supabase migrations to improve comments. Put durable rationale in current docs, a new migration, or the service/domain layer that owns the rule.
+
+When changing a commented invariant, update the comment and its current reference document in the same slice. A stale warning comment is worse than no comment.
+
 ## Before closing a slice
 
 Run focused tests first. Before a phase/release checkpoint, run the full acceptance gate from `docs/CI-VALIDATION.md` and verify any required hosted Supabase work separately.

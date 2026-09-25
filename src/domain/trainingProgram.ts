@@ -1,3 +1,9 @@
+/**
+ * Maintainer boundary: canonical persisted/validated training-program contract.
+ * A program is planning state, not workout execution. Actual workout/session/set
+ * history remains authoritative for completion, XP, PRs, and analytics.
+ */
+
 import {
   TRAINING_PROGRAM_SUPPORTED_DURATION_WEEKS,
   buildTrainingProgramSchedule,

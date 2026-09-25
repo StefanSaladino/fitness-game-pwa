@@ -1,3 +1,10 @@
+/**
+ * Maintainer boundary: durable Program read/write mapping.
+ * working_sets is the system recommendation baseline. A nullable
+ * user_working_sets_override is separate user intent and must not overwrite the
+ * recommendation when mapping persisted exercises.
+ */
+
 import type { SupabaseClient } from '@supabase/supabase-js';
 import {
   isValidTrainingProgramDefinition,
@@ -16,6 +23,8 @@ export interface PersistedTrainingProgramWorkout
   executionStatus: TrainingProgramExecutionStatus;
   workoutSessionId: string | null;
   revision: number;
+  recommendedTotalWorkingSets?: number;
+  hasUserVolumeOverride?: boolean;
 }
 
 export interface PersistedTrainingProgram {
@@ -143,7 +152,10 @@ function mapExercise(rowValue: unknown): TrainingProgramExercisePrescription {
       'Training program measurement type',
     ) as TrainingProgramExercisePrescription['measurementType'],
     orderIndex: integer(row.order_index, 'Training program exercise order'),
-    workingSets: integer(row.working_sets, 'Training program working sets'),
+    workingSets: integer(
+      row.user_working_sets_override ?? row.working_sets,
+      'Training program working sets',
+    ),
     repsMin: integer(row.reps_min, 'Training program minimum reps'),
     repsMax: integer(row.reps_max, 'Training program maximum reps'),
     targetWeightKg: numericOrNull(row.target_weight_kg),
@@ -247,6 +259,9 @@ export function createTrainingProgramPersistenceService(
       }
 
       const exercisesByWorkout = new Map<string, TrainingProgramExercisePrescription[]>();
+      const recommendedSetsByWorkout = new Map<string, number>();
+      const volumeOverrideByWorkout = new Map<string, boolean>();
+
       for (const exerciseRow of exerciseRows) {
         const workoutId = text(
           exerciseRow.program_workout_id,
@@ -255,6 +270,22 @@ export function createTrainingProgramPersistenceService(
         const items = exercisesByWorkout.get(workoutId) ?? [];
         items.push(mapExercise(exerciseRow));
         exercisesByWorkout.set(workoutId, items);
+
+        recommendedSetsByWorkout.set(
+          workoutId,
+          (recommendedSetsByWorkout.get(workoutId) ?? 0)
+            + integer(
+              exerciseRow.working_sets,
+              'Recommended training program working sets',
+            ),
+        );
+
+        if (
+          exerciseRow.user_working_sets_override !== null
+          && exerciseRow.user_working_sets_override !== undefined
+        ) {
+          volumeOverrideByWorkout.set(workoutId, true);
+        }
       }
 
       const persistedWorkouts: PersistedTrainingProgramWorkout[] =
@@ -274,6 +305,10 @@ export function createTrainingProgramPersistenceService(
             executionStatus: executionStatus(row.execution_status),
             workoutSessionId: nullableText(row.workout_session_id),
             revision: integer(row.revision, 'Program workout revision'),
+            recommendedTotalWorkingSets:
+              recommendedSetsByWorkout.get(id) ?? 0,
+            hasUserVolumeOverride:
+              volumeOverrideByWorkout.get(id) ?? false,
           };
         });
 

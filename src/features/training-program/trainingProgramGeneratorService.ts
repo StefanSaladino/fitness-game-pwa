@@ -1,3 +1,10 @@
+/**
+ * Maintainer boundary: composes hosted/profile/Phase-19 evidence for the pure
+ * generator. Keep I/O here and deterministic selection logic in the domain layer.
+ * Personal-volume learning is evidence-weighted product logic, not a causal
+ * estimate of an individual's medically optimal training volume.
+ */
+
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { getSupabaseClient } from '../../lib/supabase';
 import {
@@ -21,6 +28,11 @@ import {
   type MusclePerformanceService,
 } from '../progress/musclePerformanceService';
 import { buildMuscleVolumeRecommendationPayloads } from '../progress/muscleVolumeRecommendationModel';
+import { personalizeMuscleVolumeRows } from '../progress/personalVolumeBaseline';
+import {
+  createPersonalVolumeHistoryService,
+  type PersonalVolumeHistoryService,
+} from '../progress/personalVolumeHistoryService';
 import {
   createTrainingProgramCandidateService,
   type TrainingProgramCandidateService,
@@ -40,6 +52,7 @@ export interface TrainingProgramGeneratorServiceDependencies {
   constraintService: TrainingProgramConstraintService;
   progressService: ExerciseProgressService;
   performanceService: MusclePerformanceService;
+  personalVolumeHistoryService?: PersonalVolumeHistoryService;
 }
 
 export interface TrainingProgramGenerateRequest {
@@ -127,12 +140,17 @@ export function createTrainingProgramGeneratorService(
         );
       }
 
+      const personalVolumeHistoryService =
+        injected?.personalVolumeHistoryService
+        ?? createPersonalVolumeHistoryService(getClient());
+
       const [
         constraints,
         candidates,
         progressOverview,
         volumeRows,
         performanceObservations,
+        personalVolumeHistory,
       ] = await Promise.all([
         dependencies.constraintService.load(),
         dependencies.candidateService.load(),
@@ -142,12 +160,22 @@ export function createTrainingProgramGeneratorService(
         ),
         dependencies.performanceService.loadObservations(
           request.historyThroughDate,
-          56,
+          126,
+        ),
+        personalVolumeHistoryService.load(
+          request.historyThroughDate,
+          126,
         ),
       ]);
 
-      const recommendationPayloads = buildMuscleVolumeRecommendationPayloads(
+      const personalized = personalizeMuscleVolumeRows(
         volumeRows,
+        personalVolumeHistory,
+        performanceObservations,
+      );
+
+      const recommendationPayloads = buildMuscleVolumeRecommendationPayloads(
+        personalized.rows,
         performanceObservations,
       );
 

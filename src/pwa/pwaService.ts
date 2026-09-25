@@ -1,3 +1,9 @@
+/**
+ * Maintainer boundary: browser/PWA capability state, install flow, storage
+ * persistence, and service-worker update lifecycle. Treat browser capability
+ * detection as best-effort; do not infer unsupported APIs are available.
+ */
+
 import { activateWaitingServiceWorker, registerServiceWorker, type RegisteredServiceWorker } from './registerServiceWorker';
 
 export type InstallChoice = 'accepted' | 'dismissed' | 'unavailable';

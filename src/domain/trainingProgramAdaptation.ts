@@ -1,3 +1,9 @@
+/**
+ * Maintainer boundary: future-plan adaptation from completed evidence.
+ * Adaptation may revise future planned prescriptions; it must not rewrite the
+ * completed workout that triggered the decision or bypass current hard exclusions.
+ */
+
 import {
   TRAINING_PROGRAM_MAX_REPS,
   type TrainingProgramBodyweightMode,

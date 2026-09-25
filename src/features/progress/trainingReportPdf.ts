@@ -1,3 +1,9 @@
+/**
+ * Maintainer boundary: presentation-only PDF rendering from CompletedTrainingReport.
+ * Keep report calculation in the model/service layer so the UI and PDF consume
+ * the same reviewed result rather than implementing separate analytics.
+ */
+
 import type {
   PDFFont,
   PDFDocument as PDFDocumentType,
